@@ -1,0 +1,44 @@
+<form class="form-inline" #inputForm="ngForm" (ngSubmit)="onSubmit()">
+
+  <div>
+   <label>Gender</label>
+   <select [(ngModel)]="gender" name="gender" class="form-control">
+     <option value="male">Male</option>
+     <option value="female">Female</option>
+   </select>
+  </div>
+  <div class="form-group">
+    <label>Date of Birth month/day/year</label>
+    <select class="form-control" [(ngModel)]="inputMonth" name="inputMonth" required>
+      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+    </select>
+    <select class="form-control" [(ngModel)]="inputDay" name="inputDay" required>
+        <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
+    </select>
+    <select class="form-control" [(ngModel)]="inputYear" name="inputYear" required>
+        <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
+    </select>
+  </div>
+  <div>
+    <label>PIA</label>
+    <input type="text" [(ngModel)]="PIA" name="PIA" required>
+  </div>
+  <div class="form-group">
+    <label>Month/Year to claim benefits:</label>
+    <select class="form-control" [(ngModel)]="inputBenefitMonth" name="inputMonth" required>
+      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+    </select>
+    <select class="form-control" [(ngModel)]="inputBenefitYear" name="inputYear" required>
+      <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+    </select>
+    <span *ngIf="this.benefitService.error" class="alert alert-danger">{{this.benefitService.error}}</span>
+  </div>
+  <div>
+    <label>Discount Rate</label>
+    <input type="text" [(ngModel)]="discountRate" name="discountRate" required>
+  </div>
+  <div>
+    <button type="submit" class="btn btn-success">Submit</button>
+  </div>
+  
+</form>

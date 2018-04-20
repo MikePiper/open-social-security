@@ -1,0 +1,21 @@
+To Do List
+
+As of 4/19/18 this is a fully functional version that takes in birthdate, PIA, gender, and discount rate and outputs the ideal claiming age for a single person. Also can calculate PV for claiming at an age of user's choice.
+
+It does, however, currently assume that the user is age 62. We never want to assume they are younger, but in some cases they may be older. So we would have to make the PV calculation only forward-looking from that point. (PV would be smaller, months in past excluded as options, and probability of being alive would use current age as denominator rather than age 62.)
+
+Make output somewhere other than in console.
+
+Create inputs for second person.
+
+Independently do all of same processes for that second person.
+
+For all of the following, will be assuming that new deemed filing rules apply to everybody, even if they were 62 or older as of 1/1/2016.
+
+Create function to calculate a spousal benefit (assuming the other spouse is already receiving their retirement benefit).
+
+Add functionality to only allow spousal benefit if the other spouse is indeed receiving a retirement benefit.
+
+Add functionality to find total NPV when user inputs claiming ages for each spouse.
+
+Create function to calculate a survivor benefit.
