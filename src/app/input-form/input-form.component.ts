@@ -46,6 +46,7 @@ export class InputFormComponent implements OnInit {
   inputBenefitYear: number
   gender: string = "male"
   discountRate: number = 0.007
+  error:string
 
   onSubmit() {
   console.log("-------------")
@@ -56,12 +57,66 @@ export class InputFormComponent implements OnInit {
   console.log("discountRate: " + this.discountRate)
   this.birthdayService.findSSbirthdate(this.inputMonth, this.inputDay, this.inputYear);
   console.log("FRA: " + this.birthdayService.findFRA())
-  console.log("Benefit using input dates: " + this.benefitService.calculateRetirementBenefit(Number(this.PIA), this.birthdayService.findFRA(), this.inputBenefitMonth, this.inputBenefitYear))
-  console.log("PV using input dates: " + this.presentvalueService.calculateRetirementPV(Number(this.PIA), this.inputBenefitMonth, this.inputBenefitYear, this.gender, this.discountRate))
-  this.presentvalueService.maximizeRetirementPV(Number(this.PIA), this.birthdayService.findFRA(), this.gender, Number(this.discountRate))
+  this.checkValidInputs(this.birthdayService.findFRA())
+  if (!this.error) {
+    console.log("Benefit using input dates: " + this.benefitService.calculateRetirementBenefit(Number(this.PIA), this.birthdayService.findFRA(), this.inputBenefitMonth, this.inputBenefitYear))
+    console.log("PV using input dates: " + this.presentvalueService.calculateRetirementPV(Number(this.PIA), this.inputBenefitMonth, this.inputBenefitYear, this.gender, this.discountRate))
+    this.presentvalueService.maximizeRetirementPV(Number(this.PIA), this.birthdayService.findFRA(), this.gender, Number(this.discountRate))
+    }
+
   }
 
 
+  checkValidInputs(FRA) {
+    this.error = undefined
+
+    //Validation to make sure they are not filing for benefits in the past
+    let today = new Date()
+    if ( (this.inputBenefitYear < today.getFullYear()) || (this.inputBenefitYear == today.getFullYear() && (this.inputBenefitMonth < today.getMonth() + 1 )) )
+    {
+    this.error = "Please enter a date no earlier than this month."
+    }
+
+    //Validation in case they try to start benefit earlier than possible or after 70 (Just ignoring the "must be 62 for entire month" rule right now)
+    let monthsWaited = this.inputBenefitMonth - FRA.getMonth() - 1 + 12 * (this.inputBenefitYear - FRA.getFullYear())
+    if (this.birthdayService.SSbirthDate >= new Date('January 1, 1943') && this.birthdayService.SSbirthDate <= new Date('December 31, 1954'))
+    {
+      if (monthsWaited > 48) {this.error = "Please enter an earlier date. You do not want to wait beyond age 70."}
+      if (monthsWaited < -48) {this.error = "Please enter a later date. You cannot file for retirement benefits before age 62."}
+    }
+    if (this.birthdayService.SSbirthDate >= new Date('January 1, 1955') && this.birthdayService.SSbirthDate <= new Date('December 31, 1955'))
+    {
+      if (monthsWaited > 46) {this.error = "Please enter an earlier date. You do not want to wait beyond age 70."}
+      if (monthsWaited < -50) {this.error = "Please enter a later date. You cannot file for retirement benefits before age 62."}
+    }
+    if (this.birthdayService.SSbirthDate >= new Date('January 1, 1956') && this.birthdayService.SSbirthDate <= new Date('December 31, 1956'))
+    {
+      if (monthsWaited > 44) {this.error = "Please enter an earlier date. You do not want to wait beyond age 70."}
+      if (monthsWaited < -52) {this.error = "Please enter a later date. You cannot file for retirement benefits before age 62."}
+    }
+    if (this.birthdayService.SSbirthDate >= new Date('January 1, 1957') && this.birthdayService.SSbirthDate <= new Date('December 31, 1957'))
+    {
+      if (monthsWaited > 42) {this.error = "Please enter an earlier date. You do not want to wait beyond age 70."}
+      if (monthsWaited < -54) {this.error = "Please enter a later date. You cannot file for retirement benefits before age 62."}
+    }
+    if (this.birthdayService.SSbirthDate >= new Date('January 1, 1958') && this.birthdayService.SSbirthDate <= new Date('December 31, 1958'))
+    {
+      if (monthsWaited > 40) {this.error = "Please enter an earlier date. You do not want to wait beyond age 70."}
+      if (monthsWaited < -56) {this.error = "Please enter a later date. You cannot file for retirement benefits before age 62."}
+    }
+    if (this.birthdayService.SSbirthDate >= new Date('January 1, 1959') && this.birthdayService.SSbirthDate <= new Date('December 31, 1959'))
+    {
+      if (monthsWaited > 38) {this.error = "Please enter an earlier date. You do not want to wait beyond age 70."}
+      if (monthsWaited < -58) {this.error = "Please enter a later date. You cannot file for retirement benefits before age 62."}
+    }
+    if (this.birthdayService.SSbirthDate >= new Date('January 1, 1960'))
+    {
+      if (monthsWaited > 36) {this.error = "Please enter an earlier date. You do not want to wait beyond age 70."}
+      if (monthsWaited < -60) {this.error = "Please enter a later date. You cannot file for retirement benefits before age 62."}
+    }
+
+
+  }
 
 
 
