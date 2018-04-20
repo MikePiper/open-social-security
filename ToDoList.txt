@@ -3,9 +3,7 @@ To Do List
 As of 4/19/18 this is a fully functional version that takes in birthdate, PIA, gender, and discount rate and outputs the ideal claiming age for a single person.
 Also can calculate PV for claiming at an age of user's choice.
 
-It does, however, currently assume that the user is age 62. We never want to assume they are younger, but in some cases they may be older.
-So we would have to make the PV calculation only forward-looking from that point.
-(PV would be smaller, months in past excluded as options, and probability of being alive would use current age as denominator rather than age 62.)
+If user is already over age 62, probability of being alive should use current age as denominator rather than age 62.
 
 Also currently ignores the "must be 62 for entire month" rule with regard to a person claiming as early as possible.
 

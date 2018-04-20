@@ -48,6 +48,12 @@ export class PresentvalueService {
     let benefitYear = this.birthdayService.SSbirthDate.getFullYear() + 62
 
     //If they are currently over age 62 when filling out form, set benefitMonth and benefitYear to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
+    let today = new Date()
+    let ageToday = today.getFullYear() - this.birthdayService.SSbirthDate.getFullYear() + (today.getMonth() - this.birthdayService.SSbirthDate.getMonth())/12
+    if (ageToday > 62){
+      benefitMonth = today.getMonth()+1
+      benefitYear = today.getFullYear()
+    }
 
     //Run calculateRetirementPV for their age 62 benefit, save the PV and the age.
     let savedPV = this.calculateRetirementPV(PIA, benefitMonth, benefitYear, gender, discountRate)
