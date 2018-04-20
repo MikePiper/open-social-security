@@ -24,12 +24,12 @@ export class PresentvalueService {
     
 
     //Calculate PV via loop until they hit end of probabillity array
-    //Here we're taking it as a given that they are 62 when doing this analysis. In real life maybe they are older
       while (this.age < 118) {
         //When calculating probability alive, we have to round age to get a whole number to use for lookup in array.
-        //Normally we round age down and use that number for the whole year. But sometimes age will be 66 but javascript sees it as 65.99999, so we have to round that up.
+        //Normally we round age down and use that number for the whole year. But sometimes, for example, real age will be 66 but javascript sees it as 65.99999, so we have to round that up.
         if (this.age%1 > 0.999) {this.roundedAge = Math.round(this.age)}
           else { this.roundedAge = Math.floor(this.age)}
+        //If they're already over 62 when filling out form, denominator should be lives remaining at their current age when filling it out.
         if (gender == "male") {this.probabilityAlive = this.maleLivesRemaining[this.roundedAge + 1] / this.maleLivesRemaining[62]}
         if (gender == "female") {this.probabilityAlive = this.femaleLivesRemaining[this.roundedAge + 1] / this.femaleLivesRemaining[62]}
         
@@ -46,6 +46,8 @@ export class PresentvalueService {
     //find initial benefitMonth and benefitYear for age 62 (have to add 1 to month, because getMonth returns 0-11)
     let benefitMonth = this.birthdayService.SSbirthDate.getMonth() + 1
     let benefitYear = this.birthdayService.SSbirthDate.getFullYear() + 62
+
+    //If they are currently over age 62 when filling out form, set benefitMonth and benefitYear to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
 
     //Run calculateRetirementPV for their age 62 benefit, save the PV and the age.
     let savedPV = this.calculateRetirementPV(PIA, benefitMonth, benefitYear, gender, discountRate)
