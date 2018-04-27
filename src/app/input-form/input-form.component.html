@@ -1,8 +1,8 @@
 <form class="form-inline" #inputForm="ngForm" (ngSubmit)="onSubmit()">
-
+  <h2>Spouse A</h2>
   <div>
    <label>Gender</label>
-   <select [(ngModel)]="gender" name="gender" class="form-control">
+   <select [(ngModel)]="spouseAgender" name="spouseAgender" class="form-control">
      <option value="male">Male</option>
      <option value="female">Female</option>
    </select>
@@ -21,7 +21,7 @@
   </div>
   <div>
     <label>PIA</label>
-    <input type="text" [(ngModel)]="PIA" name="PIA" required>
+    <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" required>
   </div>
   <div class="form-group">
     <label>Month/Year to claim benefits:</label>
@@ -31,8 +31,44 @@
     <select class="form-control" [(ngModel)]="inputBenefitYear" name="inputYear" required>
       <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
     </select>
-    <span *ngIf="this.error" class="alert alert-danger">{{this.error}}</span>
+    <span *ngIf="this.spouseAerror" class="alert alert-danger">{{this.spouseAerror}}</span>
   </div>
+
+  <h2>Spouse B</h2>
+  <div>
+   <label>Gender</label>
+   <select [(ngModel)]="spouseBgender" name="spouseBgender" class="form-control">
+     <option value="male">Male</option>
+     <option value="female">Female</option>
+   </select>
+  </div>
+  <div class="form-group">
+    <label>Date of Birth month/day/year</label>
+    <select class="form-control" [(ngModel)]="spouseBinputMonth" name="spouseBinputMonth" required>
+      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+    </select>
+    <select class="form-control" [(ngModel)]="spouseBinputDay" name="spouseBinputDay" required>
+        <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
+    </select>
+    <select class="form-control" [(ngModel)]="spouseBinputYear" name="spouseBinputYear" required>
+        <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
+    </select>
+  </div>
+  <div>
+    <label>PIA</label>
+    <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" required>
+  </div>
+  <div class="form-group">
+    <label>Month/Year to claim benefits:</label>
+    <select class="form-control" [(ngModel)]="spouseBinputBenefitMonth" name="spouseBinputMonth" required>
+      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+    </select>
+    <select class="form-control" [(ngModel)]="spouseBinputBenefitYear" name="spouseBinputYear" required>
+      <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+    </select>
+    <span *ngIf="this.spouseBerror" class="alert alert-danger">{{this.spouseBerror}}</span>
+  </div>
+  <hr>
   <div>
     <label>Discount Rate</label>
     <input type="text" [(ngModel)]="discountRate" name="discountRate" required>

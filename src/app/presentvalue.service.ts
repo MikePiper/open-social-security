@@ -13,14 +13,14 @@ export class PresentvalueService {
   probabilityAlive: number
   
 
-  calculateRetirementPV(PIA: number, inputBenefitMonth: number, inputBenefitYear: number, gender: string, discountRate: number)
+  calculateRetirementPV(FRA: Date, SSbirthDate: Date, PIA: number, inputBenefitMonth: number, inputBenefitYear: number, gender: string, discountRate: number)
   {
-    let retirementBenefit = this.benefitService.calculateRetirementBenefit(PIA, this.birthdayService.findFRA(), inputBenefitMonth, inputBenefitYear)
+    let retirementBenefit = this.benefitService.calculateRetirementBenefit(PIA, FRA, inputBenefitMonth, inputBenefitYear)
     let retirementPV = 0
 
 
     //calculate age when they start benefit
-    this.age = ( inputBenefitMonth - this.birthdayService.SSbirthDate.getMonth() - 1 + 12 * (inputBenefitYear - this.birthdayService.SSbirthDate.getFullYear()) )/12
+    this.age = ( inputBenefitMonth - SSbirthDate.getMonth() - 1 + 12 * (inputBenefitYear - SSbirthDate.getFullYear()) )/12
     
 
     //Calculate PV via loop until they hit end of probabillity array
@@ -42,26 +42,26 @@ export class PresentvalueService {
         return retirementPV
   }
 
-  maximizeRetirementPV(PIA: number, FRA: Date, gender: string, discountRate: number){
+  maximizeRetirementPV(PIA: number, SSbirthDate: Date, FRA: Date, gender: string, discountRate: number){
     //find initial benefitMonth and benefitYear for age 62 (have to add 1 to month, because getMonth returns 0-11)
-    let benefitMonth = this.birthdayService.SSbirthDate.getMonth() + 1
-    let benefitYear = this.birthdayService.SSbirthDate.getFullYear() + 62
+    let benefitMonth = SSbirthDate.getMonth() + 1
+    let benefitYear = SSbirthDate.getFullYear() + 62
 
     //If they are currently over age 62 when filling out form, set benefitMonth and benefitYear to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
     let today = new Date()
-    let ageToday = today.getFullYear() - this.birthdayService.SSbirthDate.getFullYear() + (today.getMonth() - this.birthdayService.SSbirthDate.getMonth())/12
+    let ageToday = today.getFullYear() - SSbirthDate.getFullYear() + (today.getMonth() - SSbirthDate.getMonth())/12
     if (ageToday > 62){
       benefitMonth = today.getMonth()+1
       benefitYear = today.getFullYear()
     }
 
     //Run calculateRetirementPV for their age 62 benefit, save the PV and the age.
-    let savedPV = this.calculateRetirementPV(PIA, benefitMonth, benefitYear, gender, discountRate)
+    let savedPV = this.calculateRetirementPV(FRA, SSbirthDate, PIA, benefitMonth, benefitYear, gender, discountRate)
     let savedClaimingDate = new Date(benefitMonth + "-01-" + benefitYear)
     let currentTestDate = new Date(savedClaimingDate)
 
     //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
-    let endingTestDate = new Date(this.birthdayService.SSbirthDate)
+    let endingTestDate = new Date(SSbirthDate)
     endingTestDate.setFullYear(endingTestDate.getFullYear() + 70)
     endingTestDate.setMonth(endingTestDate.getMonth()-1)
     while (currentTestDate <= endingTestDate){
@@ -69,7 +69,7 @@ export class PresentvalueService {
       currentTestDate.setMonth(currentTestDate.getMonth() + 1)
       benefitMonth = currentTestDate.getMonth() + 1
       benefitYear = currentTestDate.getFullYear()
-      let currentTestPV = this.calculateRetirementPV(PIA, benefitMonth, benefitYear, gender, discountRate)
+      let currentTestPV = this.calculateRetirementPV(FRA, SSbirthDate, PIA, benefitMonth, benefitYear, gender, discountRate)
       if (currentTestPV > savedPV)
         {savedClaimingDate.setMonth(currentTestDate.getMonth())
           savedClaimingDate.setFullYear(currentTestDate.getFullYear())
