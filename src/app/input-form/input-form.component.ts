@@ -38,19 +38,19 @@ export class InputFormComponent implements OnInit {
 
 
 //Inputs from form
-  inputMonth: number
-  inputDay: number
-  inputYear: number
-  spouseAPIA: number
-  inputBenefitMonth: number
-  inputBenefitYear: number
+  inputMonth: number = 4
+  inputDay: number = 8
+  inputYear: number = 1984
+  spouseAPIA: number = 1000
+  inputBenefitMonth: number = 4
+  inputBenefitYear: number = 2051
   spouseAgender: string = "male"
-  spouseBinputMonth: number
-  spouseBinputDay: number
-  spouseBinputYear: number
-  spouseBPIA: number
-  spouseBinputBenefitMonth: number
-  spouseBinputBenefitYear: number
+  spouseBinputMonth: number = 4
+  spouseBinputDay: number = 28
+  spouseBinputYear: number = 1984
+  spouseBPIA: number = 300
+  spouseBinputBenefitMonth: number = 4
+  spouseBinputBenefitYear: number = 2051
   spouseBgender: string = "female"
   discountRate: number = 0.007
   spouseAbirthDate: Date
@@ -74,14 +74,14 @@ export class InputFormComponent implements OnInit {
   this.spouseAerror = this.checkValidInputs(this.spouseAFRA, this.spouseAbirthDate, this.inputBenefitYear, this.inputBenefitMonth)
   if (!this.spouseAerror) {
     console.log("Spouse A benefit using input dates: " + this.benefitService.calculateRetirementBenefit(Number(this.spouseAPIA), this.spouseAFRA, this.inputBenefitMonth, this.inputBenefitYear))
-    console.log("Spouse A PV using input dates: " + this.presentvalueService.calculateRetirementPV(this.spouseAFRA, this.spouseAbirthDate, Number(this.spouseAPIA), this.inputBenefitMonth, this.inputBenefitYear, this.spouseAgender, this.discountRate))
-    this.presentvalueService.maximizeRetirementPV(Number(this.spouseAPIA), this.spouseAbirthDate, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
+    console.log("Spouse A PV using input dates: " + this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseAbirthDate, Number(this.spouseAPIA), this.inputBenefitMonth, this.inputBenefitYear, this.spouseAgender, this.discountRate))
+    this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseAbirthDate, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
     }
   this.spouseBerror = this.checkValidInputs(this.spouseBFRA, this.spouseBbirthDate, this.spouseBinputBenefitYear, this.spouseBinputBenefitMonth)
   if(!this.spouseBerror) {
     console.log("Spouse B benefit using input dates: " + this.benefitService.calculateRetirementBenefit(Number(this.spouseBPIA), this.spouseBFRA, this.spouseBinputBenefitMonth, this.spouseBinputBenefitYear))
-    console.log("Spouse B PV using input dates: " + this.presentvalueService.calculateRetirementPV(this.spouseBFRA, this.spouseBbirthDate, Number(this.spouseBPIA), this.spouseBinputBenefitMonth, this.spouseBinputBenefitYear, this.spouseBgender, this.discountRate))
-    this.presentvalueService.maximizeRetirementPV(Number(this.spouseBPIA), this.spouseBbirthDate, this.spouseBFRA, this.spouseBgender, Number(this.discountRate))
+    console.log("Spouse B PV using input dates: " + this.presentvalueService.calculateSinglePersonPV(this.spouseBFRA, this.spouseBbirthDate, Number(this.spouseBPIA), this.spouseBinputBenefitMonth, this.spouseBinputBenefitYear, this.spouseBgender, this.discountRate))
+    this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseBPIA), this.spouseBbirthDate, this.spouseBFRA, this.spouseBgender, Number(this.discountRate))
     console.log("Spouse B spousal benefit: " + this.benefitService.calculateSpousalBenefit(this.spouseBPIA, this.spouseAPIA, this.spouseBFRA, this.spouseBinputBenefitMonth, this.spouseBinputBenefitYear))
   }
   }

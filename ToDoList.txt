@@ -17,15 +17,14 @@ Make output somewhere other than in console.
 
 For all of the following, will be assuming that new deemed filing rules apply to everybody, even if they were 62 or older as of 1/1/2016.
 
-Create function to calculate a spousal benefit (assuming the other spouse is already receiving their retirement benefit).
-
 Add functionality to only allow spousal benefit if the other spouse is indeed receiving a retirement benefit.
+    (Or does this actually go in the combined PV calculation? i.e., start spousal benefit on date that other person starts retirement benefit)
 
 Add functionality to calculate total benefit when person has spousal benefit + retirement benefit.
 
 Add functionality to find total NPV (for both people) when user inputs claiming ages for each spouse. (be sure to note that low-PIA spouse's monthly benefit likely changes when high-PIA spouse files)
 
-Add functionality to find best combination of claiing ages (ignoring survivor benefits)
+Add functionality to find best combination of claiming ages (ignoring survivor benefits)
 ---------
 
 Create function to calculate a survivor benefit.

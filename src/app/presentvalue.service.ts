@@ -13,23 +13,21 @@ export class PresentvalueService {
   probabilityAlive: number
   
 
-  calculateRetirementPV(FRA: Date, SSbirthDate: Date, PIA: number, inputBenefitMonth: number, inputBenefitYear: number, gender: string, discountRate: number)
+  calculateSinglePersonPV(FRA: Date, SSbirthDate: Date, PIA: number, inputBenefitMonth: number, inputBenefitYear: number, gender: string, discountRate: number)
   {
     let retirementBenefit = this.benefitService.calculateRetirementBenefit(PIA, FRA, inputBenefitMonth, inputBenefitYear)
     let retirementPV = 0
 
-
     //calculate age when they start benefit
     this.age = ( inputBenefitMonth - SSbirthDate.getMonth() - 1 + 12 * (inputBenefitYear - SSbirthDate.getFullYear()) )/12
     
-
     //Calculate PV via loop until they hit end of probabillity array
       while (this.age < 118) {
         //When calculating probability alive, we have to round age to get a whole number to use for lookup in array.
         //Normally we round age down and use that number for the whole year. But sometimes, for example, real age will be 66 but javascript sees it as 65.99999, so we have to round that up.
         if (this.age%1 > 0.999) {this.roundedAge = Math.round(this.age)}
           else { this.roundedAge = Math.floor(this.age)}
-        //If they're already over 62 when filling out form, denominator should be lives remaining at their current age when filling it out.
+        //TODO: If they're already over 62 when filling out form, denominator should be lives remaining at their current age when filling it out.
         if (gender == "male") {this.probabilityAlive = this.maleLivesRemaining[this.roundedAge + 1] / this.maleLivesRemaining[62]}
         if (gender == "female") {this.probabilityAlive = this.femaleLivesRemaining[this.roundedAge + 1] / this.femaleLivesRemaining[62]}
         
@@ -42,7 +40,12 @@ export class PresentvalueService {
         return retirementPV
   }
 
-  maximizeRetirementPV(PIA: number, SSbirthDate: Date, FRA: Date, gender: string, discountRate: number){
+  calculateCouplePV(spouseAgender: string, spouseBgender:string, spouseAFRA: Date, spouseBFRA: Date, spouseAPIA: number, spouseBPIA: number, spouseAinputBenefitMonth: number, spouseBinputBenefitMonth: number, spouseAinputBenefitYear:number, spouseBinputBenefitYear: number, discountRate:number){
+    let spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAinputBenefitMonth, spouseAinputBenefitYear)
+    let spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBinputBenefitMonth, spouseBinputBenefitYear)
+  }
+
+  maximizeSinglePersonPV(PIA: number, SSbirthDate: Date, FRA: Date, gender: string, discountRate: number){
     //find initial benefitMonth and benefitYear for age 62 (have to add 1 to month, because getMonth returns 0-11)
     let benefitMonth = SSbirthDate.getMonth() + 1
     let benefitYear = SSbirthDate.getFullYear() + 62
@@ -56,7 +59,7 @@ export class PresentvalueService {
     }
 
     //Run calculateRetirementPV for their age 62 benefit, save the PV and the age.
-    let savedPV = this.calculateRetirementPV(FRA, SSbirthDate, PIA, benefitMonth, benefitYear, gender, discountRate)
+    let savedPV = this.calculateSinglePersonPV(FRA, SSbirthDate, PIA, benefitMonth, benefitYear, gender, discountRate)
     let savedClaimingDate = new Date(benefitMonth + "-01-" + benefitYear)
     let currentTestDate = new Date(savedClaimingDate)
 
@@ -69,7 +72,7 @@ export class PresentvalueService {
       currentTestDate.setMonth(currentTestDate.getMonth() + 1)
       benefitMonth = currentTestDate.getMonth() + 1
       benefitYear = currentTestDate.getFullYear()
-      let currentTestPV = this.calculateRetirementPV(FRA, SSbirthDate, PIA, benefitMonth, benefitYear, gender, discountRate)
+      let currentTestPV = this.calculateSinglePersonPV(FRA, SSbirthDate, PIA, benefitMonth, benefitYear, gender, discountRate)
       if (currentTestPV > savedPV)
         {savedClaimingDate.setMonth(currentTestDate.getMonth())
           savedClaimingDate.setFullYear(currentTestDate.getFullYear())

@@ -26,15 +26,30 @@ export class BenefitService {
 
   calculateSpousalBenefit(PIA: number, otherSpousePIA: number, FRA: Date, inputBenefitMonth: number, inputBenefitYear: number )
   {
+    //no need to check for filing prior to 62, because we're already checking for that in the input form component.
+
+    //Initial calculation
     let spousalBenefit = otherSpousePIA / 2
-    //adjust if claimed prior to FRA
+
+    //subtract greater of PIA or retirement benefit, but no more than spousal benefit
+      //This currently assumes new deemed filing rules for everybody. Eventually, will have to do this subtraction only if they are already receiving retirement benefit.
+      //Also, "inputbenefitmonth" and "inputbenefityear" could be different for retirement benefit and spousal benefit
+      let retirementBenefit = this.calculateRetirementBenefit(Number(PIA), FRA, inputBenefitMonth, inputBenefitYear)
+      if (retirementBenefit > PIA) {
+        spousalBenefit = spousalBenefit - retirementBenefit
+      }
+      else {spousalBenefit = spousalBenefit - PIA}
+      if (spousalBenefit < 0) {
+        spousalBenefit = 0
+      }
+
+    //Multiply by a reduction factor if spousal benefit claimed prior to FRA
     let monthsWaited = inputBenefitMonth - FRA.getMonth() - 1 + 12 * (inputBenefitYear - FRA.getFullYear())
-    if (monthsWaited > -36 && monthsWaited < 0)
+    if (monthsWaited >= -36 && monthsWaited < 0)
     {spousalBenefit = spousalBenefit + (spousalBenefit * 25/36/100 * monthsWaited)}
     if (monthsWaited < -36)
     {spousalBenefit = spousalBenefit - (spousalBenefit * 25/36/100 * 36) + (spousalBenefit * 5/12/100 * (monthsWaited+36))}
-    //no need to check for filing prior to 62, because we're already checking for that in the input form component.
-    //subtract greater of PIA or retirement benefit (but no more than spousal benefit), if they have already claimed such (or, since we're applying new deemed filing rules to everybody, are we assuming that they've automatically already filed?)
+
     return spousalBenefit
   }
 
