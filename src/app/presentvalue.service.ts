@@ -7,43 +7,174 @@ import { CurrencyPipe } from '@angular/common';
 export class PresentvalueService {
 
   constructor(private benefitService: BenefitService, private birthdayService: BirthdayService) { }
-
-  age: number
-  roundedAge: number
-  probabilityAlive: number
   
-
   calculateSinglePersonPV(FRA: Date, SSbirthDate: Date, PIA: number, inputBenefitMonth: number, inputBenefitYear: number, gender: string, discountRate: number)
   {
-    let retirementBenefit = this.benefitService.calculateRetirementBenefit(PIA, FRA, inputBenefitMonth, inputBenefitYear)
-    let retirementPV = 0
+    let retirementBenefit: number = this.benefitService.calculateRetirementBenefit(PIA, FRA, inputBenefitMonth, inputBenefitYear)
+    let retirementPV: number = 0
+    let roundedAge: number = 0
+    let probabilityAlive: number = 0
 
     //calculate age when they start benefit
-    this.age = ( inputBenefitMonth - SSbirthDate.getMonth() - 1 + 12 * (inputBenefitYear - SSbirthDate.getFullYear()) )/12
+    let age: number = ( inputBenefitMonth - (SSbirthDate.getMonth() + 1) + 12 * (inputBenefitYear - SSbirthDate.getFullYear()) )/12
+
+    //calculate age when filling out form
+    let today: Date = new Date()
+    let initialAge: number = today.getFullYear() - SSbirthDate.getFullYear() + (today.getMonth() - SSbirthDate.getMonth())/12
+    let initialAgeRounded: number = Math.round(initialAge)
+    let discountTargetAge: number
     
-    //Calculate PV via loop until they hit end of probabillity array
-      while (this.age < 118) {
+    //Calculate PV via loop until they hit age 118 (by which point probability of being alive is basically zero)
+      while (age < 118) {
         //When calculating probability alive, we have to round age to get a whole number to use for lookup in array.
         //Normally we round age down and use that number for the whole year. But sometimes, for example, real age will be 66 but javascript sees it as 65.99999, so we have to round that up.
-        if (this.age%1 > 0.999) {this.roundedAge = Math.round(this.age)}
-          else { this.roundedAge = Math.floor(this.age)}
-        //TODO: If they're already over 62 when filling out form, denominator should be lives remaining at their current age when filling it out.
-        if (gender == "male") {this.probabilityAlive = this.maleLivesRemaining[this.roundedAge + 1] / this.maleLivesRemaining[62]}
-        if (gender == "female") {this.probabilityAlive = this.femaleLivesRemaining[this.roundedAge + 1] / this.femaleLivesRemaining[62]}
+        if (age%1 > 0.999) {
+          roundedAge = Math.round(age)
+          }
+          else {roundedAge = Math.floor(age)}
+        //Calculate probability of being alive at age in question.
+        if (initialAgeRounded <= 62) {
+            if (gender == "male") {probabilityAlive = this.maleLivesRemaining[roundedAge + 1] / this.maleLivesRemaining[62]}
+            if (gender == "female") {probabilityAlive = this.femaleLivesRemaining[roundedAge + 1] / this.femaleLivesRemaining[62]}
+        }
+          //If they're older than 62 when filling out form, denominator is lives remaining at age when filling out the form.
+          else { 
+            if (gender == "male") {probabilityAlive = this.maleLivesRemaining[roundedAge + 1] / this.maleLivesRemaining[initialAgeRounded]}
+            if (gender == "female") {probabilityAlive = this.femaleLivesRemaining[roundedAge + 1] / this.femaleLivesRemaining[initialAgeRounded]}
+          }
         
-        let monthlyPV = retirementBenefit * this.probabilityAlive
-        monthlyPV = monthlyPV / (1 + discountRate/2) 
-        monthlyPV = monthlyPV / Math.pow((1 + discountRate),(this.roundedAge - 62))
+        //Calculate probability-weighted benefit
+        let monthlyPV = retirementBenefit * probabilityAlive
+        //Discount that benefit to age 62
+        monthlyPV = monthlyPV / (1 + discountRate/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
+        monthlyPV = monthlyPV / Math.pow((1 + discountRate),(roundedAge - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
+        //Add discounted benefit to ongoing count of retirementPV, add 1 month to age, and start loop over
         retirementPV = retirementPV + monthlyPV
-        this.age = this.age + 1/12
+        age = age + 1/12
       }
         return retirementPV
   }
 
-  calculateCouplePV(spouseAgender: string, spouseBgender:string, spouseAFRA: Date, spouseBFRA: Date, spouseAPIA: number, spouseBPIA: number, spouseAinputBenefitMonth: number, spouseBinputBenefitMonth: number, spouseAinputBenefitYear:number, spouseBinputBenefitYear: number, discountRate:number){
-    let spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAinputBenefitMonth, spouseAinputBenefitYear)
-    let spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBinputBenefitMonth, spouseBinputBenefitYear)
+  calculateCouplePV(spouseAFRA: Date, spouseBFRA: Date, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAPIA: number, spouseBPIA: number, spouseAinputBenefitMonth: number, spouseBinputBenefitMonth: number, spouseAinputBenefitYear:number, spouseBinputBenefitYear: number, spouseAgender: string, spouseBgender:string, discountRate:number){
+    let spouseAretirementBenefit: number = 0
+    let spouseBretirementBenefit: number = 0
+    let spouseAspousalBenefit: number
+    let spouseBspousalBenefit: number
+    let spouseAage: number
+    let spouseAroundedAge: number
+    let spouseAprobabilityAlive: number
+    let spouseBage: number
+    let spouseBroundedAge: number
+    let spouseBprobabilityAlive: number
+    let couplePV = 0
+    let firstStartDate: Date
+    let secondStartDate: Date
+    let spouseAinputBenefitDate: Date = new Date(spouseAinputBenefitYear, spouseAinputBenefitMonth - 1, 1)
+    let spouseBinputBenefitDate: Date = new Date(spouseBinputBenefitYear, spouseBinputBenefitMonth - 1, 1)
+
+    //If spouse A's input benefit date earlier, set firstStartDate and secondStartDate accordingly.
+    if (spouseAinputBenefitDate < spouseBinputBenefitDate)
+      {
+      firstStartDate = spouseAinputBenefitDate
+      secondStartDate = spouseBinputBenefitDate
+      }
+    else {//This is fine as a simple "else" statement. If the two input benefit dates are equal, doing it as of either date is fine.
+    firstStartDate = spouseBinputBenefitDate
+    secondStartDate = spouseAinputBenefitDate
+      }
+    
+    //Find age of each spouse as of firstStartDate
+    spouseAage = ( firstStartDate.getMonth() - spouseASSbirthDate.getMonth() + 12 * (firstStartDate.getFullYear() - spouseASSbirthDate.getFullYear()) )/12
+    spouseBage = ( firstStartDate.getMonth() - spouseBSSbirthDate.getMonth() + 12 * (firstStartDate.getFullYear() - spouseBSSbirthDate.getFullYear()) )/12
+
+    //calculate ageswhen filling out form
+    let today: Date = new Date()
+    let spouseAinitialAgeRounded = Math.round(today.getFullYear() - spouseASSbirthDate.getFullYear() + (today.getMonth() - spouseASSbirthDate.getMonth())/12)
+    let spouseBinitialAgeRounded = Math.round(today.getFullYear() - spouseBSSbirthDate.getFullYear() + (today.getMonth() - spouseBSSbirthDate.getMonth())/12)
+
+
+
+    //Calculate PV via loop until both spouses are at least age 118 (by which point probability of being alive is basically zero)
+    let currentTestDate: Date = new Date(firstStartDate)
+    while (spouseAage < 118 || spouseBage < 118){
+      //Both spouses must have filed before there can be spousal benefits. If both have reached start date, both spousal benefits are calculated as of secondStartDate
+      if (currentTestDate < secondStartDate){
+        spouseAspousalBenefit = 0
+        spouseBspousalBenefit = 0
+        }
+        else {
+        spouseAspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAinputBenefitMonth, spouseAinputBenefitYear, secondStartDate.getMonth()+1, secondStartDate.getFullYear())
+        spouseBspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBinputBenefitMonth, spouseBinputBenefitYear, secondStartDate.getMonth()+1, secondStartDate.getFullYear())
+        }
+
+      //Retirement benefit A is zero if currentTestDate is prior to inputBenefitDateA. Otherwise retirement benefit A is calculated as of inputBenefitDateA
+      if (currentTestDate < spouseAinputBenefitDate) {
+        spouseAretirementBenefit = 0
+        }
+        else {spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAinputBenefitMonth, spouseAinputBenefitYear)
+        }
+      //Retirement benefit B is zero if currentTestDate is prior to inputBenefitDateB. Otherwise retirement benefit B is calculated as of inputBenefitDateB
+      if (currentTestDate < spouseBinputBenefitDate) {
+        spouseBretirementBenefit = 0
+        }
+        else {spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBinputBenefitMonth, spouseBinputBenefitYear)
+        }
+
+      //Calculate probability of spouseA being alive at given age
+        //When calculating probability alive, we have to round age to get a whole number to use for lookup in array.
+        //Normally we round age down and use that number for the whole year. But sometimes, for example, real age will be 66 but javascript sees it as 65.99999, so we have to round that up.
+          if (spouseAage%1 > 0.999) {
+          spouseAroundedAge = Math.round(spouseAage)
+          }
+          else {spouseAroundedAge = Math.floor(spouseAage)}
+          //Calculate probability of being alive at age in question.
+          if (spouseAinitialAgeRounded <= 62) {
+            if (spouseAgender == "male") {spouseAprobabilityAlive = this.maleLivesRemaining[spouseAroundedAge + 1] / this.maleLivesRemaining[62]}
+            if (spouseAgender == "female") {spouseAprobabilityAlive = this.femaleLivesRemaining[spouseAroundedAge + 1] / this.femaleLivesRemaining[62]}
+          }
+          //If spouseA is older than 62 when filling out form, denominator is lives remaining at age when filling out the form.
+          else { 
+            if (spouseAgender == "male") {spouseAprobabilityAlive = this.maleLivesRemaining[spouseAroundedAge + 1] / this.maleLivesRemaining[spouseAinitialAgeRounded]}
+            if (spouseAgender == "female") {spouseAprobabilityAlive = this.femaleLivesRemaining[spouseAroundedAge + 1] / this.femaleLivesRemaining[spouseAinitialAgeRounded]}
+          }
+      //Do same math to calculate probability of spouseB being alive at given age
+          //calculate rounded age
+          if (spouseBage%1 > 0.999) {
+          spouseBroundedAge = Math.round(spouseBage)
+          }
+          else {spouseBroundedAge = Math.floor(spouseBage)}
+          //use rounded age and lives remaiing array to calculate probability
+          if (spouseBinitialAgeRounded <= 62) {
+            if (spouseBgender == "male") {spouseBprobabilityAlive = this.maleLivesRemaining[spouseBroundedAge + 1] / this.maleLivesRemaining[62]}
+            if (spouseBgender == "female") {spouseBprobabilityAlive = this.femaleLivesRemaining[spouseBroundedAge + 1] / this.femaleLivesRemaining[62]}
+          }
+          //If spouseA is older than 62 when filling out form, denominator is lives remaining at age when filling out the form.
+          else { 
+            if (spouseBgender == "male") {spouseBprobabilityAlive = this.maleLivesRemaining[spouseBroundedAge + 1] / this.maleLivesRemaining[spouseBinitialAgeRounded]}
+            if (spouseBgender == "female") {spouseBprobabilityAlive = this.femaleLivesRemaining[spouseBroundedAge + 1] / this.femaleLivesRemaining[spouseBinitialAgeRounded]}
+          }
+      //Find probability-weighted benefit
+        let monthlyPV = (spouseAretirementBenefit + spouseAspousalBenefit) * spouseAprobabilityAlive + (spouseBretirementBenefit + spouseBspousalBenefit) * spouseBprobabilityAlive
+
+      //Discount that benefit
+            //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
+            let olderRoundedAge: number
+            if (spouseAage > spouseBage) {
+              olderRoundedAge = spouseAroundedAge
+            } else {olderRoundedAge = spouseBroundedAge}
+            //Here is where actual discounting happens.
+            monthlyPV = monthlyPV / (1 + discountRate/2) 
+            monthlyPV = monthlyPV / Math.pow((1 + discountRate),(olderRoundedAge - 62))
+      //Add discounted benefit to ongoing count of retirementPV, add 1 month to each age, add 1 month to currentTestDate, and start loop over
+        couplePV = couplePV + monthlyPV
+        spouseAage = spouseAage + 1/12
+        spouseBage = spouseBage + 1/12
+        currentTestDate.setMonth(currentTestDate.getMonth()+1)
+    }
+
+    return couplePV
   }
+
 
   maximizeSinglePersonPV(PIA: number, SSbirthDate: Date, FRA: Date, gender: string, discountRate: number){
     //find initial benefitMonth and benefitYear for age 62 (have to add 1 to month, because getMonth returns 0-11)
@@ -58,10 +189,10 @@ export class PresentvalueService {
       benefitYear = today.getFullYear()
     }
 
-    //Run calculateRetirementPV for their age 62 benefit, save the PV and the age.
-    let savedPV = this.calculateSinglePersonPV(FRA, SSbirthDate, PIA, benefitMonth, benefitYear, gender, discountRate)
-    let savedClaimingDate = new Date(benefitMonth + "-01-" + benefitYear)
-    let currentTestDate = new Date(savedClaimingDate)
+    //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
+    let savedPV: number = this.calculateSinglePersonPV(FRA, SSbirthDate, PIA, benefitMonth, benefitYear, gender, discountRate)
+    let currentTestDate = new Date(benefitYear, benefitMonth, 1)
+    let savedClaimingDate = new Date(currentTestDate)
 
     //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
     let endingTestDate = new Date(SSbirthDate)
@@ -82,6 +213,72 @@ export class PresentvalueService {
     console.log("saved PV: " + savedPV)
     console.log("savedClaimingDate: " + savedClaimingDate)
   }
+
+  maximizeCouplePV(spouseAPIA: number, spouseBPIA: number, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAFRA: Date, spouseBFRA: Date, spouseAgender: string, spouseBgender:string, discountRate: number){
+    //find spouseAbenefitMonth and spouseAbenefitYear for when spouseA is 62 (have to add 1 to month, because getMonth returns 0-11)
+    let spouseAbenefitMonth: number = spouseASSbirthDate.getMonth()+1
+    let spouseAbenefitYear: number = spouseASSbirthDate.getFullYear()+62
+    //If spouseA is currently over age 62 when filling out form, adjust their initial benefitMonth and benefitYear to today's month/year instead of their age 62 month/year.
+    let today = new Date()
+    let spouseAageToday: number = today.getFullYear() - spouseASSbirthDate.getFullYear() + (today.getMonth() - spouseASSbirthDate.getMonth()) /12
+    if (spouseAageToday > 62){
+      spouseAbenefitMonth = today.getMonth()+1
+      spouseAbenefitYear = today.getFullYear()
+    }
+    //Do all of the same, but for spouseB.
+    let spouseBbenefitMonth: number = spouseBSSbirthDate.getMonth()+1
+    let spouseBbenefitYear: number = spouseBSSbirthDate.getFullYear()+62
+    let spouseBageToday: number = today.getFullYear() - spouseBSSbirthDate.getFullYear() + (today.getMonth() - spouseBSSbirthDate.getMonth()) /12
+    if (spouseBageToday > 62){
+      spouseBbenefitMonth = today.getMonth()+1
+      spouseBbenefitYear = today.getFullYear()
+    }
+    //Initialize savedPV as zero. Set spouseATestDate and spouseBTestDate. Set spouseAsavedDate and spouseBsavedDate equal to their current testDates.
+      let savedPV: number = 0
+      let spouseAtestDate = new Date(spouseAbenefitYear, spouseAbenefitMonth-1, 1)
+      let spouseBtestDate = new Date(spouseBbenefitYear, spouseBbenefitMonth-1, 1)
+      let spouseAsavedDate = new Date(spouseAtestDate)
+      let spouseBsavedDate = new Date(spouseBtestDate)
+
+    //Set endingTestDate for each spouse equal to the month they turn 70
+    let spouseAendTestDate = new Date(spouseASSbirthDate.getFullYear()+70, spouseASSbirthDate.getMonth(), 1)
+    let spouseBendTestDate = new Date(spouseBSSbirthDate.getFullYear()+70, spouseBSSbirthDate.getMonth(), 1)
+    while (spouseAtestDate <= spouseAendTestDate) {
+        //Reset spouseBtestDate to earliest possible (i.e., their Age62 month or today's month if they're currently older than 62)
+        if (spouseBageToday > 62){
+          spouseBtestDate.setMonth(today.getMonth())
+          spouseBtestDate.setFullYear(today.getFullYear())
+        } else {
+          spouseBtestDate.setMonth(spouseBSSbirthDate.getMonth())
+          spouseBtestDate.setFullYear(spouseBSSbirthDate.getFullYear()+62)
+        }
+        while (spouseBtestDate <= spouseBendTestDate) {
+          //Calculate PV using current testDates
+            spouseAbenefitMonth = spouseAtestDate.getMonth() + 1
+            spouseAbenefitYear = spouseAtestDate.getFullYear()
+            spouseBbenefitMonth = spouseBtestDate.getMonth() + 1
+            spouseBbenefitYear = spouseBtestDate.getFullYear()
+            let currentTestPV: number = this.calculateCouplePV(spouseAFRA, spouseBFRA, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAPIA), Number(spouseBPIA), spouseAbenefitMonth, spouseBbenefitMonth, spouseAbenefitYear, spouseBbenefitYear, spouseAgender, spouseBgender, Number(discountRate))
+            //If PV is greater than saved PV, save new PV and save new testDates
+            if (currentTestPV > savedPV) {
+              savedPV = currentTestPV
+              spouseAsavedDate.setMonth(spouseAtestDate.getMonth())
+              spouseAsavedDate.setFullYear(spouseAtestDate.getFullYear())
+              spouseBsavedDate.setMonth(spouseBtestDate.getMonth())
+              spouseBsavedDate.setFullYear(spouseBtestDate.getFullYear())
+              }
+          //Add 1 month to spouseBtestDate
+          spouseBtestDate.setMonth(spouseBtestDate.getMonth()+1)
+        }
+        //Add 1 month to spouseAtestDate
+        spouseAtestDate.setMonth(spouseAtestDate.getMonth()+1)
+      }
+    //after loop is finished
+      console.log("saved PV: " + savedPV)
+      console.log("spouseAsavedDate: " + spouseAsavedDate)
+      console.log("spouseBsavedDate: " + spouseBsavedDate)
+  }
+
 
 //Lives remaining out of 100k, from SSA 2014 period life table
 maleLivesRemaining = [
@@ -198,6 +395,137 @@ maleLivesRemaining = [
   3,
   1,
   1,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0,
   0,
   0,
@@ -322,6 +650,201 @@ femaleLivesRemaining = [
   8,
   3,
   1,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0,
   0,
   0,

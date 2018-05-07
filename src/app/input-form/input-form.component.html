@@ -1,5 +1,12 @@
 <form class="form-inline" #inputForm="ngForm" (ngSubmit)="onSubmit()">
-  <h2>Spouse A</h2>
+  <h2>Your Information</h2>
+  <div>
+    <label>Marital Status</label>
+    <select [(ngModel)]="maritalStatus" name="maritalStatus" class="form-control">
+      <option value="married">Married</option>
+      <option value="unmarried">Single</option>
+    </select>
+  </div>
   <div>
    <label>Gender</label>
    <select [(ngModel)]="spouseAgender" name="spouseAgender" class="form-control">
@@ -9,13 +16,13 @@
   </div>
   <div class="form-group">
     <label>Date of Birth month/day/year</label>
-    <select class="form-control" [(ngModel)]="inputMonth" name="inputMonth" required>
+    <select class="form-control" [(ngModel)]="spouseAinputMonth" name="spouseAinputMonth" required>
       <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
     </select>
-    <select class="form-control" [(ngModel)]="inputDay" name="inputDay" required>
+    <select class="form-control" [(ngModel)]="spouseAinputDay" name="spouseAinputDay" required>
         <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
     </select>
-    <select class="form-control" [(ngModel)]="inputYear" name="inputYear" required>
+    <select class="form-control" [(ngModel)]="spouseAinputYear" name="spouseAinputYear" required>
         <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
     </select>
   </div>
@@ -25,16 +32,17 @@
   </div>
   <div class="form-group">
     <label>Month/Year to claim benefits:</label>
-    <select class="form-control" [(ngModel)]="inputBenefitMonth" name="inputBenefitMonth" required>
+    <select class="form-control" [(ngModel)]="spouseAinputBenefitMonth" name="spouseAinputBenefitMonth" required>
       <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
     </select>
-    <select class="form-control" [(ngModel)]="inputBenefitYear" name="inputBenefitYear" required>
+    <select class="form-control" [(ngModel)]="spouseAinputBenefitYear" name="spouseAinputBenefitYear" required>
       <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
     </select>
     <span *ngIf="this.spouseAerror" class="alert alert-danger">{{this.spouseAerror}}</span>
   </div>
 
-  <h2>Spouse B</h2>
+  <span *ngIf="maritalStatus == 'married'">
+  <h2>Your Spouse's Information</h2>
   <div>
    <label>Gender</label>
    <select [(ngModel)]="spouseBgender" name="spouseBgender" class="form-control">
@@ -68,6 +76,7 @@
     </select>
     <span *ngIf="this.spouseBerror" class="alert alert-danger">{{this.spouseBerror}}</span>
   </div>
+</span>
   <hr>
   <div>
     <label>Discount Rate</label>

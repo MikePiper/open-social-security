@@ -12,17 +12,21 @@ findSSbirthdate(inputMonth, inputDay, inputYear) {
 let SSbirthYear: number
 let SSbirthMonth: number
 let SSbirthDate: Date
+  //If born on January 1, birth month is December of prior year.
   if (inputDay == 1 && inputMonth == 1)
     {SSbirthMonth = 12
     SSbirthYear = inputYear - 1}
+  //If born on 1st of a month other than January, birth month is prior month, same year.
   else if (inputDay == 1 && inputMonth > 1)
     {SSbirthMonth = inputMonth - 1
     SSbirthYear = inputYear}
+  //If born on any day other than first of month, birth month is just month of birth.
   else {
     SSbirthMonth = inputMonth
     SSbirthYear = inputYear}
 
-    SSbirthDate = new Date(SSbirthMonth + "-01-" + SSbirthYear);
+  //Have to subtract 1 from month here, because javascript Date wants 0-11 as month options, whereas what we got from user is in 1-12 format.
+  SSbirthDate = new Date(SSbirthYear, SSbirthMonth - 1, 1);
 
     return SSbirthDate
   }
