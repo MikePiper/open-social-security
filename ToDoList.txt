@@ -20,19 +20,17 @@ Current list of simplifications:
 
 Remaining To-Do:
 
-Refactor so that "benefitMonth" and "benefitYear" are not their own variables that constantly have to be set? Just use dates for everything??
-
-Add functionality to find best combination of claiming ages (ignoring survivor benefits)
-
 Create function to calculate a survivor benefit.
 
-Incorporate survivor benefit into total NPV function.
+Incorporate survivor benefit into calculate couple NPV function.
 
-Create function that runs prior function (NPV calculation) for every possible combination of claiming ages
+Incorporate survivor benefit into maximize couple NPV function.
 
 Allow for restricted applications for people age 62 or over as of 1/1/2016
 
 Make output somewhere other than in console.
+
+For performance's sake, could refactor so everything is calculated on annual basis? Not sure how that would look.
 
 
 Error case:

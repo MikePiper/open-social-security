@@ -6,10 +6,10 @@ export class BenefitService {
 
   constructor(private birthdayService: BirthdayService) { }
 
-  calculateRetirementBenefit(PIA: number, FRA: Date, inputBenefitMonth: number, inputBenefitYear: number)
+  calculateRetirementBenefit(PIA: number, FRA: Date, benefitDate: Date)
   {
     let retirementBenefit: number = 0
-    let monthsWaited = inputBenefitMonth - FRA.getMonth() - 1 + 12 * (inputBenefitYear - FRA.getFullYear())
+    let monthsWaited = benefitDate.getMonth() - FRA.getMonth() + 12 * (benefitDate.getFullYear() - FRA.getFullYear())
 
       if (monthsWaited < -36)
       {retirementBenefit = PIA - (PIA / 100 * 5 / 9 * 36) + (PIA / 100 * 5 / 12 * (monthsWaited+36))}
@@ -24,7 +24,7 @@ export class BenefitService {
   
   }
 
-  calculateSpousalBenefit(PIA: number, otherSpousePIA: number, FRA: Date, retirementStartMonth: number, retirementStartYear: number, spousalStartMonth: number, spousalStartYear: number)
+  calculateSpousalBenefit(PIA: number, otherSpousePIA: number, FRA: Date, retirementStartDate: Date, spousalStartDate: Date)
   {
     //no need to check for filing prior to 62, because we're already checking for that in the input form component.
 
@@ -33,8 +33,8 @@ export class BenefitService {
 
     //subtract greater of PIA or retirement benefit, but no more than spousal benefit
       //This currently assumes new deemed filing rules for everybody. Eventually, will have to do this subtraction only if they are already receiving retirement benefit.
-          //Also, "inputbenefitmonth" and "inputbenefityear" could be different for retirement benefit and spousal benefit, with old deemed filing rules.
-      let retirementBenefit = this.calculateRetirementBenefit(Number(PIA), FRA, retirementStartMonth, retirementStartYear)
+          //Also, inputStartDate could be different for retirement benefit and spousal benefit, with old deemed filing rules.
+      let retirementBenefit = this.calculateRetirementBenefit(Number(PIA), FRA, retirementStartDate)
       if (retirementBenefit > PIA) {
         spousalBenefit = spousalBenefit - retirementBenefit
       }
@@ -44,7 +44,7 @@ export class BenefitService {
       }
 
     //Multiply by a reduction factor if spousal benefit claimed prior to FRA
-    let monthsWaited = spousalStartMonth - FRA.getMonth() - 1 + 12 * (spousalStartYear - FRA.getFullYear())
+    let monthsWaited = spousalStartDate.getMonth() - FRA.getMonth() + 12 * (spousalStartDate.getFullYear() - FRA.getFullYear())
     if (monthsWaited >= -36 && monthsWaited < 0)
     {spousalBenefit = spousalBenefit + (spousalBenefit * 25/36/100 * monthsWaited)}
     if (monthsWaited < -36)
