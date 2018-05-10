@@ -24,8 +24,8 @@ export class PresentvalueService {
     let initialAgeRounded: number = Math.round(initialAge)
     let discountTargetAge: number
     
-    //Calculate PV via loop until they hit age 118 (by which point probability of being alive is basically zero)
-      while (age < 118) {
+    //Calculate PV via loop until they hit age 118 (by which point "remaining lives" is zero)
+      while (age < 115) {
         //When calculating probability alive, we have to round age to get a whole number to use for lookup in array.
         //Normally we round age down and use that number for the whole year. But sometimes, for example, real age will be 66 but javascript sees it as 65.99999, so we have to round that up.
         if (age%1 > 0.999) {
@@ -85,16 +85,16 @@ export class PresentvalueService {
     spouseAage = ( firstStartDate.getMonth() - spouseASSbirthDate.getMonth() + 12 * (firstStartDate.getFullYear() - spouseASSbirthDate.getFullYear()) )/12
     spouseBage = ( firstStartDate.getMonth() - spouseBSSbirthDate.getMonth() + 12 * (firstStartDate.getFullYear() - spouseBSSbirthDate.getFullYear()) )/12
 
-    //calculate ages when filling out form
+    //calculate ages when filling out form TODO: This doesn't have to happen here. It could happen in onSubmit so that it only happens once rather than 96*96 times.
     let today: Date = new Date()
     let spouseAinitialAgeRounded = Math.round(today.getFullYear() - spouseASSbirthDate.getFullYear() + (today.getMonth() - spouseASSbirthDate.getMonth())/12)
     let spouseBinitialAgeRounded = Math.round(today.getFullYear() - spouseBSSbirthDate.getFullYear() + (today.getMonth() - spouseBSSbirthDate.getMonth())/12)
 
 
 
-    //Calculate PV via loop until both spouses are at least age 118 (by which point probability of being alive is basically zero)
+    //Calculate PV via loop until both spouses are at least age 115 (by which point "remaining lives" alive is zero)
     let currentTestDate: Date = new Date(firstStartDate)
-    while (spouseAage < 118 || spouseBage < 118){
+    while (spouseAage < 115 || spouseBage < 115){
       //Both spouses must have filed before there can be spousal benefits. If both have reached start date, both spousal benefits are calculated as of secondStartDate
       if (currentTestDate < secondStartDate){
         spouseAspousalBenefit = 0

@@ -9,25 +9,12 @@ export class BirthdayService {
 
 
 findSSbirthdate(inputMonth, inputDay, inputYear) {
-let SSbirthYear: number
-let SSbirthMonth: number
-let SSbirthDate: Date
-  //If born on January 1, birth month is December of prior year.
-  if (inputDay == 1 && inputMonth == 1)
-    {SSbirthMonth = 12
-    SSbirthYear = inputYear - 1}
-  //If born on 1st of a month other than January, birth month is prior month, same year.
-  else if (inputDay == 1 && inputMonth > 1)
-    {SSbirthMonth = inputMonth - 1
-    SSbirthYear = inputYear}
-  //If born on any day other than first of month, birth month is just month of birth.
-  else {
-    SSbirthMonth = inputMonth
-    SSbirthYear = inputYear}
-
-  //Have to subtract 1 from month here, because javascript Date wants 0-11 as month options, whereas what we got from user is in 1-12 format.
-  SSbirthDate = new Date(SSbirthYear, SSbirthMonth - 1, 1);
-
+let SSbirthDate: Date = new Date(inputYear, inputMonth-1, 1)
+  //If born on 1st of a month, birth month is prior month.
+  if (inputDay == 1)
+    {
+    SSbirthDate.setMonth(SSbirthDate.getMonth()-1)
+    }
     return SSbirthDate
   }
 
@@ -64,5 +51,12 @@ findFRA(SSbirthDate:Date){
       {FRAdate.setMonth(FRAdate.getMonth() + 67*12)}
 
   return FRAdate
+   }
+
+   findSurvivorFRA (SSbirthDate:Date){
+    let madeUpDate: Date = new Date(SSbirthDate.getFullYear()-2, SSbirthDate.getMonth(), 1)
+    let survivorFRA: Date = new Date(this.findFRA(madeUpDate))
+    survivorFRA.setFullYear(survivorFRA.getFullYear()+2)
+    return survivorFRA
    }
 }

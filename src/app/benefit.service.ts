@@ -53,38 +53,62 @@ export class BenefitService {
     return Number(spousalBenefit)
   }
 
-  calculateSurvivorBenefit(survivorRetirementBenefit: number, survivorFRA: Date, survivorBenefitDate: Date, deceasedFRA: Date, dateOfDeath: Date,  deceasedPIA: number, deceasedClaimingDate: Date)
+  calculateSurvivorBenefit(survivorSSbirthDate: Date, survivorSurvivorFRA: Date, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: Date, deceasedFRA: Date, dateOfDeath: Date,  deceasedPIA: number, deceasedClaimingDate: Date)
   {
-    //calculate a benefit...
-    //need deceased spouse's PIA
-    //need date deceased spouse had filed (or if they hadn't filed)
-    //need date of deceased's death
-    //need survivor's FRA and when they are filing for survivor benefit
-    let survivorBenefit = 0
-    // if deceased spouse had not filed
+    let deceasedRetirementBenefit: number
+    let survivorBenefit
+
+    //find percentage of the way survivor is from 60 to FRA
+    let monthsFrom60toFRA: number = (survivorSurvivorFRA.getFullYear() - (survivorSSbirthDate.getFullYear()+60))*12 + (survivorSurvivorFRA.getMonth() - survivorSSbirthDate.getMonth())
+    let monthsElapsed: number = (survivorSurvivorBenefitDate.getFullYear() - (survivorSSbirthDate.getFullYear()+60))*12 + (survivorSurvivorBenefitDate.getMonth() - survivorSSbirthDate.getMonth())
+    let percentageWaited: number = monthsElapsed / monthsFrom60toFRA
+
+    //If deceased had filed, survivorBenefit = deceased spouse's retirement benefit, but no less than 82.5% of deceased's PIA
+    if (deceasedClaimingDate <= dateOfDeath) {
+      deceasedRetirementBenefit = this.calculateRetirementBenefit(deceasedPIA, deceasedFRA, deceasedClaimingDate)
+      survivorBenefit = deceasedRetirementBenefit
+      if (survivorBenefit < 0.825 * deceasedPIA) {
+        survivorBenefit = 0.825 * deceasedPIA
+       }
+      }
+    else { //i.e., if deceased sposue had NOT filed as of date of death...
         //if deceased spouse was younger than FRA, survivor benefit = deceasedPIA
-          if (dateOfDeath < deceasedFRA){
-            survivorBenefit = deceasedPIA
-          }
+        if (dateOfDeath < deceasedFRA){
+          survivorBenefit = deceasedPIA
+        }
         //if deceased spouse was older than FRA, survivorBenefit = deceased's retirement benefit on date of death
         else {
-         // survivorBenefit = this.calculateRetirementBenefit(....)
+        survivorBenefit = this.calculateRetirementBenefit(deceasedPIA, deceasedFRA, dateOfDeath)
         }
-    //if deceased spouse had filed survivorBenefit = deceased spouse's retirement benefit, but no less than 82.5% of deceased's PIA
-        //survivorBenefit = this.calculateRetirementBenefit(...)
-        if (survivorBenefit < 0.825 * deceasedPIA) {
-          survivorBenefit = 0.825 * deceasedPIA
-        }
+    }
 
-    //Adjust survivor benefit downward if survivor claims it prior to FRA (remember here to find their *survivor* FRA)
-        //if deceased did not file before FRA
-          //find percentage of the way they are from 60 to FRA
-          //survivorBenefit = survivorBenefit - (survivorBenefit * 0.285 * (1 - that percentage))
-        //if deceased had filed before FRA, do completely new calculation
-            //survivorBenefit = deceased's PIA
-            //find percentage of the way that survivor is from 60 to FRA
-            //survivorBenefit = survivorBenefit - (survivorBenefit * 0.285 * (1 - that percentage))
-            //survivorBenefit then limited to greater of 82.5% of deceased's PIA or amount deceased was receiving on date of death
-    //subtract own retirement benefit, but do not subtract more than survivor benefit
+    //if deceased did not file before FRA, but survivor does file for survivor benefit before FRA, adjust survivor benefit downward. (Remember to use survivor's FRA as survivor.)
+    if (deceasedClaimingDate >= deceasedFRA && survivorSurvivorBenefitDate < survivorSurvivorFRA) {
+          survivorBenefit = survivorBenefit - (survivorBenefit * 0.285 * (1 - percentageWaited))
+    }
+
+    //If deceased had filed before FRA, and survivor files for survivor benefit before FRA, do completely new calculation, with survivor benefit based on deceasedPIA rather than deceased retirement benefit.
+    if (deceasedClaimingDate < deceasedFRA && survivorSurvivorBenefitDate < survivorSurvivorFRA) {
+        survivorBenefit = deceasedPIA - (deceasedPIA * 0.285 * (1 - percentageWaited))
+        console.log("survivorFRA: " + survivorSurvivorFRA)
+        console.log("percentageWaited: " + percentageWaited)
+        console.log("survivor benefit before limitation: " + survivorBenefit)
+        //survivorBenefit then limited to greater of 82.5% of deceased's PIA or amount deceased was receiving on date of death
+        if (0.825 * deceasedPIA < deceasedRetirementBenefit) {
+          if (survivorBenefit > deceasedRetirementBenefit) {
+            survivorBenefit = deceasedRetirementBenefit
+          }
+        } else{
+          if (survivorBenefit > 0.825 * deceasedPIA) {
+            survivorBenefit = 0.825 * deceasedPIA
+          }
+        }
+      }
+      //subtract own retirement benefit, but do not subtract more than survivor benefit
+      survivorBenefit = survivorBenefit - survivorRetirementBenefit
+      if (survivorBenefit < 0) {
+        survivorBenefit = 0
+      }
+    console.log("survivorBenefit: " + survivorBenefit)
   }
 }

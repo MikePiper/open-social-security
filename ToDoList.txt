@@ -4,6 +4,8 @@ To Do List
 Also can calculate PV for claiming at an age of user's choice.
 5/5/18: Appears to properly calculate PV for a couple (including retirement and spousal benefits) given a pair of claiming dates. Have run assortment of tests (using age 62, FRA, or 70), and all give same PV as excel.
 5/7/18: Couple PV maximizer shows values that are plausible -- seem to respond appropriately to changes in discount rate. Should test further though.
+5/9/18: Survivor benefit calculation appears to be working properly in all cases.
+
 
 
 Current list of simplifications:
@@ -20,9 +22,24 @@ Current list of simplifications:
 
 Remaining To-Do:
 
-Create function to calculate a survivor benefit.
+Create function to calculate a survivor benefit. 
 
 Incorporate survivor benefit into calculate couple NPV function.
+
+    Scenario where only A is alive: 
+    ProbabilityAalive * (1 - probabilityBalive) * (retirementA + survivorA)
+
+
+    Scenario where only B is alive:
+    ProbabilityBalive * (1-probabilityAalive) * (retirementB + survivorB)
+
+
+    Scenario where both are alive:
+    (ProbabilityAalive * probabilityBalive) * (RetirementA + spousalA + retirementB + spousalB)
+
+    If neither: 0
+
+
 
 Incorporate survivor benefit into maximize couple NPV function.
 

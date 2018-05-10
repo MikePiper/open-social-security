@@ -56,10 +56,16 @@ export class InputFormComponent implements OnInit {
   spouseBinputBenefitDate: Date
   spouseBgender: string = "female"
   discountRate: number = 0.007
+
+  //Calculated dates
   spouseAbirthDate: Date
   spouseAFRA: Date
+  spouseAsurvivorFRA: Date
   spouseBbirthDate: Date
   spouseBFRA: Date
+  spouseBsurvivorFRA: Date
+
+  //Error variables
   spouseAerror:string
   spouseBerror:string
 
@@ -67,8 +73,10 @@ export class InputFormComponent implements OnInit {
   console.log("-------------")
   this.spouseAbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseAinputMonth, this.spouseAinputDay, this.spouseAinputYear))
   this.spouseAFRA = new Date(this.birthdayService.findFRA(this.spouseAbirthDate))
+  this.spouseAsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseAbirthDate))
   this.spouseBbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseBinputMonth, this.spouseBinputDay, this.spouseBinputYear))
   this.spouseBFRA = new Date(this.birthdayService.findFRA(this.spouseBbirthDate))
+  this.spouseBsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseBbirthDate))
   this.spouseAinputBenefitDate = new Date(this.spouseAinputBenefitYear, this.spouseAinputBenefitMonth-1, 1)
   this.spouseBinputBenefitDate = new Date(this.spouseBinputBenefitYear, this.spouseBinputBenefitMonth-1, 1)
   this.spouseAerror = this.checkValidInputs(this.spouseAFRA, this.spouseAbirthDate, this.spouseAinputBenefitYear, this.spouseAinputBenefitMonth)
@@ -80,7 +88,7 @@ export class InputFormComponent implements OnInit {
   if(this.maritalStatus == "married" && !this.spouseAerror && !this.spouseBerror)
     {
       console.log("couplePV using input dates: " + this.presentvalueService.calculateCouplePV(this.spouseAFRA, this.spouseBFRA, this.spouseAbirthDate, this.spouseBbirthDate, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAinputBenefitDate, this.spouseBinputBenefitDate, this.spouseAgender, this.spouseBgender, Number(this.discountRate)))
-      this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAbirthDate, this.spouseBbirthDate, this.spouseAFRA, this.spouseBFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate))
+      //this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAbirthDate, this.spouseBbirthDate, this.spouseAFRA, this.spouseBFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate))
     }
   }
 
