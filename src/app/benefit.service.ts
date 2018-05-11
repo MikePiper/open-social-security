@@ -21,7 +21,6 @@ export class BenefitService {
       {retirementBenefit = PIA + (PIA / 100 * 2 / 3 * monthsWaited)}
 
       return Number(retirementBenefit)
-  
   }
 
   calculateSpousalBenefit(PIA: number, otherSpousePIA: number, FRA: Date, retirementStartDate: Date, spousalStartDate: Date)
@@ -53,7 +52,8 @@ export class BenefitService {
     return Number(spousalBenefit)
   }
 
-  calculateSurvivorBenefit(survivorSSbirthDate: Date, survivorSurvivorFRA: Date, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: Date, deceasedFRA: Date, dateOfDeath: Date,  deceasedPIA: number, deceasedClaimingDate: Date)
+  calculateSurvivorBenefit(survivorSSbirthDate: Date, survivorSurvivorFRA: Date, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: Date,
+    deceasedFRA: Date, dateOfDeath: Date,  deceasedPIA: number, deceasedClaimingDate: Date)
   {
     let deceasedRetirementBenefit: number
     let survivorBenefit
@@ -109,6 +109,6 @@ export class BenefitService {
       if (survivorBenefit < 0) {
         survivorBenefit = 0
       }
-    console.log("survivorBenefit: " + survivorBenefit)
+    return Number(survivorBenefit)
   }
 }

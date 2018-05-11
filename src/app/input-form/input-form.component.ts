@@ -43,17 +43,23 @@ export class InputFormComponent implements OnInit {
   spouseAinputDay: number = 8
   spouseAinputYear: number = 1984
   spouseAPIA: number = 1000
-  spouseAinputBenefitMonth: number = 4
-  spouseAinputBenefitYear: number = 2051
-  spouseAinputBenefitDate: Date
+  spouseAretirementBenefitMonth: number = 4
+  spouseAretirementBenefitYear: number = 2051
+  spouseAretirementBenefitDate: Date
+  spouseAspousalBenefitMonth: number = 4
+  spouseAspousalBenefitYear: number = 2051
+  spouseAspousalBenefitDate: Date
   spouseAgender: string = "male"
   spouseBinputMonth: number = 4
   spouseBinputDay: number = 28
   spouseBinputYear: number = 1984
   spouseBPIA: number = 1000
-  spouseBinputBenefitMonth: number = 4
-  spouseBinputBenefitYear: number = 2051
-  spouseBinputBenefitDate: Date
+  spouseBretirementBenefitMonth: number = 4
+  spouseBretirementBenefitYear: number = 2051
+  spouseBretirementBenefitDate: Date
+  spouseBspousalBenefitMonth: number = 4
+  spouseBspousalBenefitYear: number = 2051
+  spouseBspousalBenefitDate: Date
   spouseBgender: string = "female"
   discountRate: number = 0.007
 
@@ -66,8 +72,10 @@ export class InputFormComponent implements OnInit {
   spouseBsurvivorFRA: Date
 
   //Error variables
-  spouseAerror:string
-  spouseBerror:string
+  spouseAretirementDateError:string
+  spouseBretirementDateError:string
+  spouseAspousalDateError:string
+  spouseBspousalDateError:string
 
   onSubmit() {
   console.log("-------------")
@@ -77,18 +85,20 @@ export class InputFormComponent implements OnInit {
   this.spouseBbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseBinputMonth, this.spouseBinputDay, this.spouseBinputYear))
   this.spouseBFRA = new Date(this.birthdayService.findFRA(this.spouseBbirthDate))
   this.spouseBsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseBbirthDate))
-  this.spouseAinputBenefitDate = new Date(this.spouseAinputBenefitYear, this.spouseAinputBenefitMonth-1, 1)
-  this.spouseBinputBenefitDate = new Date(this.spouseBinputBenefitYear, this.spouseBinputBenefitMonth-1, 1)
-  this.spouseAerror = this.checkValidInputs(this.spouseAFRA, this.spouseAbirthDate, this.spouseAinputBenefitYear, this.spouseAinputBenefitMonth)
-  this.spouseBerror = this.checkValidInputs(this.spouseBFRA, this.spouseBbirthDate, this.spouseBinputBenefitYear, this.spouseBinputBenefitMonth)
-  if (this.maritalStatus == "unmarried" && !this.spouseAerror) {
-    console.log("Spouse A PV using input dates: " + this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseAbirthDate, Number(this.spouseAPIA), this.spouseAinputBenefitDate, this.spouseAgender, Number(this.discountRate)))
+  this.spouseAretirementBenefitDate = new Date(this.spouseAretirementBenefitYear, this.spouseAretirementBenefitMonth-1, 1)
+  this.spouseBretirementBenefitDate = new Date(this.spouseBretirementBenefitYear, this.spouseBretirementBenefitMonth-1, 1)
+  this.spouseAspousalBenefitDate = new Date(this.spouseAspousalBenefitYear, this.spouseAspousalBenefitMonth-1, 1)
+  this.spouseBspousalBenefitDate = new Date(this.spouseBspousalBenefitYear, this.spouseBspousalBenefitMonth-1, 1)
+  this.spouseAretirementDateError = this.checkValidInputs(this.spouseAFRA, this.spouseAbirthDate, this.spouseAretirementBenefitYear, this.spouseAretirementBenefitMonth)
+  this.spouseBretirementDateError = this.checkValidInputs(this.spouseBFRA, this.spouseBbirthDate, this.spouseBretirementBenefitYear, this.spouseBretirementBenefitMonth)
+  if (this.maritalStatus == "unmarried" && !this.spouseAretirementDateError) {
+    console.log("Spouse A PV using input dates: " + this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseAbirthDate, Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAgender, Number(this.discountRate)))
     this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseAbirthDate, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
     }
-  if(this.maritalStatus == "married" && !this.spouseAerror && !this.spouseBerror)
+  if(this.maritalStatus == "married" && !this.spouseAretirementDateError && !this.spouseBretirementDateError)
     {
-      console.log("couplePV using input dates: " + this.presentvalueService.calculateCouplePV(this.spouseAFRA, this.spouseBFRA, this.spouseAbirthDate, this.spouseBbirthDate, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAinputBenefitDate, this.spouseBinputBenefitDate, this.spouseAgender, this.spouseBgender, Number(this.discountRate)))
-      //this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAbirthDate, this.spouseBbirthDate, this.spouseAFRA, this.spouseBFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate))
+      console.log("couplePV using input dates: " + this.presentvalueService.calculateCouplePV(this.spouseAbirthDate, this.spouseBbirthDate, this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAgender, this.spouseBgender, Number(this.discountRate)))
+      //this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAbirthDate, this.spouseBbirthDate, this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate))
     }
   }
 

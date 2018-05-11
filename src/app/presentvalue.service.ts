@@ -55,17 +55,20 @@ export class PresentvalueService {
         return retirementPV
   }
 
-  calculateCouplePV(spouseAFRA: Date, spouseBFRA: Date, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAPIA: number, spouseBPIA: number, spouseAinputBenefitDate: Date, spouseBinputBenefitDate: Date, spouseAgender: string, spouseBgender:string, discountRate:number){
+  calculateCouplePV(spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
+    spouseAPIA: number, spouseBPIA: number, spouseAinputBenefitDate: Date, spouseBinputBenefitDate: Date, spouseAgender: string, spouseBgender:string, discountRate:number){
     let spouseAretirementBenefit: number = 0
     let spouseBretirementBenefit: number = 0
     let spouseAspousalBenefit: number
     let spouseBspousalBenefit: number
+    let spouseAsurvivorBenefit: number = 0
+    let spouseBsurvivorBenefit: number = 0
     let spouseAage: number
     let spouseAroundedAge: number
-    let spouseAprobabilityAlive: number
+    let probabilityAalive: number
     let spouseBage: number
     let spouseBroundedAge: number
-    let spouseBprobabilityAlive: number
+    let probabilityBalive: number
     let couplePV = 0
     let firstStartDate: Date
     let secondStartDate: Date
@@ -117,6 +120,18 @@ export class PresentvalueService {
         }
         else {spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBinputBenefitDate)
         }
+      //Survivor benefits are zero before survivorFRA, after survivorFRA, calculate each spouse's survivor benefit using other spouse's intended claiming age as their date of death. (That is, assuming that other spouse lives to their intended claiming age.)
+        if (currentTestDate < spouseAsurvivorFRA) {
+          spouseAsurvivorBenefit = 0    //<-- This will get changed when we incorporate restricted applications for survivor benefits
+        } else {
+          spouseAsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefit, spouseAsurvivorFRA, spouseBFRA, spouseBinputBenefitDate, spouseBPIA, spouseBinputBenefitDate)
+        }
+        if (currentTestDate < spouseBsurvivorFRA){
+          spouseBsurvivorBenefit = 0    //<-- This will get changed when we incorporate restricted applications for survivor benefits
+        } else {
+          spouseBsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefit, spouseBsurvivorFRA, spouseAFRA, spouseAinputBenefitDate, spouseAPIA, spouseAinputBenefitDate)
+
+        }
 
       //Calculate probability of spouseA being alive at given age
         //When calculating probability alive, we have to round age to get a whole number to use for lookup in array.
@@ -127,13 +142,13 @@ export class PresentvalueService {
           else {spouseAroundedAge = Math.floor(spouseAage)}
           //Calculate probability of being alive at age in question.
           if (spouseAinitialAgeRounded <= 62) {
-            if (spouseAgender == "male") {spouseAprobabilityAlive = this.maleLivesRemaining[spouseAroundedAge + 1] / this.maleLivesRemaining[62]}
-            if (spouseAgender == "female") {spouseAprobabilityAlive = this.femaleLivesRemaining[spouseAroundedAge + 1] / this.femaleLivesRemaining[62]}
+            if (spouseAgender == "male") {probabilityAalive = this.maleLivesRemaining[spouseAroundedAge + 1] / this.maleLivesRemaining[62]}
+            if (spouseAgender == "female") {probabilityAalive = this.femaleLivesRemaining[spouseAroundedAge + 1] / this.femaleLivesRemaining[62]}
           }
           //If spouseA is older than 62 when filling out form, denominator is lives remaining at age when filling out the form.
           else { 
-            if (spouseAgender == "male") {spouseAprobabilityAlive = this.maleLivesRemaining[spouseAroundedAge + 1] / this.maleLivesRemaining[spouseAinitialAgeRounded]}
-            if (spouseAgender == "female") {spouseAprobabilityAlive = this.femaleLivesRemaining[spouseAroundedAge + 1] / this.femaleLivesRemaining[spouseAinitialAgeRounded]}
+            if (spouseAgender == "male") {probabilityAalive = this.maleLivesRemaining[spouseAroundedAge + 1] / this.maleLivesRemaining[spouseAinitialAgeRounded]}
+            if (spouseAgender == "female") {probabilityAalive = this.femaleLivesRemaining[spouseAroundedAge + 1] / this.femaleLivesRemaining[spouseAinitialAgeRounded]}
           }
       //Do same math to calculate probability of spouseB being alive at given age
           //calculate rounded age
@@ -143,26 +158,28 @@ export class PresentvalueService {
           else {spouseBroundedAge = Math.floor(spouseBage)}
           //use rounded age and lives remaiing array to calculate probability
           if (spouseBinitialAgeRounded <= 62) {
-            if (spouseBgender == "male") {spouseBprobabilityAlive = this.maleLivesRemaining[spouseBroundedAge + 1] / this.maleLivesRemaining[62]}
-            if (spouseBgender == "female") {spouseBprobabilityAlive = this.femaleLivesRemaining[spouseBroundedAge + 1] / this.femaleLivesRemaining[62]}
+            if (spouseBgender == "male") {probabilityBalive = this.maleLivesRemaining[spouseBroundedAge + 1] / this.maleLivesRemaining[62]}
+            if (spouseBgender == "female") {probabilityBalive = this.femaleLivesRemaining[spouseBroundedAge + 1] / this.femaleLivesRemaining[62]}
           }
           //If spouseA is older than 62 when filling out form, denominator is lives remaining at age when filling out the form.
           else { 
-            if (spouseBgender == "male") {spouseBprobabilityAlive = this.maleLivesRemaining[spouseBroundedAge + 1] / this.maleLivesRemaining[spouseBinitialAgeRounded]}
-            if (spouseBgender == "female") {spouseBprobabilityAlive = this.femaleLivesRemaining[spouseBroundedAge + 1] / this.femaleLivesRemaining[spouseBinitialAgeRounded]}
+            if (spouseBgender == "male") {probabilityBalive = this.maleLivesRemaining[spouseBroundedAge + 1] / this.maleLivesRemaining[spouseBinitialAgeRounded]}
+            if (spouseBgender == "female") {probabilityBalive = this.femaleLivesRemaining[spouseBroundedAge + 1] / this.femaleLivesRemaining[spouseBinitialAgeRounded]}
           }
       //Find probability-weighted benefit
-        let monthlyPV = (spouseAretirementBenefit + spouseAspousalBenefit) * spouseAprobabilityAlive + (spouseBretirementBenefit + spouseBspousalBenefit) * spouseBprobabilityAlive
-
+        let monthlyPV = 
+        (probabilityAalive * (1-probabilityBalive) * (spouseAretirementBenefit + spouseAsurvivorBenefit)) //Scenario where A is alive, B is deceased
+        + (probabilityBalive * (1-probabilityAalive) * (spouseBretirementBenefit + spouseBsurvivorBenefit)) //Scenario where B is alive, A is deceased
+        + ((probabilityAalive * probabilityBalive) * (spouseAretirementBenefit + spouseAspousalBenefit + spouseBretirementBenefit + spouseBspousalBenefit)) //Scenario where both are alive
+      
       //Discount that benefit
             //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
             let olderRoundedAge: number
             if (spouseAage > spouseBage) {
               olderRoundedAge = spouseAroundedAge
             } else {olderRoundedAge = spouseBroundedAge}
-            //Here is where actual discounting happens.
-            monthlyPV = monthlyPV / (1 + discountRate/2) 
-            monthlyPV = monthlyPV / Math.pow((1 + discountRate),(olderRoundedAge - 62))
+            //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
+            monthlyPV = monthlyPV / (1 + discountRate/2) / Math.pow((1 + discountRate),(olderRoundedAge - 62))
       //Add discounted benefit to ongoing count of retirementPV, add 1 month to each age, add 1 month to currentTestDate, and start loop over
         couplePV = couplePV + monthlyPV
         spouseAage = spouseAage + 1/12
@@ -206,7 +223,8 @@ export class PresentvalueService {
     console.log("savedClaimingDate: " + savedClaimingDate)
   }
 
-  maximizeCouplePV(spouseAPIA: number, spouseBPIA: number, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAFRA: Date, spouseBFRA: Date, spouseAgender: string, spouseBgender:string, discountRate: number){
+  maximizeCouplePV(spouseAPIA: number, spouseBPIA: number, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
+    spouseAgender: string, spouseBgender:string, discountRate: number){
     //find initial spouseAtestDate, for when spouseA is 62
     let spouseAtestDate = new Date(spouseASSbirthDate.getFullYear()+62, spouseASSbirthDate.getMonth(), 1)
     //If spouseA is currently over age 62 when filling out form, adjust their initial testDate to today's month/year instead of their age 62 month/year.
@@ -242,7 +260,7 @@ export class PresentvalueService {
         }
         while (spouseBtestDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(spouseAFRA, spouseBFRA, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAPIA), Number(spouseBPIA), spouseAtestDate, spouseBtestDate, spouseAgender, spouseBgender, Number(discountRate))
+            let currentTestPV: number = this.calculateCouplePV(spouseASSbirthDate, spouseBSSbirthDate, spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAtestDate, spouseBtestDate, spouseAgender, spouseBgender, Number(discountRate))
             //If PV is greater than saved PV, save new PV and save new testDates
             if (currentTestPV > savedPV) {
               savedPV = currentTestPV

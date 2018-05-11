@@ -5,45 +5,32 @@ Also can calculate PV for claiming at an age of user's choice.
 5/5/18: Appears to properly calculate PV for a couple (including retirement and spousal benefits) given a pair of claiming dates. Have run assortment of tests (using age 62, FRA, or 70), and all give same PV as excel.
 5/7/18: Couple PV maximizer shows values that are plausible -- seem to respond appropriately to changes in discount rate. Should test further though.
 5/9/18: Survivor benefit calculation appears to be working properly in all cases.
+5/11/18: Function calculating and function maximizing couplePV appear to be working properly.
+    Have no way to test actual dollar amount of PV output, but it appears reasonable, and recommended claiming ages are exactly what I would expect for given inputs.
 
 
 
 Current list of simplifications:
 *Currently applies new "deemed filing" rules to everybody regardless of birthdate.
+*Currently assuming that widow(er)s don't file for survivor benefits until their survivorFRA. This ignores restricted application strategies.
 *Currently ignores the "must be 62 for entire month" rule with regard to a person claiming as early as possible.
 *Currently for purpose of discounting, all benefits are assumed to be received mid-year rather than discounted monthly.
 *Currently uses SSA 2014 period life table, which understates life expectancy relative to cohort table. Also doesn't allow for input regarding health status.
 *Benefits are currently discounted to age 62 when calculating PV. If user is over age 62 when filling out form, should only be discounted back to today's date.
     (This simplification shouldn't affect suggestions at all. Will just make result of affected NPV calculations somewhat lower than they really should be.)
-
+*Currently, for sake of calculating AMOUNT of survivor benefit, assuming that deceased spouse at least survived to their intended retirement/spousal claiming age.
+    NOT making that assumption though in terms of calculating *whether* a given benefit is received per month.
 
 
 
 
 Remaining To-Do:
 
-Create function to calculate a survivor benefit. 
+Allow for restricted applications for spousal benefits for people age 62 or over as of 1/1/2016
 
-Incorporate survivor benefit into calculate couple NPV function.
+Allow for restricted applications for survivor benefits (regardless of DoB)
 
-    Scenario where only A is alive: 
-    ProbabilityAalive * (1 - probabilityBalive) * (retirementA + survivorA)
-
-
-    Scenario where only B is alive:
-    ProbabilityBalive * (1-probabilityAalive) * (retirementB + survivorB)
-
-
-    Scenario where both are alive:
-    (ProbabilityAalive * probabilityBalive) * (RetirementA + spousalA + retirementB + spousalB)
-
-    If neither: 0
-
-
-
-Incorporate survivor benefit into maximize couple NPV function.
-
-Allow for restricted applications for people age 62 or over as of 1/1/2016
+Allow some degree of input regarding health/life expectancy?
 
 Make output somewhere other than in console.
 
