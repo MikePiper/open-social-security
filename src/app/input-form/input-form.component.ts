@@ -16,6 +16,8 @@ export class InputFormComponent implements OnInit {
 
   }
 
+  today = new Date()
+
 //Variables to make form work
   inputMonths: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
   inputDays: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -63,13 +65,19 @@ export class InputFormComponent implements OnInit {
   spouseBgender: string = "female"
   discountRate: number = 0.007
 
-  //Calculated dates
-  spouseAbirthDate: Date
+  //Calculated dates and related info
+  spouseAactualBirthDate: Date
+  spouseASSbirthDate: Date
   spouseAFRA: Date
   spouseAsurvivorFRA: Date
-  spouseBbirthDate: Date
+  spouseBSSbirthDate: Date
+  spouseBactualBirthDate: Date
   spouseBFRA: Date
   spouseBsurvivorFRA: Date
+  spouseAage: number
+  spouseBage: number
+  spouseAageRounded: number
+  spouseBageRounded: number
 
   //Error variables
   spouseAretirementDateError:string
@@ -78,84 +86,99 @@ export class InputFormComponent implements OnInit {
   spouseBspousalDateError:string
 
   onSubmit() {
+  let startTime = performance.now() //for testing performance
   console.log("-------------")
-  this.spouseAbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseAinputMonth, this.spouseAinputDay, this.spouseAinputYear))
-  this.spouseAFRA = new Date(this.birthdayService.findFRA(this.spouseAbirthDate))
-  this.spouseAsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseAbirthDate))
-  this.spouseBbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseBinputMonth, this.spouseBinputDay, this.spouseBinputYear))
-  this.spouseBFRA = new Date(this.birthdayService.findFRA(this.spouseBbirthDate))
-  this.spouseBsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseBbirthDate))
+  this.spouseAactualBirthDate = new Date (this.spouseAinputYear, this.spouseAinputMonth-1, this.spouseAinputDay)
+  this.spouseASSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseAinputMonth, this.spouseAinputDay, this.spouseAinputYear))
+  this.spouseAFRA = new Date(this.birthdayService.findFRA(this.spouseASSbirthDate))
+  this.spouseAsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseASSbirthDate))
+  this.spouseBactualBirthDate = new Date (this.spouseBinputYear, this.spouseBinputMonth-1, this.spouseBinputDay)
+  this.spouseBSSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseBinputMonth, this.spouseBinputDay, this.spouseBinputYear))
+  this.spouseBFRA = new Date(this.birthdayService.findFRA(this.spouseBSSbirthDate))
+  this.spouseBsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseBSSbirthDate))
+  this.spouseAage =  ( this.today.getMonth() - this.spouseASSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseASSbirthDate.getFullYear()) )/12
+  this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
+  this.spouseAageRounded = Math.round(this.spouseAage)
+  this.spouseBageRounded = Math.round(this.spouseBage)
   this.spouseAretirementBenefitDate = new Date(this.spouseAretirementBenefitYear, this.spouseAretirementBenefitMonth-1, 1)
   this.spouseBretirementBenefitDate = new Date(this.spouseBretirementBenefitYear, this.spouseBretirementBenefitMonth-1, 1)
   this.spouseAspousalBenefitDate = new Date(this.spouseAspousalBenefitYear, this.spouseAspousalBenefitMonth-1, 1)
   this.spouseBspousalBenefitDate = new Date(this.spouseBspousalBenefitYear, this.spouseBspousalBenefitMonth-1, 1)
-  this.spouseAretirementDateError = this.checkValidInputs(this.spouseAFRA, this.spouseAbirthDate, this.spouseAretirementBenefitYear, this.spouseAretirementBenefitMonth)
-  this.spouseBretirementDateError = this.checkValidInputs(this.spouseBFRA, this.spouseBbirthDate, this.spouseBretirementBenefitYear, this.spouseBretirementBenefitMonth)
+  this.spouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAretirementBenefitDate)
+  this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate)
+  this.spouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseAretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBretirementBenefitDate)
+  this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate)
   if (this.maritalStatus == "unmarried" && !this.spouseAretirementDateError) {
-    console.log("Spouse A PV using input dates: " + this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseAbirthDate, Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAgender, Number(this.discountRate)))
-    this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseAbirthDate, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
+    console.log("Spouse A PV using input dates: " + this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseASSbirthDate, Number(this.spouseAage), Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAgender, Number(this.discountRate)))
+    this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
     }
-  if(this.maritalStatus == "married" && !this.spouseAretirementDateError && !this.spouseBretirementDateError)
+  if(this.maritalStatus == "married" && !this.spouseAretirementDateError && !this.spouseBretirementDateError && !this.spouseBspousalDateError && !this.spouseAspousalDateError)
     {
-      console.log("couplePV using input dates: " + this.presentvalueService.calculateCouplePV(this.spouseAbirthDate, this.spouseBbirthDate, this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAgender, this.spouseBgender, Number(this.discountRate)))
-      //this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAbirthDate, this.spouseBbirthDate, this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate))
+      console.log("couplePV using input dates: " + this.presentvalueService.calculateCouplePV(this.spouseAgender, this.spouseBgender, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.discountRate)))
+      //this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAbirthDate, this.spouseBbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate))
     }
+    //For testing performance
+    let endTime = performance.now()
+    let elapsed = (endTime - startTime) /1000
+    console.log("Time elapsed: " + elapsed)
   }
 
 
-
-  //TODO: This has not yet been refactored to use "inputBenefitDate" Date objects rather than separate number objects for Year and Month.
-  checkValidInputs(FRA: Date, SSbirthDate: Date, inputBenefitYear: number, inputBenefitMonth: number) {
+  checkValidRetirementInputs(FRA: Date, SSbirthDate: Date, retirementBenefitDate:Date) {
     let error = undefined
 
     //Validation to make sure they are not filing for benefits in the past
-    let today = new Date()
-    if ( (inputBenefitYear < today.getFullYear()) || (inputBenefitYear == today.getFullYear() && (inputBenefitMonth < today.getMonth() + 1 )) )
+    if ( (retirementBenefitDate.getFullYear() < this.today.getFullYear()) || (retirementBenefitDate.getFullYear() == this.today.getFullYear() && (retirementBenefitDate.getMonth() < this.today.getMonth() )) )
     {
     error = "Please enter a date no earlier than this month."
     }
 
     //Validation in case they try to start benefit earlier than possible or after 70 (Just ignoring the "must be 62 for entire month" rule right now)
-    let monthsWaited = inputBenefitMonth - FRA.getMonth() - 1 + 12 * (inputBenefitYear - FRA.getFullYear())
-    if (SSbirthDate >= new Date('January 1, 1943') && SSbirthDate <= new Date('December 31, 1954'))
-    {
-      if (monthsWaited > 48) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
-      if (monthsWaited < -48) {error = "Please enter a later date. You cannot file for retirement or spousal benefits before age 62."}
-    }
-    if (SSbirthDate >= new Date('January 1, 1955') && SSbirthDate <= new Date('December 31, 1955'))
-    {
-      if (monthsWaited > 46) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
-      if (monthsWaited < -50) {error = "Please enter a later date. You cannot file for retirement or spousal benefits before age 62."}
-    }
-    if (SSbirthDate >= new Date('January 1, 1956') && SSbirthDate <= new Date('December 31, 1956'))
-    {
-      if (monthsWaited > 44) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
-      if (monthsWaited < -52) {error = "Please enter a later date. You cannot file for retirement or spousal benefits before age 62."}
-    }
-    if (SSbirthDate >= new Date('January 1, 1957') && SSbirthDate <= new Date('December 31, 1957'))
-    {
-      if (monthsWaited > 42) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
-      if (monthsWaited < -54) {error = "Please enter a later date. You cannot file for retirement or spousal benefits before age 62."}
-    }
-    if (SSbirthDate >= new Date('January 1, 1958') && SSbirthDate <= new Date('December 31, 1958'))
-    {
-      if (monthsWaited > 40) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
-      if (monthsWaited < -56) {error = "Please enter a later date. You cannot file for retirement or spousal benefits before age 62."}
-    }
-    if (SSbirthDate >= new Date('January 1, 1959') && SSbirthDate <= new Date('December 31, 1959'))
-    {
-      if (monthsWaited > 38) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
-      if (monthsWaited < -58) {error = "Please enter a later date. You cannot file for retirement or spousal benefits before age 62."}
-    }
-    if (SSbirthDate >= new Date('January 1, 1960'))
-    {
-      if (monthsWaited > 36) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
-      if (monthsWaited < -60) {error = "Please enter a later date. You cannot file for retirement or spousal benefits before age 62."}
-    }
+    let claimingAge: number = ( retirementBenefitDate.getMonth() - SSbirthDate.getMonth() + 12 * (retirementBenefitDate.getFullYear() - SSbirthDate.getFullYear()) )/12
+    if (claimingAge < 61.99) {error = "Please enter a later date. You cannot file for retirement benefits before age 62."}
+    if (claimingAge > 70.01) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
 
     return error
   }
 
 
+  checkValidSpousalInputs(FRA: Date, actualBirthDate:Date, SSbirthDate: Date, ownRetirementBenefitDate:Date, spousalBenefitDate:Date, otherSpouseRetirementBenefitDate:Date) {
+    let error = undefined
+    let deemedFilingCutoff: Date = new Date(1954, 0, 1)
+    let secondStartDate:Date = new Date(1,1,1)
+    //TODO: Needs validation for spousal benefit before retirement benefit if deemed filing should apply (i.e., under 62 on 1/1/2016 or if under FRA on input age for claiming spousal)
+    if (actualBirthDate < deemedFilingCutoff) {//old deemed filing rules apply: If spousalBenefitDate < FRA, it must be equal to ownRetirementBenefitDate
+        if ( spousalBenefitDate < FRA && ( spousalBenefitDate.getMonth() !== ownRetirementBenefitDate.getMonth() || spousalBenefitDate.getFullYear() !== ownRetirementBenefitDate.getFullYear() ) )
+        {
+        error = "You can't file a restricted application for just spousal benefits prior to your FRA."
+        }
+    }
+    else {//new deemed filing rules apply: Own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's retirementBenefitDate
+        if (ownRetirementBenefitDate < otherSpouseRetirementBenefitDate) {
+          secondStartDate.setFullYear(otherSpouseRetirementBenefitDate.getFullYear())
+          secondStartDate.setMonth(otherSpouseRetirementBenefitDate.getMonth())
+        }
+        else {
+          secondStartDate.setFullYear(ownRetirementBenefitDate.getFullYear())
+          secondStartDate.setMonth(ownRetirementBenefitDate.getMonth())
+        }
+        if ( spousalBenefitDate.getMonth() !== secondStartDate.getMonth() || spousalBenefitDate.getFullYear() !== secondStartDate.getFullYear() ) {
+        error = "Invalid spousal benefit date per new deemed filing rules"
+        }
+    }
+    //Validation to make sure they are not filing for benefits in the past
+    if ( (spousalBenefitDate.getFullYear() < this.today.getFullYear()) || (spousalBenefitDate.getFullYear() == this.today.getFullYear() && (spousalBenefitDate.getMonth() < this.today.getMonth() )) )
+    {
+    error = "Please enter a date no earlier than this month."
+    }
 
+    //Validation in case they try to start benefit earlier than possible. (Just ignoring the "must be 62 for entire month" rule right now.) (No validation check for after age 70, because sometimes that will be earliest they can -- if they're much younger than other spouse.)
+    let claimingAge: number = ( spousalBenefitDate.getMonth() - SSbirthDate.getMonth() + 12 * (spousalBenefitDate.getFullYear() - SSbirthDate.getFullYear()) )/12
+    if (claimingAge < 61.99) {error = "Please enter a later date. You cannot file for spousal benefits before age 62."}
+
+    //Validation in case they try to start spousal benefit before other spouse's retirement benefit.
+    if (spousalBenefitDate < otherSpouseRetirementBenefitDate) {error = "You cannot start your spousal benefit before your spouse has filed for his/her own retirement benefit."}
+
+    return error
+  }
 }

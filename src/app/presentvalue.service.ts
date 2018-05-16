@@ -8,7 +8,9 @@ export class PresentvalueService {
 
   constructor(private benefitService: BenefitService, private birthdayService: BirthdayService) { }
   
-  calculateSinglePersonPV(FRA: Date, SSbirthDate: Date, PIA: number, inputBenefitDate: Date, gender: string, discountRate: number)
+  today: Date = new Date()
+
+  calculateSinglePersonPV(FRA: Date, SSbirthDate: Date, initialAge: number, PIA: number, inputBenefitDate: Date, gender: string, discountRate: number)
   {
     let retirementBenefit: number = this.benefitService.calculateRetirementBenefit(PIA, FRA, inputBenefitDate)
     let retirementPV: number = 0
@@ -20,7 +22,6 @@ export class PresentvalueService {
 
     //calculate age when filling out form
     let today: Date = new Date()
-    let initialAge: number = today.getFullYear() - SSbirthDate.getFullYear() + (today.getMonth() - SSbirthDate.getMonth())/12
     let initialAgeRounded: number = Math.round(initialAge)
     let discountTargetAge: number
     
@@ -55,8 +56,9 @@ export class PresentvalueService {
         return retirementPV
   }
 
-  calculateCouplePV(spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
-    spouseAPIA: number, spouseBPIA: number, spouseAinputBenefitDate: Date, spouseBinputBenefitDate: Date, spouseAgender: string, spouseBgender:string, discountRate:number){
+  calculateCouplePV(spouseAgender: string, spouseBgender:string, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
+    spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
+    spouseAPIA: number, spouseBPIA: number, spouseAretirementBenefitDate: Date, spouseBretirementBenefitDate: Date, spouseAspousalBenefitDate: Date, spouseBspousalBenefitDate: Date, discountRate:number){
     let spouseAretirementBenefit: number = 0
     let spouseBretirementBenefit: number = 0
     let spouseAspousalBenefit: number
@@ -74,62 +76,61 @@ export class PresentvalueService {
     let secondStartDate: Date
 
     //If spouse A's input benefit date earlier, set firstStartDate and secondStartDate accordingly.
-    if (spouseAinputBenefitDate < spouseBinputBenefitDate)
+    if (spouseAretirementBenefitDate < spouseBretirementBenefitDate)
       {
-      firstStartDate = new Date(spouseAinputBenefitDate)
-      secondStartDate = new Date(spouseBinputBenefitDate)
+      firstStartDate = new Date(spouseAretirementBenefitDate)
+      secondStartDate = new Date(spouseBretirementBenefitDate)
       }
     else {//This is fine as a simple "else" statement. If the two input benefit dates are equal, doing it as of either date is fine.
-    firstStartDate = new Date(spouseBinputBenefitDate)
-    secondStartDate = new Date(spouseAinputBenefitDate)
+    firstStartDate = new Date(spouseBretirementBenefitDate)
+    secondStartDate = new Date(spouseAretirementBenefitDate)
       }
     
     //Find age of each spouse as of firstStartDate
     spouseAage = ( firstStartDate.getMonth() - spouseASSbirthDate.getMonth() + 12 * (firstStartDate.getFullYear() - spouseASSbirthDate.getFullYear()) )/12
     spouseBage = ( firstStartDate.getMonth() - spouseBSSbirthDate.getMonth() + 12 * (firstStartDate.getFullYear() - spouseBSSbirthDate.getFullYear()) )/12
 
-    //calculate ages when filling out form TODO: This doesn't have to happen here. It could happen in onSubmit so that it only happens once rather than 96*96 times.
-    let today: Date = new Date()
-    let spouseAinitialAgeRounded = Math.round(today.getFullYear() - spouseASSbirthDate.getFullYear() + (today.getMonth() - spouseASSbirthDate.getMonth())/12)
-    let spouseBinitialAgeRounded = Math.round(today.getFullYear() - spouseBSSbirthDate.getFullYear() + (today.getMonth() - spouseBSSbirthDate.getMonth())/12)
-
-
-
     //Calculate PV via loop until both spouses are at least age 115 (by which point "remaining lives" alive is zero)
     let currentTestDate: Date = new Date(firstStartDate)
     while (spouseAage < 115 || spouseBage < 115){
-      //Both spouses must have filed before there can be spousal benefits. If both have reached start date, both spousal benefits are calculated as of secondStartDate
-      if (currentTestDate < secondStartDate){
+      //Retirement benefit A is zero if currentTestDate is prior to spouseAinputBenefitDate. Otherwise retirement benefit A is calculated as of spouseAinputBenefitDate.
+      if (currentTestDate < spouseAretirementBenefitDate) {
+        spouseAretirementBenefit = 0
+        }
+        else {spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAretirementBenefitDate)
+        }
+      //Retirement benefit B is zero if currentTestDate is prior to spouseBinputBenefitDate. Otherwise retirement benefit B is calculated as of spouseBinputBenefitDate.
+      if (currentTestDate < spouseBretirementBenefitDate) {
+        spouseBretirementBenefit = 0
+        }
+        else {spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBretirementBenefitDate)
+        }
+
+      //Calculate spousal benefits (zero if before applicable claiming date). Don't need to check here if other spouse has filed for retirement benefit yet, because that's being done with input validation.
+      if (currentTestDate < spouseAspousalBenefitDate){
         spouseAspousalBenefit = 0
+        }
+        else {
+        spouseAspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAretirementBenefit, spouseAspousalBenefitDate)
+        }
+      if (currentTestDate < spouseBspousalBenefitDate) {
         spouseBspousalBenefit = 0
         }
         else {
-        spouseAspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAinputBenefitDate, secondStartDate)
-        spouseBspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBinputBenefitDate, secondStartDate)
+        spouseBspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBretirementBenefit, spouseBspousalBenefitDate)
         }
+        
 
-      //Retirement benefit A is zero if currentTestDate is prior to spouseAinputBenefitDate. Otherwise retirement benefit A is calculated as of spouseAinputBenefitDate.
-      if (currentTestDate < spouseAinputBenefitDate) {
-        spouseAretirementBenefit = 0
-        }
-        else {spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAinputBenefitDate)
-        }
-      //Retirement benefit B is zero if currentTestDate is prior to spouseBinputBenefitDate. Otherwise retirement benefit B is calculated as of spouseBinputBenefitDate.
-      if (currentTestDate < spouseBinputBenefitDate) {
-        spouseBretirementBenefit = 0
-        }
-        else {spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBinputBenefitDate)
-        }
       //Survivor benefits are zero before survivorFRA, after survivorFRA, calculate each spouse's survivor benefit using other spouse's intended claiming age as their date of death. (That is, assuming that other spouse lives to their intended claiming age.)
         if (currentTestDate < spouseAsurvivorFRA) {
           spouseAsurvivorBenefit = 0    //<-- This will get changed when we incorporate restricted applications for survivor benefits
         } else {
-          spouseAsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefit, spouseAsurvivorFRA, spouseBFRA, spouseBinputBenefitDate, spouseBPIA, spouseBinputBenefitDate)
+          spouseAsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefit, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBretirementBenefitDate)
         }
         if (currentTestDate < spouseBsurvivorFRA){
           spouseBsurvivorBenefit = 0    //<-- This will get changed when we incorporate restricted applications for survivor benefits
         } else {
-          spouseBsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefit, spouseBsurvivorFRA, spouseAFRA, spouseAinputBenefitDate, spouseAPIA, spouseAinputBenefitDate)
+          spouseBsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefit, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAretirementBenefitDate)
 
         }
 
@@ -156,7 +157,7 @@ export class PresentvalueService {
           spouseBroundedAge = Math.round(spouseBage)
           }
           else {spouseBroundedAge = Math.floor(spouseBage)}
-          //use rounded age and lives remaiing array to calculate probability
+          //use rounded age and lives remaining array to calculate probability
           if (spouseBinitialAgeRounded <= 62) {
             if (spouseBgender == "male") {probabilityBalive = this.maleLivesRemaining[spouseBroundedAge + 1] / this.maleLivesRemaining[62]}
             if (spouseBgender == "female") {probabilityBalive = this.femaleLivesRemaining[spouseBroundedAge + 1] / this.femaleLivesRemaining[62]}
@@ -181,6 +182,11 @@ export class PresentvalueService {
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             monthlyPV = monthlyPV / (1 + discountRate/2) / Math.pow((1 + discountRate),(olderRoundedAge - 62))
       //Add discounted benefit to ongoing count of retirementPV, add 1 month to each age, add 1 month to currentTestDate, and start loop over
+      console.log("currentTestDate: " + currentTestDate)
+      console.log("spouseAretirementBenefit: " + spouseAretirementBenefit)
+      console.log("spouseBretirementBenefit: " + spouseBretirementBenefit)
+      console.log("spouseAspousalBenefit: " + spouseAspousalBenefit)
+      console.log("spouseBspousalBenefit: " + spouseBspousalBenefit)
         couplePV = couplePV + monthlyPV
         spouseAage = spouseAage + 1/12
         spouseBage = spouseBage + 1/12
@@ -191,20 +197,19 @@ export class PresentvalueService {
   }
 
 
-  maximizeSinglePersonPV(PIA: number, SSbirthDate: Date, FRA: Date, gender: string, discountRate: number){
+  maximizeSinglePersonPV(PIA: number, SSbirthDate: Date, initialAge:number, FRA: Date, gender: string, discountRate: number){
     //find initial currentTestDate for age 62
     let currentTestDate = new Date(SSbirthDate.getFullYear()+62, SSbirthDate.getMonth(), 1)
 
     //If they are currently over age 62 when filling out form, set currentTestDate to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
-    let today = new Date()
-    let ageToday = today.getFullYear() - SSbirthDate.getFullYear() + (today.getMonth() - SSbirthDate.getMonth())/12
+    let ageToday = this.today.getFullYear() - SSbirthDate.getFullYear() + (this.today.getMonth() - SSbirthDate.getMonth())/12
     if (ageToday > 62){
-      currentTestDate.setMonth(today.getMonth())
-      currentTestDate.setFullYear(today.getFullYear())
+      currentTestDate.setMonth(this.today.getMonth())
+      currentTestDate.setFullYear(this.today.getFullYear())
     }
 
     //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
-    let savedPV: number = this.calculateSinglePersonPV(FRA, SSbirthDate, PIA, currentTestDate, gender, discountRate)
+    let savedPV: number = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, currentTestDate, gender, discountRate)
     let savedClaimingDate = new Date(currentTestDate)
 
     //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
@@ -212,7 +217,7 @@ export class PresentvalueService {
     while (currentTestDate <= endingTestDate){
       //Add 1 month to claiming age and run both calculations again and compare results. Save better of the two.
       currentTestDate.setMonth(currentTestDate.getMonth() + 1)
-      let currentTestPV = this.calculateSinglePersonPV(FRA, SSbirthDate, PIA, currentTestDate, gender, discountRate)
+      let currentTestPV = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, currentTestDate, gender, discountRate)
       if (currentTestPV > savedPV)
         {savedClaimingDate.setMonth(currentTestDate.getMonth())
           savedClaimingDate.setFullYear(currentTestDate.getFullYear())
@@ -222,9 +227,13 @@ export class PresentvalueService {
     console.log("saved PV: " + savedPV)
     console.log("savedClaimingDate: " + savedClaimingDate)
   }
-
-  maximizeCouplePV(spouseAPIA: number, spouseBPIA: number, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
+/*
+  maximizeCouplePV(spouseAPIA: number, spouseBPIA: number, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
+    spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
     spouseAgender: string, spouseBgender:string, discountRate: number){
+
+    let deemedFilingCutoff: Date = new Date(1954, 0, 1)
+
     //find initial spouseAtestDate, for when spouseA is 62
     let spouseAtestDate = new Date(spouseASSbirthDate.getFullYear()+62, spouseASSbirthDate.getMonth(), 1)
     //If spouseA is currently over age 62 when filling out form, adjust their initial testDate to today's month/year instead of their age 62 month/year.
@@ -260,7 +269,7 @@ export class PresentvalueService {
         }
         while (spouseBtestDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(spouseASSbirthDate, spouseBSSbirthDate, spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAtestDate, spouseBtestDate, spouseAgender, spouseBgender, Number(discountRate))
+            let currentTestPV: number = this.calculateCouplePV(spouseAgender, spouseBgender, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAtestDate, spouseBtestDate, Number(discountRate))
             //If PV is greater than saved PV, save new PV and save new testDates
             if (currentTestPV > savedPV) {
               savedPV = currentTestPV
@@ -281,6 +290,7 @@ export class PresentvalueService {
       console.log("spouseBsavedDate: " + spouseBsavedDate)
   }
 
+  */
 
 //Lives remaining out of 100k, from SSA 2014 period life table
 maleLivesRemaining = [

@@ -23,21 +23,20 @@ export class BenefitService {
       return Number(retirementBenefit)
   }
 
-  calculateSpousalBenefit(PIA: number, otherSpousePIA: number, FRA: Date, retirementStartDate: Date, spousalStartDate: Date)
+  calculateSpousalBenefit(PIA: number, otherSpousePIA: number, FRA: Date, retirementBenefit: number, spousalStartDate: Date)
   {
     //no need to check for filing prior to 62, because we're already checking for that in the input form component.
 
     //Initial calculation
     let spousalBenefit = otherSpousePIA / 2
 
-    //subtract greater of PIA or retirement benefit, but no more than spousal benefit
-      //This currently assumes new deemed filing rules for everybody. Eventually, will have to do this subtraction only if they are already receiving retirement benefit.
-          //Also, inputStartDate could be different for retirement benefit and spousal benefit, with old deemed filing rules.
-      let retirementBenefit = this.calculateRetirementBenefit(Number(PIA), FRA, retirementStartDate)
-      if (retirementBenefit > PIA) {
+    //subtract greater of PIA or retirement benefit, but no more than spousal benefit. No subtraction if retirement benefit is zero (i.e., if not yet filed for retirement benefit)
+      if (retirementBenefit > 0 && retirementBenefit >= PIA) {
         spousalBenefit = spousalBenefit - retirementBenefit
+        }
+      else if (retirementBenefit > 0 && retirementBenefit < PIA) {
+        spousalBenefit = spousalBenefit - PIA
       }
-      else {spousalBenefit = spousalBenefit - PIA}
       if (spousalBenefit < 0) {
         spousalBenefit = 0
       }
