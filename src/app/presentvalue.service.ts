@@ -181,12 +181,16 @@ export class PresentvalueService {
             } else {olderRoundedAge = spouseBroundedAge}
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             monthlyPV = monthlyPV / (1 + discountRate/2) / Math.pow((1 + discountRate),(olderRoundedAge - 62))
-      //Add discounted benefit to ongoing count of retirementPV, add 1 month to each age, add 1 month to currentTestDate, and start loop over
+
+      /*log dates
       console.log("currentTestDate: " + currentTestDate)
       console.log("spouseAretirementBenefit: " + spouseAretirementBenefit)
       console.log("spouseBretirementBenefit: " + spouseBretirementBenefit)
       console.log("spouseAspousalBenefit: " + spouseAspousalBenefit)
       console.log("spouseBspousalBenefit: " + spouseBspousalBenefit)
+      */
+
+      //Add discounted benefit to ongoing count of retirementPV, add 1 month to each age, add 1 month to currentTestDate, and start loop over
         couplePV = couplePV + monthlyPV
         spouseAage = spouseAage + 1/12
         spouseBage = spouseBage + 1/12
@@ -226,71 +230,168 @@ export class PresentvalueService {
     //after loop is finished
     console.log("saved PV: " + savedPV)
     console.log("savedClaimingDate: " + savedClaimingDate)
+
+    let solutionArray = [savedPV, savedClaimingDate]
+    return solutionArray
   }
-/*
-  maximizeCouplePV(spouseAPIA: number, spouseBPIA: number, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
+
+
+  maximizeCouplePV(spouseAPIA: number, spouseBPIA: number, spouseAactualBirthDate:Date, spouseBactualBirthDate:Date, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
     spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
     spouseAgender: string, spouseBgender:string, discountRate: number){
 
     let deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
-    //find initial spouseAtestDate, for when spouseA is 62
-    let spouseAtestDate = new Date(spouseASSbirthDate.getFullYear()+62, spouseASSbirthDate.getMonth(), 1)
-    //If spouseA is currently over age 62 when filling out form, adjust their initial testDate to today's month/year instead of their age 62 month/year.
+    //find initial test dates for when spouseA is 62
+    let spouseAretirementDate = new Date(spouseASSbirthDate.getFullYear()+62, spouseASSbirthDate.getMonth(), 1)
+    let spouseAspousalDate = new Date(spouseASSbirthDate.getFullYear()+62, spouseASSbirthDate.getMonth(), 1)
+    //If spouseA is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
     let today = new Date()
     let spouseAageToday: number = today.getFullYear() - spouseASSbirthDate.getFullYear() + (today.getMonth() - spouseASSbirthDate.getMonth()) /12
     if (spouseAageToday > 62){
-      spouseAtestDate.setMonth(today.getMonth())
-      spouseAtestDate.setFullYear(today.getFullYear())
+      spouseAretirementDate.setMonth(today.getMonth())
+      spouseAretirementDate.setFullYear(today.getFullYear())
+      spouseAspousalDate.setMonth(today.getMonth())
+      spouseAspousalDate.setFullYear(today.getFullYear())
     }
     //Do all of the same, but for spouseB.
-    let spouseBtestDate = new Date(spouseBSSbirthDate.getFullYear()+62, spouseBSSbirthDate.getMonth(), 1)
+    let spouseBretirementDate = new Date(spouseBSSbirthDate.getFullYear()+62, spouseBSSbirthDate.getMonth(), 1)
+    let spouseBspousalDate = new Date(spouseBSSbirthDate.getFullYear()+62, spouseBSSbirthDate.getMonth(), 1)
     let spouseBageToday: number = today.getFullYear() - spouseBSSbirthDate.getFullYear() + (today.getMonth() - spouseBSSbirthDate.getMonth()) /12
     if (spouseBageToday > 62){
-      spouseBtestDate.setMonth(today.getMonth())
-      spouseBtestDate.setFullYear(today.getFullYear())
+      spouseBretirementDate.setMonth(today.getMonth())
+      spouseBretirementDate.setFullYear(today.getFullYear())
+      spouseBspousalDate.setMonth(today.getMonth())
+      spouseBspousalDate.setFullYear(today.getFullYear())
     }
     //Initialize savedPV as zero. Set spouseAsavedDate and spouseBsavedDate equal to their current testDates.
       let savedPV: number = 0
-      let spouseAsavedDate = new Date(spouseAtestDate)
-      let spouseBsavedDate = new Date(spouseBtestDate)
+      let spouseAsavedRetirementDate = new Date(spouseAretirementDate)
+      let spouseBsavedRetirementDate = new Date(spouseBretirementDate)
+      let spouseAsavedSpousalDate = new Date(spouseAspousalDate)
+      let spouseBsavedSpousalDate = new Date(spouseBspousalDate)
 
     //Set endingTestDate for each spouse equal to the month they turn 70
     let spouseAendTestDate = new Date(spouseASSbirthDate.getFullYear()+70, spouseASSbirthDate.getMonth(), 1)
     let spouseBendTestDate = new Date(spouseBSSbirthDate.getFullYear()+70, spouseBSSbirthDate.getMonth(), 1)
-    while (spouseAtestDate <= spouseAendTestDate) {
-        //Reset spouseBtestDate to earliest possible (i.e., their Age62 month or today's month if they're currently older than 62)
+
+    while (spouseAretirementDate <= spouseAendTestDate) {
+        //Reset spouseB test dates to earliest possible (i.e., their Age62 month or today's month if they're currently older than 62, but never earlier than spouse A's retirementDate)
         if (spouseBageToday > 62){
-          spouseBtestDate.setMonth(today.getMonth())
-          spouseBtestDate.setFullYear(today.getFullYear())
+          spouseBretirementDate.setMonth(today.getMonth())
+          spouseBretirementDate.setFullYear(today.getFullYear())
+          spouseBspousalDate.setMonth(today.getMonth())
+          spouseBspousalDate.setFullYear(today.getFullYear())
         } else {
-          spouseBtestDate.setMonth(spouseBSSbirthDate.getMonth())
-          spouseBtestDate.setFullYear(spouseBSSbirthDate.getFullYear()+62)
+          spouseBretirementDate.setMonth(spouseBSSbirthDate.getMonth())
+          spouseBretirementDate.setFullYear(spouseBSSbirthDate.getFullYear()+62)
+          spouseBspousalDate.setMonth(spouseBSSbirthDate.getMonth())
+          spouseBspousalDate.setFullYear(spouseBSSbirthDate.getFullYear()+62)
         }
-        while (spouseBtestDate <= spouseBendTestDate) {
+        if (spouseBspousalDate < spouseAretirementDate) {
+          spouseBspousalDate.setMonth(spouseAretirementDate.getMonth())
+          spouseBspousalDate.setFullYear(spouseAretirementDate.getFullYear())
+        }
+        while (spouseBretirementDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(spouseAgender, spouseBgender, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAtestDate, spouseBtestDate, Number(discountRate))
+            let currentTestPV: number = this.calculateCouplePV(spouseAgender, spouseBgender, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, Number(discountRate))
             //If PV is greater than saved PV, save new PV and save new testDates
             if (currentTestPV > savedPV) {
               savedPV = currentTestPV
-              spouseAsavedDate.setMonth(spouseAtestDate.getMonth())
-              spouseAsavedDate.setFullYear(spouseAtestDate.getFullYear())
-              spouseBsavedDate.setMonth(spouseBtestDate.getMonth())
-              spouseBsavedDate.setFullYear(spouseBtestDate.getFullYear())
+              spouseAsavedRetirementDate.setMonth(spouseAretirementDate.getMonth())
+              spouseAsavedRetirementDate.setFullYear(spouseAretirementDate.getFullYear())
+              spouseBsavedRetirementDate.setMonth(spouseBretirementDate.getMonth())
+              spouseBsavedRetirementDate.setFullYear(spouseBretirementDate.getFullYear())
+              spouseAsavedSpousalDate.setMonth(spouseAspousalDate.getMonth())
+              spouseAsavedSpousalDate.setFullYear(spouseAspousalDate.getFullYear())
+              spouseBsavedSpousalDate.setMonth(spouseBspousalDate.getMonth())
+              spouseBsavedSpousalDate.setFullYear(spouseBspousalDate.getFullYear())
               }
-          //Add 1 month to spouseBtestDate
-          spouseBtestDate.setMonth(spouseBtestDate.getMonth()+1)
+          //Find next possible claiming combination for spouseB
+            //if spouseB has new deemed filing rules, increment both dates by 1. (But don't increment spousalDate if it's currently set later than retirementDate.)
+              //No need to check here if spousal is too early, because at start of this loop it was set to earliest possible.
+            if (spouseBactualBirthDate > deemedFilingCutoff) {
+              if (spouseBspousalDate <= spouseBretirementDate) {
+                spouseBspousalDate.setMonth(spouseBspousalDate.getMonth()+1)
+              }
+              spouseBretirementDate.setMonth(spouseBretirementDate.getMonth()+1)
+            }
+          
+            else {//i.e., if spouseB has old deemed filing rules
+              //if spouseBretirementDate < FRA, increment both test dates by 1. (Don't increment spousalDate though if it is currently set later than retirementDate.)
+              if (spouseBretirementDate < spouseBFRA) {
+                if (spouseBspousalDate <= spouseBretirementDate) {
+                  spouseBspousalDate.setMonth(spouseBspousalDate.getMonth()+1)
+                }
+                spouseBretirementDate.setMonth(spouseBretirementDate.getMonth()+1)
+                //No need to check here if spousal is too early, because at start of this loop it was set to earliest possible.
+              }
+              else {//i.e., if spouseBretirementDate >= FRA
+                //Increment retirement testdate by 1 and set spousal date to earliest possible restricted application date (later of FRA or other spouse's retirementtestdate)
+                spouseBretirementDate.setMonth(spouseBretirementDate.getMonth()+1)
+                if (spouseAretirementDate > spouseBFRA) {
+                  spouseBspousalDate.setMonth(spouseAretirementDate.getMonth())
+                  spouseBspousalDate.setFullYear(spouseAretirementDate.getFullYear())
+                } else {
+                  spouseBspousalDate.setMonth(spouseBFRA.getMonth())
+                  spouseBspousalDate.setFullYear(spouseBFRA.getFullYear())
+                }
+              }
+
+            }
+          //After spouse B's retirement testdate has been incremented, adjust spouseA's spousal date as necessary
+            //If spouseA has new deemed filing rules, set spouseA spousalDate to later of spouseA retirementDate or spouseB retirementDate
+              if (spouseAactualBirthDate > deemedFilingCutoff) {
+                if (spouseAretirementDate > spouseBretirementDate) {
+                  spouseAspousalDate.setMonth(spouseAretirementDate.getMonth())
+                  spouseAspousalDate.setFullYear(spouseAretirementDate.getFullYear())
+                } else {
+                  spouseAspousalDate.setMonth(spouseBretirementDate.getMonth())
+                  spouseAspousalDate.setFullYear(spouseBretirementDate.getFullYear())
+                }
+              }
+              else {//i.e., if spouseA has old deemed filing rules
+                if (spouseAretirementDate < spouseAFRA) {
+                  //Set spouseA spousal testdate to later of spouseA retirementDate or spouseB retirementDate
+                  if (spouseAretirementDate > spouseBretirementDate) {
+                    spouseAspousalDate.setMonth(spouseAretirementDate.getMonth())
+                    spouseAspousalDate.setFullYear(spouseAretirementDate.getFullYear())
+                  } else {
+                    spouseAspousalDate.setMonth(spouseBretirementDate.getMonth())
+                    spouseAspousalDate.setFullYear(spouseBretirementDate.getFullYear())
+                  }
+                }
+                else {
+                  //Set spouseA spousalDate to earliest possible restricted application date (later of FRA or spouse B's retirementDate)
+                  if (spouseAFRA > spouseBretirementDate) {
+                    spouseAspousalDate.setMonth(spouseAFRA.getMonth())
+                    spouseAspousalDate.setFullYear(spouseAFRA.getFullYear())
+                  } else {
+                    spouseAspousalDate.setMonth(spouseBretirementDate.getMonth())
+                    spouseAspousalDate.setFullYear(spouseBretirementDate.getFullYear())
+                  }
+                }
+              }
+    
+    
+
         }
-        //Add 1 month to spouseAtestDate
-        spouseAtestDate.setMonth(spouseAtestDate.getMonth()+1)
+        //Add 1 month to spouseAretirementDate
+        spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1)
+
       }
     //after loop is finished
       console.log("saved PV: " + savedPV)
-      console.log("spouseAsavedDate: " + spouseAsavedDate)
-      console.log("spouseBsavedDate: " + spouseBsavedDate)
+      console.log("spouseAretirementDate: " + spouseAsavedRetirementDate)
+      console.log("spouseAspousalDate: " + spouseAsavedSpousalDate)
+      console.log("spouseBretirementDate: " + spouseBsavedRetirementDate)
+      console.log("spouseBspousalDate: " + spouseBsavedSpousalDate)
+
+      let solutionArray = [savedPV, spouseAsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedRetirementDate, spouseBsavedSpousalDate]
+      return solutionArray
   }
 
-  */
+
 
 //Lives remaining out of 100k, from SSA 2014 period life table
 maleLivesRemaining = [

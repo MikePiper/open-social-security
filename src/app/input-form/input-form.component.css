@@ -1,3 +1,23 @@
 form {
     padding-left:5px;
 }
+
+.PIAtooltip .tooltiptext {
+    visibility: hidden;
+    background-color: rgb(228, 249, 255);
+    color: black;
+    padding: 5px 0;
+    border-radius: 6px;
+ 
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+}
+
+.PIAtooltip:hover .tooltiptext {
+    visibility: visible;
+}
+
+.PIAtooltip {
+    border-bottom: 1px dotted black; /* Dots under the hoverable text */
+}

@@ -16,17 +16,9 @@ Also can calculate PV for claiming at an age of user's choice.
     *Should do more testing of spousal date validation, as well as of benefit/NPV calculation.
 5/16/18:
     * Did some additional testing of the spousal date validation, as well as of month-by-month benefits in various scenarios. Should do more testing of NPV calc also.
+    *Possible testing errors notwithstanding, appears to be a fully functional version that calculates recommended strategy for a couple, including restricted application if applicable.
 
 
-For maximizeCouplePV to be fast enough, spousal dates have to either be dependent variables, or independent variables with a *very* limited set of options (like, 4 different choices or something)
-    -Validation from input form -- same logic can be used to limit possible choices somewhat, but that's still way too many
-    -Eliminate ones that are clearly dominated strategies?
--If new deemed filing rules, we're looping through "retirement+spousal" dates essentially. (Already have working logic for this.)
--If old deemed filing rules, for each spouse we basically have the following?
-        1) "spousal + retirement" for each date up to FRA, and
-        2) "spousal ASAP -- possibly at FRA or maybe later if have to wait for other spouse to start retirement benefit" with a range of retirementBenefitDates.
-        *And for each of these, always check to make sure that spousalBenefitDate is a legitimate chocie. If not, don't do any benefit/PV calculations. Just loop through again.
-*Also note that this old/new deemed filing rule determination is per spouse.
 
 Current list of simplifications:
 *Currently assuming that widow(er)s don't file for survivor benefits until their survivorFRA. This ignores restricted application strategies.
@@ -45,7 +37,7 @@ Remaining To-Do:
 
 More testing of calculateCouplePV function (test spousal benefit input validation, benefit amounts, and NPV)
 
-Refactor maximizeCouplePV function so it actually works -- and in a reasonable amount of time -- with separate spousal and retirement benefit dates
+More testing of maximizeCouplePV function
 
 Allow for restricted applications for survivor benefits (regardless of DoB)
 

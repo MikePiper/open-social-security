@@ -1,109 +1,137 @@
-<form class="form-inline" #inputForm="ngForm" (ngSubmit)="onSubmit()">
-  <h2>Your Information</h2>
-  <div>
-    <label>Marital Status</label>
-    <select [(ngModel)]="maritalStatus" name="maritalStatus" class="form-control">
-      <option value="married">Married</option>
-      <option value="unmarried">Single</option>
-    </select>
-  </div>
-  <div>
-   <label>Gender</label>
-   <select [(ngModel)]="spouseAgender" name="spouseAgender" class="form-control">
-     <option value="male">Male</option>
-     <option value="female">Female</option>
-   </select>
-  </div>
-  <div class="form-group">
-    <label>Date of Birth month/day/year</label>
-    <select class="form-control" [(ngModel)]="spouseAinputMonth" name="spouseAinputMonth" required>
-      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-    </select>
-    <select class="form-control" [(ngModel)]="spouseAinputDay" name="spouseAinputDay" required>
-        <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
-    </select>
-    <select class="form-control" [(ngModel)]="spouseAinputYear" name="spouseAinputYear" required>
-        <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
-    </select>
-  </div>
-  <div>
-    <label>PIA</label>
-    <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" required>
-  </div>
-  <div class="form-group">
-    <label>Month/Year to claim retirement benefit:</label>
-    <select class="form-control" [(ngModel)]="spouseAretirementBenefitMonth" name="spouseAretirementBenefitMonth" required>
-      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-    </select>
-    <select class="form-control" [(ngModel)]="spouseAretirementBenefitYear" name="spouseAretirementBenefitYear" required>
-      <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-    </select>
-    <span *ngIf="this.spouseAretirementDateError" class="alert alert-danger">{{this.spouseAretirementDateError}}</span>
-  </div>
-  <span *ngIf="maritalStatus == 'married'">
-  <div>
-    <label>Month/Year to claim spousal benefit:</label>
-    <select class="form-control" [(ngModel)]="spouseAspousalBenefitMonth" name="spouseAspousalBenefitMonth" required>
-      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-    </select>
-    <select class="form-control" [(ngModel)]="spouseAspousalBenefitYear" name="spouseAspousalBenefitYear" required>
-      <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-    </select>
-    <span *ngIf="this.spouseAspousalDateError" class="alert alert-danger">{{this.spouseAspousalDateError}}</span>
-  </div>
+<div id="container" class="container">
+<form #inputForm="ngForm" (ngSubmit)="onSubmit()">
 
-  <h2>Your Spouse's Information</h2>
-  <div>
-   <label>Gender</label>
-   <select [(ngModel)]="spouseBgender" name="spouseBgender" class="form-control">
-     <option value="male">Male</option>
-     <option value="female">Female</option>
-   </select>
-  </div>
-  <div class="form-group">
-    <label>Date of Birth month/day/year</label>
-    <select class="form-control" [(ngModel)]="spouseBinputMonth" name="spouseBinputMonth" required>
-      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-    </select>
-    <select class="form-control" [(ngModel)]="spouseBinputDay" name="spouseBinputDay" required>
-        <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
-    </select>
-    <select class="form-control" [(ngModel)]="spouseBinputYear" name="spouseBinputYear" required>
-        <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
-    </select>
-  </div>
-  <div>
-    <label>PIA</label>
-    <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" required>
-  </div>
-  <div>
-    <label>Month/Year to claim retirement benefit:</label>
-    <select class="form-control" [(ngModel)]="spouseBretirementBenefitMonth" name="spouseBretirementBenefitMonth" required>
-      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-    </select>
-    <select class="form-control" [(ngModel)]="spouseBretirementBenefitYear" name="spouseBretirementBenefitYear" required>
-      <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-    </select>
-    <span *ngIf="this.spouseBretirementDateError" class="alert alert-danger">{{this.spouseBretirementDateError}}</span>
-  </div>
-  <div>
-    <label>Month/Year to claim spousal benefit:</label>
-    <select class="form-control" [(ngModel)]="spouseBspousalBenefitMonth" name="spouseBspousalBenefitMonth" required>
-      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-    </select>
-    <select class="form-control" [(ngModel)]="spouseBspousalBenefitYear" name="spouseBspousalBenefitYear" required>
-      <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-    </select>
-    <span *ngIf="this.spouseBspousalDateError" class="alert alert-danger">{{this.spouseBspousalDateError}}</span>
-  </div>
-</span>
-  <hr>
-  <div>
-    <label>Discount Rate</label>
-    <input type="text" [(ngModel)]="discountRate" name="discountRate" required>
-  </div>
-  <div>
-    <button type="submit" class="btn btn-success">Submit</button>
-  </div>
-  
+        <h2>Your Information</h2>
+        <div class="form-inline">
+          <label>Marital Status</label>
+          <select [(ngModel)]="maritalStatus" name="maritalStatus" class="form-control">
+            <option value="married">Married</option>
+            <option value="unmarried">Single</option>
+          </select>
+        </div>
+        <div class="form-inline">
+        <label>Gender</label>
+        <select [(ngModel)]="spouseAgender" name="spouseAgender" class="form-control">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+        </div>
+        <div class="form-inline">
+              <label>Date of Birth month/day/year</label>
+              <select class="form-control" [(ngModel)]="spouseAinputMonth" name="spouseAinputMonth" required>
+                <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+              </select>
+              <select class="form-control" [(ngModel)]="spouseAinputDay" name="spouseAinputDay" required>
+                  <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
+              </select>
+              <select class="form-control" [(ngModel)]="spouseAinputYear" name="spouseAinputYear" required>
+                  <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
+              </select>
+        </div>
+        <div>
+          <label class="PIAtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>
+          <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" required>
+        </div>
+
+
+      <span *ngIf="maritalStatus == 'married'">
+
+        <h2>Your Spouse's Information</h2>
+        <div class="form-inline">
+        <label>Gender</label>
+        <select [(ngModel)]="spouseBgender" name="spouseBgender" class="form-control">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+        </div>
+        <div class="form-inline">
+          <label>Date of Birth month/day/year</label>
+          <select class="form-control" [(ngModel)]="spouseBinputMonth" name="spouseBinputMonth" required>
+            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+          </select>
+          <select class="form-control" [(ngModel)]="spouseBinputDay" name="spouseBinputDay" required>
+              <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
+          </select>
+          <select class="form-control" [(ngModel)]="spouseBinputYear" name="spouseBinputYear" required>
+              <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
+          </select>
+        </div>
+        <div>
+          <label class="PIAtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>
+          <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" required>
+        </div>
+      </span>
+
+
+      <div>
+        <label>Discount Rate</label>
+        <input type="text" [(ngModel)]="discountRate" name="discountRate" required>
+      </div>
+      <div>
+        <button type="submit" id="maximizeSubmit" class="btn btn-success" (mousedown)="waitCursor()">Submit</button>
+      </div>
+      <p>Depending on your age and your computer's processor speed, this calculation may take a while (anywhere from a few seconds to a couple of minutes). Please be patient with your computer. It's doing quite a lot of math.</p>
 </form>
+<span *ngIf="this.solutionArray">
+  
+  <p *ngIf="maritalStatus == 'unmarried'">You should file for your retirement benefit to begin {{this.solutionArray[1].getMonth()+1}}/{{this.solutionArray[1].getFullYear()+1}}. The present value of such a claiming strategy would be {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}.</p>
+  
+  <p *ngIf="maritalStatus == 'married'">You should start your retirement benefit in the month {{this.solutionArray[1].getMonth()+1}}/{{this.solutionArray[1].getFullYear()+1}} and spousal benefit in the month {{this.solutionArray[2].getMonth()+1}}/{{this.solutionArray[2].getFullYear()+1}}.
+    Your spouse should start his/her retirement benefit in the month {{this.solutionArray[3].getMonth()+1}}/{{this.solutionArray[3].getFullYear()+1}} and spousal benefit in the month {{this.solutionArray[4].getMonth()+1}}/{{this.solutionArray[4].getFullYear()+1}}. The present value of such a claiming strategy would be {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}.</p>
+
+
+  <hr>
+
+  <form #customDateForm="ngForm" (ngSubmit)="customDates()">
+  <h2>Test an alternative claiming strategy:</h2>
+  <div class="form-inline">
+      <label>Your month/year to claim retirement benefit:</label>
+      <select class="form-control" [(ngModel)]="spouseAretirementBenefitMonth" name="spouseAretirementBenefitMonth" required>
+        <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+      </select>
+      <select class="form-control" [(ngModel)]="spouseAretirementBenefitYear" name="spouseAretirementBenefitYear" required>
+        <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+      </select>
+      <span *ngIf="this.spouseAretirementDateError" class="alert alert-danger">{{this.spouseAretirementDateError}}</span>
+    </div>
+    <span *ngIf="maritalStatus == 'married'">
+        <div class="form-inline">
+          <label>Your month/year to claim spousal benefit:</label>
+          <select class="form-control" [(ngModel)]="spouseAspousalBenefitMonth" name="spouseAspousalBenefitMonth" required>
+            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+          </select>
+          <select class="form-control" [(ngModel)]="spouseAspousalBenefitYear" name="spouseAspousalBenefitYear" required>
+            <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+          </select>
+          <span *ngIf="this.spouseAspousalDateError" class="alert alert-danger">{{this.spouseAspousalDateError}}</span>
+        </div>
+        <div class="form-inline">
+            <label>Your spouse's month/year to claim retirement benefit:</label>
+            <select class="form-control" [(ngModel)]="spouseBretirementBenefitMonth" name="spouseBretirementBenefitMonth" required>
+              <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+            </select>
+            <select class="form-control" [(ngModel)]="spouseBretirementBenefitYear" name="spouseBretirementBenefitYear" required>
+              <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+            </select>
+            <span *ngIf="this.spouseBretirementDateError" class="alert alert-danger">{{this.spouseBretirementDateError}}</span>
+          </div>
+          <div class="form-inline">
+            <label>Your spouse's month/year to claim spousal benefit:</label>
+            <select class="form-control" [(ngModel)]="spouseBspousalBenefitMonth" name="spouseBspousalBenefitMonth" required>
+              <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+            </select>
+            <select class="form-control" [(ngModel)]="spouseBspousalBenefitYear" name="spouseBspousalBenefitYear" required>
+              <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+            </select>
+            <span *ngIf="this.spouseBspousalDateError" class="alert alert-danger">{{this.spouseBspousalDateError}}</span>
+          </div>
+      </span>
+    <div>
+        <button type="submit" class="btn btn-success">Submit</button>
+    </div>
+    <span *ngIf="this.customPV">
+      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}, as compared to the present value of {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}} from the recommended strategy.
+    </span>
+  </form>
+</span>
+</div>

@@ -15,7 +15,6 @@ export class InputFormComponent implements OnInit {
   ngOnInit() {
 
   }
-
   today = new Date()
 
 //Variables to make form work
@@ -43,24 +42,24 @@ export class InputFormComponent implements OnInit {
   maritalStatus: string = "married"
   spouseAinputMonth: number = 4
   spouseAinputDay: number = 8
-  spouseAinputYear: number = 1984
+  spouseAinputYear: number = 1952
   spouseAPIA: number = 1000
   spouseAretirementBenefitMonth: number = 4
-  spouseAretirementBenefitYear: number = 2051
+  spouseAretirementBenefitYear: number = 2019
   spouseAretirementBenefitDate: Date
   spouseAspousalBenefitMonth: number = 4
-  spouseAspousalBenefitYear: number = 2051
+  spouseAspousalBenefitYear: number = 2019
   spouseAspousalBenefitDate: Date
   spouseAgender: string = "male"
   spouseBinputMonth: number = 4
   spouseBinputDay: number = 28
-  spouseBinputYear: number = 1984
+  spouseBinputYear: number = 1952
   spouseBPIA: number = 1000
   spouseBretirementBenefitMonth: number = 4
-  spouseBretirementBenefitYear: number = 2051
+  spouseBretirementBenefitYear: number = 2019
   spouseBretirementBenefitDate: Date
   spouseBspousalBenefitMonth: number = 4
-  spouseBspousalBenefitYear: number = 2051
+  spouseBspousalBenefitYear: number = 2019
   spouseBspousalBenefitDate: Date
   spouseBgender: string = "female"
   discountRate: number = 0.007
@@ -85,6 +84,10 @@ export class InputFormComponent implements OnInit {
   spouseAspousalDateError:string
   spouseBspousalDateError:string
 
+  //solution variables
+  solutionArray: any[]
+  customPV: number
+
   onSubmit() {
   let startTime = performance.now() //for testing performance
   console.log("-------------")
@@ -100,27 +103,51 @@ export class InputFormComponent implements OnInit {
   this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
   this.spouseAageRounded = Math.round(this.spouseAage)
   this.spouseBageRounded = Math.round(this.spouseBage)
-  this.spouseAretirementBenefitDate = new Date(this.spouseAretirementBenefitYear, this.spouseAretirementBenefitMonth-1, 1)
-  this.spouseBretirementBenefitDate = new Date(this.spouseBretirementBenefitYear, this.spouseBretirementBenefitMonth-1, 1)
-  this.spouseAspousalBenefitDate = new Date(this.spouseAspousalBenefitYear, this.spouseAspousalBenefitMonth-1, 1)
-  this.spouseBspousalBenefitDate = new Date(this.spouseBspousalBenefitYear, this.spouseBspousalBenefitMonth-1, 1)
-  this.spouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAretirementBenefitDate)
-  this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate)
-  this.spouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseAretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBretirementBenefitDate)
-  this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate)
-  if (this.maritalStatus == "unmarried" && !this.spouseAretirementDateError) {
-    console.log("Spouse A PV using input dates: " + this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseASSbirthDate, Number(this.spouseAage), Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAgender, Number(this.discountRate)))
-    this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
+  if (this.maritalStatus == "unmarried") {
+    this.solutionArray = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
     }
-  if(this.maritalStatus == "married" && !this.spouseAretirementDateError && !this.spouseBretirementDateError && !this.spouseBspousalDateError && !this.spouseAspousalDateError)
+  if(this.maritalStatus == "married")
     {
-      console.log("couplePV using input dates: " + this.presentvalueService.calculateCouplePV(this.spouseAgender, this.spouseBgender, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.discountRate)))
-      //this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAbirthDate, this.spouseBbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate))
+    this.solutionArray = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate))
     }
+  this.normalCursor()
     //For testing performance
     let endTime = performance.now()
     let elapsed = (endTime - startTime) /1000
     console.log("Time elapsed: " + elapsed)
+  }
+
+  customDates() {
+    //TODO: Get all the normal inputs from above, calc SSbirthdates, FRAs, etc.
+    this.spouseAactualBirthDate = new Date (this.spouseAinputYear, this.spouseAinputMonth-1, this.spouseAinputDay)
+    this.spouseASSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseAinputMonth, this.spouseAinputDay, this.spouseAinputYear))
+    this.spouseAFRA = new Date(this.birthdayService.findFRA(this.spouseASSbirthDate))
+    this.spouseAsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseASSbirthDate))
+    this.spouseBactualBirthDate = new Date (this.spouseBinputYear, this.spouseBinputMonth-1, this.spouseBinputDay)
+    this.spouseBSSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseBinputMonth, this.spouseBinputDay, this.spouseBinputYear))
+    this.spouseBFRA = new Date(this.birthdayService.findFRA(this.spouseBSSbirthDate))
+    this.spouseBsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseBSSbirthDate))
+    this.spouseAage =  ( this.today.getMonth() - this.spouseASSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseASSbirthDate.getFullYear()) )/12
+    this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
+    this.spouseAageRounded = Math.round(this.spouseAage)
+    this.spouseBageRounded = Math.round(this.spouseBage)
+    //Get input benefit dates
+    this.spouseAretirementBenefitDate = new Date(this.spouseAretirementBenefitYear, this.spouseAretirementBenefitMonth-1, 1)
+    this.spouseAspousalBenefitDate = new Date(this.spouseAspousalBenefitYear, this.spouseAspousalBenefitMonth-1, 1)
+    this.spouseBretirementBenefitDate = new Date(this.spouseBretirementBenefitYear, this.spouseBretirementBenefitMonth-1, 1)
+    this.spouseBspousalBenefitDate = new Date(this.spouseBspousalBenefitYear, this.spouseBspousalBenefitMonth-1, 1)
+    this.spouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAretirementBenefitDate)
+    this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate)
+    this.spouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseAretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBretirementBenefitDate)
+    this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate)
+    //Calc PV with input dates
+    if (this.maritalStatus == "unmarried" && !this.spouseAretirementDateError) {
+      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseASSbirthDate, Number(this.spouseAage), Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAgender, Number(this.discountRate))
+      }
+    if(this.maritalStatus == "married" && !this.spouseAretirementDateError && !this.spouseBretirementDateError && !this.spouseBspousalDateError && !this.spouseAspousalDateError)
+      {
+      this.customPV = this.presentvalueService.calculateCouplePV(this.spouseAgender, this.spouseBgender, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.discountRate))
+      }
   }
 
 
@@ -180,5 +207,15 @@ export class InputFormComponent implements OnInit {
     if (spousalBenefitDate < otherSpouseRetirementBenefitDate) {error = "You cannot start your spousal benefit before your spouse has filed for his/her own retirement benefit."}
 
     return error
+  }
+
+  waitCursor() {
+    document.getElementById("container").style.cursor = "wait";
+    document.getElementById("maximizeSubmit").style.cursor = "wait";
+  }
+
+  normalCursor(){
+    document.getElementById("container").style.cursor = "default";
+    document.getElementById("maximizeSubmit").style.cursor = "default";
   }
 }
