@@ -6,8 +6,12 @@ To Do List
     *MaximizePV function doesn't work at the moment. Hasn't been refactored to use spousalBenefitDates that are separate from retirementBenefitDates
     *Should do more testing of spousal date validation, as well as of benefit/NPV calculation.
 5/16/18:
-    * Did some additional testing of the spousal date validation, as well as of month-by-month benefits in various scenarios. Should do more testing of NPV calc also.
+    *Did some additional testing of the spousal date validation, as well as of month-by-month benefits in various scenarios. Should do more testing of NPV calc also.
     *Possible testing errors notwithstanding, appears to be a fully functional version that calculates recommended strategy for a couple, including restricted application if applicable.
+5/18/18:
+    *Did additional "directional" testing for couples eligible for restricted app strategies, for couples not eligible, and for couples with 1 person eligible.
+        All suggestions seem appropriate, and respond in appropriate direction to changes in inputs.
+    *Did actual NPV calc test for pair of people, both FRA 67 and both same age, both claiming at 67 then both claiming at 70, with various PIA combinations. Results matched spreadsheet.
 
 
 
@@ -29,10 +33,6 @@ Current list of simplifications:
 
 
 Remaining To-Do:
-
-More testing of calculateCouplePV function (test spousal benefit input validation, benefit amounts, and NPV)
-
-More testing of maximizeCouplePV function
 
 Work through various simplifications to remove them (or remove them at user's option)
 

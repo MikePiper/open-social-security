@@ -231,8 +231,14 @@ export class PresentvalueService {
     console.log("saved PV: " + savedPV)
     console.log("savedClaimingDate: " + savedClaimingDate)
 
-    let solutionArray = [savedPV, savedClaimingDate]
-    return solutionArray
+    let solutionSet = {
+      "solutionPV":savedPV,
+      "spouseAretirementSolution":savedClaimingDate,
+      "spouseBretirementSolution":null,
+      "spouseAspousalSolution":null,
+      "spouseBspousalSolution":null
+    }
+    return solutionSet
   }
 
 
@@ -383,12 +389,29 @@ export class PresentvalueService {
     //after loop is finished
       console.log("saved PV: " + savedPV)
       console.log("spouseAretirementDate: " + spouseAsavedRetirementDate)
-      console.log("spouseAspousalDate: " + spouseAsavedSpousalDate)
       console.log("spouseBretirementDate: " + spouseBsavedRetirementDate)
+      console.log("spouseAspousalDate: " + spouseAsavedSpousalDate)
       console.log("spouseBspousalDate: " + spouseBsavedSpousalDate)
 
-      let solutionArray = [savedPV, spouseAsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedRetirementDate, spouseBsavedSpousalDate]
-      return solutionArray
+      let solutionSet = {
+        "solutionPV":savedPV,
+        "spouseAretirementSolution":spouseAsavedRetirementDate,
+        "spouseBretirementSolution":spouseBsavedRetirementDate,
+        "spouseAspousalSolution":spouseAsavedSpousalDate,
+        "spouseBspousalSolution":spouseBsavedSpousalDate
+      }
+      //Set spousal dates back to null in cases in which there will be no spousal benefit, so user doesn't see a suggested spousal claiming age that makes no sense.
+        //need to recalculate spousal benefit for each spouse using the four saved dates.
+      let finalCheckSpouseAretirement = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAsavedRetirementDate)
+      let finalCheckSpouseAspousal = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, finalCheckSpouseAretirement, spouseAsavedSpousalDate)
+      let finalCheckSpouseBretirement = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBsavedRetirementDate)
+      let finalCheckSpouseBspousal = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, finalCheckSpouseBretirement, spouseBsavedSpousalDate)
+      if (finalCheckSpouseAspousal == 0 && spouseAsavedSpousalDate >= spouseAsavedRetirementDate) //We compare the dates because we don't want to eliminate the spousal date from output if it's prior to retirement date (as in restricted app)
+        {solutionSet.spouseAspousalSolution = null}
+      if (finalCheckSpouseBspousal == 0 && spouseBsavedSpousalDate >= spouseBsavedRetirementDate) //Ditto about date comparisons
+        {solutionSet.spouseBspousalSolution = null}
+
+      return solutionSet
   }
 
 

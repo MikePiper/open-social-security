@@ -85,8 +85,8 @@ export class InputFormComponent implements OnInit {
   spouseBspousalDateError:string
 
   //solution variables
-  solutionArray: any[]
   customPV: number
+  solutionSet = {}
 
   onSubmit() {
   let startTime = performance.now() //for testing performance
@@ -103,13 +103,12 @@ export class InputFormComponent implements OnInit {
   this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
   this.spouseAageRounded = Math.round(this.spouseAage)
   this.spouseBageRounded = Math.round(this.spouseBage)
-  this.solutionArray = []
   if (this.maritalStatus == "unmarried") {
-    this.solutionArray = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
+    this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
     }
   if(this.maritalStatus == "married")
     {
-    this.solutionArray = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate))
+    this.solutionSet = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate))
     }
   this.normalCursor()
     //For testing performance

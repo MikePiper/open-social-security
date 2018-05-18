@@ -70,15 +70,17 @@
       <div>
         <button type="submit" id="maximizeSubmit" class="btn btn-primary" (mousedown)="waitCursor()">Submit</button>
       </div>
-      <p *ngIf="!this.solutionArray">If you are married, depending on your age and your computer's processor speed, this calculation may take a while -- anywhere from a few seconds to a couple of minutes. Please be patient with your computer. It's doing quite a lot of math.</p>
+      <p *ngIf="!this.solutionSet.solutionPV">If you are married, depending on your age and your computer's processor speed, this calculation may take a while -- anywhere from a few seconds to a couple of minutes. Please be patient with your computer. It's doing quite a lot of math.</p>
 </form>
-<span *ngIf="this.solutionArray">
+<span *ngIf="this.solutionSet.solutionPV">
   
-  <p *ngIf="maritalStatus == 'unmarried'">You should file for your retirement benefit to begin {{this.solutionArray[1].getMonth()+1}}/{{this.solutionArray[1].getFullYear()}}. The present value of such a claiming strategy would be {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}.</p>
-  
-  <p *ngIf="maritalStatus == 'married'">You should start your retirement benefit in the month {{this.solutionArray[1].getMonth()+1}}/{{this.solutionArray[1].getFullYear()}} and spousal benefit in the month {{this.solutionArray[2].getMonth()+1}}/{{this.solutionArray[2].getFullYear()}}.
-    Your spouse should start his/her retirement benefit in the month {{this.solutionArray[3].getMonth()+1}}/{{this.solutionArray[3].getFullYear()}} and spousal benefit in the month {{this.solutionArray[4].getMonth()+1}}/{{this.solutionArray[4].getFullYear()}}. The present value of such a claiming strategy would be {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}.</p>
-
+  <ul>
+    <li *ngIf="this.solutionSet.spouseAretirementSolution">You should file for your retirement benefit to begin {{this.solutionSet.spouseAretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseAretirementSolution.getFullYear()}}.</li>
+    <li *ngIf="this.solutionSet.spouseAspousalSolution">You should file for your spousal benefit to begin {{this.solutionSet.spouseAspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseAspousalSolution.getFullYear()}}.</li>
+    <li *ngIf="this.solutionSet.spouseBretirementSolution">Your spouse should file for his/her retirement benefit to begin {{this.solutionSet.spouseBretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseBretirementSolution.getFullYear()}}.</li>
+    <li *ngIf="this.solutionSet.spouseBspousalSolution">Your spouse should file for his/her spousal benefit to begin {{this.solutionSet.spouseBspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseBspousalSolution.getFullYear()}}.</li>
+    <li *ngIf="this.solutionSet.solutionPV">The present value of this proposed solution would be {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}</li>
+  </ul>
 
   <hr>
 
@@ -130,7 +132,7 @@
         <button type="submit" class="btn btn-primary">Submit</button>
     </div>
     <span *ngIf="this.customPV">
-      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}, as compared to a present value of {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}} from the recommended strategy.
+      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}} from the recommended strategy.
     </span>
   </form>
 </span>
