@@ -25,6 +25,15 @@ For a married couple, it's the same sort of process, but with more going on. Spe
 3) Each combination of possible claiming ages must be considered, for both spouses, and for both types of benefits (i.e., retirement and spousal).
 
 
-**How Does the Actual Code Work?**
+**Flow of Information**
 
-[step-by-step walk through of the app itself]
+When a user clicks the "submit" button, the "onsubmit" method from input-form.component.ts is triggered. This is the "parent" function in which the whole process happens.
+
+First, we use the findSSbirthDate and findFRA functions from birthday.service.ts to find the user(s) Social Security birthdate, full retirement age, and full retirement age for the sake of survivor benefits.
+
+Then, either maximizeSinglePersonPV or maximizeCouplePV functions are called from presentvalue.service.ts, depending on whether it's an unmarried user or married user.
+
+The "maximizePV" functions call either calculateSinglePersonPV or calculateCouplePV for each possible claiming age (or set of claiming ages) to find that claiming age's present value.
+    In the process of doing this step, the various functions from benefit.service.ts are called in order to calculate applicable monthly benefit amounts.
+
+Then the claiming age (or set of claiming ages) with the highest PV is returned to the user, as well as the corresponding PV.x

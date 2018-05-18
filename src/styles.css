@@ -7,13 +7,18 @@ body{
     line-height: 2;
 }
 
+#jumbolink { /* removes underline from the link in jumbotron */
+    text-decoration:none;
+}
 
 .jumbotron { 
     background-color: #267bc5;
     color: #fff;
     font-family: Lato, sans-serif;
     padding-bottom:0px;
+    text-decoration:none;
 }
+
 
 @media only screen and (max-width: 600px) {
 .jumbotron p {
