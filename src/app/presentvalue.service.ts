@@ -410,6 +410,9 @@ export class PresentvalueService {
         {solutionSet.spouseAspousalSolution = null}
       if (finalCheckSpouseBspousal == 0 && spouseBsavedSpousalDate >= spouseBsavedRetirementDate) //Ditto about date comparisons
         {solutionSet.spouseBspousalSolution = null}
+      //Set retirement date to null if person has 0 PIA.
+      if (spouseAPIA == 0) {solutionSet.spouseAretirementSolution = null}
+      if (spouseBPIA == 0) {solutionSet.spouseBretirementSolution = null}
 
       return solutionSet
   }

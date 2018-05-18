@@ -40,12 +40,3 @@ For performance's sake, could refactor so everything is calculated on annual bas
     *Still look at all of the options by month. But then calcs are done by year, with some being a portion of a year? Is that even faster? We'd need additional "if" type logic to account for partial years here and there.
     
 
-
-Error case:
-Spouse A, 4/8/88 DoB. 1000 PIA
-Spouse B, 4/28/84 DoB, 0 PIA
-Says spouseA on 4/1/2051, spouseB on 4/1/2046, despite the fact that SpouseB wouldn't actually get anything on that date -- couldn't even file.
-    (Essentially it's just saying that SpouseB should file as soon as possible.)
-Note that it gives same PV for the combination it recommends as it does for 4/1/2051 and 4/1/2051 as combination, which makes sense. This is earliest point on which SpouseB can actually get something.
-    So math seems fine, but we need to edit the recommended dates in such a case.
-If spouseB is given a PIA of even $0.01, it now gets the dates correct, because it now sees the downside of SpouseB filing earlier.
