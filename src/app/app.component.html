@@ -2,20 +2,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 </head>
 <body>
-    <div class="page-header">
-        <h1>
-          {{ title }}
-        </h1>
+    <nav class="navbar navbar-default">
+      <div class="container">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a routerLink="/">HOME</a></li>
+            <li><a routerLink="/about">ABOUT</a></li>
+            <li><a routerLink="/contact">CONTACT</a></li>
+          </ul>
+          <div class="jumbotron text-center">
+            <h1>Open Social Security</h1>
+            <p>A free, open-source Social Security strategy calculator</p>
+          </div>
       </div>
-      <nav class="navbar navbar-default">
-        <ul class="nav navbar-nav">
-          <li><a routerLink="/">Home</a></li>
-          <li><a routerLink="/about">About</a></li>
-        </ul>
-      </nav>
+    </nav>
+
+
       <router-outlet></router-outlet>
 </body>
 </html>

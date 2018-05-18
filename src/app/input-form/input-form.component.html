@@ -29,7 +29,7 @@
               </select>
         </div>
         <div>
-          <label class="PIAtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>
+          <label class="customtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>
           <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" required>
         </div>
 
@@ -57,27 +57,27 @@
           </select>
         </div>
         <div>
-          <label class="PIAtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>
+          <label class="customtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>
           <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" required>
         </div>
       </span>
 
-
+      <h2>Other Input</h2>
       <div>
-        <label>Discount Rate</label>
+        <label class="customtooltip">Real Discount Rate<span class="tooltiptext">As a decimal (0.01 for a 1% discount rate, for example).</span></label>
         <input type="text" [(ngModel)]="discountRate" name="discountRate" required>
       </div>
       <div>
-        <button type="submit" id="maximizeSubmit" class="btn btn-success" (mousedown)="waitCursor()">Submit</button>
+        <button type="submit" id="maximizeSubmit" class="btn btn-primary" (mousedown)="waitCursor()">Submit</button>
       </div>
-      <p>Depending on your age and your computer's processor speed, this calculation may take a while (anywhere from a few seconds to a couple of minutes). Please be patient with your computer. It's doing quite a lot of math.</p>
+      <p *ngIf="!this.solutionArray">If you are married, depending on your age and your computer's processor speed, this calculation may take a while -- anywhere from a few seconds to a couple of minutes. Please be patient with your computer. It's doing quite a lot of math.</p>
 </form>
 <span *ngIf="this.solutionArray">
   
-  <p *ngIf="maritalStatus == 'unmarried'">You should file for your retirement benefit to begin {{this.solutionArray[1].getMonth()+1}}/{{this.solutionArray[1].getFullYear()+1}}. The present value of such a claiming strategy would be {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}.</p>
+  <p *ngIf="maritalStatus == 'unmarried'">You should file for your retirement benefit to begin {{this.solutionArray[1].getMonth()+1}}/{{this.solutionArray[1].getFullYear()}}. The present value of such a claiming strategy would be {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}.</p>
   
-  <p *ngIf="maritalStatus == 'married'">You should start your retirement benefit in the month {{this.solutionArray[1].getMonth()+1}}/{{this.solutionArray[1].getFullYear()+1}} and spousal benefit in the month {{this.solutionArray[2].getMonth()+1}}/{{this.solutionArray[2].getFullYear()+1}}.
-    Your spouse should start his/her retirement benefit in the month {{this.solutionArray[3].getMonth()+1}}/{{this.solutionArray[3].getFullYear()+1}} and spousal benefit in the month {{this.solutionArray[4].getMonth()+1}}/{{this.solutionArray[4].getFullYear()+1}}. The present value of such a claiming strategy would be {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}.</p>
+  <p *ngIf="maritalStatus == 'married'">You should start your retirement benefit in the month {{this.solutionArray[1].getMonth()+1}}/{{this.solutionArray[1].getFullYear()}} and spousal benefit in the month {{this.solutionArray[2].getMonth()+1}}/{{this.solutionArray[2].getFullYear()}}.
+    Your spouse should start his/her retirement benefit in the month {{this.solutionArray[3].getMonth()+1}}/{{this.solutionArray[3].getFullYear()}} and spousal benefit in the month {{this.solutionArray[4].getMonth()+1}}/{{this.solutionArray[4].getFullYear()}}. The present value of such a claiming strategy would be {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}.</p>
 
 
   <hr>
@@ -127,10 +127,10 @@
           </div>
       </span>
     <div>
-        <button type="submit" class="btn btn-success">Submit</button>
+        <button type="submit" class="btn btn-primary">Submit</button>
     </div>
     <span *ngIf="this.customPV">
-      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}, as compared to the present value of {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}} from the recommended strategy.
+      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}, as compared to a present value of {{this.solutionArray[0].toLocaleString('en-US', {style: 'currency',currency: 'USD'})}} from the recommended strategy.
     </span>
   </form>
 </span>

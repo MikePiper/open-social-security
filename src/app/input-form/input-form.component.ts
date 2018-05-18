@@ -39,7 +39,7 @@ export class InputFormComponent implements OnInit {
 
 
 //Inputs from form
-  maritalStatus: string = "married"
+  maritalStatus: string = "unmarried"
   spouseAinputMonth: number = 4
   spouseAinputDay: number = 8
   spouseAinputYear: number = 1952
@@ -62,7 +62,7 @@ export class InputFormComponent implements OnInit {
   spouseBspousalBenefitYear: number = 2019
   spouseBspousalBenefitDate: Date
   spouseBgender: string = "female"
-  discountRate: number = 0.007
+  discountRate: number = 0.01
 
   //Calculated dates and related info
   spouseAactualBirthDate: Date
@@ -103,6 +103,7 @@ export class InputFormComponent implements OnInit {
   this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
   this.spouseAageRounded = Math.round(this.spouseAage)
   this.spouseBageRounded = Math.round(this.spouseBage)
+  this.solutionArray = []
   if (this.maritalStatus == "unmarried") {
     this.solutionArray = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
     }
