@@ -11,7 +11,7 @@ To Do List
 5/18/18:
     *Did additional "directional" testing for couples eligible for restricted app strategies, for couples not eligible, and for couples with 1 person eligible.
         All suggestions seem appropriate, and respond in appropriate direction to changes in inputs.
-    *Did actual NPV calc test for pair of people, both FRA 67 and both same age, both claiming at 67 then both claiming at 70, with various PIA combinations. Results matched spreadsheet.
+    *Did actual NPV spreadsheet calculation for pair of people, both FRA 67 and both same age, both claiming at 67 then both claiming at 70, with various PIA combinations. App results matched spreadsheet.
 
 
 
