@@ -34,6 +34,12 @@ Current list of simplifications:
 
 Remaining To-Do:
 
+Resolve the security issue mentioned by GitHub ("hoek" version, which has been updated in package-lock.json to a newer version)
+
+Check whether some possible spousal month combinations are being skipped. Are we automatically incrementing both at the same time when both are incrementable? Does that necessarily make sense?
+
+Check that favicon updated on production (ghpages) version of site
+
 Work through various simplifications to remove them (or remove them at user's option)
 
 For performance's sake, could refactor so everything is calculated on annual basis? Not sure how that would look.
