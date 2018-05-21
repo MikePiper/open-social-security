@@ -42,24 +42,24 @@ export class InputFormComponent implements OnInit {
   maritalStatus: string = "unmarried"
   spouseAinputMonth: number = 4
   spouseAinputDay: number = 8
-  spouseAinputYear: number = 1952
+  spouseAinputYear: number = 1984
   spouseAPIA: number = 1000
   spouseAretirementBenefitMonth: number = 4
-  spouseAretirementBenefitYear: number = 2019
+  spouseAretirementBenefitYear: number = 2051
   spouseAretirementBenefitDate: Date
   spouseAspousalBenefitMonth: number = 4
-  spouseAspousalBenefitYear: number = 2019
+  spouseAspousalBenefitYear: number = 2051
   spouseAspousalBenefitDate: Date
   spouseAgender: string = "male"
   spouseBinputMonth: number = 4
   spouseBinputDay: number = 28
-  spouseBinputYear: number = 1952
+  spouseBinputYear: number = 1984
   spouseBPIA: number = 1000
   spouseBretirementBenefitMonth: number = 4
-  spouseBretirementBenefitYear: number = 2019
+  spouseBretirementBenefitYear: number = 2051
   spouseBretirementBenefitDate: Date
   spouseBspousalBenefitMonth: number = 4
-  spouseBspousalBenefitYear: number = 2019
+  spouseBspousalBenefitYear: number = 2051
   spouseBspousalBenefitDate: Date
   spouseBgender: string = "female"
   discountRate: number = 0.01
@@ -104,7 +104,7 @@ export class InputFormComponent implements OnInit {
   this.spouseAageRounded = Math.round(this.spouseAage)
   this.spouseBageRounded = Math.round(this.spouseBage)
   if (this.maritalStatus == "unmarried") {
-    this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
+    this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
     }
   if(this.maritalStatus == "married")
     {
@@ -136,8 +136,8 @@ export class InputFormComponent implements OnInit {
     this.spouseAspousalBenefitDate = new Date(this.spouseAspousalBenefitYear, this.spouseAspousalBenefitMonth-1, 1)
     this.spouseBretirementBenefitDate = new Date(this.spouseBretirementBenefitYear, this.spouseBretirementBenefitMonth-1, 1)
     this.spouseBspousalBenefitDate = new Date(this.spouseBspousalBenefitYear, this.spouseBspousalBenefitMonth-1, 1)
-    this.spouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAretirementBenefitDate)
-    this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate)
+    this.spouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAretirementBenefitDate)
+    this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBretirementBenefitDate)
     this.spouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseAretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBretirementBenefitDate)
     this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate)
     //Calc PV with input dates
@@ -151,7 +151,7 @@ export class InputFormComponent implements OnInit {
   }
 
 
-  checkValidRetirementInputs(FRA: Date, SSbirthDate: Date, retirementBenefitDate:Date) {
+  checkValidRetirementInputs(FRA: Date, SSbirthDate: Date, actualBirthDate:Date, retirementBenefitDate:Date) {
     let error = undefined
 
     //Validation to make sure they are not filing for benefits in the past
@@ -160,11 +160,16 @@ export class InputFormComponent implements OnInit {
     error = "Please enter a date no earlier than this month."
     }
 
-    //Validation in case they try to start benefit earlier than possible or after 70 (Just ignoring the "must be 62 for entire month" rule right now)
-    let claimingAge: number = ( retirementBenefitDate.getMonth() - SSbirthDate.getMonth() + 12 * (retirementBenefitDate.getFullYear() - SSbirthDate.getFullYear()) )/12
-    if (claimingAge < 61.99) {error = "Please enter a later date. You cannot file for retirement benefits before age 62."}
-    if (claimingAge > 70.01) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
-
+    //Validation in case they try to start benefit earlier than possible or after 70
+    let earliestDate: Date = new Date(SSbirthDate.getFullYear()+62, 1, 1)
+    if (actualBirthDate.getDate() <= 2) {
+      earliestDate.setMonth(actualBirthDate.getMonth())
+    } else {
+      earliestDate.setMonth(actualBirthDate.getMonth()+1)
+    }
+    if (retirementBenefitDate < earliestDate) {error = "Please enter a later date. You cannot file for retirement benefits before the first month in which you are 62 for the entire month."}
+    let latestDate: Date = new Date (SSbirthDate.getFullYear()+70, SSbirthDate.getMonth(), 1)
+    if (retirementBenefitDate > latestDate) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
     return error
   }
 

@@ -201,9 +201,14 @@ export class PresentvalueService {
   }
 
 
-  maximizeSinglePersonPV(PIA: number, SSbirthDate: Date, initialAge:number, FRA: Date, gender: string, discountRate: number){
+  maximizeSinglePersonPV(PIA: number, SSbirthDate: Date, actualBirthDate:Date, initialAge:number, FRA: Date, gender: string, discountRate: number){
     //find initial currentTestDate for age 62
-    let currentTestDate = new Date(SSbirthDate.getFullYear()+62, SSbirthDate.getMonth(), 1)
+    let currentTestDate = new Date(SSbirthDate.getFullYear()+62, 1, 1)
+    if (actualBirthDate.getDate() <= 2){
+      currentTestDate.setMonth(actualBirthDate.getMonth())
+    } else {
+      currentTestDate.setMonth(actualBirthDate.getMonth()+1)
+    }
 
     //If they are currently over age 62 when filling out form, set currentTestDate to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
     let ageToday = this.today.getFullYear() - SSbirthDate.getFullYear() + (this.today.getMonth() - SSbirthDate.getMonth())/12
@@ -248,9 +253,16 @@ export class PresentvalueService {
 
     let deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
-    //find initial test dates for when spouseA is 62
-    let spouseAretirementDate = new Date(spouseASSbirthDate.getFullYear()+62, spouseASSbirthDate.getMonth(), 1)
-    let spouseAspousalDate = new Date(spouseASSbirthDate.getFullYear()+62, spouseASSbirthDate.getMonth(), 1)
+    //find initial test dates for spouseA (first month for which spouseA is considered 62 for entire month)
+    let spouseAretirementDate = new Date(spouseASSbirthDate.getFullYear()+62, 1, 1)
+    let spouseAspousalDate = new Date(spouseASSbirthDate.getFullYear()+62, 1, 1)
+    if (spouseAactualBirthDate.getDate() <= 2){
+      spouseAretirementDate.setMonth(spouseAactualBirthDate.getMonth())
+      spouseAspousalDate.setMonth(spouseAactualBirthDate.getMonth())
+    } else {
+      spouseAretirementDate.setMonth(spouseAactualBirthDate.getMonth()+1)
+      spouseAspousalDate.setMonth(spouseAactualBirthDate.getMonth()+1)
+    }
     //If spouseA is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
     let today = new Date()
     let spouseAageToday: number = today.getFullYear() - spouseASSbirthDate.getFullYear() + (today.getMonth() - spouseASSbirthDate.getMonth()) /12
@@ -261,8 +273,15 @@ export class PresentvalueService {
       spouseAspousalDate.setFullYear(today.getFullYear())
     }
     //Do all of the same, but for spouseB.
-    let spouseBretirementDate = new Date(spouseBSSbirthDate.getFullYear()+62, spouseBSSbirthDate.getMonth(), 1)
-    let spouseBspousalDate = new Date(spouseBSSbirthDate.getFullYear()+62, spouseBSSbirthDate.getMonth(), 1)
+    let spouseBretirementDate = new Date(spouseBSSbirthDate.getFullYear()+62, 1, 1)
+    let spouseBspousalDate = new Date(spouseBSSbirthDate.getFullYear()+62, 1, 1)
+    if (spouseBactualBirthDate.getDate() <= 2){
+      spouseBretirementDate.setMonth(spouseBactualBirthDate.getMonth())
+      spouseBspousalDate.setMonth(spouseBactualBirthDate.getMonth())
+    } else {
+      spouseBretirementDate.setMonth(spouseBactualBirthDate.getMonth()+1)
+      spouseBspousalDate.setMonth(spouseBactualBirthDate.getMonth()+1)
+    }
     let spouseBageToday: number = today.getFullYear() - spouseBSSbirthDate.getFullYear() + (today.getMonth() - spouseBSSbirthDate.getMonth()) /12
     if (spouseBageToday > 62){
       spouseBretirementDate.setMonth(today.getMonth())
@@ -270,6 +289,12 @@ export class PresentvalueService {
       spouseBspousalDate.setMonth(today.getMonth())
       spouseBspousalDate.setFullYear(today.getFullYear())
     }
+    //Check to see if spouseA's current spousalDate is prior to spouseB's earliest retirementDate. If so, adjust.
+    if (spouseAspousalDate < spouseBretirementDate){
+      spouseAspousalDate.setFullYear(spouseBretirementDate.getFullYear())
+      spouseAspousalDate.setMonth(spouseBretirementDate.getMonth())
+    }
+
     //Initialize savedPV as zero. Set spouseAsavedDate and spouseBsavedDate equal to their current testDates.
       let savedPV: number = 0
       let spouseAsavedRetirementDate = new Date(spouseAretirementDate)
@@ -282,17 +307,22 @@ export class PresentvalueService {
     let spouseBendTestDate = new Date(spouseBSSbirthDate.getFullYear()+70, spouseBSSbirthDate.getMonth(), 1)
 
     while (spouseAretirementDate <= spouseAendTestDate) {
-        //Reset spouseB test dates to earliest possible (i.e., their Age62 month or today's month if they're currently older than 62, but never earlier than spouse A's retirementDate)
+        //Reset spouseB test dates to earliest possible (i.e., their "age 62 for whole month" month or today's month if they're currently older than 62, but never earlier than spouse A's retirementDate)
         if (spouseBageToday > 62){
           spouseBretirementDate.setMonth(today.getMonth())
           spouseBretirementDate.setFullYear(today.getFullYear())
           spouseBspousalDate.setMonth(today.getMonth())
           spouseBspousalDate.setFullYear(today.getFullYear())
         } else {
-          spouseBretirementDate.setMonth(spouseBSSbirthDate.getMonth())
-          spouseBretirementDate.setFullYear(spouseBSSbirthDate.getFullYear()+62)
-          spouseBspousalDate.setMonth(spouseBSSbirthDate.getMonth())
-          spouseBspousalDate.setFullYear(spouseBSSbirthDate.getFullYear()+62)
+            spouseBretirementDate.setFullYear(spouseBSSbirthDate.getFullYear()+62)
+            spouseBspousalDate.setFullYear(spouseBSSbirthDate.getFullYear()+62)
+            if (spouseBactualBirthDate.getDate() <= 2){
+              spouseBretirementDate.setMonth(spouseBactualBirthDate.getMonth())
+              spouseBspousalDate.setMonth(spouseBactualBirthDate.getMonth())
+            } else {
+              spouseBretirementDate.setMonth(spouseBactualBirthDate.getMonth()+1)
+              spouseBspousalDate.setMonth(spouseBactualBirthDate.getMonth()+1)
+            }
         }
         if (spouseBspousalDate < spouseAretirementDate) {
           spouseBspousalDate.setMonth(spouseAretirementDate.getMonth())
@@ -367,7 +397,7 @@ export class PresentvalueService {
                     spouseAspousalDate.setFullYear(spouseBretirementDate.getFullYear())
                   }
                 }
-                else {
+                else {//i.e., if spouseAretirementDate currently after spouseAFRA
                   //Set spouseA spousalDate to earliest possible restricted application date (later of FRA or spouse B's retirementDate)
                   if (spouseAFRA > spouseBretirementDate) {
                     spouseAspousalDate.setMonth(spouseAFRA.getMonth())

@@ -18,7 +18,6 @@ To Do List
 Current list of simplifications:
 *Currently assuming that widow(er)s don't file for survivor benefits until their survivorFRA. This ignores restricted application strategies.
 *Currently uses SSA 2014 period life table, which understates life expectancy relative to cohort table. Also doesn't allow for input regarding health status.
-*Currently ignores the "must be 62 for entire month" rule with regard to a person claiming as early as possible.
 *Currently does not account for child benefits (or spousal benefits for somebody younger than 62 with child in care)
 *Currently does not account for disability benefits
 *Currently does not account for GPO
@@ -35,8 +34,6 @@ Current list of simplifications:
 Remaining To-Do:
 
 Resolve the security issue mentioned by GitHub ("hoek" version, which has been updated in package-lock.json to a newer version)
-
-Check whether some possible spousal month combinations are being skipped. Are we automatically incrementing both at the same time when both are incrementable? Does that necessarily make sense?
 
 Check that favicon updated on production (ghpages) version of site
 
