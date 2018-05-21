@@ -27,7 +27,7 @@ module.exports = ""
 /***/ "./src/app/about/about.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n    <p>Open Social Security is a free, basic, open-source Social Security strategy calculator.</p>\n    <p>Please note that Open Social Security does not currently account for all the various circumstances that a real-life person/couple might face. For instance, it does not currently account for:</p>\n        <ul>\n            <li>The earnings test (for people who are still working and filing for benefits before full retirement age),</li>\n            <li>The government pension offset (GPO),</li>\n            <li>Child benefits (or spousal benefits for people younger than age 62 with a child in care),</li>\n            <li>Disability benefits,</li>\n            <li>Strategies for people who are already widowed (or widowered) when they are using the calculator,</li>\n            <li>The possibility that your life expectancy (or your spouse's life expectancy) may be significantly shorter or longer than average, or</li>\n            <li>Tax planning reasons or other unrelated reasons why it might be better for you to file earlier or later than the calculator suggests.</li>\n        </ul>\n    <p>I intend to add functionality to account for some of the above things, but it will take time. In the meantime, to learn more about Social Security, including the above topics, you may want to read my book: <em><a href=\"https://www.amazon.com/dp/0997946512/?tag=openss-20/\" target=\"_blank\">Social Security Made Simple</a></em>.</p>\n    <hr> \n    <a href=\"https://www.amazon.com/dp/0997946512/?tag=openss-20/\" target=\"_blank\"><img src=\"https://obliviousinvestor.com/wp-content/uploads/2018/05/BookCover.jpg\" class=\"float-right\" width=\"150\" alt=\"Social Security Made Simple Cover\"></a>\n    <hr>\n    <p>Alternatively, you may find one or both of the following (paid) calculators to be helpful. I have no association with either one, but they are each created by respected experts in the field.</p>\n    <ul>\n        <li><a href=\"https://maximizemysocialsecurity.com/\" target=\"_blank\">Maximize My Social Security</a></li>\n        <li><a href=\"http://socialsecuritysolutions.com/\" target=\"blank\">Social Security Solutions</a></li>\n    </ul>\n    <h2>About the Author (Mike Piper)</h2>\n    I am a CPA in St. Louis, Missouri. I'm the author of nine financial books, as well as the popular blog \"<a href=\"https://obliviousinvestor.com/\" target=\"_blank\">Oblivious Investor</a>.\"\n    I have....[speaking about social security], and have been quoted as a Social Security expert in numerous publications (e.g., Wall Street Journal, AARP, Kiplinger, and several others).\n    <h2>Math Details</h2>\n    For people interested in the details of how this calculator works, I'd encourage you to read the \"README\" file, available here:\n    [README link]\n    <h2>License</h2>\n    <p>Other parties are encouraged to use the code from this calculator for their own purposes, per the license below. You can download the source code here:</p>\n    <p>[github project link]</p>\n    <p>\"MIT License\"</p>\n    <p>Copyright (c) 2018 Michael Piper (<a href=\"https://obliviousinvestor.com/\" target=\"_blank\">obliviousinvestor.com</a>)</p>\n    <p>Permission is hereby granted, free of charge, to any person obtaining a copy\n    of this software and associated documentation files (the \"Software\"), to deal\n    in the Software without restriction, including without limitation the rights\n    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n    copies of the Software, and to permit persons to whom the Software is\n    furnished to do so, subject to the following conditions:</p>\n\n    <p>The above copyright notice and this permission notice shall be included in all\n        copies or substantial portions of the Software.</p>\n\n    <p>THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n        SOFTWARE.</p>\n</div>"
+module.exports = "<div class=\"container\">\n    <p>Open Social Security is a free, basic, open-source Social Security strategy calculator.</p>\n    <p>Please note that Open Social Security does not currently account for all the various circumstances that a real-life person/couple might face. For instance, it does not currently account for:</p>\n        <ul>\n            <li>The earnings test (for people who are still working and filing for benefits before full retirement age),</li>\n            <li>The government pension offset (GPO),</li>\n            <li>Child benefits (or spousal benefits for people younger than age 62 with a child in care),</li>\n            <li>Disability benefits,</li>\n            <li>Strategies for people who are already widowed (or widowered) when they are using the calculator,</li>\n            <li>The possibility that your life expectancy (or your spouse's life expectancy) may be significantly shorter or longer than average, or</li>\n            <li>Tax planning reasons or other unrelated reasons why it might be better for you to file earlier or later than the calculator suggests.</li>\n        </ul>\n    <p>I intend to add functionality to account for some of the above things, but it will take time. In the meantime, to learn more about Social Security, including the above topics, you may want to read my book: <em><a href=\"https://www.amazon.com/dp/0997946512/?tag=openss-20/\" target=\"_blank\">Social Security Made Simple</a></em>.</p>\n    <hr> \n    <a href=\"https://www.amazon.com/dp/0997946512/?tag=openss-20/\" target=\"_blank\"><img src=\"https://obliviousinvestor.com/wp-content/uploads/2018/05/BookCover.jpg\" class=\"float-right\" width=\"150\" alt=\"Social Security Made Simple Cover\"></a>\n    <hr>\n    <p>Alternatively, you may find one or both of the following (paid) calculators to be helpful. I have no association with either one, but they are each created by respected experts in the field.</p>\n    <ul>\n        <li><a href=\"https://maximizemysocialsecurity.com/\" target=\"_blank\">Maximize My Social Security</a></li>\n        <li><a href=\"http://socialsecuritysolutions.com/\" target=\"blank\">Social Security Solutions</a></li>\n    </ul>\n    <h2>About the Author (Mike Piper)</h2>\n    I am a CPA in St. Louis, Missouri. I'm the author of nine financial books, as well as the popular blog \"<a href=\"https://obliviousinvestor.com/\" target=\"_blank\">Oblivious Investor</a>.\"\n    I am an occasional public speaker (usually about Social Security or tax planning), and I have been quoted as a Social Security expert in numerous publications (e.g., Wall Street Journal, AARP, Kiplinger, and several others).\n    <h2>Math Details</h2>\n    For people interested in the details of how this calculator works, I'd encourage you to read the \"README\" file, available here:\n    <p><a href=\"https://github.com/MikePiper/open-social-security/blob/master/README.md\" target=\"_blank\">https://github.com/MikePiper/open-social-security/blob/master/README.md</a></p>\n    <h2>License</h2>\n    <p>Other parties are encouraged to use the code from this calculator for their own purposes, per the license below. You can download the source code here:</p>\n    <p><a href=\"https://github.com/MikePiper/open-social-security\" target=\"_blank\">https://github.com/MikePiper/open-social-security/</a></p>\n    <p>\"MIT License\"</p>\n    <p>Copyright (c) 2018 Michael Piper (<a href=\"https://obliviousinvestor.com/\" target=\"_blank\">obliviousinvestor.com</a>)</p>\n    <p>Permission is hereby granted, free of charge, to any person obtaining a copy\n    of this software and associated documentation files (the \"Software\"), to deal\n    in the Software without restriction, including without limitation the rights\n    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n    copies of the Software, and to permit persons to whom the Software is\n    furnished to do so, subject to the following conditions:</p>\n\n    <p>The above copyright notice and this permission notice shall be included in all\n        copies or substantial portions of the Software.</p>\n\n    <p>THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n        SOFTWARE.</p>\n</div>"
 
 /***/ }),
 
@@ -437,7 +437,7 @@ module.exports = ""
 /***/ "./src/app/contact/contact.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n<p>You can reach me at [email address].</p>\n<p>\nPlease be aware though that I cannot reply to every email.\nI'm eager to hear constructive input about the calculator, but I cannot serve as tech support, nor can I provide a personal Social Security consultation.\n</p>\n<p>If you're looking for more information about how this calculator works, you can view the source code for yourself here: [github link]</p>\n    \nThe README file, in particular, will be of interest, as it walks through the calculator's process step-by-step.\n<p>If you're looking for more information about Social Security, you may find my book or blog helpful:</p>\n<ul>\n    <li><em><a href=\"https://www.amazon.com/dp/0997946512/?tag=openss-20/\" target=\"_blank\">Social Security Made Simple</a></em></li>\n    <li><a href=\"https://obliviousinvestor.com/\" target=\"_blank\">ObliviousInvestor.com</a></li>\n</ul>\n<p>You may also benefit from trying one or both of the following (paid) Social Security calculators:</p>\n<ul>\n    <li><a href=\"https://maximizemysocialsecurity.com/\" target=\"_blank\">Maximize My Social Security</a></li>\n    <li><a href=\"http://socialsecuritysolutions.com/\" target=\"blank\">Social Security Solutions</a></li>\n</ul>\n</div>"
+module.exports = "<div class=\"container\">\n<p>You can reach me at mike@obliviousinvestor.com.</p>\n<p>\nPlease be aware though that I cannot reply to every email.\nI'm eager to hear constructive input about the calculator, but I cannot serve as tech support, nor can I provide a personal Social Security consultation.\n</p>\n<p>If you're looking for more information about how this calculator works, you can view the source code for yourself here:</p>\n<p><a href=\"https://github.com/MikePiper/open-social-security\" target=\"_blank\">https://github.com/MikePiper/open-social-security/</a></p>\n<p>The README file, in particular, will be of interest, as it walks through the calculator's process step-by-step.</p>\n<p>If you're looking for more information about Social Security, you may find my book or blog helpful:</p>\n<ul>\n    <li><em><a href=\"https://www.amazon.com/dp/0997946512/?tag=openss-20/\" target=\"_blank\">Social Security Made Simple</a></em></li>\n    <li><a href=\"https://obliviousinvestor.com/\" target=\"_blank\">ObliviousInvestor.com</a></li>\n</ul>\n<p>You may also benefit from trying one or both of the following (paid) Social Security calculators:</p>\n<ul>\n    <li><a href=\"https://maximizemysocialsecurity.com/\" target=\"_blank\">Maximize My Social Security</a></li>\n    <li><a href=\"http://socialsecuritysolutions.com/\" target=\"blank\">Social Security Solutions</a></li>\n</ul>\n</div>"
 
 /***/ }),
 
@@ -542,21 +542,21 @@ var InputFormComponent = /** @class */ (function () {
         this.maritalStatus = "unmarried";
         this.spouseAinputMonth = 4;
         this.spouseAinputDay = 8;
-        this.spouseAinputYear = 1952;
+        this.spouseAinputYear = 1984;
         this.spouseAPIA = 1000;
         this.spouseAretirementBenefitMonth = 4;
-        this.spouseAretirementBenefitYear = 2019;
+        this.spouseAretirementBenefitYear = 2051;
         this.spouseAspousalBenefitMonth = 4;
-        this.spouseAspousalBenefitYear = 2019;
+        this.spouseAspousalBenefitYear = 2051;
         this.spouseAgender = "male";
         this.spouseBinputMonth = 4;
         this.spouseBinputDay = 28;
-        this.spouseBinputYear = 1952;
+        this.spouseBinputYear = 1984;
         this.spouseBPIA = 1000;
         this.spouseBretirementBenefitMonth = 4;
-        this.spouseBretirementBenefitYear = 2019;
+        this.spouseBretirementBenefitYear = 2051;
         this.spouseBspousalBenefitMonth = 4;
-        this.spouseBspousalBenefitYear = 2019;
+        this.spouseBspousalBenefitYear = 2051;
         this.spouseBgender = "female";
         this.discountRate = 0.01;
         this.solutionSet = {};
@@ -579,7 +579,7 @@ var InputFormComponent = /** @class */ (function () {
         this.spouseAageRounded = Math.round(this.spouseAage);
         this.spouseBageRounded = Math.round(this.spouseBage);
         if (this.maritalStatus == "unmarried") {
-            this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate));
+            this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate));
         }
         if (this.maritalStatus == "married") {
             this.solutionSet = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate));
@@ -609,8 +609,8 @@ var InputFormComponent = /** @class */ (function () {
         this.spouseAspousalBenefitDate = new Date(this.spouseAspousalBenefitYear, this.spouseAspousalBenefitMonth - 1, 1);
         this.spouseBretirementBenefitDate = new Date(this.spouseBretirementBenefitYear, this.spouseBretirementBenefitMonth - 1, 1);
         this.spouseBspousalBenefitDate = new Date(this.spouseBspousalBenefitYear, this.spouseBspousalBenefitMonth - 1, 1);
-        this.spouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAretirementBenefitDate);
-        this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate);
+        this.spouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAretirementBenefitDate);
+        this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBretirementBenefitDate);
         this.spouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseAretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBretirementBenefitDate);
         this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate);
         //Calc PV with input dates
@@ -621,18 +621,25 @@ var InputFormComponent = /** @class */ (function () {
             this.customPV = this.presentvalueService.calculateCouplePV(this.spouseAgender, this.spouseBgender, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.discountRate));
         }
     };
-    InputFormComponent.prototype.checkValidRetirementInputs = function (FRA, SSbirthDate, retirementBenefitDate) {
+    InputFormComponent.prototype.checkValidRetirementInputs = function (FRA, SSbirthDate, actualBirthDate, retirementBenefitDate) {
         var error = undefined;
         //Validation to make sure they are not filing for benefits in the past
         if ((retirementBenefitDate.getFullYear() < this.today.getFullYear()) || (retirementBenefitDate.getFullYear() == this.today.getFullYear() && (retirementBenefitDate.getMonth() < this.today.getMonth()))) {
             error = "Please enter a date no earlier than this month.";
         }
-        //Validation in case they try to start benefit earlier than possible or after 70 (Just ignoring the "must be 62 for entire month" rule right now)
-        var claimingAge = (retirementBenefitDate.getMonth() - SSbirthDate.getMonth() + 12 * (retirementBenefitDate.getFullYear() - SSbirthDate.getFullYear())) / 12;
-        if (claimingAge < 61.99) {
-            error = "Please enter a later date. You cannot file for retirement benefits before age 62.";
+        //Validation in case they try to start benefit earlier than possible or after 70
+        var earliestDate = new Date(SSbirthDate.getFullYear() + 62, 1, 1);
+        if (actualBirthDate.getDate() <= 2) {
+            earliestDate.setMonth(actualBirthDate.getMonth());
         }
-        if (claimingAge > 70.01) {
+        else {
+            earliestDate.setMonth(actualBirthDate.getMonth() + 1);
+        }
+        if (retirementBenefitDate < earliestDate) {
+            error = "Please enter a later date. You cannot file for retirement benefits before the first month in which you are 62 for the entire month.";
+        }
+        var latestDate = new Date(SSbirthDate.getFullYear() + 70, SSbirthDate.getMonth(), 1);
+        if (retirementBenefitDate > latestDate) {
             error = "Please enter an earlier date. You do not want to wait beyond age 70.";
         }
         return error;
@@ -1496,9 +1503,15 @@ var PresentvalueService = /** @class */ (function () {
         }
         return couplePV;
     };
-    PresentvalueService.prototype.maximizeSinglePersonPV = function (PIA, SSbirthDate, initialAge, FRA, gender, discountRate) {
+    PresentvalueService.prototype.maximizeSinglePersonPV = function (PIA, SSbirthDate, actualBirthDate, initialAge, FRA, gender, discountRate) {
         //find initial currentTestDate for age 62
-        var currentTestDate = new Date(SSbirthDate.getFullYear() + 62, SSbirthDate.getMonth(), 1);
+        var currentTestDate = new Date(SSbirthDate.getFullYear() + 62, 1, 1);
+        if (actualBirthDate.getDate() <= 2) {
+            currentTestDate.setMonth(actualBirthDate.getMonth());
+        }
+        else {
+            currentTestDate.setMonth(actualBirthDate.getMonth() + 1);
+        }
         //If they are currently over age 62 when filling out form, set currentTestDate to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
         var ageToday = this.today.getFullYear() - SSbirthDate.getFullYear() + (this.today.getMonth() - SSbirthDate.getMonth()) / 12;
         if (ageToday > 62) {
@@ -1534,9 +1547,17 @@ var PresentvalueService = /** @class */ (function () {
     };
     PresentvalueService.prototype.maximizeCouplePV = function (spouseAPIA, spouseBPIA, spouseAactualBirthDate, spouseBactualBirthDate, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded, spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAgender, spouseBgender, discountRate) {
         var deemedFilingCutoff = new Date(1954, 0, 1);
-        //find initial test dates for when spouseA is 62
-        var spouseAretirementDate = new Date(spouseASSbirthDate.getFullYear() + 62, spouseASSbirthDate.getMonth(), 1);
-        var spouseAspousalDate = new Date(spouseASSbirthDate.getFullYear() + 62, spouseASSbirthDate.getMonth(), 1);
+        //find initial test dates for spouseA (first month for which spouseA is considered 62 for entire month)
+        var spouseAretirementDate = new Date(spouseASSbirthDate.getFullYear() + 62, 1, 1);
+        var spouseAspousalDate = new Date(spouseASSbirthDate.getFullYear() + 62, 1, 1);
+        if (spouseAactualBirthDate.getDate() <= 2) {
+            spouseAretirementDate.setMonth(spouseAactualBirthDate.getMonth());
+            spouseAspousalDate.setMonth(spouseAactualBirthDate.getMonth());
+        }
+        else {
+            spouseAretirementDate.setMonth(spouseAactualBirthDate.getMonth() + 1);
+            spouseAspousalDate.setMonth(spouseAactualBirthDate.getMonth() + 1);
+        }
         //If spouseA is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
         var today = new Date();
         var spouseAageToday = today.getFullYear() - spouseASSbirthDate.getFullYear() + (today.getMonth() - spouseASSbirthDate.getMonth()) / 12;
@@ -1547,14 +1568,27 @@ var PresentvalueService = /** @class */ (function () {
             spouseAspousalDate.setFullYear(today.getFullYear());
         }
         //Do all of the same, but for spouseB.
-        var spouseBretirementDate = new Date(spouseBSSbirthDate.getFullYear() + 62, spouseBSSbirthDate.getMonth(), 1);
-        var spouseBspousalDate = new Date(spouseBSSbirthDate.getFullYear() + 62, spouseBSSbirthDate.getMonth(), 1);
+        var spouseBretirementDate = new Date(spouseBSSbirthDate.getFullYear() + 62, 1, 1);
+        var spouseBspousalDate = new Date(spouseBSSbirthDate.getFullYear() + 62, 1, 1);
+        if (spouseBactualBirthDate.getDate() <= 2) {
+            spouseBretirementDate.setMonth(spouseBactualBirthDate.getMonth());
+            spouseBspousalDate.setMonth(spouseBactualBirthDate.getMonth());
+        }
+        else {
+            spouseBretirementDate.setMonth(spouseBactualBirthDate.getMonth() + 1);
+            spouseBspousalDate.setMonth(spouseBactualBirthDate.getMonth() + 1);
+        }
         var spouseBageToday = today.getFullYear() - spouseBSSbirthDate.getFullYear() + (today.getMonth() - spouseBSSbirthDate.getMonth()) / 12;
         if (spouseBageToday > 62) {
             spouseBretirementDate.setMonth(today.getMonth());
             spouseBretirementDate.setFullYear(today.getFullYear());
             spouseBspousalDate.setMonth(today.getMonth());
             spouseBspousalDate.setFullYear(today.getFullYear());
+        }
+        //Check to see if spouseA's current spousalDate is prior to spouseB's earliest retirementDate. If so, adjust.
+        if (spouseAspousalDate < spouseBretirementDate) {
+            spouseAspousalDate.setFullYear(spouseBretirementDate.getFullYear());
+            spouseAspousalDate.setMonth(spouseBretirementDate.getMonth());
         }
         //Initialize savedPV as zero. Set spouseAsavedDate and spouseBsavedDate equal to their current testDates.
         var savedPV = 0;
@@ -1566,7 +1600,7 @@ var PresentvalueService = /** @class */ (function () {
         var spouseAendTestDate = new Date(spouseASSbirthDate.getFullYear() + 70, spouseASSbirthDate.getMonth(), 1);
         var spouseBendTestDate = new Date(spouseBSSbirthDate.getFullYear() + 70, spouseBSSbirthDate.getMonth(), 1);
         while (spouseAretirementDate <= spouseAendTestDate) {
-            //Reset spouseB test dates to earliest possible (i.e., their Age62 month or today's month if they're currently older than 62, but never earlier than spouse A's retirementDate)
+            //Reset spouseB test dates to earliest possible (i.e., their "age 62 for whole month" month or today's month if they're currently older than 62, but never earlier than spouse A's retirementDate)
             if (spouseBageToday > 62) {
                 spouseBretirementDate.setMonth(today.getMonth());
                 spouseBretirementDate.setFullYear(today.getFullYear());
@@ -1574,10 +1608,16 @@ var PresentvalueService = /** @class */ (function () {
                 spouseBspousalDate.setFullYear(today.getFullYear());
             }
             else {
-                spouseBretirementDate.setMonth(spouseBSSbirthDate.getMonth());
                 spouseBretirementDate.setFullYear(spouseBSSbirthDate.getFullYear() + 62);
-                spouseBspousalDate.setMonth(spouseBSSbirthDate.getMonth());
                 spouseBspousalDate.setFullYear(spouseBSSbirthDate.getFullYear() + 62);
+                if (spouseBactualBirthDate.getDate() <= 2) {
+                    spouseBretirementDate.setMonth(spouseBactualBirthDate.getMonth());
+                    spouseBspousalDate.setMonth(spouseBactualBirthDate.getMonth());
+                }
+                else {
+                    spouseBretirementDate.setMonth(spouseBactualBirthDate.getMonth() + 1);
+                    spouseBspousalDate.setMonth(spouseBactualBirthDate.getMonth() + 1);
+                }
             }
             if (spouseBspousalDate < spouseAretirementDate) {
                 spouseBspousalDate.setMonth(spouseAretirementDate.getMonth());
