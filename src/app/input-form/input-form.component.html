@@ -1,6 +1,9 @@
 <div id="container" class="container">
 <form #inputForm="ngForm" (ngSubmit)="onSubmit()">
-
+      <div>
+        <label for="advanced">Advanced Options</label>
+        <input type="checkbox" [(ngModel)]="advanced" id="advanced" name="advanced" value="true">
+      </div>
         <h2>Your Information</h2>
         <div class="form-inline">
           <label>Marital Status</label>
@@ -32,7 +35,10 @@
           <label class="customtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>
           <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" required>
         </div>
-
+        <div *ngIf="this.advanced == true">
+            <label for="spouseAgovernmentPension">Monthly government pension from non-covered employment</label>
+            <input type="text" [(ngModel)]="spouseAgovernmentPension" id="spouseAgovernmentPension" name="spouseAgovernmentPension">
+        </div>
 
       <span *ngIf="maritalStatus == 'married'">
 
@@ -60,13 +66,16 @@
           <label class="customtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>
           <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" required>
         </div>
+        <div *ngIf="this.advanced == true">
+            <label for="spouseBgovernmentPension">Monthly government pension from non-covered employment</label>
+            <input type="text" [(ngModel)]="spouseBgovernmentPension" id="spouseBgovernmentPension" name="spouseBgovernmentPension">
+        </div>
       </span>
-
-      <h2>Other Input</h2>
-      <div>
-        <label class="customtooltip">Real Discount Rate<span class="tooltiptext">As a decimal (0.01 for a 1% discount rate, for example).</span></label>
-        <input type="text" [(ngModel)]="discountRate" name="discountRate" required>
-      </div>
+        <div *ngIf="this.advanced == true">
+          <h2>Other Inputs</h2>
+          <label class="customtooltip">Real Discount Rate<span class="tooltiptext">As a decimal (0.01 for a 1% discount rate, for example).</span></label>
+          <input type="text" [(ngModel)]="discountRate" name="discountRate" required>
+        </div>
       <div>
         <button type="submit" id="maximizeSubmit" class="btn btn-primary" (mousedown)="waitCursor()">Submit</button>
       </div>

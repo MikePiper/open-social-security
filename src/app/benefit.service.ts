@@ -23,7 +23,7 @@ export class BenefitService {
       return Number(retirementBenefit)
   }
 
-  calculateSpousalBenefit(PIA: number, otherSpousePIA: number, FRA: Date, retirementBenefit: number, spousalStartDate: Date)
+  calculateSpousalBenefit(PIA: number, otherSpousePIA: number, FRA: Date, retirementBenefit: number, spousalStartDate: Date, governmentPension: number)
   {
     //no need to check for filing prior to 62, because we're already checking for that in the input form component.
 
@@ -37,9 +37,6 @@ export class BenefitService {
       else if (retirementBenefit > 0 && retirementBenefit < PIA) {
         spousalBenefit = spousalBenefit - PIA
       }
-      if (spousalBenefit < 0) {
-        spousalBenefit = 0
-      }
 
     //Multiply by a reduction factor if spousal benefit claimed prior to FRA
     let monthsWaited = spousalStartDate.getMonth() - FRA.getMonth() + 12 * (spousalStartDate.getFullYear() - FRA.getFullYear())
@@ -48,11 +45,20 @@ export class BenefitService {
     if (monthsWaited < -36)
     {spousalBenefit = spousalBenefit - (spousalBenefit * 25/36/100 * 36) + (spousalBenefit * 5/12/100 * (monthsWaited+36))}
 
+    //GPO: reduce by 2/3 of government pension
+    spousalBenefit = spousalBenefit - 2/3 * governmentPension
+
+    //If GPO or reduction for own retirementBenefit/PIA reduced spousalBenefit below zero, spousalBenefit is zero.
+    if (spousalBenefit < 0) {
+      spousalBenefit = 0
+    }
+
+
     return Number(spousalBenefit)
   }
 
   calculateSurvivorBenefit(survivorSSbirthDate: Date, survivorSurvivorFRA: Date, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: Date,
-    deceasedFRA: Date, dateOfDeath: Date,  deceasedPIA: number, deceasedClaimingDate: Date)
+    deceasedFRA: Date, dateOfDeath: Date,  deceasedPIA: number, deceasedClaimingDate: Date, governmentPension: number)
   {
     let deceasedRetirementBenefit: number
     let survivorBenefit
@@ -103,11 +109,17 @@ export class BenefitService {
           }
         }
       }
-      //subtract own retirement benefit, but do not subtract more than survivor benefit
+      //subtract own retirement benefit
       survivorBenefit = survivorBenefit - survivorRetirementBenefit
+
+      //GPO: reduce by 2/3 of government pension
+      survivorBenefit = survivorBenefit - 2/3 * governmentPension
+
+      //If GPO or reduction for own retirement benefit reduced spousalBenefit below zero, spousalBenefit is zero.
       if (survivorBenefit < 0) {
         survivorBenefit = 0
-      }
+    }
+      
     return Number(survivorBenefit)
   }
 }

@@ -11,6 +11,7 @@ import { BirthdayService } from './birthday.service';
 import { AboutComponent } from './about/about.component';
 import { PresentvalueService } from './presentvalue.service';
 import { ContactComponent } from './contact/contact.component';
+import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -22,6 +23,7 @@ import { ContactComponent } from './contact/contact.component';
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     FormsModule,
     AppRoutingModule,
     CollapseModule.forRoot(),
