@@ -170,12 +170,14 @@ var AppComponent = /** @class */ (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__about_about_component__ = __webpack_require__("./src/app/about/about.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__presentvalue_service__ = __webpack_require__("./src/app/presentvalue.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__contact_contact_component__ = __webpack_require__("./src/app/contact/contact.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__angular_common_http__ = __webpack_require__("./node_modules/@angular/common/esm5/http.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -201,6 +203,7 @@ var AppModule = /** @class */ (function () {
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
+                __WEBPACK_IMPORTED_MODULE_12__angular_common_http__["b" /* HttpClientModule */],
                 __WEBPACK_IMPORTED_MODULE_2__angular_forms__["a" /* FormsModule */],
                 __WEBPACK_IMPORTED_MODULE_7__app_routing_module__["a" /* AppRoutingModule */],
                 __WEBPACK_IMPORTED_MODULE_3_ngx_bootstrap__["b" /* CollapseModule */].forRoot(),
@@ -256,7 +259,7 @@ var BenefitService = /** @class */ (function () {
         }
         return Number(retirementBenefit);
     };
-    BenefitService.prototype.calculateSpousalBenefit = function (PIA, otherSpousePIA, FRA, retirementBenefit, spousalStartDate) {
+    BenefitService.prototype.calculateSpousalBenefit = function (PIA, otherSpousePIA, FRA, retirementBenefit, spousalStartDate, governmentPension) {
         //no need to check for filing prior to 62, because we're already checking for that in the input form component.
         //Initial calculation
         var spousalBenefit = otherSpousePIA / 2;
@@ -267,9 +270,6 @@ var BenefitService = /** @class */ (function () {
         else if (retirementBenefit > 0 && retirementBenefit < PIA) {
             spousalBenefit = spousalBenefit - PIA;
         }
-        if (spousalBenefit < 0) {
-            spousalBenefit = 0;
-        }
         //Multiply by a reduction factor if spousal benefit claimed prior to FRA
         var monthsWaited = spousalStartDate.getMonth() - FRA.getMonth() + 12 * (spousalStartDate.getFullYear() - FRA.getFullYear());
         if (monthsWaited >= -36 && monthsWaited < 0) {
@@ -278,9 +278,15 @@ var BenefitService = /** @class */ (function () {
         if (monthsWaited < -36) {
             spousalBenefit = spousalBenefit - (spousalBenefit * 25 / 36 / 100 * 36) + (spousalBenefit * 5 / 12 / 100 * (monthsWaited + 36));
         }
+        //GPO: reduce by 2/3 of government pension
+        spousalBenefit = spousalBenefit - 2 / 3 * governmentPension;
+        //If GPO or reduction for own retirementBenefit/PIA reduced spousalBenefit below zero, spousalBenefit is zero.
+        if (spousalBenefit < 0) {
+            spousalBenefit = 0;
+        }
         return Number(spousalBenefit);
     };
-    BenefitService.prototype.calculateSurvivorBenefit = function (survivorSSbirthDate, survivorSurvivorFRA, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedFRA, dateOfDeath, deceasedPIA, deceasedClaimingDate) {
+    BenefitService.prototype.calculateSurvivorBenefit = function (survivorSSbirthDate, survivorSurvivorFRA, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedFRA, dateOfDeath, deceasedPIA, deceasedClaimingDate, governmentPension) {
         var deceasedRetirementBenefit;
         var survivorBenefit;
         //find percentage of the way survivor is from 60 to FRA
@@ -326,8 +332,11 @@ var BenefitService = /** @class */ (function () {
                 }
             }
         }
-        //subtract own retirement benefit, but do not subtract more than survivor benefit
+        //subtract own retirement benefit
         survivorBenefit = survivorBenefit - survivorRetirementBenefit;
+        //GPO: reduce by 2/3 of government pension
+        survivorBenefit = survivorBenefit - 2 / 3 * governmentPension;
+        //If GPO or reduction for own retirement benefit reduced spousalBenefit below zero, spousalBenefit is zero.
         if (survivorBenefit < 0) {
             survivorBenefit = 0;
         }
@@ -480,14 +489,14 @@ var ContactComponent = /** @class */ (function () {
 /***/ "./src/app/input-form/input-form.component.css":
 /***/ (function(module, exports) {
 
-module.exports = ".customtooltip .tooltiptext {\n    visibility: hidden;\n    background-color: #ebf6ff;\n    color: black;\n    padding: 5px;\n    border-radius: 6px;\n    font-weight:1;\n \n    /* Position the tooltip text - see examples below! */\n    position: absolute;\n    z-index: 1;\n}\n\n.customtooltip:hover .tooltiptext {\n    visibility: visible;\n}\n\n.customtooltip {\n    border-bottom: 1px dotted black; /* Dots under the hoverable text */\n}"
+module.exports = ".customtooltip .tooltiptext {\n    visibility: hidden;\n    background-color: #ebf6ff;\n    color: black;\n    padding: 5px;\n    border-radius: 6px;\n    font-weight:1;\n \n    /* Position the tooltip text - see examples below! */\n    position: absolute;\n    z-index: 1;\n}\n\n.customtooltip:hover .tooltiptext {\n    visibility: visible;\n}\n\n.customtooltip {\n    border-bottom: 1px dotted black; /* Dots under the hoverable text */\n}\n"
 
 /***/ }),
 
 /***/ "./src/app/input-form/input-form.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"container\" class=\"container\">\n<form #inputForm=\"ngForm\" (ngSubmit)=\"onSubmit()\">\n\n        <h2>Your Information</h2>\n        <div class=\"form-inline\">\n          <label>Marital Status</label>\n          <select [(ngModel)]=\"maritalStatus\" name=\"maritalStatus\" class=\"form-control\">\n            <option value=\"married\">Married</option>\n            <option value=\"unmarried\">Single</option>\n          </select>\n        </div>\n        <div class=\"form-inline\">\n        <label>Gender</label>\n        <select [(ngModel)]=\"spouseAgender\" name=\"spouseAgender\" class=\"form-control\">\n          <option value=\"male\">Male</option>\n          <option value=\"female\">Female</option>\n        </select>\n        </div>\n        <div class=\"form-inline\">\n              <label>Date of Birth month/day/year</label>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputMonth\" name=\"spouseAinputMonth\" required>\n                <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n              </select>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputDay\" name=\"spouseAinputDay\" required>\n                  <option *ngFor=\"let day of inputDays\" [value]=\"day\">{{day}}</option>\n              </select>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputYear\" name=\"spouseAinputYear\" required>\n                  <option *ngFor=\"let year of inputYears\" [value]=\"year\">{{year}}</option>\n              </select>\n        </div>\n        <div>\n          <label class=\"customtooltip\">PIA<span class=\"tooltiptext\">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>\n          <input type=\"text\" [(ngModel)]=\"spouseAPIA\" name=\"spouseAPIA\" required>\n        </div>\n\n\n      <span *ngIf=\"maritalStatus == 'married'\">\n\n        <h2>Your Spouse's Information</h2>\n        <div class=\"form-inline\">\n        <label>Gender</label>\n        <select [(ngModel)]=\"spouseBgender\" name=\"spouseBgender\" class=\"form-control\">\n          <option value=\"male\">Male</option>\n          <option value=\"female\">Female</option>\n        </select>\n        </div>\n        <div class=\"form-inline\">\n          <label>Date of Birth month/day/year</label>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputMonth\" name=\"spouseBinputMonth\" required>\n            <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputDay\" name=\"spouseBinputDay\" required>\n              <option *ngFor=\"let day of inputDays\" [value]=\"day\">{{day}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputYear\" name=\"spouseBinputYear\" required>\n              <option *ngFor=\"let year of inputYears\" [value]=\"year\">{{year}}</option>\n          </select>\n        </div>\n        <div>\n          <label class=\"customtooltip\">PIA<span class=\"tooltiptext\">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>\n          <input type=\"text\" [(ngModel)]=\"spouseBPIA\" name=\"spouseBPIA\" required>\n        </div>\n      </span>\n\n      <h2>Other Input</h2>\n      <div>\n        <label class=\"customtooltip\">Real Discount Rate<span class=\"tooltiptext\">As a decimal (0.01 for a 1% discount rate, for example).</span></label>\n        <input type=\"text\" [(ngModel)]=\"discountRate\" name=\"discountRate\" required>\n      </div>\n      <div>\n        <button type=\"submit\" id=\"maximizeSubmit\" class=\"btn btn-primary\" (mousedown)=\"waitCursor()\">Submit</button>\n      </div>\n      <p *ngIf=\"!this.solutionSet.solutionPV\">If you are married, depending on your age and your computer's processor speed, this calculation may take a while -- anywhere from a few seconds to a couple of minutes. Please be patient with your computer. It's doing quite a lot of math.</p>\n</form>\n<span *ngIf=\"this.solutionSet.solutionPV\">\n  \n  <ul>\n    <li *ngIf=\"this.solutionSet.spouseAretirementSolution\">You should file for your retirement benefit to begin {{this.solutionSet.spouseAretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseAretirementSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseAspousalSolution\">You should file for your spousal benefit to begin {{this.solutionSet.spouseAspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseAspousalSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseBretirementSolution\">Your spouse should file for his/her retirement benefit to begin {{this.solutionSet.spouseBretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseBretirementSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseBspousalSolution\">Your spouse should file for his/her spousal benefit to begin {{this.solutionSet.spouseBspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseBspousalSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.solutionPV\">The present value of this proposed solution would be {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}</li>\n  </ul>\n\n  <hr>\n\n  <form #customDateForm=\"ngForm\" (ngSubmit)=\"customDates()\">\n  <h2>Test an alternative claiming strategy:</h2>\n  <div class=\"form-inline\">\n      <label>Your month/year to claim retirement benefit:</label>\n      <select class=\"form-control\" [(ngModel)]=\"spouseAretirementBenefitMonth\" name=\"spouseAretirementBenefitMonth\" required>\n        <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n      </select>\n      <select class=\"form-control\" [(ngModel)]=\"spouseAretirementBenefitYear\" name=\"spouseAretirementBenefitYear\" required>\n        <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n      </select>\n      <span *ngIf=\"this.spouseAretirementDateError\" class=\"alert alert-danger\">{{this.spouseAretirementDateError}}</span>\n    </div>\n    <span *ngIf=\"maritalStatus == 'married'\">\n        <div class=\"form-inline\">\n          <label>Your month/year to claim spousal benefit:</label>\n          <select class=\"form-control\" [(ngModel)]=\"spouseAspousalBenefitMonth\" name=\"spouseAspousalBenefitMonth\" required>\n            <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseAspousalBenefitYear\" name=\"spouseAspousalBenefitYear\" required>\n            <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n          </select>\n          <span *ngIf=\"this.spouseAspousalDateError\" class=\"alert alert-danger\">{{this.spouseAspousalDateError}}</span>\n        </div>\n        <div class=\"form-inline\">\n            <label>Your spouse's month/year to claim retirement benefit:</label>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBretirementBenefitMonth\" name=\"spouseBretirementBenefitMonth\" required>\n              <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n            </select>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBretirementBenefitYear\" name=\"spouseBretirementBenefitYear\" required>\n              <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n            </select>\n            <span *ngIf=\"this.spouseBretirementDateError\" class=\"alert alert-danger\">{{this.spouseBretirementDateError}}</span>\n          </div>\n          <div class=\"form-inline\">\n            <label>Your spouse's month/year to claim spousal benefit:</label>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBspousalBenefitMonth\" name=\"spouseBspousalBenefitMonth\" required>\n              <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n            </select>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBspousalBenefitYear\" name=\"spouseBspousalBenefitYear\" required>\n              <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n            </select>\n            <span *ngIf=\"this.spouseBspousalDateError\" class=\"alert alert-danger\">{{this.spouseBspousalDateError}}</span>\n          </div>\n      </span>\n    <div>\n        <button type=\"submit\" class=\"btn btn-primary\">Submit</button>\n    </div>\n    <span *ngIf=\"this.customPV\">\n      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}} from the recommended strategy.\n    </span>\n  </form>\n</span>\n</div>"
+module.exports = "<div id=\"container\" class=\"container\">\n<form #inputForm=\"ngForm\" (ngSubmit)=\"onSubmit()\">\n      <div>\n        <label for=\"advanced\">Advanced Options</label>\n        <input type=\"checkbox\" [(ngModel)]=\"advanced\" id=\"advanced\" name=\"advanced\" value=\"true\">\n      </div>\n        <h2>Your Information</h2>\n        <div class=\"form-inline\">\n          <label>Marital Status</label>\n          <select [(ngModel)]=\"maritalStatus\" name=\"maritalStatus\" class=\"form-control\">\n            <option value=\"married\">Married</option>\n            <option value=\"unmarried\">Single</option>\n          </select>\n        </div>\n        <div class=\"form-inline\">\n        <label>Gender</label>\n        <select [(ngModel)]=\"spouseAgender\" name=\"spouseAgender\" class=\"form-control\">\n          <option value=\"male\">Male</option>\n          <option value=\"female\">Female</option>\n        </select>\n        </div>\n        <div class=\"form-inline\">\n              <label>Date of Birth month/day/year</label>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputMonth\" name=\"spouseAinputMonth\" required>\n                <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n              </select>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputDay\" name=\"spouseAinputDay\" required>\n                  <option *ngFor=\"let day of inputDays\" [value]=\"day\">{{day}}</option>\n              </select>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputYear\" name=\"spouseAinputYear\" required>\n                  <option *ngFor=\"let year of inputYears\" [value]=\"year\">{{year}}</option>\n              </select>\n        </div>\n        <div>\n          <label class=\"customtooltip\">PIA<span class=\"tooltiptext\">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>\n          <input type=\"text\" [(ngModel)]=\"spouseAPIA\" name=\"spouseAPIA\" required>\n        </div>\n        <div *ngIf=\"this.advanced == true\">\n            <label for=\"spouseAgovernmentPension\">Monthly government pension from non-covered employment</label>\n            <input type=\"text\" [(ngModel)]=\"spouseAgovernmentPension\" id=\"spouseAgovernmentPension\" name=\"spouseAgovernmentPension\">\n        </div>\n\n      <span *ngIf=\"maritalStatus == 'married'\">\n\n        <h2>Your Spouse's Information</h2>\n        <div class=\"form-inline\">\n        <label>Gender</label>\n        <select [(ngModel)]=\"spouseBgender\" name=\"spouseBgender\" class=\"form-control\">\n          <option value=\"male\">Male</option>\n          <option value=\"female\">Female</option>\n        </select>\n        </div>\n        <div class=\"form-inline\">\n          <label>Date of Birth month/day/year</label>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputMonth\" name=\"spouseBinputMonth\" required>\n            <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputDay\" name=\"spouseBinputDay\" required>\n              <option *ngFor=\"let day of inputDays\" [value]=\"day\">{{day}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputYear\" name=\"spouseBinputYear\" required>\n              <option *ngFor=\"let year of inputYears\" [value]=\"year\">{{year}}</option>\n          </select>\n        </div>\n        <div>\n          <label class=\"customtooltip\">PIA<span class=\"tooltiptext\">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>\n          <input type=\"text\" [(ngModel)]=\"spouseBPIA\" name=\"spouseBPIA\" required>\n        </div>\n        <div *ngIf=\"this.advanced == true\">\n            <label for=\"spouseBgovernmentPension\">Monthly government pension from non-covered employment</label>\n            <input type=\"text\" [(ngModel)]=\"spouseBgovernmentPension\" id=\"spouseBgovernmentPension\" name=\"spouseBgovernmentPension\">\n        </div>\n      </span>\n        <div *ngIf=\"this.advanced == true\">\n          <h2>Other Inputs</h2>\n          <label class=\"customtooltip\">Real Discount Rate<span class=\"tooltiptext\">As a decimal (0.01 for a 1% discount rate, for example).</span></label>\n          <input type=\"text\" [(ngModel)]=\"discountRate\" name=\"discountRate\" required>\n        </div>\n      <div>\n        <button type=\"submit\" id=\"maximizeSubmit\" class=\"btn btn-primary\" (mousedown)=\"waitCursor()\">Submit</button>\n      </div>\n      <p *ngIf=\"!this.solutionSet.solutionPV\">If you are married, depending on your age and your computer's processor speed, this calculation may take a while -- anywhere from a few seconds to a couple of minutes. Please be patient with your computer. It's doing quite a lot of math.</p>\n</form>\n<span *ngIf=\"this.solutionSet.solutionPV\">\n  \n  <ul>\n    <li *ngIf=\"this.solutionSet.spouseAretirementSolution\">You should file for your retirement benefit to begin {{this.solutionSet.spouseAretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseAretirementSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseAspousalSolution\">You should file for your spousal benefit to begin {{this.solutionSet.spouseAspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseAspousalSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseBretirementSolution\">Your spouse should file for his/her retirement benefit to begin {{this.solutionSet.spouseBretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseBretirementSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseBspousalSolution\">Your spouse should file for his/her spousal benefit to begin {{this.solutionSet.spouseBspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseBspousalSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.solutionPV\">The present value of this proposed solution would be {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}</li>\n  </ul>\n\n  <hr>\n\n  <form #customDateForm=\"ngForm\" (ngSubmit)=\"customDates()\">\n  <h2>Test an alternative claiming strategy:</h2>\n  <div class=\"form-inline\">\n      <label>Your month/year to claim retirement benefit:</label>\n      <select class=\"form-control\" [(ngModel)]=\"spouseAretirementBenefitMonth\" name=\"spouseAretirementBenefitMonth\" required>\n        <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n      </select>\n      <select class=\"form-control\" [(ngModel)]=\"spouseAretirementBenefitYear\" name=\"spouseAretirementBenefitYear\" required>\n        <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n      </select>\n      <span *ngIf=\"this.spouseAretirementDateError\" class=\"alert alert-danger\">{{this.spouseAretirementDateError}}</span>\n    </div>\n    <span *ngIf=\"maritalStatus == 'married'\">\n        <div class=\"form-inline\">\n          <label>Your month/year to claim spousal benefit:</label>\n          <select class=\"form-control\" [(ngModel)]=\"spouseAspousalBenefitMonth\" name=\"spouseAspousalBenefitMonth\" required>\n            <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseAspousalBenefitYear\" name=\"spouseAspousalBenefitYear\" required>\n            <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n          </select>\n          <span *ngIf=\"this.spouseAspousalDateError\" class=\"alert alert-danger\">{{this.spouseAspousalDateError}}</span>\n        </div>\n        <div class=\"form-inline\">\n            <label>Your spouse's month/year to claim retirement benefit:</label>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBretirementBenefitMonth\" name=\"spouseBretirementBenefitMonth\" required>\n              <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n            </select>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBretirementBenefitYear\" name=\"spouseBretirementBenefitYear\" required>\n              <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n            </select>\n            <span *ngIf=\"this.spouseBretirementDateError\" class=\"alert alert-danger\">{{this.spouseBretirementDateError}}</span>\n          </div>\n          <div class=\"form-inline\">\n            <label>Your spouse's month/year to claim spousal benefit:</label>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBspousalBenefitMonth\" name=\"spouseBspousalBenefitMonth\" required>\n              <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n            </select>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBspousalBenefitYear\" name=\"spouseBspousalBenefitYear\" required>\n              <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n            </select>\n            <span *ngIf=\"this.spouseBspousalDateError\" class=\"alert alert-danger\">{{this.spouseBspousalDateError}}</span>\n          </div>\n      </span>\n    <div>\n        <button type=\"submit\" class=\"btn btn-primary\">Submit</button>\n    </div>\n    <span *ngIf=\"this.customPV\">\n      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}} from the recommended strategy.\n    </span>\n  </form>\n</span>\n</div>"
 
 /***/ }),
 
@@ -497,9 +506,10 @@ module.exports = "<div id=\"container\" class=\"container\">\n<form #inputForm=\
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return InputFormComponent; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("./node_modules/@angular/core/esm5/core.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__benefit_service__ = __webpack_require__("./src/app/benefit.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__birthday_service__ = __webpack_require__("./src/app/birthday.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__presentvalue_service__ = __webpack_require__("./src/app/presentvalue.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common_http__ = __webpack_require__("./node_modules/@angular/common/esm5/http.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__benefit_service__ = __webpack_require__("./src/app/benefit.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__birthday_service__ = __webpack_require__("./src/app/birthday.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__presentvalue_service__ = __webpack_require__("./src/app/presentvalue.service.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -513,11 +523,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
 var InputFormComponent = /** @class */ (function () {
-    function InputFormComponent(benefitService, birthdayService, presentvalueService) {
+    function InputFormComponent(benefitService, birthdayService, presentvalueService, http) {
         this.benefitService = benefitService;
         this.birthdayService = birthdayService;
         this.presentvalueService = presentvalueService;
+        this.http = http;
         this.today = new Date();
         //Variables to make form work
         this.inputMonths = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
@@ -559,6 +571,9 @@ var InputFormComponent = /** @class */ (function () {
         this.spouseBspousalBenefitYear = 2051;
         this.spouseBgender = "female";
         this.discountRate = 0.01;
+        this.advanced = false;
+        this.spouseAgovernmentPension = 0;
+        this.spouseBgovernmentPension = 0;
         this.solutionSet = {};
     }
     InputFormComponent.prototype.ngOnInit = function () {
@@ -582,7 +597,7 @@ var InputFormComponent = /** @class */ (function () {
             this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate));
         }
         if (this.maritalStatus == "married") {
-            this.solutionSet = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.discountRate));
+            this.solutionSet = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate));
         }
         this.normalCursor();
         //For testing performance
@@ -618,7 +633,7 @@ var InputFormComponent = /** @class */ (function () {
             this.customPV = this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseASSbirthDate, Number(this.spouseAage), Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAgender, Number(this.discountRate));
         }
         if (this.maritalStatus == "married" && !this.spouseAretirementDateError && !this.spouseBretirementDateError && !this.spouseBspousalDateError && !this.spouseAspousalDateError) {
-            this.customPV = this.presentvalueService.calculateCouplePV(this.spouseAgender, this.spouseBgender, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.discountRate));
+            this.customPV = this.presentvalueService.calculateCouplePV(this.spouseAgender, this.spouseBgender, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate));
         }
     };
     InputFormComponent.prototype.checkValidRetirementInputs = function (FRA, SSbirthDate, actualBirthDate, retirementBenefitDate) {
@@ -696,7 +711,7 @@ var InputFormComponent = /** @class */ (function () {
             template: __webpack_require__("./src/app/input-form/input-form.component.html"),
             styles: [__webpack_require__("./src/app/input-form/input-form.component.css")]
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__benefit_service__["a" /* BenefitService */], __WEBPACK_IMPORTED_MODULE_2__birthday_service__["a" /* BirthdayService */], __WEBPACK_IMPORTED_MODULE_3__presentvalue_service__["a" /* PresentvalueService */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_2__benefit_service__["a" /* BenefitService */], __WEBPACK_IMPORTED_MODULE_3__birthday_service__["a" /* BirthdayService */], __WEBPACK_IMPORTED_MODULE_4__presentvalue_service__["a" /* PresentvalueService */], __WEBPACK_IMPORTED_MODULE_1__angular_common_http__["a" /* HttpClient */]])
     ], InputFormComponent);
     return InputFormComponent;
 }());
@@ -1351,7 +1366,7 @@ var PresentvalueService = /** @class */ (function () {
         }
         return retirementPV;
     };
-    PresentvalueService.prototype.calculateCouplePV = function (spouseAgender, spouseBgender, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded, spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAPIA, spouseBPIA, spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate, discountRate) {
+    PresentvalueService.prototype.calculateCouplePV = function (spouseAgender, spouseBgender, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded, spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAPIA, spouseBPIA, spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate, spouseAgovernmentPension, spouseBgovernmentPension, discountRate) {
         var spouseAretirementBenefit = 0;
         var spouseBretirementBenefit = 0;
         var spouseAspousalBenefit;
@@ -1401,26 +1416,26 @@ var PresentvalueService = /** @class */ (function () {
                 spouseAspousalBenefit = 0;
             }
             else {
-                spouseAspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAretirementBenefit, spouseAspousalBenefitDate);
+                spouseAspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAretirementBenefit, spouseAspousalBenefitDate, spouseAgovernmentPension);
             }
             if (currentTestDate < spouseBspousalBenefitDate) {
                 spouseBspousalBenefit = 0;
             }
             else {
-                spouseBspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBretirementBenefit, spouseBspousalBenefitDate);
+                spouseBspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBretirementBenefit, spouseBspousalBenefitDate, spouseBgovernmentPension);
             }
             //Survivor benefits are zero before survivorFRA, after survivorFRA, calculate each spouse's survivor benefit using other spouse's intended claiming age as their date of death. (That is, assuming that other spouse lives to their intended claiming age.)
             if (currentTestDate < spouseAsurvivorFRA) {
                 spouseAsurvivorBenefit = 0; //<-- This will get changed when we incorporate restricted applications for survivor benefits
             }
             else {
-                spouseAsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefit, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBretirementBenefitDate);
+                spouseAsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefit, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBretirementBenefitDate, spouseAgovernmentPension);
             }
             if (currentTestDate < spouseBsurvivorFRA) {
                 spouseBsurvivorBenefit = 0; //<-- This will get changed when we incorporate restricted applications for survivor benefits
             }
             else {
-                spouseBsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefit, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAretirementBenefitDate);
+                spouseBsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefit, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAretirementBenefitDate, spouseBgovernmentPension);
             }
             //Calculate probability of spouseA being alive at given age
             //When calculating probability alive, we have to round age to get a whole number to use for lookup in array.
@@ -1488,7 +1503,7 @@ var PresentvalueService = /** @class */ (function () {
             }
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             monthlyPV = monthlyPV / (1 + discountRate / 2) / Math.pow((1 + discountRate), (olderRoundedAge - 62));
-            /*log dates
+            /*log benefit amounts by date
             console.log("currentTestDate: " + currentTestDate)
             console.log("spouseAretirementBenefit: " + spouseAretirementBenefit)
             console.log("spouseBretirementBenefit: " + spouseBretirementBenefit)
@@ -1545,7 +1560,7 @@ var PresentvalueService = /** @class */ (function () {
         };
         return solutionSet;
     };
-    PresentvalueService.prototype.maximizeCouplePV = function (spouseAPIA, spouseBPIA, spouseAactualBirthDate, spouseBactualBirthDate, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded, spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAgender, spouseBgender, discountRate) {
+    PresentvalueService.prototype.maximizeCouplePV = function (spouseAPIA, spouseBPIA, spouseAactualBirthDate, spouseBactualBirthDate, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded, spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAgender, spouseBgender, spouseAgovernmentPension, spouseBgovernmentPension, discountRate) {
         var deemedFilingCutoff = new Date(1954, 0, 1);
         //find initial test dates for spouseA (first month for which spouseA is considered 62 for entire month)
         var spouseAretirementDate = new Date(spouseASSbirthDate.getFullYear() + 62, 1, 1);
@@ -1625,7 +1640,7 @@ var PresentvalueService = /** @class */ (function () {
             }
             while (spouseBretirementDate <= spouseBendTestDate) {
                 //Calculate PV using current testDates
-                var currentTestPV = this.calculateCouplePV(spouseAgender, spouseBgender, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, Number(discountRate));
+                var currentTestPV = this.calculateCouplePV(spouseAgender, spouseBgender, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate));
                 //If PV is greater than saved PV, save new PV and save new testDates
                 if (currentTestPV > savedPV) {
                     savedPV = currentTestPV;
@@ -1725,9 +1740,9 @@ var PresentvalueService = /** @class */ (function () {
         //Set spousal dates back to null in cases in which there will be no spousal benefit, so user doesn't see a suggested spousal claiming age that makes no sense.
         //need to recalculate spousal benefit for each spouse using the four saved dates.
         var finalCheckSpouseAretirement = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAsavedRetirementDate);
-        var finalCheckSpouseAspousal = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, finalCheckSpouseAretirement, spouseAsavedSpousalDate);
+        var finalCheckSpouseAspousal = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, finalCheckSpouseAretirement, spouseAsavedSpousalDate, spouseAgovernmentPension);
         var finalCheckSpouseBretirement = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBsavedRetirementDate);
-        var finalCheckSpouseBspousal = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, finalCheckSpouseBretirement, spouseBsavedSpousalDate);
+        var finalCheckSpouseBspousal = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, finalCheckSpouseBretirement, spouseBsavedSpousalDate, spouseBgovernmentPension);
         if (finalCheckSpouseAspousal == 0 && spouseAsavedSpousalDate >= spouseAsavedRetirementDate) {
             solutionSet.spouseAspousalSolution = null;
         }
