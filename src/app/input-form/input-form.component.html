@@ -45,10 +45,11 @@
           <label class="customtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>
           <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" required>
         </div>
-        <div *ngIf="this.advanced == true">
-            <label for="spouseAgovernmentPension">Monthly government pension from non-covered employment</label>
-            <input type="text" [(ngModel)]="spouseAgovernmentPension" id="spouseAgovernmentPension" name="spouseAgovernmentPension">
-        </div>
+        <div *ngIf="maritalStatus == 'married' && this.advanced == true">
+          <label for="spouseAgovernmentPension">Monthly government pension from non-covered employment</label>
+          <input type="text" [(ngModel)]="spouseAgovernmentPension" id="spouseAgovernmentPension" name="spouseAgovernmentPension">
+        </div>    
+
 
       <span *ngIf="maritalStatus == 'married'">
 
