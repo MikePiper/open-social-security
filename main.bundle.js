@@ -27,7 +27,7 @@ module.exports = ""
 /***/ "./src/app/about/about.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n    <p>Open Social Security is a free, basic, open-source Social Security strategy calculator.</p>\n    <p>Please note that Open Social Security does not currently account for all the various circumstances that a real-life person/couple might face. For instance, it does not currently account for:</p>\n        <ul>\n            <li>The earnings test (for people who are still working and filing for benefits before full retirement age),</li>\n            <li>Child benefits (or spousal benefits for people younger than age 62 with a child in care),</li>\n            <li>Disability benefits,</li>\n            <li>Strategies for people who are already widowed (or widowered) when they are using the calculator,</li>\n            <li>The possibility that your life expectancy (or your spouse's life expectancy) may be significantly shorter or longer than average, or</li>\n            <li>Tax planning reasons or other unrelated reasons why it might be better for you to file earlier or later than the calculator suggests.</li>\n        </ul>\n    <p>I intend to add functionality to account for some of the above things, but it will take time. In the meantime, to learn more about Social Security, including the above topics, you may want to read my book: <em><a href=\"https://www.amazon.com/dp/0997946512/?tag=openss-20/\" target=\"_blank\">Social Security Made Simple</a></em>.</p>\n    <p>Alternatively, you may find one or both of the following (paid) calculators to be helpful. I have no association with either one, but they are each created by respected experts in the field.</p>\n    <ul>\n        <li><a href=\"https://maximizemysocialsecurity.com/\" target=\"_blank\">Maximize My Social Security</a></li>\n        <li><a href=\"http://socialsecuritysolutions.com/\" target=\"blank\">Social Security Solutions</a></li>\n    </ul>\n    <h2>About the Author (Mike Piper)</h2>\n    I am a CPA in St. Louis, Missouri. I'm the author of nine financial books, as well as the popular blog \"<a href=\"https://obliviousinvestor.com/\" target=\"_blank\">Oblivious Investor</a>.\"\n    I am an occasional public speaker (usually about Social Security or tax planning), and I have been quoted as a Social Security expert in numerous publications (e.g., Wall Street Journal, AARP, Kiplinger, and several others).\n    <h2>Math Details</h2>\n    For people interested in the details of how this calculator works, I'd encourage you to read the \"README\" file, available here:\n    <p><a href=\"https://github.com/MikePiper/open-social-security/blob/master/README.md\" target=\"_blank\">https://github.com/MikePiper/open-social-security/blob/master/README.md</a></p>\n    <h2>License</h2>\n    <p>Other parties are encouraged to use the code from this calculator for their own purposes, per the license below. You can download the source code here:</p>\n    <p><a href=\"https://github.com/MikePiper/open-social-security\" target=\"_blank\">https://github.com/MikePiper/open-social-security/</a></p>\n    <p>\"MIT License\"</p>\n    <p>Copyright (c) 2018 Michael Piper (<a href=\"https://obliviousinvestor.com/\" target=\"_blank\">obliviousinvestor.com</a>)</p>\n    <p>Permission is hereby granted, free of charge, to any person obtaining a copy\n    of this software and associated documentation files (the \"Software\"), to deal\n    in the Software without restriction, including without limitation the rights\n    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n    copies of the Software, and to permit persons to whom the Software is\n    furnished to do so, subject to the following conditions:</p>\n\n    <p>The above copyright notice and this permission notice shall be included in all\n        copies or substantial portions of the Software.</p>\n\n    <p>THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n        SOFTWARE.</p>\n</div>"
+module.exports = "<div class=\"container\">\n    <p>Open Social Security is a free, basic, open-source Social Security strategy calculator.</p>\n    <p>Please note that Open Social Security does not currently account for all the various circumstances that a real-life person/couple might face. For instance, it does not currently account for:</p>\n        <ul>\n            <li>The earnings test (for people who are still working and filing for benefits before full retirement age),</li>\n            <li>Child benefits (or spousal benefits for people younger than age 62 with a child in care),</li>\n            <li>Disability benefits,</li>\n            <li>Strategies for people who are already widowed (or widowered) when they are using the calculator, or</li>\n            <li>Tax planning reasons or other unrelated reasons why it might be better for you to file earlier or later than the calculator suggests.</li>\n        </ul>\n    <p>I intend to add functionality to account for some of the above things, but it will take time. In the meantime, to learn more about Social Security, including the above topics, you may want to read my book: <em><a href=\"https://www.amazon.com/dp/0997946512/?tag=openss-20/\" target=\"_blank\">Social Security Made Simple</a></em>.</p>\n    <p>Alternatively, you may find one or both of the following (paid) calculators to be helpful. I have no association with either one, but they are each created by respected experts in the field.</p>\n    <ul>\n        <li><a href=\"https://maximizemysocialsecurity.com/\" target=\"_blank\">Maximize My Social Security</a></li>\n        <li><a href=\"http://socialsecuritysolutions.com/\" target=\"blank\">Social Security Solutions</a></li>\n    </ul>\n    <h2>About the Author (Mike Piper)</h2>\n    I am a CPA in St. Louis, Missouri. I'm the author of nine financial books, as well as the popular blog \"<a href=\"https://obliviousinvestor.com/\" target=\"_blank\">Oblivious Investor</a>.\"\n    I am an occasional public speaker (usually about Social Security or tax planning), and I have been quoted as a Social Security expert in numerous publications (e.g., Wall Street Journal, AARP, Kiplinger, and several others).\n    <h2>Math Details</h2>\n    For people interested in the details of how this calculator works, I'd encourage you to read the \"README\" file, available here:\n    <p><a href=\"https://github.com/MikePiper/open-social-security/blob/master/README.md\" target=\"_blank\">https://github.com/MikePiper/open-social-security/blob/master/README.md</a></p>\n    <h2>License</h2>\n    <p>Other parties are encouraged to use the code from this calculator for their own purposes, per the license below. You can download the source code here:</p>\n    <p><a href=\"https://github.com/MikePiper/open-social-security\" target=\"_blank\">https://github.com/MikePiper/open-social-security/</a></p>\n    <p>\"MIT License\"</p>\n    <p>Copyright (c) 2018 Michael Piper (<a href=\"https://obliviousinvestor.com/\" target=\"_blank\">obliviousinvestor.com</a>)</p>\n    <p>Permission is hereby granted, free of charge, to any person obtaining a copy\n    of this software and associated documentation files (the \"Software\"), to deal\n    in the Software without restriction, including without limitation the rights\n    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n    copies of the Software, and to permit persons to whom the Software is\n    furnished to do so, subject to the following conditions:</p>\n\n    <p>The above copyright notice and this permission notice shall be included in all\n        copies or substantial portions of the Software.</p>\n\n    <p>THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n        SOFTWARE.</p>\n</div>"
 
 /***/ }),
 
@@ -496,7 +496,7 @@ module.exports = ".customtooltip .tooltiptext {\n    visibility: hidden;\n    ba
 /***/ "./src/app/input-form/input-form.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"container\" class=\"container\">\n<form #inputForm=\"ngForm\" (ngSubmit)=\"onSubmit()\">\n      <div>\n        <label for=\"advanced\">Advanced Options</label>\n        <input type=\"checkbox\" [(ngModel)]=\"advanced\" id=\"advanced\" name=\"advanced\" value=\"true\">\n      </div>\n        <h2>Your Information</h2>\n        <div class=\"form-inline\">\n          <label>Marital Status</label>\n          <select [(ngModel)]=\"maritalStatus\" name=\"maritalStatus\" class=\"form-control\">\n            <option value=\"married\">Married</option>\n            <option value=\"unmarried\">Single</option>\n          </select>\n        </div>\n        <div class=\"form-inline\">\n        <label>Gender</label>\n        <select [(ngModel)]=\"spouseAgender\" name=\"spouseAgender\" class=\"form-control\">\n          <option value=\"male\">Male</option>\n          <option value=\"female\">Female</option>\n        </select>\n        </div>\n        <div class=\"form-inline\">\n              <label>Date of Birth month/day/year</label>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputMonth\" name=\"spouseAinputMonth\" required>\n                <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n              </select>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputDay\" name=\"spouseAinputDay\" required>\n                  <option *ngFor=\"let day of inputDays\" [value]=\"day\">{{day}}</option>\n              </select>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputYear\" name=\"spouseAinputYear\" required>\n                  <option *ngFor=\"let year of inputYears\" [value]=\"year\">{{year}}</option>\n              </select>\n        </div>\n        <div>\n          <label class=\"customtooltip\">PIA<span class=\"tooltiptext\">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>\n          <input type=\"text\" [(ngModel)]=\"spouseAPIA\" name=\"spouseAPIA\" required>\n        </div>\n        <div *ngIf=\"this.advanced == true\">\n            <label for=\"spouseAgovernmentPension\">Monthly government pension from non-covered employment</label>\n            <input type=\"text\" [(ngModel)]=\"spouseAgovernmentPension\" id=\"spouseAgovernmentPension\" name=\"spouseAgovernmentPension\">\n        </div>\n\n      <span *ngIf=\"maritalStatus == 'married'\">\n\n        <h2>Your Spouse's Information</h2>\n        <div class=\"form-inline\">\n        <label>Gender</label>\n        <select [(ngModel)]=\"spouseBgender\" name=\"spouseBgender\" class=\"form-control\">\n          <option value=\"male\">Male</option>\n          <option value=\"female\">Female</option>\n        </select>\n        </div>\n        <div class=\"form-inline\">\n          <label>Date of Birth month/day/year</label>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputMonth\" name=\"spouseBinputMonth\" required>\n            <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputDay\" name=\"spouseBinputDay\" required>\n              <option *ngFor=\"let day of inputDays\" [value]=\"day\">{{day}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputYear\" name=\"spouseBinputYear\" required>\n              <option *ngFor=\"let year of inputYears\" [value]=\"year\">{{year}}</option>\n          </select>\n        </div>\n        <div>\n          <label class=\"customtooltip\">PIA<span class=\"tooltiptext\">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>\n          <input type=\"text\" [(ngModel)]=\"spouseBPIA\" name=\"spouseBPIA\" required>\n        </div>\n        <div *ngIf=\"this.advanced == true\">\n            <label for=\"spouseBgovernmentPension\">Monthly government pension from non-covered employment</label>\n            <input type=\"text\" [(ngModel)]=\"spouseBgovernmentPension\" id=\"spouseBgovernmentPension\" name=\"spouseBgovernmentPension\">\n        </div>\n      </span>\n        <div *ngIf=\"this.advanced == true\">\n          <h2>Other Inputs</h2>\n          <label class=\"customtooltip\">Real Discount Rate<span class=\"tooltiptext\">As a decimal (0.01 for a 1% discount rate, for example).</span></label>\n          <input type=\"text\" [(ngModel)]=\"discountRate\" name=\"discountRate\" required>\n        </div>\n      <div>\n        <button type=\"submit\" id=\"maximizeSubmit\" class=\"btn btn-primary\" (mousedown)=\"waitCursor()\">Submit</button>\n      </div>\n      <p *ngIf=\"!this.solutionSet.solutionPV\">If you are married, depending on your age and your computer's processor speed, this calculation may take a while -- anywhere from a few seconds to a couple of minutes. Please be patient with your computer. It's doing quite a lot of math.</p>\n</form>\n<span *ngIf=\"this.solutionSet.solutionPV\">\n  \n  <ul>\n    <li *ngIf=\"this.solutionSet.spouseAretirementSolution\">You should file for your retirement benefit to begin {{this.solutionSet.spouseAretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseAretirementSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseAspousalSolution\">You should file for your spousal benefit to begin {{this.solutionSet.spouseAspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseAspousalSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseBretirementSolution\">Your spouse should file for his/her retirement benefit to begin {{this.solutionSet.spouseBretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseBretirementSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseBspousalSolution\">Your spouse should file for his/her spousal benefit to begin {{this.solutionSet.spouseBspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseBspousalSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.solutionPV\">The present value of this proposed solution would be {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}</li>\n  </ul>\n\n  <hr>\n\n  <form #customDateForm=\"ngForm\" (ngSubmit)=\"customDates()\">\n  <h2>Test an alternative claiming strategy:</h2>\n  <div class=\"form-inline\">\n      <label>Your month/year to claim retirement benefit:</label>\n      <select class=\"form-control\" [(ngModel)]=\"spouseAretirementBenefitMonth\" name=\"spouseAretirementBenefitMonth\" required>\n        <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n      </select>\n      <select class=\"form-control\" [(ngModel)]=\"spouseAretirementBenefitYear\" name=\"spouseAretirementBenefitYear\" required>\n        <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n      </select>\n      <span *ngIf=\"this.spouseAretirementDateError\" class=\"alert alert-danger\">{{this.spouseAretirementDateError}}</span>\n    </div>\n    <span *ngIf=\"maritalStatus == 'married'\">\n        <div class=\"form-inline\">\n          <label>Your month/year to claim spousal benefit:</label>\n          <select class=\"form-control\" [(ngModel)]=\"spouseAspousalBenefitMonth\" name=\"spouseAspousalBenefitMonth\" required>\n            <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseAspousalBenefitYear\" name=\"spouseAspousalBenefitYear\" required>\n            <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n          </select>\n          <span *ngIf=\"this.spouseAspousalDateError\" class=\"alert alert-danger\">{{this.spouseAspousalDateError}}</span>\n        </div>\n        <div class=\"form-inline\">\n            <label>Your spouse's month/year to claim retirement benefit:</label>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBretirementBenefitMonth\" name=\"spouseBretirementBenefitMonth\" required>\n              <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n            </select>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBretirementBenefitYear\" name=\"spouseBretirementBenefitYear\" required>\n              <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n            </select>\n            <span *ngIf=\"this.spouseBretirementDateError\" class=\"alert alert-danger\">{{this.spouseBretirementDateError}}</span>\n          </div>\n          <div class=\"form-inline\">\n            <label>Your spouse's month/year to claim spousal benefit:</label>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBspousalBenefitMonth\" name=\"spouseBspousalBenefitMonth\" required>\n              <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n            </select>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBspousalBenefitYear\" name=\"spouseBspousalBenefitYear\" required>\n              <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n            </select>\n            <span *ngIf=\"this.spouseBspousalDateError\" class=\"alert alert-danger\">{{this.spouseBspousalDateError}}</span>\n          </div>\n      </span>\n    <div>\n        <button type=\"submit\" class=\"btn btn-primary\">Submit</button>\n    </div>\n    <span *ngIf=\"this.customPV\">\n      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}} from the recommended strategy.\n    </span>\n  </form>\n</span>\n</div>"
+module.exports = "<div id=\"container\" class=\"container\">\n<form #inputForm=\"ngForm\" (ngSubmit)=\"onSubmit()\">\n      <div>\n        <label for=\"advanced\">Advanced Options</label>\n        <input type=\"checkbox\" [(ngModel)]=\"advanced\" id=\"advanced\" name=\"advanced\" value=\"true\">\n      </div>\n        <h2>Your Information</h2>\n        <div class=\"form-inline\">\n          <label>Marital Status</label>\n          <select [(ngModel)]=\"maritalStatus\" name=\"maritalStatus\" class=\"form-control\">\n            <option value=\"married\">Married</option>\n            <option value=\"unmarried\">Single</option>\n          </select>\n        </div>\n        <div class=\"form-inline\">\n        <label>Gender</label>\n        <select [(ngModel)]=\"spouseAgender\" name=\"spouseAgender\" class=\"form-control\">\n          <option value=\"male\">Male</option>\n          <option value=\"female\">Female</option>\n        </select>\n        </div>\n        <div *ngIf=\"this.advanced == true\" class=\"form-inline\">\n          <label>Mortality Table</label>\n          <select [(ngModel)]=\"spouseAmortalityInput\" name=\"spouseAmortalityInput\" class=\"form-control\">\n            <option value=\"NS1\">2017 CSO Nonsmoker Super-preferred (for people in very good health)</option>\n            <option value=\"NS2\">2017 CSO Nonsmoker Preferred (for people in better than average health)</option>\n            <option value=\"SSA\">2014 Social Security Period Life Table (for somebody with average life expectancy)</option>\n            <option value=\"SM1\">2017 CSO Smoker Preferred (for tobacco users in better health than average tobacco user)</option>\n            <option value=\"SM2\">2017 CSO Smoker Residual Standard (for tobacco users with health status typical of tobacco user)</option>\n          </select>\n          </div>\n        <div class=\"form-inline\">\n              <label>Date of Birth month/day/year</label>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputMonth\" name=\"spouseAinputMonth\" required>\n                <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n              </select>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputDay\" name=\"spouseAinputDay\" required>\n                  <option *ngFor=\"let day of inputDays\" [value]=\"day\">{{day}}</option>\n              </select>\n              <select class=\"form-control\" [(ngModel)]=\"spouseAinputYear\" name=\"spouseAinputYear\" required>\n                  <option *ngFor=\"let year of inputYears\" [value]=\"year\">{{year}}</option>\n              </select>\n        </div>\n        <div>\n          <label class=\"customtooltip\">PIA<span class=\"tooltiptext\">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>\n          <input type=\"text\" [(ngModel)]=\"spouseAPIA\" name=\"spouseAPIA\" required>\n        </div>\n        <div *ngIf=\"this.advanced == true\">\n            <label for=\"spouseAgovernmentPension\">Monthly government pension from non-covered employment</label>\n            <input type=\"text\" [(ngModel)]=\"spouseAgovernmentPension\" id=\"spouseAgovernmentPension\" name=\"spouseAgovernmentPension\">\n        </div>\n\n      <span *ngIf=\"maritalStatus == 'married'\">\n\n        <h2>Your Spouse's Information</h2>\n        <div class=\"form-inline\">\n        <label>Gender</label>\n        <select [(ngModel)]=\"spouseBgender\" name=\"spouseBgender\" class=\"form-control\">\n          <option value=\"male\">Male</option>\n          <option value=\"female\">Female</option>\n        </select>\n        </div>\n        <div *ngIf=\"this.advanced == true\" class=\"form-inline\">\n            <label>Mortality Table</label>\n            <select [(ngModel)]=\"spouseBmortalityInput\" name=\"spouseBmortalityInput\" class=\"form-control\">\n              <option value=\"NS1\">2017 CSO Nonsmoker Super-preferred (for people in very good health)</option>\n              <option value=\"NS2\">2017 CSO Nonsmoker Preferred (for people in better than average health)</option>\n              <option value=\"SSA\">2014 Social Security Period Life Table (for somebody with average life expectancy)</option>\n              <option value=\"SM1\">2017 CSO Smoker Preferred (for tobacco users in better health than average tobacco user)</option>\n              <option value=\"SM2\">2017 CSO Smoker Residual Standard (for tobacco users with health status typical of tobacco user)</option>\n            </select>\n        </div>\n        <div class=\"form-inline\">\n          <label>Date of Birth month/day/year</label>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputMonth\" name=\"spouseBinputMonth\" required>\n            <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputDay\" name=\"spouseBinputDay\" required>\n              <option *ngFor=\"let day of inputDays\" [value]=\"day\">{{day}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseBinputYear\" name=\"spouseBinputYear\" required>\n              <option *ngFor=\"let year of inputYears\" [value]=\"year\">{{year}}</option>\n          </select>\n        </div>\n        <div>\n          <label class=\"customtooltip\">PIA<span class=\"tooltiptext\">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>\n          <input type=\"text\" [(ngModel)]=\"spouseBPIA\" name=\"spouseBPIA\" required>\n        </div>\n        <div *ngIf=\"this.advanced == true\">\n            <label for=\"spouseBgovernmentPension\">Monthly government pension from non-covered employment</label>\n            <input type=\"text\" [(ngModel)]=\"spouseBgovernmentPension\" id=\"spouseBgovernmentPension\" name=\"spouseBgovernmentPension\">\n        </div>\n      </span>\n        <div *ngIf=\"this.advanced == true\">\n          <h2>Other Inputs</h2>\n          <label class=\"customtooltip\">Real Discount Rate<span class=\"tooltiptext\">As a decimal (0.01 for a 1% discount rate, for example).</span></label>\n          <input type=\"text\" [(ngModel)]=\"discountRate\" name=\"discountRate\" required>\n        </div>\n      <div>\n        <button type=\"submit\" id=\"maximizeSubmit\" class=\"btn btn-primary\" (mousedown)=\"waitCursor()\">Submit</button>\n      </div>\n      <p *ngIf=\"!this.solutionSet.solutionPV\">If you are married, depending on your age and your computer's processor speed, this calculation may take a while -- anywhere from a few seconds to a couple of minutes. Please be patient with your computer. It's doing quite a lot of math.</p>\n</form>\n<span *ngIf=\"this.solutionSet.solutionPV\">\n  \n  <ul>\n    <li *ngIf=\"this.solutionSet.spouseAretirementSolution\">You should file for your retirement benefit to begin {{this.solutionSet.spouseAretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseAretirementSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseAspousalSolution\">You should file for your spousal benefit to begin {{this.solutionSet.spouseAspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseAspousalSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseBretirementSolution\">Your spouse should file for his/her retirement benefit to begin {{this.solutionSet.spouseBretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseBretirementSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.spouseBspousalSolution\">Your spouse should file for his/her spousal benefit to begin {{this.solutionSet.spouseBspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseBspousalSolution.getFullYear()}}.</li>\n    <li *ngIf=\"this.solutionSet.solutionPV\">The present value of this proposed solution would be {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}</li>\n  </ul>\n\n  <hr>\n\n  <form #customDateForm=\"ngForm\" (ngSubmit)=\"customDates()\">\n  <h2>Test an alternative claiming strategy:</h2>\n  <div class=\"form-inline\">\n      <label>Your month/year to claim retirement benefit:</label>\n      <select class=\"form-control\" [(ngModel)]=\"spouseAretirementBenefitMonth\" name=\"spouseAretirementBenefitMonth\" required>\n        <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n      </select>\n      <select class=\"form-control\" [(ngModel)]=\"spouseAretirementBenefitYear\" name=\"spouseAretirementBenefitYear\" required>\n        <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n      </select>\n      <span *ngIf=\"this.spouseAretirementDateError\" class=\"alert alert-danger\">{{this.spouseAretirementDateError}}</span>\n    </div>\n    <span *ngIf=\"maritalStatus == 'married'\">\n        <div class=\"form-inline\">\n          <label>Your month/year to claim spousal benefit:</label>\n          <select class=\"form-control\" [(ngModel)]=\"spouseAspousalBenefitMonth\" name=\"spouseAspousalBenefitMonth\" required>\n            <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n          </select>\n          <select class=\"form-control\" [(ngModel)]=\"spouseAspousalBenefitYear\" name=\"spouseAspousalBenefitYear\" required>\n            <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n          </select>\n          <span *ngIf=\"this.spouseAspousalDateError\" class=\"alert alert-danger\">{{this.spouseAspousalDateError}}</span>\n        </div>\n        <div class=\"form-inline\">\n            <label>Your spouse's month/year to claim retirement benefit:</label>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBretirementBenefitMonth\" name=\"spouseBretirementBenefitMonth\" required>\n              <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n            </select>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBretirementBenefitYear\" name=\"spouseBretirementBenefitYear\" required>\n              <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n            </select>\n            <span *ngIf=\"this.spouseBretirementDateError\" class=\"alert alert-danger\">{{this.spouseBretirementDateError}}</span>\n          </div>\n          <div class=\"form-inline\">\n            <label>Your spouse's month/year to claim spousal benefit:</label>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBspousalBenefitMonth\" name=\"spouseBspousalBenefitMonth\" required>\n              <option *ngFor=\"let month of inputMonths\" [value]=\"month\">{{month}}</option>\n            </select>\n            <select class=\"form-control\" [(ngModel)]=\"spouseBspousalBenefitYear\" name=\"spouseBspousalBenefitYear\" required>\n              <option *ngFor=\"let year of inputBenefitYears\" [value]=\"year\">{{year}}</option>\n            </select>\n            <span *ngIf=\"this.spouseBspousalDateError\" class=\"alert alert-danger\">{{this.spouseBspousalDateError}}</span>\n          </div>\n      </span>\n    <div>\n        <button type=\"submit\" class=\"btn btn-primary\">Submit</button>\n    </div>\n    <span *ngIf=\"this.customPV\">\n      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}} from the recommended strategy.\n    </span>\n  </form>\n</span>\n</div>"
 
 /***/ }),
 
@@ -553,7 +553,7 @@ var InputFormComponent = /** @class */ (function () {
         //Inputs from form
         this.maritalStatus = "unmarried";
         this.spouseAinputMonth = 4;
-        this.spouseAinputDay = 8;
+        this.spouseAinputDay = 15;
         this.spouseAinputYear = 1984;
         this.spouseAPIA = 1000;
         this.spouseAretirementBenefitMonth = 4;
@@ -561,8 +561,9 @@ var InputFormComponent = /** @class */ (function () {
         this.spouseAspousalBenefitMonth = 4;
         this.spouseAspousalBenefitYear = 2051;
         this.spouseAgender = "male";
+        this.spouseAmortalityInput = "SSA";
         this.spouseBinputMonth = 4;
-        this.spouseBinputDay = 28;
+        this.spouseBinputDay = 15;
         this.spouseBinputYear = 1984;
         this.spouseBPIA = 1000;
         this.spouseBretirementBenefitMonth = 4;
@@ -570,6 +571,7 @@ var InputFormComponent = /** @class */ (function () {
         this.spouseBspousalBenefitMonth = 4;
         this.spouseBspousalBenefitYear = 2051;
         this.spouseBgender = "female";
+        this.spouseBmortalityInput = "SSA";
         this.discountRate = 0.01;
         this.advanced = false;
         this.spouseAgovernmentPension = 0;
@@ -593,11 +595,79 @@ var InputFormComponent = /** @class */ (function () {
         this.spouseBage = (this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear())) / 12;
         this.spouseAageRounded = Math.round(this.spouseAage);
         this.spouseBageRounded = Math.round(this.spouseBage);
+        if (this.spouseAgender == "male") {
+            if (this.spouseAmortalityInput == "NS1") {
+                this.spouseAmortalityTable = this.presentvalueService.maleNS1;
+            }
+            if (this.spouseAmortalityInput == "NS2") {
+                this.spouseAmortalityTable = this.presentvalueService.maleNS2;
+            }
+            if (this.spouseAmortalityInput == "SSA") {
+                this.spouseAmortalityTable = this.presentvalueService.maleSSAtable;
+            }
+            if (this.spouseAmortalityInput == "SM1") {
+                this.spouseAmortalityTable = this.presentvalueService.maleSM1;
+            }
+            if (this.spouseAmortalityInput == "SM2") {
+                this.spouseAmortalityTable = this.presentvalueService.maleSM2;
+            }
+        }
+        if (this.spouseAgender == "female") {
+            if (this.spouseAmortalityInput == "NS1") {
+                this.spouseAmortalityTable = this.presentvalueService.femaleNS1;
+            }
+            if (this.spouseAmortalityInput == "NS2") {
+                this.spouseAmortalityTable = this.presentvalueService.femaleNS2;
+            }
+            if (this.spouseAmortalityInput == "SSA") {
+                this.spouseAmortalityTable = this.presentvalueService.femaleSSAtable;
+            }
+            if (this.spouseAmortalityInput == "SM1") {
+                this.spouseAmortalityTable = this.presentvalueService.femaleSM1;
+            }
+            if (this.spouseAmortalityInput == "SM2") {
+                this.spouseAmortalityTable = this.presentvalueService.femaleSM2;
+            }
+        }
+        if (this.spouseBgender == "male") {
+            if (this.spouseBmortalityInput == "NS1") {
+                this.spouseBmortalityTable = this.presentvalueService.maleNS1;
+            }
+            if (this.spouseBmortalityInput == "NS2") {
+                this.spouseBmortalityTable = this.presentvalueService.maleNS2;
+            }
+            if (this.spouseBmortalityInput == "SSA") {
+                this.spouseBmortalityTable = this.presentvalueService.maleSSAtable;
+            }
+            if (this.spouseBmortalityInput == "SM1") {
+                this.spouseBmortalityTable = this.presentvalueService.maleSM1;
+            }
+            if (this.spouseBmortalityInput == "SM2") {
+                this.spouseBmortalityTable = this.presentvalueService.maleSM2;
+            }
+        }
+        if (this.spouseBgender == "female") {
+            if (this.spouseBmortalityInput == "NS1") {
+                this.spouseBmortalityTable = this.presentvalueService.femaleNS1;
+            }
+            if (this.spouseBmortalityInput == "NS2") {
+                this.spouseBmortalityTable = this.presentvalueService.femaleNS2;
+            }
+            if (this.spouseBmortalityInput == "SSA") {
+                this.spouseBmortalityTable = this.presentvalueService.femaleSSAtable;
+            }
+            if (this.spouseBmortalityInput == "SM1") {
+                this.spouseBmortalityTable = this.presentvalueService.femaleSM1;
+            }
+            if (this.spouseBmortalityInput == "SM2") {
+                this.spouseBmortalityTable = this.presentvalueService.femaleSM2;
+            }
+        }
         if (this.maritalStatus == "unmarried") {
-            this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate));
+            this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, this.spouseAmortalityTable, Number(this.discountRate));
         }
         if (this.maritalStatus == "married") {
-            this.solutionSet = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate));
+            this.solutionSet = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate));
         }
         this.normalCursor();
         //For testing performance
@@ -630,10 +700,10 @@ var InputFormComponent = /** @class */ (function () {
         this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate);
         //Calc PV with input dates
         if (this.maritalStatus == "unmarried" && !this.spouseAretirementDateError) {
-            this.customPV = this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseASSbirthDate, Number(this.spouseAage), Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAgender, Number(this.discountRate));
+            this.customPV = this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseASSbirthDate, Number(this.spouseAage), Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAgender, this.spouseAmortalityTable, Number(this.discountRate));
         }
         if (this.maritalStatus == "married" && !this.spouseAretirementDateError && !this.spouseBretirementDateError && !this.spouseBspousalDateError && !this.spouseAspousalDateError) {
-            this.customPV = this.presentvalueService.calculateCouplePV(this.spouseAgender, this.spouseBgender, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate));
+            this.customPV = this.presentvalueService.calculateCouplePV(this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate));
         }
     };
     InputFormComponent.prototype.checkValidRetirementInputs = function (FRA, SSbirthDate, actualBirthDate, retirementBenefitDate) {
@@ -746,7 +816,7 @@ var PresentvalueService = /** @class */ (function () {
         this.birthdayService = birthdayService;
         this.today = new Date();
         //Lives remaining out of 100k, from SSA 2014 period life table
-        this.maleLivesRemaining = [
+        this.maleSSAtable = [
             100000,
             99368,
             99328,
@@ -999,7 +1069,7 @@ var PresentvalueService = /** @class */ (function () {
             0,
             0,
         ];
-        this.femaleLivesRemaining = [
+        this.femaleSSAtable = [
             100000,
             99469,
             99434,
@@ -1316,8 +1386,992 @@ var PresentvalueService = /** @class */ (function () {
             0,
             0,
         ];
+        this.maleNS1 = [
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            99878,
+            99752,
+            99621,
+            99486,
+            99346,
+            99200,
+            99046,
+            98882,
+            98707,
+            98518,
+            98313,
+            98093,
+            97858,
+            97612,
+            97352,
+            97078,
+            96785,
+            96469,
+            96121,
+            95735,
+            95307,
+            94833,
+            94307,
+            93726,
+            93085,
+            92376,
+            91588,
+            90708,
+            89717,
+            88598,
+            87332,
+            85902,
+            84296,
+            82501,
+            80505,
+            78291,
+            75838,
+            73126,
+            70141,
+            66872,
+            63302,
+            59421,
+            55230,
+            50742,
+            45995,
+            41062,
+            36045,
+            31069,
+            26266,
+            21767,
+            17683,
+            14094,
+            11015,
+            8421,
+            6283,
+            4563,
+            3220,
+            2204,
+            1461,
+            937,
+            581,
+            349,
+            202,
+            114,
+            62,
+            33,
+            17,
+            9,
+            4,
+            2,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ];
+        this.maleNS2 = [
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            99857,
+            99708,
+            99555,
+            99396,
+            99232,
+            99061,
+            98881,
+            98691,
+            98485,
+            98261,
+            98016,
+            97751,
+            97467,
+            97164,
+            96843,
+            96502,
+            96138,
+            95741,
+            95305,
+            94822,
+            94286,
+            93694,
+            93042,
+            92325,
+            91541,
+            90680,
+            89733,
+            88686,
+            87521,
+            86219,
+            84765,
+            83144,
+            81347,
+            79364,
+            77188,
+            74807,
+            72204,
+            69362,
+            66267,
+            62914,
+            59291,
+            55397,
+            51238,
+            46835,
+            42230,
+            37497,
+            32740,
+            28076,
+            23631,
+            19516,
+            15818,
+            12597,
+            9845,
+            7526,
+            5615,
+            4079,
+            2878,
+            1970,
+            1306,
+            838,
+            520,
+            312,
+            181,
+            101,
+            55,
+            29,
+            15,
+            8,
+            4,
+            2,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ];
+        this.maleSM1 = [
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            99747,
+            99482,
+            99203,
+            98907,
+            98594,
+            98261,
+            97905,
+            97524,
+            97115,
+            96673,
+            96195,
+            95679,
+            95117,
+            94505,
+            93837,
+            93105,
+            92301,
+            91415,
+            90436,
+            89355,
+            88165,
+            86856,
+            85423,
+            83863,
+            82174,
+            80353,
+            78393,
+            76282,
+            74007,
+            71562,
+            68949,
+            66181,
+            63281,
+            60277,
+            57194,
+            54053,
+            50867,
+            47647,
+            44413,
+            41137,
+            37791,
+            34392,
+            30963,
+            27535,
+            24151,
+            20868,
+            17747,
+            14846,
+            12216,
+            9890,
+            7881,
+            6191,
+            4788,
+            3634,
+            2699,
+            1956,
+            1379,
+            944,
+            626,
+            401,
+            249,
+            149,
+            87,
+            49,
+            26,
+            14,
+            7,
+            4,
+            2,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ];
+        this.maleSM2 = [
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            99712,
+            99410,
+            99093,
+            98756,
+            98398,
+            98018,
+            97611,
+            97175,
+            96706,
+            96200,
+            95654,
+            95063,
+            94421,
+            93722,
+            92961,
+            92129,
+            91218,
+            90217,
+            89117,
+            87907,
+            86580,
+            85130,
+            83550,
+            81840,
+            80001,
+            78031,
+            75925,
+            73672,
+            71263,
+            68691,
+            65964,
+            63098,
+            60119,
+            57058,
+            53943,
+            50797,
+            47633,
+            44461,
+            41296,
+            38115,
+            34887,
+            31632,
+            28372,
+            25136,
+            21964,
+            18908,
+            16022,
+            13360,
+            10963,
+            8856,
+            7048,
+            5534,
+            4280,
+            3248,
+            2412,
+            1748,
+            1233,
+            844,
+            559,
+            359,
+            223,
+            133,
+            77,
+            43,
+            24,
+            13,
+            7,
+            3,
+            2,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ];
+        this.femaleNS1 = [
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            99927,
+            99853,
+            99778,
+            99700,
+            99619,
+            99532,
+            99439,
+            99339,
+            99229,
+            99107,
+            98970,
+            98817,
+            98649,
+            98467,
+            98270,
+            98058,
+            97828,
+            97579,
+            97307,
+            97008,
+            96679,
+            96317,
+            95921,
+            95485,
+            95008,
+            94484,
+            93908,
+            93269,
+            92558,
+            91760,
+            90862,
+            89851,
+            88711,
+            87425,
+            85971,
+            84323,
+            82449,
+            80318,
+            77928,
+            75290,
+            72386,
+            69115,
+            65465,
+            61509,
+            57250,
+            52710,
+            47938,
+            43012,
+            38020,
+            33056,
+            28230,
+            23646,
+            19372,
+            15473,
+            12011,
+            9032,
+            6559,
+            4597,
+            3111,
+            2032,
+            1279,
+            777,
+            455,
+            257,
+            141,
+            75,
+            39,
+            20,
+            10,
+            5,
+            2,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ];
+        this.femaleNS2 = [
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            99915,
+            99829,
+            99741,
+            99650,
+            99555,
+            99453,
+            99344,
+            99226,
+            99096,
+            98950,
+            98787,
+            98604,
+            98403,
+            98183,
+            97946,
+            97690,
+            97415,
+            97116,
+            96789,
+            96432,
+            96041,
+            95612,
+            95143,
+            94631,
+            94073,
+            93463,
+            92796,
+            92061,
+            91247,
+            90341,
+            89330,
+            88199,
+            86933,
+            85517,
+            83930,
+            82148,
+            80139,
+            77873,
+            75355,
+            72599,
+            69591,
+            66241,
+            62539,
+            58564,
+            54324,
+            49843,
+            45177,
+            40401,
+            35605,
+            30876,
+            26318,
+            22028,
+            18046,
+            14414,
+            11189,
+            8414,
+            6110,
+            4282,
+            2898,
+            1893,
+            1192,
+            723,
+            424,
+            240,
+            131,
+            70,
+            36,
+            18,
+            9,
+            5,
+            2,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ];
+        this.femaleSM1 = [
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            99841,
+            99673,
+            99493,
+            99297,
+            99083,
+            98851,
+            98595,
+            98316,
+            98012,
+            97677,
+            97312,
+            96912,
+            96473,
+            95990,
+            95457,
+            94869,
+            94220,
+            93504,
+            92714,
+            91844,
+            90887,
+            89838,
+            88689,
+            87435,
+            86075,
+            84606,
+            83022,
+            81316,
+            79489,
+            77543,
+            75476,
+            73281,
+            70953,
+            68487,
+            65878,
+            63126,
+            60207,
+            57086,
+            53755,
+            50222,
+            46526,
+            42743,
+            38871,
+            34929,
+            31014,
+            27181,
+            23490,
+            20006,
+            16783,
+            13858,
+            11262,
+            9010,
+            7082,
+            5454,
+            4111,
+            3030,
+            2182,
+            1529,
+            1035,
+            676,
+            426,
+            258,
+            151,
+            86,
+            47,
+            25,
+            13,
+            7,
+            3,
+            2,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ];
+        this.femaleSM2 = [
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            100000,
+            99800,
+            99588,
+            99360,
+            99111,
+            98838,
+            98541,
+            98215,
+            97857,
+            97465,
+            97035,
+            96564,
+            96049,
+            95484,
+            94864,
+            94184,
+            93437,
+            92619,
+            91722,
+            90743,
+            89674,
+            88511,
+            87248,
+            85884,
+            84414,
+            82839,
+            81159,
+            79373,
+            77474,
+            75466,
+            73356,
+            71142,
+            68820,
+            66388,
+            63841,
+            61179,
+            58404,
+            55490,
+            52407,
+            49148,
+            45724,
+            42173,
+            38579,
+            34936,
+            31260,
+            27640,
+            24125,
+            20768,
+            17625,
+            14738,
+            12137,
+            9846,
+            7871,
+            6187,
+            4765,
+            3591,
+            2647,
+            1907,
+            1336,
+            904,
+            591,
+            372,
+            226,
+            132,
+            75,
+            41,
+            22,
+            11,
+            6,
+            3,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ];
     }
-    PresentvalueService.prototype.calculateSinglePersonPV = function (FRA, SSbirthDate, initialAge, PIA, inputBenefitDate, gender, discountRate) {
+    PresentvalueService.prototype.calculateSinglePersonPV = function (FRA, SSbirthDate, initialAge, PIA, inputBenefitDate, gender, mortalityTable, discountRate) {
         var retirementBenefit = this.benefitService.calculateRetirementBenefit(PIA, FRA, inputBenefitDate);
         var retirementPV = 0;
         var roundedAge = 0;
@@ -1340,20 +2394,10 @@ var PresentvalueService = /** @class */ (function () {
             }
             //Calculate probability of being alive at age in question.
             if (initialAgeRounded <= 62) {
-                if (gender == "male") {
-                    probabilityAlive = this.maleLivesRemaining[roundedAge + 1] / this.maleLivesRemaining[62];
-                }
-                if (gender == "female") {
-                    probabilityAlive = this.femaleLivesRemaining[roundedAge + 1] / this.femaleLivesRemaining[62];
-                }
+                probabilityAlive = mortalityTable[roundedAge + 1] / mortalityTable[62];
             }
             else {
-                if (gender == "male") {
-                    probabilityAlive = this.maleLivesRemaining[roundedAge + 1] / this.maleLivesRemaining[initialAgeRounded];
-                }
-                if (gender == "female") {
-                    probabilityAlive = this.femaleLivesRemaining[roundedAge + 1] / this.femaleLivesRemaining[initialAgeRounded];
-                }
+                probabilityAlive = mortalityTable[roundedAge + 1] / mortalityTable[initialAgeRounded];
             }
             //Calculate probability-weighted benefit
             var monthlyPV = retirementBenefit * probabilityAlive;
@@ -1366,7 +2410,7 @@ var PresentvalueService = /** @class */ (function () {
         }
         return retirementPV;
     };
-    PresentvalueService.prototype.calculateCouplePV = function (spouseAgender, spouseBgender, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded, spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAPIA, spouseBPIA, spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate, spouseAgovernmentPension, spouseBgovernmentPension, discountRate) {
+    PresentvalueService.prototype.calculateCouplePV = function (spouseAgender, spouseBgender, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded, spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAPIA, spouseBPIA, spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate, spouseAgovernmentPension, spouseBgovernmentPension, discountRate) {
         var spouseAretirementBenefit = 0;
         var spouseBretirementBenefit = 0;
         var spouseAspousalBenefit;
@@ -1448,20 +2492,10 @@ var PresentvalueService = /** @class */ (function () {
             }
             //Calculate probability of being alive at age in question.
             if (spouseAinitialAgeRounded <= 62) {
-                if (spouseAgender == "male") {
-                    probabilityAalive = this.maleLivesRemaining[spouseAroundedAge + 1] / this.maleLivesRemaining[62];
-                }
-                if (spouseAgender == "female") {
-                    probabilityAalive = this.femaleLivesRemaining[spouseAroundedAge + 1] / this.femaleLivesRemaining[62];
-                }
+                probabilityAalive = spouseAmortalityTable[spouseAroundedAge + 1] / spouseAmortalityTable[62];
             }
             else {
-                if (spouseAgender == "male") {
-                    probabilityAalive = this.maleLivesRemaining[spouseAroundedAge + 1] / this.maleLivesRemaining[spouseAinitialAgeRounded];
-                }
-                if (spouseAgender == "female") {
-                    probabilityAalive = this.femaleLivesRemaining[spouseAroundedAge + 1] / this.femaleLivesRemaining[spouseAinitialAgeRounded];
-                }
+                probabilityAalive = spouseAmortalityTable[spouseAroundedAge + 1] / spouseAmortalityTable[spouseAinitialAgeRounded];
             }
             //Do same math to calculate probability of spouseB being alive at given age
             //calculate rounded age
@@ -1473,20 +2507,10 @@ var PresentvalueService = /** @class */ (function () {
             }
             //use rounded age and lives remaining array to calculate probability
             if (spouseBinitialAgeRounded <= 62) {
-                if (spouseBgender == "male") {
-                    probabilityBalive = this.maleLivesRemaining[spouseBroundedAge + 1] / this.maleLivesRemaining[62];
-                }
-                if (spouseBgender == "female") {
-                    probabilityBalive = this.femaleLivesRemaining[spouseBroundedAge + 1] / this.femaleLivesRemaining[62];
-                }
+                probabilityBalive = spouseBmortalityTable[spouseBroundedAge + 1] / spouseBmortalityTable[62];
             }
             else {
-                if (spouseBgender == "male") {
-                    probabilityBalive = this.maleLivesRemaining[spouseBroundedAge + 1] / this.maleLivesRemaining[spouseBinitialAgeRounded];
-                }
-                if (spouseBgender == "female") {
-                    probabilityBalive = this.femaleLivesRemaining[spouseBroundedAge + 1] / this.femaleLivesRemaining[spouseBinitialAgeRounded];
-                }
+                probabilityBalive = spouseBmortalityTable[spouseBroundedAge + 1] / spouseBmortalityTable[spouseBinitialAgeRounded];
             }
             //Find probability-weighted benefit
             var monthlyPV = (probabilityAalive * (1 - probabilityBalive) * (spouseAretirementBenefit + spouseAsurvivorBenefit)) //Scenario where A is alive, B is deceased
@@ -1518,7 +2542,7 @@ var PresentvalueService = /** @class */ (function () {
         }
         return couplePV;
     };
-    PresentvalueService.prototype.maximizeSinglePersonPV = function (PIA, SSbirthDate, actualBirthDate, initialAge, FRA, gender, discountRate) {
+    PresentvalueService.prototype.maximizeSinglePersonPV = function (PIA, SSbirthDate, actualBirthDate, initialAge, FRA, gender, mortalityTable, discountRate) {
         //find initial currentTestDate for age 62
         var currentTestDate = new Date(SSbirthDate.getFullYear() + 62, 1, 1);
         if (actualBirthDate.getDate() <= 2) {
@@ -1534,14 +2558,14 @@ var PresentvalueService = /** @class */ (function () {
             currentTestDate.setFullYear(this.today.getFullYear());
         }
         //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
-        var savedPV = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, currentTestDate, gender, discountRate);
+        var savedPV = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, currentTestDate, gender, mortalityTable, discountRate);
         var savedClaimingDate = new Date(currentTestDate);
         //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
         var endingTestDate = new Date(SSbirthDate.getFullYear() + 70, SSbirthDate.getMonth() - 1, 1);
         while (currentTestDate <= endingTestDate) {
             //Add 1 month to claiming age and run both calculations again and compare results. Save better of the two.
             currentTestDate.setMonth(currentTestDate.getMonth() + 1);
-            var currentTestPV = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, currentTestDate, gender, discountRate);
+            var currentTestPV = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, currentTestDate, gender, mortalityTable, discountRate);
             if (currentTestPV > savedPV) {
                 savedClaimingDate.setMonth(currentTestDate.getMonth());
                 savedClaimingDate.setFullYear(currentTestDate.getFullYear());
@@ -1560,7 +2584,7 @@ var PresentvalueService = /** @class */ (function () {
         };
         return solutionSet;
     };
-    PresentvalueService.prototype.maximizeCouplePV = function (spouseAPIA, spouseBPIA, spouseAactualBirthDate, spouseBactualBirthDate, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded, spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAgender, spouseBgender, spouseAgovernmentPension, spouseBgovernmentPension, discountRate) {
+    PresentvalueService.prototype.maximizeCouplePV = function (spouseAPIA, spouseBPIA, spouseAactualBirthDate, spouseBactualBirthDate, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded, spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAgender, spouseBgender, spouseAmortalityTable, spouseBmortalityTable, spouseAgovernmentPension, spouseBgovernmentPension, discountRate) {
         var deemedFilingCutoff = new Date(1954, 0, 1);
         //find initial test dates for spouseA (first month for which spouseA is considered 62 for entire month)
         var spouseAretirementDate = new Date(spouseASSbirthDate.getFullYear() + 62, 1, 1);
@@ -1640,7 +2664,7 @@ var PresentvalueService = /** @class */ (function () {
             }
             while (spouseBretirementDate <= spouseBendTestDate) {
                 //Calculate PV using current testDates
-                var currentTestPV = this.calculateCouplePV(spouseAgender, spouseBgender, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate));
+                var currentTestPV = this.calculateCouplePV(spouseAgender, spouseBgender, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate));
                 //If PV is greater than saved PV, save new PV and save new testDates
                 if (currentTestPV > savedPV) {
                     savedPV = currentTestPV;
