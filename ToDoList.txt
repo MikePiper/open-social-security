@@ -35,6 +35,8 @@ Remaining To-Do:
 
 Should "About" page be an FAQ page instead?
 
+Get a 404 page functioning. And ideally make it so it doesn't 404 upon reloading /about (or other URL)
+
 Resolve the security issue mentioned by GitHub ("hoek" version, which has been updated in package-lock.json to a newer version)
 
 Work through various simplifications to remove them (or remove them at user's option)

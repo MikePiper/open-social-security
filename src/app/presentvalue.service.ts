@@ -91,29 +91,29 @@ export class PresentvalueService {
     spouseBage = ( firstStartDate.getMonth() - spouseBSSbirthDate.getMonth() + 12 * (firstStartDate.getFullYear() - spouseBSSbirthDate.getFullYear()) )/12
 
     //Calculate PV via loop until both spouses are at least age 115 (by which point "remaining lives" alive is zero)
-    let currentTestDate: Date = new Date(firstStartDate)
+    let currentCalculationDate: Date = new Date(firstStartDate)
     while (spouseAage < 115 || spouseBage < 115){
-      //Retirement benefit A is zero if currentTestDate is prior to spouseAinputBenefitDate. Otherwise retirement benefit A is calculated as of spouseAinputBenefitDate.
-      if (currentTestDate < spouseAretirementBenefitDate) {
+      //Retirement benefit A is zero if currentCalculationDate is prior to spouseAinputBenefitDate. Otherwise retirement benefit A is calculated as of spouseAinputBenefitDate.
+      if (currentCalculationDate < spouseAretirementBenefitDate) {
         spouseAretirementBenefit = 0
         }
         else {spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAretirementBenefitDate)
         }
-      //Retirement benefit B is zero if currentTestDate is prior to spouseBinputBenefitDate. Otherwise retirement benefit B is calculated as of spouseBinputBenefitDate.
-      if (currentTestDate < spouseBretirementBenefitDate) {
+      //Retirement benefit B is zero if currentCalculationDate is prior to spouseBinputBenefitDate. Otherwise retirement benefit B is calculated as of spouseBinputBenefitDate.
+      if (currentCalculationDate < spouseBretirementBenefitDate) {
         spouseBretirementBenefit = 0
         }
         else {spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBretirementBenefitDate)
         }
 
       //Calculate spousal benefits (zero if before applicable claiming date). Don't need to check here if other spouse has filed for retirement benefit yet, because that's being done with input validation.
-      if (currentTestDate < spouseAspousalBenefitDate){
+      if (currentCalculationDate < spouseAspousalBenefitDate){
         spouseAspousalBenefit = 0
         }
         else {
         spouseAspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAretirementBenefit, spouseAspousalBenefitDate, spouseAgovernmentPension)
         }
-      if (currentTestDate < spouseBspousalBenefitDate) {
+      if (currentCalculationDate < spouseBspousalBenefitDate) {
         spouseBspousalBenefit = 0
         }
         else {
@@ -122,12 +122,12 @@ export class PresentvalueService {
         
 
       //Survivor benefits are zero before survivorFRA, after survivorFRA, calculate each spouse's survivor benefit using other spouse's intended claiming age as their date of death. (That is, assuming that other spouse lives to their intended claiming age.)
-        if (currentTestDate < spouseAsurvivorFRA) {
+        if (currentCalculationDate < spouseAsurvivorFRA) {
           spouseAsurvivorBenefit = 0    //<-- This will get changed when we incorporate restricted applications for survivor benefits
         } else {
           spouseAsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefit, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBretirementBenefitDate, spouseAgovernmentPension)
         }
-        if (currentTestDate < spouseBsurvivorFRA){
+        if (currentCalculationDate < spouseBsurvivorFRA){
           spouseBsurvivorBenefit = 0    //<-- This will get changed when we incorporate restricted applications for survivor benefits
         } else {
           spouseBsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefit, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAretirementBenefitDate, spouseBgovernmentPension)
@@ -179,18 +179,18 @@ export class PresentvalueService {
             monthlyPV = monthlyPV / (1 + discountRate/2) / Math.pow((1 + discountRate),(olderRoundedAge - 62))
 
       /*log benefit amounts by date
-      console.log("currentTestDate: " + currentTestDate)
+      console.log("currentCalculationDate: " + currentCalculationDate)
       console.log("spouseAretirementBenefit: " + spouseAretirementBenefit)
       console.log("spouseBretirementBenefit: " + spouseBretirementBenefit)
       console.log("spouseAspousalBenefit: " + spouseAspousalBenefit)
       console.log("spouseBspousalBenefit: " + spouseBspousalBenefit)
       */
 
-      //Add discounted benefit to ongoing count of retirementPV, add 1 month to each age, add 1 month to currentTestDate, and start loop over
+      //Add discounted benefit to ongoing count of retirementPV, add 1 month to each age, add 1 month to currentCalculationDate, and start loop over
         couplePV = couplePV + monthlyPV
         spouseAage = spouseAage + 1/12
         spouseBage = spouseBage + 1/12
-        currentTestDate.setMonth(currentTestDate.getMonth()+1)
+        currentCalculationDate.setMonth(currentCalculationDate.getMonth()+1)
     }
 
     return couplePV
@@ -198,34 +198,34 @@ export class PresentvalueService {
 
 
   maximizeSinglePersonPV(PIA: number, SSbirthDate: Date, actualBirthDate:Date, initialAge:number, FRA: Date, gender: string, mortalityTable:number[], discountRate: number){
-    //find initial currentTestDate for age 62
-    let currentTestDate = new Date(SSbirthDate.getFullYear()+62, 1, 1)
+    //find initial testClaimingDate for age 62
+    let testClaimingDate = new Date(SSbirthDate.getFullYear()+62, 1, 1)
     if (actualBirthDate.getDate() <= 2){
-      currentTestDate.setMonth(actualBirthDate.getMonth())
+      testClaimingDate.setMonth(actualBirthDate.getMonth())
     } else {
-      currentTestDate.setMonth(actualBirthDate.getMonth()+1)
+      testClaimingDate.setMonth(actualBirthDate.getMonth()+1)
     }
 
-    //If they are currently over age 62 when filling out form, set currentTestDate to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
+    //If user is currently over age 62 when filling out form, set testClaimingDate to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
     let ageToday = this.today.getFullYear() - SSbirthDate.getFullYear() + (this.today.getMonth() - SSbirthDate.getMonth())/12
     if (ageToday > 62){
-      currentTestDate.setMonth(this.today.getMonth())
-      currentTestDate.setFullYear(this.today.getFullYear())
+      testClaimingDate.setMonth(this.today.getMonth())
+      testClaimingDate.setFullYear(this.today.getFullYear())
     }
 
     //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
-    let savedPV: number = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, currentTestDate, gender, mortalityTable, discountRate)
-    let savedClaimingDate = new Date(currentTestDate)
+    let savedPV: number = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, testClaimingDate, gender, mortalityTable, discountRate)
+    let savedClaimingDate = new Date(testClaimingDate)
 
     //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
     let endingTestDate = new Date(SSbirthDate.getFullYear()+70, SSbirthDate.getMonth()-1, 1)
-    while (currentTestDate <= endingTestDate){
+    while (testClaimingDate <= endingTestDate){
       //Add 1 month to claiming age and run both calculations again and compare results. Save better of the two.
-      currentTestDate.setMonth(currentTestDate.getMonth() + 1)
-      let currentTestPV = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, currentTestDate, gender, mortalityTable, discountRate)
+      testClaimingDate.setMonth(testClaimingDate.getMonth() + 1)
+      let currentTestPV = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, testClaimingDate, gender, mortalityTable, discountRate)
       if (currentTestPV > savedPV)
-        {savedClaimingDate.setMonth(currentTestDate.getMonth())
-          savedClaimingDate.setFullYear(currentTestDate.getFullYear())
+        {savedClaimingDate.setMonth(testClaimingDate.getMonth())
+          savedClaimingDate.setFullYear(testClaimingDate.getFullYear())
           savedPV = currentTestPV}
     }
     //after loop is finished
