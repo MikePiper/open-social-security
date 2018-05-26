@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {BirthdayService} from './birthday.service'
 import {BenefitService} from './benefit.service'
 import { CurrencyPipe } from '@angular/common';
+import {SolutionSet} from './solutionset'
 
 @Injectable()
 export class PresentvalueService {
@@ -231,7 +232,7 @@ export class PresentvalueService {
     console.log("saved PV: " + savedPV)
     console.log("savedClaimingDate: " + savedClaimingDate)
 
-    let solutionSet = {
+    let solutionSet:SolutionSet = {
       "solutionPV":savedPV,
       "spouseAretirementSolution":savedClaimingDate,
       "spouseBretirementSolution":null,
@@ -418,7 +419,7 @@ export class PresentvalueService {
       console.log("spouseAspousalDate: " + spouseAsavedSpousalDate)
       console.log("spouseBspousalDate: " + spouseBsavedSpousalDate)
 
-      let solutionSet = {
+      let solutionSet: SolutionSet = {
         "solutionPV":savedPV,
         "spouseAretirementSolution":spouseAsavedRetirementDate,
         "spouseBretirementSolution":spouseBsavedRetirementDate,

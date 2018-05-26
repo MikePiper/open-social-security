@@ -5,6 +5,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { BenefitService } from '../benefit.service';
 import {BirthdayService} from '../birthday.service'
 import {PresentvalueService} from '../presentvalue.service'
+import {SolutionSet} from '../solutionset'
 
 @Component({
   selector: 'app-input-form',
@@ -96,7 +97,13 @@ export class InputFormComponent implements OnInit {
 
   //solution variables
   customPV: number
-  solutionSet = {}
+  solutionSet: SolutionSet = {
+    "solutionPV":null,
+    "spouseAretirementSolution":null,
+    "spouseBretirementSolution":null,
+    "spouseAspousalSolution":null,
+    "spouseBspousalSolution":null
+  }
 
   onSubmit() {
   let startTime = performance.now() //for testing performance
