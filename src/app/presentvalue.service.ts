@@ -15,42 +15,40 @@ export class PresentvalueService {
   {
     let retirementBenefit: number = this.benefitService.calculateRetirementBenefit(PIA, FRA, inputBenefitDate)
     let retirementPV: number = 0
-    let roundedAge: number = 0
-    let probabilityAlive: number = 0
+    let ageLastBirthday: number
+    let denominatorAge: number
+    let probabilityAlive: number
 
-    //calculate age when they start benefit
-    let age: number = ( inputBenefitDate.getMonth() - (SSbirthDate.getMonth()) + 12 * (inputBenefitDate.getFullYear() - SSbirthDate.getFullYear()) )/12
+    //calculate age in month in which they start benefit
+    let age: number = ( 12 * (inputBenefitDate.getFullYear() - SSbirthDate.getFullYear()) + (inputBenefitDate.getMonth()) - SSbirthDate.getMonth()  )/12
 
     //calculate age when filling out form
     let today: Date = new Date()
     let initialAgeRounded: number = Math.round(initialAge)
-    let discountTargetAge: number
     
-    //Calculate PV via loop until they hit age 118 (by which point "remaining lives" is zero)
+    //Calculate PV via loop until they hit age 115 (by which point "remaining lives" is zero)
       while (age < 115) {
-        //When calculating probability alive, we have to round age to get a whole number to use for lookup in array.
-        //Normally we round age down and use that number for the whole year. But sometimes, for example, real age will be 66 but javascript sees it as 65.99999, so we have to round that up.
-        if (age%1 > 0.999) {
-          roundedAge = Math.round(age)
+          //Calculate probability of being alive at end of age in question
+          //If user is older than 62 when filling out form, denominator is lives remaining at age when filling out form. Otherwise it's lives remaining at age 62
+          if (initialAgeRounded <= 62) {
+            denominatorAge = 62
           }
-          else {roundedAge = Math.floor(age)}
-        //Calculate probability of being alive at age in question.
-        if (initialAgeRounded <= 62) {
-        probabilityAlive = mortalityTable[roundedAge + 1] / mortalityTable[62]
-        }
-          //If they're older than 62 when filling out form, denominator is lives remaining at age when filling out the form.
-          else { 
-            probabilityAlive = mortalityTable[roundedAge + 1] / mortalityTable[initialAgeRounded]
+          else {
+            denominatorAge = initialAgeRounded
           }
-        
-        //Calculate probability-weighted benefit
-        let monthlyPV = retirementBenefit * probabilityAlive
-        //Discount that benefit to age 62
-        monthlyPV = monthlyPV / (1 + discountRate/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
-        monthlyPV = monthlyPV / Math.pow((1 + discountRate),(roundedAge - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
-        //Add discounted benefit to ongoing count of retirementPV, add 1 month to age, and start loop over
-        retirementPV = retirementPV + monthlyPV
-        age = age + 1/12
+          ageLastBirthday = Math.floor(age)
+          probabilityAlive = //need probability of being alive at end of "age"
+            mortalityTable[ageLastBirthday + 1] / mortalityTable[denominatorAge] * (1 - (age%1))//times something based on "age"
+          + mortalityTable[ageLastBirthday + 2] / mortalityTable[denominatorAge] * (age%1)//times something based on "age"
+          
+          //Calculate probability-weighted benefit
+          let annualPV = retirementBenefit * 12 * probabilityAlive
+          //Discount that benefit to age 62
+          annualPV = annualPV / (1 + discountRate/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
+          annualPV = annualPV / Math.pow((1 + discountRate),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
+          //Add discounted benefit to ongoing count of retirementPV, add 1 year to age and calculationYear, and start loop over
+          retirementPV = retirementPV + annualPV
+          age = age + 1
       }
         return retirementPV
   }
