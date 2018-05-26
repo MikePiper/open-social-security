@@ -43,7 +43,7 @@ export class InputFormComponent implements OnInit {
 //Inputs from form
   maritalStatus: string = "unmarried"
   spouseAinputMonth: number = 4
-  spouseAinputDay: number = 8
+  spouseAinputDay: number = 15
   spouseAinputYear: number = 1984
   spouseAPIA: number = 1000
   spouseAretirementBenefitMonth: number = 4
@@ -53,8 +53,9 @@ export class InputFormComponent implements OnInit {
   spouseAspousalBenefitYear: number = 2051
   spouseAspousalBenefitDate: Date
   spouseAgender: string = "male"
+  spouseAmortalityInput: string = "SSA"
   spouseBinputMonth: number = 4
-  spouseBinputDay: number = 28
+  spouseBinputDay: number = 15
   spouseBinputYear: number = 1984
   spouseBPIA: number = 1000
   spouseBretirementBenefitMonth: number = 4
@@ -64,6 +65,7 @@ export class InputFormComponent implements OnInit {
   spouseBspousalBenefitYear: number = 2051
   spouseBspousalBenefitDate: Date
   spouseBgender: string = "female"
+  spouseBmortalityInput: string = "SSA"
   discountRate: number = 0.01
   advanced: boolean = false
   spouseAgovernmentPension: number = 0
@@ -82,6 +84,9 @@ export class InputFormComponent implements OnInit {
   spouseBage: number
   spouseAageRounded: number
   spouseBageRounded: number
+  spouseAmortalityTable: number[]
+  spouseBmortalityTable: number[]
+
 
   //Error variables
   spouseAretirementDateError:string
@@ -108,12 +113,40 @@ export class InputFormComponent implements OnInit {
   this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
   this.spouseAageRounded = Math.round(this.spouseAage)
   this.spouseBageRounded = Math.round(this.spouseBage)
+  if (this.spouseAgender == "male") {
+    if (this.spouseAmortalityInput == "NS1") {this.spouseAmortalityTable = this.presentvalueService.maleNS1}
+    if (this.spouseAmortalityInput == "NS2") {this.spouseAmortalityTable = this.presentvalueService.maleNS2}
+    if (this.spouseAmortalityInput == "SSA") {this.spouseAmortalityTable = this.presentvalueService.maleSSAtable}
+    if (this.spouseAmortalityInput == "SM1") {this.spouseAmortalityTable = this.presentvalueService.maleSM1}
+    if (this.spouseAmortalityInput == "SM2") {this.spouseAmortalityTable = this.presentvalueService.maleSM2}
+  }
+  if (this.spouseAgender == "female") {
+    if (this.spouseAmortalityInput == "NS1") {this.spouseAmortalityTable = this.presentvalueService.femaleNS1}
+    if (this.spouseAmortalityInput == "NS2") {this.spouseAmortalityTable = this.presentvalueService.femaleNS2}
+    if (this.spouseAmortalityInput == "SSA") {this.spouseAmortalityTable = this.presentvalueService.femaleSSAtable}
+    if (this.spouseAmortalityInput == "SM1") {this.spouseAmortalityTable = this.presentvalueService.femaleSM1}
+    if (this.spouseAmortalityInput == "SM2") {this.spouseAmortalityTable = this.presentvalueService.femaleSM2}
+  }
+  if (this.spouseBgender == "male") {
+    if (this.spouseBmortalityInput == "NS1") {this.spouseBmortalityTable = this.presentvalueService.maleNS1}
+    if (this.spouseBmortalityInput == "NS2") {this.spouseBmortalityTable = this.presentvalueService.maleNS2}
+    if (this.spouseBmortalityInput == "SSA") {this.spouseBmortalityTable = this.presentvalueService.maleSSAtable}
+    if (this.spouseBmortalityInput == "SM1") {this.spouseBmortalityTable = this.presentvalueService.maleSM1}
+    if (this.spouseBmortalityInput == "SM2") {this.spouseBmortalityTable = this.presentvalueService.maleSM2}
+  }
+  if (this.spouseBgender == "female") {
+    if (this.spouseBmortalityInput == "NS1") {this.spouseBmortalityTable = this.presentvalueService.femaleNS1}
+    if (this.spouseBmortalityInput == "NS2") {this.spouseBmortalityTable = this.presentvalueService.femaleNS2}
+    if (this.spouseBmortalityInput == "SSA") {this.spouseBmortalityTable = this.presentvalueService.femaleSSAtable}
+    if (this.spouseBmortalityInput == "SM1") {this.spouseBmortalityTable = this.presentvalueService.femaleSM1}
+    if (this.spouseBmortalityInput == "SM2") {this.spouseBmortalityTable = this.presentvalueService.femaleSM2}
+  }
   if (this.maritalStatus == "unmarried") {
-    this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, Number(this.discountRate))
+    this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, this.spouseAmortalityTable, Number(this.discountRate))
     }
   if(this.maritalStatus == "married")
     {
-    this.solutionSet = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+    this.solutionSet = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
     }
   this.normalCursor()
     //For testing performance
@@ -147,11 +180,11 @@ export class InputFormComponent implements OnInit {
     this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate)
     //Calc PV with input dates
     if (this.maritalStatus == "unmarried" && !this.spouseAretirementDateError) {
-      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseASSbirthDate, Number(this.spouseAage), Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAgender, Number(this.discountRate))
+      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseASSbirthDate, Number(this.spouseAage), Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAgender, this.spouseAmortalityTable, Number(this.discountRate))
       }
     if(this.maritalStatus == "married" && !this.spouseAretirementDateError && !this.spouseBretirementDateError && !this.spouseBspousalDateError && !this.spouseAspousalDateError)
       {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.spouseAgender, this.spouseBgender, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+      this.customPV = this.presentvalueService.calculateCouplePV(this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
       }
   }
 

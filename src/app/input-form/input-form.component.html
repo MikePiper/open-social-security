@@ -19,6 +19,16 @@
           <option value="female">Female</option>
         </select>
         </div>
+        <div *ngIf="this.advanced == true" class="form-inline">
+          <label>Mortality Table</label>
+          <select [(ngModel)]="spouseAmortalityInput" name="spouseAmortalityInput" class="form-control">
+            <option value="NS1">2017 CSO Nonsmoker Super-preferred (for people in very good health)</option>
+            <option value="NS2">2017 CSO Nonsmoker Preferred (for people in better than average health)</option>
+            <option value="SSA">2014 Social Security Period Life Table (for somebody with average life expectancy)</option>
+            <option value="SM1">2017 CSO Smoker Preferred (for tobacco users in better health than average tobacco user)</option>
+            <option value="SM2">2017 CSO Smoker Residual Standard (for tobacco users with health status typical of tobacco user)</option>
+          </select>
+          </div>
         <div class="form-inline">
               <label>Date of Birth month/day/year</label>
               <select class="form-control" [(ngModel)]="spouseAinputMonth" name="spouseAinputMonth" required>
@@ -49,6 +59,16 @@
           <option value="male">Male</option>
           <option value="female">Female</option>
         </select>
+        </div>
+        <div *ngIf="this.advanced == true" class="form-inline">
+            <label>Mortality Table</label>
+            <select [(ngModel)]="spouseBmortalityInput" name="spouseBmortalityInput" class="form-control">
+              <option value="NS1">2017 CSO Nonsmoker Super-preferred (for people in very good health)</option>
+              <option value="NS2">2017 CSO Nonsmoker Preferred (for people in better than average health)</option>
+              <option value="SSA">2014 Social Security Period Life Table (for somebody with average life expectancy)</option>
+              <option value="SM1">2017 CSO Smoker Preferred (for tobacco users in better health than average tobacco user)</option>
+              <option value="SM2">2017 CSO Smoker Residual Standard (for tobacco users with health status typical of tobacco user)</option>
+            </select>
         </div>
         <div class="form-inline">
           <label>Date of Birth month/day/year</label>
