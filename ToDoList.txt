@@ -12,7 +12,10 @@ To Do List
     *Did additional "directional" testing for couples eligible for restricted app strategies, for couples not eligible, and for couples with 1 person eligible.
         All suggestions seem appropriate, and respond in appropriate direction to changes in inputs.
     *Did actual NPV spreadsheet calculation for pair of people, both FRA 67 and both same age, both claiming at 67 then both claiming at 70, with various PIA combinations. App results matched spreadsheet.
-
+5/26/18:
+    *Refactored function to calc single person PV to do math on annual basis instead of monthly. Gives same exact PV if filing at FRA.
+        *Slight differences at other ages, but the difference from one month to the next as you increment input claiming age is very reasonable. Looks good.
+        *Maximize single person PV function seems to work properly with no changes. Suggests same month as it did when math was done on monthly basis.
 
 
 Current list of simplifications:
