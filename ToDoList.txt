@@ -16,6 +16,7 @@ To Do List
     *Refactored function to calc single person PV to do math on annual basis instead of monthly. Gives same exact PV if filing at FRA.
         *Slight differences at other ages, but the difference from one month to the next as you increment input claiming age is very reasonable. Looks good.
         *Maximize single person PV function seems to work properly with no changes. Suggests same month as it did when math was done on monthly basis.
+    *Refacted couplePV calc to do math on annual basis. No errors. Suggestions seem to make sense. PV for various strategies very close to that calculated by monthly version. Needs more testing though.
 
 
 Current list of simplifications:

@@ -102,7 +102,7 @@
       </div>
       <p *ngIf="!this.solutionSet.solutionPV">If you are married, depending on your age and your computer's processor speed, this calculation may take a while -- anywhere from a few seconds to a couple of minutes. Please be patient with your computer. It's doing quite a lot of math.</p>
 </form>
-<span *ngIf="this.solutionSet.solutionPV">
+<span>
   
   <ul>
     <li *ngIf="this.solutionSet.spouseAretirementSolution">You should file for your retirement benefit to begin {{this.solutionSet.spouseAretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseAretirementSolution.getFullYear()}}.</li>
