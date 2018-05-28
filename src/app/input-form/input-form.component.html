@@ -6,7 +6,7 @@
       </div>
         <h2>Your Information</h2>
         <div class="form-inline">
-          <label>Marital Status</label>
+          <label>Marital status</label>
           <select [(ngModel)]="maritalStatus" name="maritalStatus" class="form-control">
             <option value="married">Married</option>
             <option value="unmarried">Single</option>
@@ -20,7 +20,7 @@
         </select>
         </div>
         <div class="form-inline">
-              <label>Date of Birth month/day/year</label>
+              <label>Date of birth</label>
               <select class="form-control" [(ngModel)]="spouseAinputMonth" name="spouseAinputMonth" required>
                 <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
               </select>
@@ -32,11 +32,11 @@
               </select>
         </div>
         <div>
-          <label class="customtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get an estimate of your PIA from the SSA.gov website or from your Social Security statement.</span></label>
+          <label class="customtooltip">PIA<span class="tooltiptext container">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get an estimate of your PIA from the SSA.gov website or from your Social Security statement.</span></label>
           <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" required>
         </div>
         <div *ngIf="this.advanced == true" class="form-inline">
-          <label>Mortality Table</label>
+          <label>Mortality table</label>
           <select [(ngModel)]="spouseAmortalityInput" name="spouseAmortalityInput" class="form-control">
             <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
             <option value="NS2">2017 CSO Nonsmoker Preferred</option>
@@ -46,7 +46,7 @@
           </select>
         </div>
         <div *ngIf="maritalStatus == 'married' && this.advanced == true">
-          <label for="spouseAgovernmentPension">Monthly government pension from non-covered employment</label>
+          <label for="spouseAgovernmentPension">Monthly government pension (from non-covered employment)</label>
           <input type="text" [(ngModel)]="spouseAgovernmentPension" id="spouseAgovernmentPension" name="spouseAgovernmentPension">
         </div>    
 
@@ -62,7 +62,7 @@
         </select>
         </div>
         <div class="form-inline">
-          <label>Date of Birth month/day/year</label>
+          <label>Date of birth</label>
           <select class="form-control" [(ngModel)]="spouseBinputMonth" name="spouseBinputMonth" required>
             <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
           </select>
@@ -78,7 +78,7 @@
           <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" required>
         </div>
         <div *ngIf="this.advanced == true" class="form-inline">
-          <label>Mortality Table</label>
+          <label>Mortality table</label>
           <select [(ngModel)]="spouseBmortalityInput" name="spouseBmortalityInput" class="form-control">
             <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
             <option value="NS2">2017 CSO Nonsmoker Preferred</option>
@@ -88,13 +88,13 @@
           </select>
         </div>
         <div *ngIf="this.advanced == true">
-            <label for="spouseBgovernmentPension">Monthly government pension from non-covered employment</label>
+            <label for="spouseBgovernmentPension">Monthly government pension (from non-covered employment)</label>
             <input type="text" [(ngModel)]="spouseBgovernmentPension" id="spouseBgovernmentPension" name="spouseBgovernmentPension">
         </div>
       </span>
         <div *ngIf="this.advanced == true">
           <h2>Other Inputs</h2>
-          <label class="customtooltip">Real Discount Rate<span class="tooltiptext">As a decimal (0.01 for a 1% discount rate, for example).</span></label>
+          <label class="customtooltip">Real discount rate<span class="tooltiptext">As a decimal (0.01 for a 1% discount rate, for example).</span></label>
           <input type="text" [(ngModel)]="discountRate" name="discountRate" required>
         </div>
       <div>

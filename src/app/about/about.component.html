@@ -17,9 +17,38 @@
     <h2>About the Author (Mike Piper)</h2>
     I am a CPA in St. Louis, Missouri. I'm the author of nine financial books, as well as the popular blog "<a href="https://obliviousinvestor.com/" target="_blank">Oblivious Investor</a>."
     I am an occasional public speaker (usually about Social Security or tax planning), and I have been quoted as a Social Security expert in numerous publications (e.g., Wall Street Journal, AARP, Kiplinger, and several others).
-    <h2>Math Details</h2>
-    For people interested in the details of how this calculator works, I'd encourage you to read the "README" file, available here:
-    <p><a href="https://github.com/MikePiper/open-social-security/blob/master/README.md" target="_blank">https://github.com/MikePiper/open-social-security/blob/master/README.md</a></p>
+    <h2>How does the calculator work?</h2>
+    For people <em>really</em> interested in the details of how this calculator works, I'd encourage you to check out the source code, available here:
+    <a href="https://github.com/MikePiper/open-social-security" target="_blank">https://github.com/MikePiper/open-social-security/</a>
+    <h2>How about a brief summary?</h2>
+    <p>Let's consider the simplest example: an unmarried person, using the calculator prior to age 62. For such a person, the calculator:</p>
+        <ol>
+            <li>First assumes they file as early as possible, at 62.</li>
+            <li>Calculates the amount of their monthly retirement benefit under such assumption.</li>
+            <li>For each year up to age 115, the calculator multiplies the annual retirement benefit by the user's probability of being alive in such year, to arrive at a probability-weighted annual benefit.</li>
+            <li>That probability-weighted benefit is then discounted back to age-62 value using the discount rate the user provided as input (i.e., to account for the fact that a dollar today can be invested and is therefore worth more than even an inflation-adjusted dollar in the future).</li>
+            <li>All of those probability-weighted, discounted benefit amounts are summed, to arrive at a total "present value" for the assumed claiming strategy (e.g., claiming ASAP at 62).</li>
+            <li>The above process is repeated for each possible claiming age (i.e., every month between 62 and 70).</li>
+            <li>The claiming age that had the highest present value is then suggested to the user, and the present value associated with such claiming age is provided as well.</li>
+        </ol>
+    <p>If the person is older than 62 when using the calculator, claiming strategies that are no longer possible (i.e., filing in the past) are eliminated from the analysis.</p>
+    <p>For a married couple, it's the same sort of process, but with more going on. Specifically:</p>
+         <ol>
+            <li>In addition to retirement benefits, spousal benefits and survivor benefits are included in the analysis.</li>
+            <li>Probability weighting the various benefits each period involves separate calculations for "probability only Spouse A is alive", "probability only Spouse B is alive", and "probability both spouses are still alive."</li>
+            <li>Each combination of possible claiming ages must be considered, for both spouses, and for both types of benefits (i.e., retirement and spousal).</li>
+        </ol>
+    <h2>What about inflation?</h2>
+    <p>Everything is done in "real" (i.e., inflation-adjusted) dollars. So there is no need for you to make manual inflation adjustments.</p>
+    <h2>Mortality Table Options</h2>
+        <p>By default, all of the math is done using the SSA's period life table to calculate a person's probability of being alive at a given age. This is roughly appropriate for a person with an average life expectancy</p>
+        <p>You also have a few other options though, which come from the Society of Actuaries' <a href="https://www.soa.org/experience-studies/2015/2017-cso-tables/" target="_blank">Commissioner Standard Ordinary (CSO) Tables</a>:</p>
+        <ul>
+            <li>2017 CSO Non-smoker Super-preferred (for people in much better than average health)</li>
+            <li>2017 CSO Non-smoker Preferred (for people in better than average health)</li>
+            <li>2017 CSO Smoker Preferred (for tobacco users in better health than the average tobacco user)</li>
+            <li>2017 CSO Smoker Residual Standard (for other tobacco users)</li>
+        </ul>
     <h2>License</h2>
     <p>Other parties are encouraged to use the code from this calculator for their own purposes, per the license below. You can download the source code here:</p>
     <p><a href="https://github.com/MikePiper/open-social-security" target="_blank">https://github.com/MikePiper/open-social-security/</a></p>

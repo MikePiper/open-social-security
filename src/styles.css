@@ -1,6 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 @import url('https://unpkg.com/bootstrap@3.3.7/dist/css/bootstrap.min.css');
-@import url('https://fonts.googleapis.com/css?family=Lato');
+@import url('https://fonts.googleapis.com/css?family=Lato|Roboto:400,500');
+
 
 body{
     font: 400 18px Lato, sans-serif;
@@ -14,11 +15,14 @@ body{
 .jumbotron { 
     background-color: #267bc5;
     color: #fff;
-    font-family: Lato, sans-serif;
+    font-family: Roboto, sans-serif;
     padding-bottom:0px;
     text-decoration:none;
 }
 
+label {
+    margin-right:5px;
+}
 
 @media only screen and (max-width: 600px) {
 .jumbotron p {
@@ -31,7 +35,8 @@ body{
     background-color: #267bc5;
     z-index: 999999;
     border: 0;
-    font-size: 12px !important;
+    font-size: 80% !important;
+    font-family: Roboto, sans-serif;
     line-height: 1.42857143 !important;
     letter-spacing: 4px;
     border-radius: 0;
@@ -43,6 +48,6 @@ body{
 }
 
 .navbar-nav li a:hover, .navbar-nav li.active a {
-    color: #7d7ffd !important;
+    color: #267bc5 !important;
     background-color: #fff !important;
 }

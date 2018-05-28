@@ -45,25 +45,25 @@ export class InputFormComponent implements OnInit {
   maritalStatus: string = "unmarried"
   spouseAinputMonth: number = 4
   spouseAinputDay: number = 15
-  spouseAinputYear: number = 1984
+  spouseAinputYear: number = 1960
   spouseAPIA: number = 1000
-  spouseAretirementBenefitMonth: number = 4
-  spouseAretirementBenefitYear: number = 2051
+  spouseAretirementBenefitMonth: number
+  spouseAretirementBenefitYear: number
   spouseAretirementBenefitDate: Date
-  spouseAspousalBenefitMonth: number = 4
-  spouseAspousalBenefitYear: number = 2051
+  spouseAspousalBenefitMonth: number
+  spouseAspousalBenefitYear: number
   spouseAspousalBenefitDate: Date
   spouseAgender: string = "male"
   spouseAmortalityInput: string = "SSA"
   spouseBinputMonth: number = 4
   spouseBinputDay: number = 15
-  spouseBinputYear: number = 1984
+  spouseBinputYear: number = 1960
   spouseBPIA: number = 1000
-  spouseBretirementBenefitMonth: number = 4
-  spouseBretirementBenefitYear: number = 2051
+  spouseBretirementBenefitMonth: number
+  spouseBretirementBenefitYear: number
   spouseBretirementBenefitDate: Date
-  spouseBspousalBenefitMonth: number = 4
-  spouseBspousalBenefitYear: number = 2051
+  spouseBspousalBenefitMonth: number
+  spouseBspousalBenefitYear: number
   spouseBspousalBenefitDate: Date
   spouseBgender: string = "female"
   spouseBmortalityInput: string = "SSA"
