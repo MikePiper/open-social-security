@@ -108,6 +108,7 @@ export class InputFormComponent implements OnInit {
   onSubmit() {
   let startTime = performance.now() //for testing performance
   console.log("-------------")
+  //Calculate ages, SSbirthdates, FRAs, etc.
   this.spouseAactualBirthDate = new Date (this.spouseAinputYear, this.spouseAinputMonth-1, this.spouseAinputDay)
   this.spouseASSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseAinputMonth, this.spouseAinputDay, this.spouseAinputYear))
   this.spouseAFRA = new Date(this.birthdayService.findFRA(this.spouseASSbirthDate))
@@ -120,6 +121,7 @@ export class InputFormComponent implements OnInit {
   this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
   this.spouseAageRounded = Math.round(this.spouseAage)
   this.spouseBageRounded = Math.round(this.spouseBage)
+  //Determine appropriate mortality table based on user input
   if (this.spouseAgender == "male") {
     if (this.spouseAmortalityInput == "NS1") {this.spouseAmortalityTable = this.presentvalueService.maleNS1}
     if (this.spouseAmortalityInput == "NS2") {this.spouseAmortalityTable = this.presentvalueService.maleNS2}
@@ -148,6 +150,7 @@ export class InputFormComponent implements OnInit {
     if (this.spouseBmortalityInput == "SM1") {this.spouseBmortalityTable = this.presentvalueService.femaleSM1}
     if (this.spouseBmortalityInput == "SM2") {this.spouseBmortalityTable = this.presentvalueService.femaleSM2}
   }
+  //Call appropriate "maximizePV" function to find best solution
   if (this.maritalStatus == "unmarried") {
     this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, this.spouseAmortalityTable, Number(this.discountRate))
     }
