@@ -1,22 +1,24 @@
 To Do List
 
-5/14/18:
-    *Now applies validation with regard to deemed filing rules (old and new) for spousal benefit input dates.
-    *Uses spousal benefit input dates in calculation of a single NPV figure.
-    *MaximizePV function doesn't work at the moment. Hasn't been refactored to use spousalBenefitDates that are separate from retirementBenefitDates
-    *Should do more testing of spousal date validation, as well as of benefit/NPV calculation.
-5/16/18:
-    *Did some additional testing of the spousal date validation, as well as of month-by-month benefits in various scenarios. Should do more testing of NPV calc also.
-    *Possible testing errors notwithstanding, appears to be a fully functional version that calculates recommended strategy for a couple, including restricted application if applicable.
-5/18/18:
-    *Did additional "directional" testing for couples eligible for restricted app strategies, for couples not eligible, and for couples with 1 person eligible.
-        All suggestions seem appropriate, and respond in appropriate direction to changes in inputs.
-    *Did actual NPV spreadsheet calculation for pair of people, both FRA 67 and both same age, both claiming at 67 then both claiming at 70, with various PIA combinations. App results matched spreadsheet.
 5/26/18:
-    *Refactored function to calc single person PV to do math on annual basis instead of monthly. Gives same exact PV if filing at FRA.
-        *Slight differences at other ages, but the difference from one month to the next as you increment input claiming age is very reasonable. Looks good.
-        *Maximize single person PV function seems to work properly with no changes. Suggests same month as it did when math was done on monthly basis.
-    *Refacted couplePV calc to do math on annual basis. No errors. Suggestions seem to make sense. PV for various strategies very close to that calculated by monthly version. Needs more testing though.
+    *Refactored PV calculations to do math on annual basis. No errors. Suggestions seem to make sense. PV for various strategies very close to that calculated by monthly version.
+    *Same PV is calculated with monthly version and annual version whenever filing dates are same month of year as that person's DoB. Otherwise they are *slightly* different.
+        *I suspect this is because the monthly version just treated people as a given age for a whole year, whereas annual version weights the two ages (prior and next) for probability calc.
+            Ex: somebody files at 62 and 6 months. Old version said they were 62 for those 62 months, then 63 for next 12 months. New version says they're "63" for first 12 months, which is more accurate.
+                That is, I think new (annual) version is actually more accurate.
+
+Error case??
+    Spouse A 4/15/1953, 700 PIA, SS mort table
+    Spouse B 10/15/1953, 1000 PIA, SS mort table
+    .01 discount rate
+    Appropriately suggests spouseB wait until 70 and do a restricted application at FRA.
+    But when testing various start-dates for spouseA, 10/2018 is too high relative to the November value.
+        Relative to Sept, it looks fine. But there shouldn't be a drop-off for 11/2018, as it doesn't mess up restricted app at all.
+    Same sort of thing happens with 4/15/1954 and 6/15/1954 DoBs. SpouseA has a dropoff when looking at a July start-date as opposed to June.
+    Of note, "dropoff" may be too strong of a word. It's a bigger jump than other 1-month changes. But it's still a 0.2% change in total PV. Nothing especially huge.
+
+
+
 
 
 Current list of simplifications:
@@ -26,7 +28,6 @@ Current list of simplifications:
 *Currently does not account for child benefits (or spousal benefits for somebody younger than 62 with child in care)
 *Currently does not account for disability benefits
 *Currently does not account for earnings test
-*Currently for purpose of discounting, all benefits are assumed to be received mid-year rather than discounted monthly.
 *Benefits are currently discounted to age 62 when calculating PV. If user is over age 62 when filling out form, should only be discounted back to today's date.
     (This simplification shouldn't affect suggestions at all. Will just make result of affected NPV calculations somewhat lower than they really should be.)
 *Currently, for sake of calculating AMOUNT of survivor benefit, assuming that deceased spouse at least survived to their intended retirement/spousal claiming age.
@@ -45,9 +46,10 @@ Resolve the security issue mentioned by GitHub ("hoek" version, which has been u
 
 Work through various simplifications to remove them (or remove them at user's option)
 
-For performance's sake, could refactor so everything is calculated on annual basis? Not sure how that would look.
-    *Still look at all of the options by month. But then calcs are done by year, with some being a portion of a year? Is that even faster? We'd need additional "if" type logic to account for partial years here and there.
-    
+Possible options to improve performance:
+    *Recalculate mortality tables so they are not lives remaining but the actual probability. That way it can just be a lookup, rather than two lookups and a calculation.
+    *Calculate discount factors for x years into future, then make an array with those, and do a lookup and multiply, in case that's faster than exponent.
+        
 
 Smoker/nonsmoker mortality reference:
 https://www.soa.org/resources/experience-studies/2015/2017-cso-tables/

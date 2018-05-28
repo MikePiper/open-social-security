@@ -19,16 +19,6 @@
           <option value="female">Female</option>
         </select>
         </div>
-        <div *ngIf="this.advanced == true" class="form-inline">
-          <label>Mortality Table</label>
-          <select [(ngModel)]="spouseAmortalityInput" name="spouseAmortalityInput" class="form-control">
-            <option value="NS1">2017 CSO Nonsmoker Super-preferred (for people in very good health)</option>
-            <option value="NS2">2017 CSO Nonsmoker Preferred (for people in better than average health)</option>
-            <option value="SSA">2014 Social Security Period Life Table (for somebody with average life expectancy)</option>
-            <option value="SM1">2017 CSO Smoker Preferred (for tobacco users in better health than average tobacco user)</option>
-            <option value="SM2">2017 CSO Smoker Residual Standard (for tobacco users with health status typical of tobacco user)</option>
-          </select>
-          </div>
         <div class="form-inline">
               <label>Date of Birth month/day/year</label>
               <select class="form-control" [(ngModel)]="spouseAinputMonth" name="spouseAinputMonth" required>
@@ -42,8 +32,18 @@
               </select>
         </div>
         <div>
-          <label class="customtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>
+          <label class="customtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get an estimate of your PIA from the SSA.gov website or from your Social Security statement.</span></label>
           <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" required>
+        </div>
+        <div *ngIf="this.advanced == true" class="form-inline">
+          <label>Mortality Table</label>
+          <select [(ngModel)]="spouseAmortalityInput" name="spouseAmortalityInput" class="form-control">
+            <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
+            <option value="NS2">2017 CSO Nonsmoker Preferred</option>
+            <option value="SSA">2014 Social Security Period Life Table</option>
+            <option value="SM1">2017 CSO Smoker Preferred</option>
+            <option value="SM2">2017 CSO Smoker Residual Standard</option>
+          </select>
         </div>
         <div *ngIf="maritalStatus == 'married' && this.advanced == true">
           <label for="spouseAgovernmentPension">Monthly government pension from non-covered employment</label>
@@ -61,16 +61,6 @@
           <option value="female">Female</option>
         </select>
         </div>
-        <div *ngIf="this.advanced == true" class="form-inline">
-            <label>Mortality Table</label>
-            <select [(ngModel)]="spouseBmortalityInput" name="spouseBmortalityInput" class="form-control">
-              <option value="NS1">2017 CSO Nonsmoker Super-preferred (for people in very good health)</option>
-              <option value="NS2">2017 CSO Nonsmoker Preferred (for people in better than average health)</option>
-              <option value="SSA">2014 Social Security Period Life Table (for somebody with average life expectancy)</option>
-              <option value="SM1">2017 CSO Smoker Preferred (for tobacco users in better health than average tobacco user)</option>
-              <option value="SM2">2017 CSO Smoker Residual Standard (for tobacco users with health status typical of tobacco user)</option>
-            </select>
-        </div>
         <div class="form-inline">
           <label>Date of Birth month/day/year</label>
           <select class="form-control" [(ngModel)]="spouseBinputMonth" name="spouseBinputMonth" required>
@@ -84,8 +74,18 @@
           </select>
         </div>
         <div>
-          <label class="customtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get this information from the SSA.gov website, from your Social Security statement, or by calling the SSA.</span></label>
+          <label class="customtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get an estimate of your PIA from the SSA.gov website or from your Social Security statement.</span></label>
           <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" required>
+        </div>
+        <div *ngIf="this.advanced == true" class="form-inline">
+          <label>Mortality Table</label>
+          <select [(ngModel)]="spouseBmortalityInput" name="spouseBmortalityInput" class="form-control">
+            <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
+            <option value="NS2">2017 CSO Nonsmoker Preferred</option>
+            <option value="SSA">2014 Social Security Period Life Table</option>
+            <option value="SM1">2017 CSO Smoker Preferred</option>
+            <option value="SM2">2017 CSO Smoker Residual Standard</option>
+          </select>
         </div>
         <div *ngIf="this.advanced == true">
             <label for="spouseBgovernmentPension">Monthly government pension from non-covered employment</label>
@@ -100,9 +100,9 @@
       <div>
         <button type="submit" id="maximizeSubmit" class="btn btn-primary" (mousedown)="waitCursor()">Submit</button>
       </div>
-      <p *ngIf="!this.solutionSet.solutionPV">If you are married, depending on your age and your computer's processor speed, this calculation may take a while -- anywhere from a few seconds to a couple of minutes. Please be patient with your computer. It's doing quite a lot of math.</p>
+      <p *ngIf="!this.solutionSet.solutionPV">If you are married, depending on your computer's processor speed, this calculation may take several seconds. Please be patient with your computer. It's doing quite a lot of math.</p>
 </form>
-<span>
+<span *ngIf="this.solutionSet.solutionPV">
   
   <ul>
     <li *ngIf="this.solutionSet.spouseAretirementSolution">You should file for your retirement benefit to begin {{this.solutionSet.spouseAretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseAretirementSolution.getFullYear()}}.</li>
