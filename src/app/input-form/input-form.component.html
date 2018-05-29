@@ -135,7 +135,7 @@
       <span *ngIf="this.spouseAretirementDateError" class="alert alert-danger">{{this.spouseAretirementDateError}}</span>
     </div>
     <span *ngIf="maritalStatus == 'married'">
-        <div class="form-inline">
+        <div class="form-inline" *ngIf="this.spouseAPIA < 0.5 * this.spouseBPIA || this.spouseAactualBirthDate < this.deemedFilingCutoff">
           <label>Your month/year to claim spousal benefit:</label>
           <select class="form-control" [(ngModel)]="spouseAspousalBenefitMonth" name="spouseAspousalBenefitMonth" required>
             <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
@@ -155,7 +155,7 @@
             </select>
             <span *ngIf="this.spouseBretirementDateError" class="alert alert-danger">{{this.spouseBretirementDateError}}</span>
           </div>
-          <div class="form-inline">
+          <div class="form-inline" *ngIf="this.spouseBPIA < 0.5 * this.spouseAPIA || this.spouseBactualBirthDate < this.deemedFilingCutoff">
             <label>Your spouse's month/year to claim spousal benefit:</label>
             <select class="form-control" [(ngModel)]="spouseBspousalBenefitMonth" name="spouseBspousalBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
@@ -170,7 +170,7 @@
         <button type="submit" class="btn btn-primary">Submit</button>
     </div>
     <span *ngIf="this.customPV">
-      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}} from the recommended strategy.
+      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} from the recommended strategy.
     </span>
   </form>
 </span>
