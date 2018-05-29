@@ -99,10 +99,22 @@ export class InputFormComponent implements OnInit {
   customPV: number
   solutionSet: SolutionSet = {
     "solutionPV":null,
-    "spouseAretirementSolution":null,
-    "spouseBretirementSolution":null,
-    "spouseAspousalSolution":null,
-    "spouseBspousalSolution":null
+    "spouseAretirementSolutionDate":null,
+    "spouseAretirementSolutionAmount":null,
+    "spouseAretirementSolutionAgeYears":null,
+    "spouseAretirementSolutionAgeMonths":null,
+    "spouseBretirementSolutionDate":null,
+    "spouseBretirementSolutionAmount":null,
+    "spouseBretirementSolutionAgeYears":null,
+    "spouseBretirementSolutionAgeMonths":null,
+    "spouseAspousalSolutionDate":null,
+    "spouseAspousalSolutionAmount":null,
+    "spouseAspousalSolutionAgeYears":null,
+    "spouseAspousalSolutionAgeMonths":null,
+    "spouseBspousalSolutionDate":null,
+    "spouseBspousalSolutionAmount":null,
+    "spouseBspousalSolutionAgeYears":null,
+    "spouseBspousalSolutionAgeMonths":null
   }
 
   onSubmit() {

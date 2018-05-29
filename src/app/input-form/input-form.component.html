@@ -32,8 +32,9 @@
               </select>
         </div>
         <div>
-          <label class="customtooltip">PIA<span class="tooltiptext container">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get an estimate of your PIA from the SSA.gov website or from your Social Security statement.</span></label>
+          <label>PIA</label>
           <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" required>
+          <p class="inputexplanation">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get an estimate of your PIA from the SSA.gov website or from your Social Security statement.</p>
         </div>
         <div *ngIf="this.advanced == true" class="form-inline">
           <label>Mortality table</label>
@@ -44,6 +45,7 @@
             <option value="SM1">2017 CSO Smoker Preferred</option>
             <option value="SM2">2017 CSO Smoker Residual Standard</option>
           </select>
+          <p class="inputexplanation"><a href="/about/#mortality" target="_blank">See here</a> for more information about these mortality table options.</p>
         </div>
         <div *ngIf="maritalStatus == 'married' && this.advanced == true">
           <label for="spouseAgovernmentPension">Monthly government pension (from non-covered employment)</label>
@@ -74,7 +76,7 @@
           </select>
         </div>
         <div>
-          <label class="customtooltip">PIA<span class="tooltiptext">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get an estimate of your PIA from the SSA.gov website or from your Social Security statement.</span></label>
+          <label>PIA</label>
           <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" required>
         </div>
         <div *ngIf="this.advanced == true" class="form-inline">
@@ -96,6 +98,9 @@
           <h2>Other Inputs</h2>
           <label class="customtooltip">Real discount rate<span class="tooltiptext">As a decimal (0.01 for a 1% discount rate, for example).</span></label>
           <input type="text" [(ngModel)]="discountRate" name="discountRate" required>
+          <p class="inputexplanation">A "discount rate" is necessary to reflect the fact that a dollar today is worth more than a dollar in the future, because a dollar today can be invested.
+            The <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a> is generally considered an appropriate discount rate for these purposes.
+            See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a dicussion of that topic.</p>
         </div>
       <div>
         <button type="submit" id="maximizeSubmit" class="btn btn-primary" (mousedown)="waitCursor()">Submit</button>
@@ -105,13 +110,16 @@
 <span *ngIf="this.solutionSet.solutionPV">
   
   <ul>
-    <li *ngIf="this.solutionSet.spouseAretirementSolution">You should file for your retirement benefit to begin {{this.solutionSet.spouseAretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseAretirementSolution.getFullYear()}}.</li>
-    <li *ngIf="this.solutionSet.spouseAspousalSolution">You should file for your spousal benefit to begin {{this.solutionSet.spouseAspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseAspousalSolution.getFullYear()}}.</li>
-    <li *ngIf="this.solutionSet.spouseBretirementSolution">Your spouse should file for his/her retirement benefit to begin {{this.solutionSet.spouseBretirementSolution.getMonth()+1}}/{{this.solutionSet.spouseBretirementSolution.getFullYear()}}.</li>
-    <li *ngIf="this.solutionSet.spouseBspousalSolution">Your spouse should file for his/her spousal benefit to begin {{this.solutionSet.spouseBspousalSolution.getMonth()+1}}/{{this.solutionSet.spouseBspousalSolution.getFullYear()}}.</li>
-    <li *ngIf="this.solutionSet.solutionPV">The present value of this proposed solution would be {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD'})}}</li>
+    <li *ngIf="this.solutionSet.spouseAretirementSolutionDate">You should file for your retirement benefit to begin {{this.solutionSet.spouseAretirementSolutionDate.getMonth()+1}}/{{this.solutionSet.spouseAretirementSolutionDate.getFullYear()}}, at age {{this.solutionSet.spouseAretirementSolutionAgeYears}} and {{this.solutionSet.spouseAretirementSolutionAgeMonths}} months.</li>
+    <li *ngIf="this.solutionSet.spouseAspousalSolutionDate">You should file for your spousal benefit to begin {{this.solutionSet.spouseAspousalSolutionDate.getMonth()+1}}/{{this.solutionSet.spouseAspousalSolutionDate.getFullYear()}}, at age {{this.solutionSet.spouseAspousalSolutionAgeYears}} and {{this.solutionSet.spouseAspousalSolutionAgeMonths}} months.</li>
+    <li *ngIf="this.solutionSet.spouseBretirementSolutionDate">Your spouse should file for his/her retirement benefit to begin {{this.solutionSet.spouseBretirementSolutionDate.getMonth()+1}}/{{this.solutionSet.spouseBretirementSolutionDate.getFullYear()}}, at age {{this.solutionSet.spouseBretirementSolutionAgeYears}} and {{this.solutionSet.spouseBretirementSolutionAgeMonths}} months.</li>
+    <li *ngIf="this.solutionSet.spouseBspousalSolutionDate">Your spouse should file for his/her spousal benefit to begin {{this.solutionSet.spouseBspousalSolutionDate.getMonth()+1}}/{{this.solutionSet.spouseBspousalSolutionDate.getFullYear()}}, at age {{this.solutionSet.spouseBspousalSolutionAgeYears}} and {{this.solutionSet.spouseBspousalSolutionAgeMonths}} months.</li>
   </ul>
-
+  <span  *ngIf="this.solutionSet.solutionPV">
+  <p>The present value of this proposed solution would be <strong>{{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}</strong>.</p>
+  <p> This means that with this strategy you could expect to receive, on average, {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} of total Social Security benefits over the course of your lifetime, after adjusting for the fact that a dollar received in the future is worth less than a dollar received today, because you would miss out on investment returns in the interim.
+    (<a href="https://obliviousinvestor.com/what-does-present-value-mean/" target="_blank">See this article</a> for more thorough explanation of the "present value" concept.)</p>
+  </span>
   <hr>
 
   <form #customDateForm="ngForm" (ngSubmit)="customDates()">
