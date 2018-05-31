@@ -237,6 +237,11 @@ export class InputFormComponent implements OnInit {
   checkValidRetirementInputs(FRA: Date, SSbirthDate: Date, actualBirthDate:Date, retirementBenefitDate:Date) {
     let error = undefined
 
+    //Make sure there is an input
+    if (!this.spouseAretirementBenefitYear || !this.spouseAretirementBenefitMonth) {
+      error = "Please enter a date."
+    }
+
     //Validation to make sure they are not filing for benefits in the past
     if ( (retirementBenefitDate.getFullYear() < this.today.getFullYear()) || (retirementBenefitDate.getFullYear() == this.today.getFullYear() && (retirementBenefitDate.getMonth() < this.today.getMonth() )) )
     {

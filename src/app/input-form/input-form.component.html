@@ -8,9 +8,14 @@
         <div class="form-inline">
           <label>Marital status</label>
           <select [(ngModel)]="maritalStatus" name="maritalStatus" class="form-control">
-            <option value="married">Married</option>
             <option value="unmarried">Single</option>
+            <option value="married">Married</option>
+            <option value="survivor">Widow(er)</option>
           </select>
+        <div *ngIf="maritalStatus == 'survivor'" class="inputexplanation">
+          <p>If you are a widow(er) and you have not remarried (or you remarried after reaching age 60), there is no need for this calculator. Please see <a href="https://obliviousinvestor.com/social-security-planning-with-widower-benefits/" target="_blank">this article</a> for a discussion of the optimal claiming strategy.</p>
+          <p>If you <em>have</em> remarried (prior to age 60) please use the calculator as "married."</p>
+        </div>
         </div>
         <div class="form-inline">
         <label>Gender</label>
