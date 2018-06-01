@@ -201,17 +201,24 @@ export class InputFormComponent implements OnInit {
     this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
     this.spouseAageRounded = Math.round(this.spouseAage)
     this.spouseBageRounded = Math.round(this.spouseBage)
-    //Get input benefit dates
+
+    //Reset input benefit dates, then get from user input
+    this.spouseAretirementBenefitDate = null
+    this.spouseAspousalBenefitDate = null
+    this.spouseBretirementBenefitDate = null
+    this.spouseBspousalBenefitDate = null
     this.spouseAretirementBenefitDate = new Date(this.spouseAretirementBenefitYear, this.spouseAretirementBenefitMonth-1, 1)
     this.spouseAspousalBenefitDate = new Date(this.spouseAspousalBenefitYear, this.spouseAspousalBenefitMonth-1, 1)
     this.spouseBretirementBenefitDate = new Date(this.spouseBretirementBenefitYear, this.spouseBretirementBenefitMonth-1, 1)
     this.spouseBspousalBenefitDate = new Date(this.spouseBspousalBenefitYear, this.spouseBspousalBenefitMonth-1, 1)
+
+    //Check for errors in input dates
     this.spouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAretirementBenefitDate)
     this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBretirementBenefitDate)
     this.spouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseAretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBretirementBenefitDate)
     this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate)
-    
-    //Get spousal benefit dates if there were no inputs
+
+    //Get spousal benefit dates if there were no inputs from user (i.e. if spouseA won't actually file for a spousal benefit at any time, get the input that makes function run appropriately)
     if (this.spouseAPIA > 0.5 * this.spouseBPIA && this.spouseAactualBirthDate > this.deemedFilingCutoff) {
       //spouseA spousal date is later of retirement dates
       if (this.spouseAretirementBenefitDate > this.spouseBretirementBenefitDate) {
@@ -222,6 +229,7 @@ export class InputFormComponent implements OnInit {
       //eliminate spouseAspousalDateError, because user didn't even input anything
       this.spouseAspousalDateError = undefined
     }
+    //Ditto, for spouseB
     if (this.spouseBPIA > 0.5 * this.spouseAPIA && this.spouseBactualBirthDate > this.deemedFilingCutoff) {
       //spouseB spousal date is later of retirement dates
       if (this.spouseAretirementBenefitDate > this.spouseBretirementBenefitDate) {
@@ -247,7 +255,7 @@ export class InputFormComponent implements OnInit {
     let error = undefined
 
     //Make sure there is an input
-    if (!this.spouseAretirementBenefitYear || !this.spouseAretirementBenefitMonth) {
+    if ( isNaN(retirementBenefitDate.getFullYear()) || isNaN(retirementBenefitDate.getMonth()) ) {
       error = "Please enter a date."
     }
 
@@ -274,11 +282,17 @@ export class InputFormComponent implements OnInit {
   checkValidSpousalInputs(FRA: Date, actualBirthDate:Date, SSbirthDate: Date, ownRetirementBenefitDate:Date, spousalBenefitDate:Date, otherSpouseRetirementBenefitDate:Date) {
     let error = undefined
     let secondStartDate:Date = new Date(1,1,1)
+    //Make sure there is an input (Note that this will get overrode in the customDates function after the error check, in cases where there isn't supposed to be a user input)
+    if ( isNaN(spousalBenefitDate.getFullYear()) || isNaN(spousalBenefitDate.getMonth()) ) {
+      error = "Please enter a date."
+    }
+
+
     //TODO: Needs validation for spousal benefit before retirement benefit if deemed filing should apply (i.e., under 62 on 1/1/2016 or if under FRA on input age for claiming spousal)
     if (actualBirthDate < this.deemedFilingCutoff) {//old deemed filing rules apply: If spousalBenefitDate < FRA, it must be equal to ownRetirementBenefitDate
         if ( spousalBenefitDate < FRA && ( spousalBenefitDate.getMonth() !== ownRetirementBenefitDate.getMonth() || spousalBenefitDate.getFullYear() !== ownRetirementBenefitDate.getFullYear() ) )
         {
-        error = "You can't file a restricted application for just spousal benefits prior to your FRA."
+        error = "You can't file a restricted application (i.e., application for spousal-only) prior to your FRA."
         }
     }
     else {//new deemed filing rules apply: Own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's retirementBenefitDate
@@ -291,7 +305,7 @@ export class InputFormComponent implements OnInit {
           secondStartDate.setMonth(ownRetirementBenefitDate.getMonth())
         }
         if ( spousalBenefitDate.getMonth() !== secondStartDate.getMonth() || spousalBenefitDate.getFullYear() !== secondStartDate.getFullYear() ) {
-        error = "Invalid spousal benefit date per new deemed filing rules"
+        error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or your spouse's retirement benefit date."
         }
     }
     //Validation to make sure they are not filing for benefits in the past
