@@ -43,7 +43,7 @@ export class InputFormComponent implements OnInit {
 
 
 //Inputs from form
-  maritalStatus: string = "unmarried"
+  maritalStatus: string = "single"
   spouseAinputMonth: number = 4
   spouseAinputDay: number = 15
   spouseAinputYear: number = 1960
@@ -170,16 +170,19 @@ export class InputFormComponent implements OnInit {
     if (this.spouseBmortalityInput == "SM2") {this.spouseBmortalityTable = this.presentvalueService.femaleSM2}
   }
   //Call appropriate "maximizePV" function to find best solution
-  if (this.maritalStatus == "unmarried") {
+  if (this.maritalStatus == "single") {
     this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, this.spouseAmortalityTable, Number(this.discountRate))
     }
   if(this.maritalStatus == "married")
     {
-    this.solutionSet = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+    this.solutionSet = this.presentvalueService.maximizeCouplePV(this.maritalStatus, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
     }
   if(this.maritalStatus == "divorced") {
     this.exSpouseRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.exSpouseRetirementBenefitDate)
-    //TODO: Run a function...
+      if (!this.exSpouseRetirementDateError){
+        this.solutionSet = this.presentvalueService.maximizeDivorceePV(this.maritalStatus, this.exSpouseRetirementBenefitDate, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+        //this.presentvalueService.calculateCouplePV(this.maritalStatus, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, this.spouseAageRounded, this.spouseBageRounded, this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), new Date(2022, 3, 1), this.exSpouseRetirementBenefitDate, new Date(2019, 3, 1), this.exSpouseRetirementBenefitDate, this.spouseAgovernmentPension, this.spouseBgovernmentPension, Number(this.discountRate))
+      }
   }
 
   this.normalCursor()
@@ -247,13 +250,15 @@ export class InputFormComponent implements OnInit {
     }
     
     //Calc PV with input dates
-    if (this.maritalStatus == "unmarried" && !this.spouseAretirementDateError) {
+    if (this.maritalStatus == "single" && !this.spouseAretirementDateError) {
       this.customPV = this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseASSbirthDate, Number(this.spouseAage), Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAgender, this.spouseAmortalityTable, Number(this.discountRate))
       }
-    if(this.maritalStatus == "married" && !this.spouseAretirementDateError && !this.spouseBretirementDateError && !this.spouseBspousalDateError && !this.spouseAspousalDateError)
-      {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+    if(this.maritalStatus == "married" && !this.spouseAretirementDateError && !this.spouseBretirementDateError && !this.spouseAspousalDateError && !this.spouseBspousalDateError) {
+      this.customPV = this.presentvalueService.calculateCouplePV(this.maritalStatus, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
       }
+    if(this.maritalStatus == "divorced" && !this.exSpouseRetirementDateError && !this.spouseAretirementDateError && !this.spouseAspousalDateError) {
+      this.customPV = this.presentvalueService.calculateCouplePV(this.maritalStatus, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.exSpouseRetirementBenefitDate, this.spouseAspousalBenefitDate, this.exSpouseRetirementBenefitDate, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate) )
+    }
   }
 
   checkValidRetirementInputs(FRA: Date, SSbirthDate: Date, actualBirthDate:Date, retirementBenefitDate:Date) {
@@ -264,11 +269,6 @@ export class InputFormComponent implements OnInit {
       error = "Please enter a date."
     }
 
-    //Validation to make sure they are not filing for benefits in the past
-    if ( (retirementBenefitDate.getFullYear() < this.today.getFullYear()) || (retirementBenefitDate.getFullYear() == this.today.getFullYear() && (retirementBenefitDate.getMonth() < this.today.getMonth() )) )
-    {
-    error = "Please enter a date no earlier than this month."
-    }
 
     //Validation in case they try to start benefit earlier than possible or after 70
     let earliestDate: Date = new Date(SSbirthDate.getFullYear()+62, 1, 1)
@@ -313,18 +313,13 @@ export class InputFormComponent implements OnInit {
         error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or your spouse's retirement benefit date."
         }
     }
-    //Validation to make sure they are not filing for benefits in the past
-    if ( (spousalBenefitDate.getFullYear() < this.today.getFullYear()) || (spousalBenefitDate.getFullYear() == this.today.getFullYear() && (spousalBenefitDate.getMonth() < this.today.getMonth() )) )
-    {
-    error = "Please enter a date no earlier than this month."
-    }
 
     //Validation in case they try to start benefit earlier than possible. (Just ignoring the "must be 62 for entire month" rule right now.) (No validation check for after age 70, because sometimes that will be earliest they can -- if they're much younger than other spouse.)
     let claimingAge: number = ( spousalBenefitDate.getMonth() - SSbirthDate.getMonth() + 12 * (spousalBenefitDate.getFullYear() - SSbirthDate.getFullYear()) )/12
     if (claimingAge < 61.99) {error = "Please enter a later date. You cannot file for spousal benefits before age 62."}
 
     //Validation in case they try to start spousal benefit before other spouse's retirement benefit.
-    if (spousalBenefitDate < otherSpouseRetirementBenefitDate) {error = "You cannot start your spousal benefit before your spouse has filed for his/her own retirement benefit."}
+    if (spousalBenefitDate < otherSpouseRetirementBenefitDate && this.maritalStatus == "married") {error = "You cannot start your spousal benefit before your spouse has filed for his/her own retirement benefit."}
 
     return error
   }

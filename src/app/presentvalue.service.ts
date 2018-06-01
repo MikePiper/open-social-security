@@ -3,6 +3,7 @@ import {BirthdayService} from './birthday.service'
 import {BenefitService} from './benefit.service'
 import { CurrencyPipe } from '@angular/common';
 import {SolutionSet} from './solutionset'
+import { first } from 'rxjs/operators';
 
 @Injectable()
 export class PresentvalueService {
@@ -53,7 +54,7 @@ export class PresentvalueService {
         return retirementPV
   }
 
-  calculateCouplePV(spouseAgender: string, spouseBgender:string, spouseAmortalityTable:number[], spouseBmortalityTable:number[], spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
+  calculateCouplePV(maritalStatus:string, spouseAgender: string, spouseBgender:string, spouseAmortalityTable:number[], spouseBmortalityTable:number[], spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
     spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
     spouseAPIA: number, spouseBPIA: number, spouseAretirementBenefitDate: Date, spouseBretirementBenefitDate: Date, spouseAspousalBenefitDate: Date, spouseBspousalBenefitDate: Date,
     spouseAgovernmentPension: number, spouseBgovernmentPension:number, discountRate:number){
@@ -85,16 +86,28 @@ export class PresentvalueService {
     let spouseAdenominatorAge: number
     let spouseBdenominatorAge: number
 
-    //If spouse A's input benefit date earlier, set firstStartDate and secondStartDate accordingly.
-    if (spouseAretirementBenefitDate < spouseBretirementBenefitDate)
-      {
-      firstStartDate = new Date(spouseAretirementBenefitDate)
-      secondStartDate = new Date(spouseBretirementBenefitDate)
+    //If married, set firstStartDate to earlier of two retirement benefit dates. Set secondStartDate to the other.
+    if (maritalStatus == "married"){
+      if (spouseAretirementBenefitDate < spouseBretirementBenefitDate)
+        {
+        firstStartDate = new Date(spouseAretirementBenefitDate)
+        secondStartDate = new Date(spouseBretirementBenefitDate)
+        }
+      else {//This is fine as a simple "else" statement. If the two input benefit dates are equal, doing it as of either date is fine.
+      firstStartDate = new Date(spouseBretirementBenefitDate)
+      secondStartDate = new Date(spouseAretirementBenefitDate)
+        }
+    }
+
+    //If divorced, we want firstStartDate to equal earlier of SpouseA's retirement date or SpouseA's spousal date.
+    if (maritalStatus == "divorced") {
+      if (spouseAretirementBenefitDate < spouseAspousalBenefitDate) {
+        firstStartDate = new Date(spouseAretirementBenefitDate)
       }
-    else {//This is fine as a simple "else" statement. If the two input benefit dates are equal, doing it as of either date is fine.
-    firstStartDate = new Date(spouseBretirementBenefitDate)
-    secondStartDate = new Date(spouseAretirementBenefitDate)
+      else {
+        firstStartDate = new Date(spouseAspousalBenefitDate)
       }
+    }
     
     //Find age of each spouse as of firstStartDate
     spouseAage = ( firstStartDate.getMonth() - spouseASSbirthDate.getMonth() + 12 * (firstStartDate.getFullYear() - spouseASSbirthDate.getFullYear()) )/12
@@ -226,6 +239,11 @@ export class PresentvalueService {
         spouseBannualSpousalBenefit = (monthsOfSpouseBspousalWithoutRetirement * spouseBspousalBenefitWithoutRetirement) + (monthsOfSpouseBspousalWithRetirement * spouseBspousalBenefitWithRetirement)
         spouseAannualSurvivorBenefit = (monthsOfSpouseAsurvivorWithoutRetirement * spouseAsurvivorBenefitWithoutRetirement) + (monthsOfSpouseAsurvivorWithRetirement * spouseAsurvivorBenefitWithRetirement)
         spouseBannualSurvivorBenefit = (monthsOfSpouseBsurvivorWithoutRetirement * spouseBsurvivorBenefitWithoutRetirement) + (monthsOfSpouseBsurvivorWithRetirement * spouseBsurvivorBenefitWithRetirement)
+        if (maritalStatus == "divorced") {
+          spouseBannualRetirementBenefit = 0
+          spouseBannualSpousalBenefit = 0
+          spouseBannualSurvivorBenefit = 0
+        }
 
 
           //Calculate probability of spouseA being alive at end of age in question
@@ -267,7 +285,6 @@ export class PresentvalueService {
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             annualPV = annualPV / (1 + discountRate/2) / Math.pow((1 + discountRate),(olderAge - 62))
       
-
       //Add discounted benefit to ongoing count of retirementPV, add 1 to each age, add 1 year to currentCalculationDate, and start loop over
         couplePV = couplePV + annualPV
         spouseAage = spouseAage + 1
@@ -341,7 +358,7 @@ export class PresentvalueService {
   }
 
 
-  maximizeCouplePV(spouseAPIA: number, spouseBPIA: number, spouseAactualBirthDate:Date, spouseBactualBirthDate:Date, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
+  maximizeCouplePV(maritalStatus:string, spouseAPIA: number, spouseBPIA: number, spouseAactualBirthDate:Date, spouseBactualBirthDate:Date, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
     spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
     spouseAgender: string, spouseBgender:string, spouseAmortalityTable:number[], spouseBmortalityTable:number[], spouseAgovernmentPension:number, spouseBgovernmentPension:number, discountRate: number){
 
@@ -459,7 +476,7 @@ export class PresentvalueService {
 
         while (spouseBretirementDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(spouseAgender, spouseBgender, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
+            let currentTestPV: number = this.calculateCouplePV(maritalStatus, spouseAgender, spouseBgender, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
             //If PV is greater than saved PV, save new PV and save new testDates
             if (currentTestPV > savedPV) {
               savedPV = currentTestPV
@@ -610,6 +627,120 @@ export class PresentvalueService {
   }
 
 
+  maximizeDivorceePV(maritalStatus:string, exSpouseRetirementBenefitDate:Date, spouseAPIA: number, spouseBPIA: number, spouseAactualBirthDate:Date, spouseBactualBirthDate:Date, spouseASSbirthDate: Date, spouseBSSbirthDate: Date,
+    spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number, spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
+    spouseAgender: string, spouseBgender:string, spouseAmortalityTable:number[], spouseBmortalityTable:number[], spouseAgovernmentPension:number, spouseBgovernmentPension:number, discountRate: number){
+
+      let deemedFilingCutoff: Date = new Date(1954, 0, 1)
+
+      //find initial test dates for spouseA (first month for which spouseA is considered 62 for entire month)
+      let spouseAretirementDate = new Date(spouseASSbirthDate.getFullYear()+62, 1, 1)
+      let spouseAspousalDate = new Date(spouseASSbirthDate.getFullYear()+62, 1, 1)
+      if (spouseAactualBirthDate.getDate() <= 2){
+        spouseAretirementDate.setMonth(spouseAactualBirthDate.getMonth())
+        spouseAspousalDate.setMonth(spouseAactualBirthDate.getMonth())
+      } else {
+        spouseAretirementDate.setMonth(spouseAactualBirthDate.getMonth()+1)
+        spouseAspousalDate.setMonth(spouseAactualBirthDate.getMonth()+1)
+      }
+      //If spouseA is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
+      let today = new Date()
+      let spouseAageToday: number = today.getFullYear() - spouseASSbirthDate.getFullYear() + (today.getMonth() - spouseASSbirthDate.getMonth()) /12
+      if (spouseAageToday > 62){
+        spouseAretirementDate.setMonth(today.getMonth())
+        spouseAretirementDate.setFullYear(today.getFullYear())
+        spouseAspousalDate.setMonth(today.getMonth())
+        spouseAspousalDate.setFullYear(today.getFullYear())
+      }
+
+      //Initialize savedPV as zero. Set saved dates equal to their current testDates.
+      let savedPV: number = 0
+      let spouseAsavedRetirementDate = new Date(spouseAretirementDate)
+      let spouseAsavedSpousalDate = new Date(spouseAspousalDate)
+
+      //Set endingTestDate equal to the month user turns 70
+      let spouseAendTestDate = new Date(spouseASSbirthDate.getFullYear()+70, spouseASSbirthDate.getMonth(), 1)
+
+      //Set spouseB's spousalDate equal to spouseB's retirement date. (This date won't matter at all, since annual PV is ultimately set to zero for spouse b's spousal benefit, but PV calc will require it.)
+      let spouseBspousalDate: Date = new Date(exSpouseRetirementBenefitDate)
+
+
+      while (spouseAretirementDate <= spouseAendTestDate) {
+        //Calculate PV using current test dates for spouseA and fixed dates for spouseB
+        let currentTestPV: number = this.calculateCouplePV(maritalStatus, spouseAgender, spouseBgender, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, exSpouseRetirementBenefitDate, spouseAspousalDate, spouseBspousalDate, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
+
+        //If PV is greater than saved PV, save new PV and save new testDates
+        if (currentTestPV > savedPV) {
+          savedPV = currentTestPV
+          spouseAsavedRetirementDate.setMonth(spouseAretirementDate.getMonth())
+          spouseAsavedRetirementDate.setFullYear(spouseAretirementDate.getFullYear())
+          spouseAsavedSpousalDate.setMonth(spouseAspousalDate.getMonth())
+          spouseAsavedSpousalDate.setFullYear(spouseAspousalDate.getFullYear())
+          }
+
+        //Increment spouseA's dates (keep spouseB's fixed)
+          //if new deemed filing rules, increment both by 1 month
+          if (spouseAactualBirthDate > deemedFilingCutoff) {
+            spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1)
+            spouseAspousalDate.setMonth(spouseAspousalDate.getMonth()+1)
+          } else { //i.e., if old deemed filling rules apply
+            //If current retirement test date younger than FRA, increment both by 1 month
+            if (spouseAretirementDate < spouseAFRA) {
+              spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1)
+              spouseAspousalDate.setMonth(spouseAspousalDate.getMonth()+1)
+            }
+            else {//If current retirement test date beyond FRA, increment retirement by 1 month and keep spousal where it is (at FRA, unless they're older than FRA when filling form)
+              spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1)
+            }
+          }
+
+      }
+        //after loop is finished
+        console.log("saved PV: " + savedPV)
+        console.log("saved spouseAretirementDate: " + spouseAsavedRetirementDate)
+        console.log("saved spouseAspousalDate: " + spouseAsavedSpousalDate)
+    
+        //Find age at saved claiming dates, for sake of output statement.
+        let spouseAsavedRetirementAge = spouseAsavedRetirementDate.getFullYear() - spouseASSbirthDate.getFullYear() + (spouseAsavedRetirementDate.getMonth() - spouseASSbirthDate.getMonth())/12
+        let spouseAsavedRetirementAgeYears = Math.floor(spouseAsavedRetirementAge)
+        let spouseAsavedRetirementAgeMonths = Math.round((spouseAsavedRetirementAge%1)*12)
+        let spouseAsavedSpousalAge = spouseAsavedSpousalDate.getFullYear() - spouseASSbirthDate.getFullYear() + (spouseAsavedSpousalDate.getMonth() - spouseASSbirthDate.getMonth())/12
+        let spouseAsavedSpousalAgeYears = Math.floor(spouseAsavedSpousalAge)
+        let spouseAsavedSpousalAgeMonths = Math.round((spouseAsavedSpousalAge%1)*12)
+
+        let solutionSet: SolutionSet = {
+          "solutionPV":savedPV,
+          "spouseAretirementSolutionDate":spouseAsavedRetirementDate,
+          "spouseAretirementSolutionAmount":null,
+          "spouseAretirementSolutionAgeYears":spouseAsavedRetirementAgeYears,
+          "spouseAretirementSolutionAgeMonths":spouseAsavedRetirementAgeMonths,
+          "spouseBretirementSolutionDate":null,
+          "spouseBretirementSolutionAmount":null,
+          "spouseBretirementSolutionAgeYears":null,
+          "spouseBretirementSolutionAgeMonths":null,
+          "spouseAspousalSolutionDate":spouseAsavedSpousalDate,
+          "spouseAspousalSolutionAmount":null,
+          "spouseAspousalSolutionAgeYears":spouseAsavedSpousalAgeYears,
+          "spouseAspousalSolutionAgeMonths":spouseAsavedSpousalAgeMonths,
+          "spouseBspousalSolutionDate":null,
+          "spouseBspousalSolutionAmount":null,
+          "spouseBspousalSolutionAgeYears":null,
+          "spouseBspousalSolutionAgeMonths":null
+        }
+
+      //Set spousal date back to null in cases in which there will be no spousal benefit, so user doesn't see a suggested spousal claiming age that makes no sense.
+        //need to recalculate spousal benefit using the saved dates.
+        let finalCheckSpouseAretirement = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAsavedRetirementDate)
+        let finalCheckSpouseAspousal = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, finalCheckSpouseAretirement, spouseAsavedSpousalDate, spouseAgovernmentPension)
+        if (finalCheckSpouseAspousal == 0 && spouseAsavedSpousalDate >= spouseAsavedRetirementDate) //We compare the dates because we don't want to eliminate the spousal date from output if it's prior to retirement date (as in restricted app)
+          {solutionSet.spouseAspousalSolutionDate = null}
+        //Set retirement date to null if person has 0 PIA.
+        if (spouseAPIA == 0) {solutionSet.spouseAretirementSolutionDate = null}
+  
+        return solutionSet
+
+
+    }
 
 //Lives remaining out of 100k, from SSA 2014 period life table
 maleSSAtable = [
