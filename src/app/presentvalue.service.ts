@@ -100,17 +100,23 @@ export class PresentvalueService {
     let currentCalculationDate: Date = new Date(firstStartDate)
     while (spouseAage < 115 || spouseBage < 115){
 
-        //Variable for number of months in calculation year that are before each of the 4 claimingDates?
+        //Variable for number of months in calculation year that are before each of the 6 claimingDates
+        let monthsBeforeSpouseAretirement: number = spouseAretirementBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAretirementBenefitDate.getFullYear() - currentCalculationDate.getFullYear())
+        let monthsBeforeSpouseBretirement: number = spouseBretirementBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBretirementBenefitDate.getFullYear() - currentCalculationDate.getFullYear())
+        let monthsBeforeSpouseAspousal: number = spouseAspousalBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAspousalBenefitDate.getFullYear() - currentCalculationDate.getFullYear())
+        let monthsBeforeSpouseBspousal: number = spouseBspousalBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBspousalBenefitDate.getFullYear() - currentCalculationDate.getFullYear())
+        let monthsBeforeSpouseAsurvivor: number = spouseAsurvivorFRA.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAsurvivorFRA.getFullYear() - currentCalculationDate.getFullYear())
+        let monthsBeforeSpouseBsurvivor: number = spouseBsurvivorFRA.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBsurvivorFRA.getFullYear() - currentCalculationDate.getFullYear())
 
         //spouseAretirementBenefit is zero if currentCalculationDate is more than 1 year prior to year in which spouseAretirementBenefit starts.
-        if (spouseAretirementBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAretirementBenefitDate.getFullYear() - currentCalculationDate.getFullYear()) >= 12 ) {
+        if (monthsBeforeSpouseAretirement >= 12 ) {
         spouseAretirementBenefit = 0
         spouseAannualRetirementBenefit = 0
         }
         //spouseAannualRetirementBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseAretirementBenefitDate
         else if (currentCalculationDate < spouseAretirementBenefitDate) {
           spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAretirementBenefitDate)
-          spouseAannualRetirementBenefit = spouseAretirementBenefit * (12 - (spouseAretirementBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAretirementBenefitDate.getFullYear() - currentCalculationDate.getFullYear())))
+          spouseAannualRetirementBenefit = spouseAretirementBenefit * (12 - monthsBeforeSpouseAretirement)
         }
         //Otherwise spouseAannualRetirementBenefit is 12x monthly benefit amount.
         else {spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAretirementBenefitDate)
@@ -118,14 +124,14 @@ export class PresentvalueService {
         }
 
        //spouseBretirementBenefit is zero if currentCalculationDate is more than 1 year prior to year in which spouseBretirementBenefit starts.
-       if ( spouseBretirementBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBretirementBenefitDate.getFullYear() - currentCalculationDate.getFullYear()) >= 12 ) {
+       if (monthsBeforeSpouseBretirement >= 12 ) {
         spouseBretirementBenefit = 0
         spouseBannualRetirementBenefit = 0
         }
         //spouseBannualRetirementBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseBretirementBenefitDate
         else if (currentCalculationDate < spouseBretirementBenefitDate) {
           spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBretirementBenefitDate)
-          spouseBannualRetirementBenefit = spouseBretirementBenefit * (12 - (spouseBretirementBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBretirementBenefitDate.getFullYear() - currentCalculationDate.getFullYear())))
+          spouseBannualRetirementBenefit = spouseBretirementBenefit * (12 - monthsBeforeSpouseBretirement)
         }
         //Otherwise spouseBannualRetirementBenefit is 12x monthly benefit amount.
         else {spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBretirementBenefitDate)
@@ -134,14 +140,14 @@ export class PresentvalueService {
 
 
         //spouseAspousalBenefit is zero if currentCalculationDate is more than 1 year prior to year in which spouseAspousalBenefit starts. Don't need to check here if other spouse has filed for retirement benefit yet, because that's being done with input validation.
-        if (spouseAspousalBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAspousalBenefitDate.getFullYear() - currentCalculationDate.getFullYear()) >= 12){
+        if (monthsBeforeSpouseAspousal >= 12){
           spouseAspousalBenefit = 0
           spouseAannualSpousalBenefit = 0
           }
         //spouseAannualSpousalBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseAspousalBenefitDate
           else if (currentCalculationDate < spouseAspousalBenefitDate) {
           spouseAspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAretirementBenefit, spouseAspousalBenefitDate, spouseAgovernmentPension)
-          spouseAannualSpousalBenefit = spouseAspousalBenefit * (12 - (spouseAspousalBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAspousalBenefitDate.getFullYear() - currentCalculationDate.getFullYear())))
+          spouseAannualSpousalBenefit = spouseAspousalBenefit * (12 - monthsBeforeSpouseAspousal)
           }
         //Otherwise spouseAannualSpousalBenefit is 12x monthly benefit amount.
           else {
@@ -150,14 +156,14 @@ export class PresentvalueService {
           }
 
         //spouseBspousalBenefit is zero if currentCalculationDate is more than 1 year prior to year in which spouseBspousalBenefit starts. Don't need to check here if other spouse has filed for retirement benefit yet, because that's being done with input validation.
-        if (spouseBspousalBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBspousalBenefitDate.getFullYear() - currentCalculationDate.getFullYear()) >= 12){
+        if (monthsBeforeSpouseBspousal >= 12){
           spouseBspousalBenefit = 0
           spouseBannualSpousalBenefit = 0
           }
         //spouseBannualSpousalBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseBspousalBenefitDate
           else if (currentCalculationDate < spouseBspousalBenefitDate) {
           spouseBspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBretirementBenefit, spouseBspousalBenefitDate, spouseBgovernmentPension)
-          spouseBannualSpousalBenefit = spouseBspousalBenefit * (12 - (spouseBspousalBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBspousalBenefitDate.getFullYear() - currentCalculationDate.getFullYear())))
+          spouseBannualSpousalBenefit = spouseBspousalBenefit * (12 - monthsBeforeSpouseBspousal)
           }
         //Otherwise spouseBannualSpousalBenefit is 12x monthly benefit amount.
           else {
@@ -167,14 +173,14 @@ export class PresentvalueService {
         
       //Survivor benefits are zero before the applicable person's survivorFRA. After survivorFRA, calculate each spouse's survivor benefit using other spouse's intended claiming age as their date of death. (That is, assuming that other spouse lives to their intended claiming age.)
         //spouseAsurvivorBenefit is zero if currentCalculationDate is more than 1 year prior to spouseAsurvivorFRA.
-          if (spouseAsurvivorFRA.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAsurvivorFRA.getFullYear() - currentCalculationDate.getFullYear()) >= 12) {
+          if (monthsBeforeSpouseAsurvivor >= 12) {
             spouseAsurvivorBenefit = 0    //<-- This will get changed when we incorporate restricted applications for survivor benefits
             spouseAannualSurvivorBenefit = 0 //This too
           }
           //spouseAannualSurvivorBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseAsurvivorFRA
           else if (currentCalculationDate < spouseAsurvivorFRA) {
           spouseAsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefit, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBretirementBenefitDate, spouseAgovernmentPension)
-          spouseAannualSurvivorBenefit = spouseAsurvivorBenefit * (12-(spouseAsurvivorFRA.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAsurvivorFRA.getFullYear() - currentCalculationDate.getFullYear())))
+          spouseAannualSurvivorBenefit = spouseAsurvivorBenefit * (12 - monthsBeforeSpouseAsurvivor)
           }
           //Otherwise spouseAannualSurvivorBenefit is 12x monthly benefit amount.
           else {
@@ -183,14 +189,14 @@ export class PresentvalueService {
           }
 
         //spouseBsurvivorBenefit is zero if currentCalculationDate is more than 1 year prior to spouseBsurvivorFRA.
-        if (spouseBsurvivorFRA.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBsurvivorFRA.getFullYear() - currentCalculationDate.getFullYear()) >= 12) {
+        if (monthsBeforeSpouseBsurvivor >= 12) {
           spouseBsurvivorBenefit = 0    //<-- This will get changed when we incorporate restricted applications for survivor benefits
           spouseBannualSurvivorBenefit = 0 //This too
         }
         //spouseBannualSurvivorBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseBsurvivorFRA
         else if (currentCalculationDate < spouseBsurvivorFRA) {
         spouseBsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefit, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAretirementBenefitDate, spouseBgovernmentPension)
-        spouseBannualSurvivorBenefit = spouseBsurvivorBenefit * (12 - (spouseBsurvivorFRA.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBsurvivorFRA.getFullYear() - currentCalculationDate.getFullYear())))
+        spouseBannualSurvivorBenefit = spouseBsurvivorBenefit * (12 - monthsBeforeSpouseBsurvivor)
         }
         //Otherwise spouseBannualSurvivorBenefit is 12x monthly benefit amount.
         else {
