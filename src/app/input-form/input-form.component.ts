@@ -34,7 +34,7 @@ export class InputFormComponent implements OnInit {
               2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
               2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018
               ]
-  inputBenefitYears = [2014, 2015, 2016, 2017, 2018, 2019,
+  inputBenefitYears = [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
                     2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029,
                     2030, 2031, 2032, 2033, 2034, 2035, 2036, 2037, 2038, 2039,
                     2040, 2041, 2042, 2043, 2044, 2045, 2046, 2047, 2048, 2049,
@@ -54,6 +54,9 @@ export class InputFormComponent implements OnInit {
   spouseAspousalBenefitMonth: number
   spouseAspousalBenefitYear: number
   spouseAspousalBenefitDate: Date
+  exSpouseRetirementBenefitMonth: number
+  exSpouseRetirementBenefitYear: number
+  exSpouseRetirementBenefitDate: Date
   spouseAgender: string = "male"
   spouseAmortalityInput: string = "SSA"
   spouseBinputMonth: number = 4
@@ -95,6 +98,7 @@ export class InputFormComponent implements OnInit {
   spouseBretirementDateError:string
   spouseAspousalDateError:string
   spouseBspousalDateError:string
+  exSpouseRetirementBenefitDateError:string
 
   //solution variables
   customPV: number
@@ -171,6 +175,11 @@ export class InputFormComponent implements OnInit {
     {
     this.solutionSet = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
     }
+  if(this.maritalStatus == "divorced") {
+    this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.exSpouseRetirementBenefitDate)
+    //TODO: Run a function...
+  }
+
   this.normalCursor()
     //For testing performance
     let endTime = performance.now()

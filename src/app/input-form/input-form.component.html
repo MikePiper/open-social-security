@@ -10,13 +10,20 @@
           <select [(ngModel)]="maritalStatus" name="maritalStatus" class="form-control">
             <option value="unmarried">Single</option>
             <option value="married">Married</option>
+            <option value="divorced">Divorced</option>
             <option value="survivor">Widow(er)</option>
           </select>
         <div *ngIf="maritalStatus == 'survivor'" class="inputexplanation">
           <p>If you are a widow(er) and you have not remarried (or you remarried after reaching age 60), there is no need for this calculator. Please see <a href="https://obliviousinvestor.com/social-security-planning-with-widower-benefits/" target="_blank">this article</a> for a discussion of the optimal claiming strategy.</p>
           <p>If you <em>have</em> remarried (prior to age 60) please use the calculator as "married."</p>
         </div>
+        <ul *ngIf="maritalStatus == 'divorced'" class="inputexplanation">
+            <li><strong>Note 1:</strong> If you have remarried, please use the calculator as "married."</li>
+            <li><strong>Note 2:</strong> If you are divorced (and not remarried) after a marriage that lasted less than 10 years, please use the calculator as "single."</li>
+        </ul>
         </div>
+  <span *ngIf="maritalStatus != 'survivor'">
+
         <div class="form-inline">
         <label>Gender</label>
         <select [(ngModel)]="spouseAgender" name="spouseAgender" class="form-control">
@@ -58,9 +65,10 @@
         </div>    
 
 
-      <span *ngIf="maritalStatus == 'married'">
+      <span *ngIf="maritalStatus == 'married' || maritalStatus == 'divorced'">
 
-        <h2>Your Spouse's Information</h2>
+        <h2 *ngIf="maritalStatus == 'married'">Your Spouse's Information</h2>
+        <h2 *ngIf="maritalStatus == 'divorced'">Your Ex-spouse's Information</h2>
         <div class="form-inline">
         <label>Gender</label>
         <select [(ngModel)]="spouseBgender" name="spouseBgender" class="form-control">
@@ -84,6 +92,17 @@
           <label>PIA</label>
           <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" required>
         </div>
+        <div *ngIf="maritalStatus == 'divorced'" class="form-inline">
+            <label>Month in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
+            <select class="form-control" [(ngModel)]="exSpouseRetirementBenefitMonth" name="exSpouseRetirementBenefitMonth" required>
+              <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+            </select>
+            <select class="form-control" [(ngModel)]="exSpouseRetirementBenefitYear" name="exSpouseRetirementBenefitYear" required>
+              <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+            </select>
+            <span *ngIf="this.exSpouseRetirementDateError" class="alert alert-danger">{{this.exSpouseRetirementDateError}}</span>
+            <p class="inputexplanation">This information is necessary in order to do the required math. If you do not know the answer, you can call the SSA to see if your ex-spouse has filed for his/her retirement benefit. Alternatively, you can guess as to your ex-spouse's plans (e.g., assume they file at age 66 or at age 67).</p>
+          </div>
         <div *ngIf="this.advanced == true" class="form-inline">
           <label>Mortality table</label>
           <select [(ngModel)]="spouseBmortalityInput" name="spouseBmortalityInput" class="form-control">
@@ -111,6 +130,8 @@
         <button type="submit" id="maximizeSubmit" class="btn btn-primary" (mousedown)="waitCursor()">Submit</button>
       </div>
       <p *ngIf="!this.solutionSet.solutionPV">If you are married, depending on your computer/phone's processor speed, this calculation may take several seconds. Please be patient with your computer. It's doing quite a lot of math.</p>
+      <p *ngIf="!this.solutionSet.solutionPV">For reference, this calculator runs much faster in Chrome or Firefox than it does in Safari, Edge, or Internet Explorer.</p>
+  </span>
 </form>
 <span *ngIf="this.solutionSet.solutionPV">
   
