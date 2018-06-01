@@ -61,13 +61,17 @@ export class PresentvalueService {
     let spouseAannualRetirementBenefit: number = 0
     let spouseBretirementBenefit: number = 0
     let spouseBannualRetirementBenefit: number = 0
-    let spouseAspousalBenefit: number = 0
+    let spouseAspousalBenefitWithRetirement: number = 0
+    let spouseAspousalBenefitWithoutRetirement: number = 0
     let spouseAannualSpousalBenefit: number = 0
-    let spouseBspousalBenefit: number = 0
+    let spouseBspousalBenefitWithRetirement: number = 0
+    let spouseBspousalBenefitWithoutRetirement: number = 0
     let spouseBannualSpousalBenefit: number = 0
-    let spouseAsurvivorBenefit: number = 0
+    let spouseAsurvivorBenefitWithoutRetirement: number = 0
+    let spouseAsurvivorBenefitWithRetirement: number = 0
     let spouseAannualSurvivorBenefit: number = 0
-    let spouseBsurvivorBenefit: number = 0
+    let spouseBsurvivorBenefitWithoutRetirement: number = 0
+    let spouseBsurvivorBenefitWithRetirement: number = 0
     let spouseBannualSurvivorBenefit: number = 0
     let spouseAage: number
     let spouseAageLastBirthday: number
@@ -100,109 +104,129 @@ export class PresentvalueService {
     let currentCalculationDate: Date = new Date(firstStartDate)
     while (spouseAage < 115 || spouseBage < 115){
 
-        //Variable for number of months in calculation year that are before each of the 6 claimingDates
+        //Calculate number of months of spouseA retirement benefit
         let monthsBeforeSpouseAretirement: number = spouseAretirementBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAretirementBenefitDate.getFullYear() - currentCalculationDate.getFullYear())
-        let monthsBeforeSpouseBretirement: number = spouseBretirementBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBretirementBenefitDate.getFullYear() - currentCalculationDate.getFullYear())
+        let monthsOfSpouseAretirement: number
+        if (monthsBeforeSpouseAretirement >= 12) {
+          monthsOfSpouseAretirement = 0
+        } else if (monthsBeforeSpouseAretirement > 0) {
+          monthsOfSpouseAretirement = 12 - monthsBeforeSpouseAretirement
+        } else {
+          monthsOfSpouseAretirement = 12
+        }
+
+        //Calculate number of months of spouseA spousalBenefit w/ retirementBenefit and number of months of spouseA spousalBenefit w/o retirementBenefit
         let monthsBeforeSpouseAspousal: number = spouseAspousalBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAspousalBenefitDate.getFullYear() - currentCalculationDate.getFullYear())
-        let monthsBeforeSpouseBspousal: number = spouseBspousalBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBspousalBenefitDate.getFullYear() - currentCalculationDate.getFullYear())
+        let monthsOfSpouseAspousal: number
+        let monthsOfSpouseAspousalWithRetirement: number
+        let monthsOfSpouseAspousalWithoutRetirement: number
+        if (monthsBeforeSpouseAspousal >= 12) {
+          monthsOfSpouseAspousal = 0
+        } else if (monthsBeforeSpouseAspousal > 0) {
+          monthsOfSpouseAspousal = 12 - monthsBeforeSpouseAspousal
+        } else {
+          monthsOfSpouseAspousal = 12
+        }
+        if (monthsOfSpouseAretirement >= monthsOfSpouseAspousal) {
+          monthsOfSpouseAspousalWithRetirement = monthsOfSpouseAspousal
+          monthsOfSpouseAspousalWithoutRetirement = 0
+        } else {
+          monthsOfSpouseAspousalWithRetirement = monthsOfSpouseAretirement
+          monthsOfSpouseAspousalWithoutRetirement = monthsOfSpouseAspousal - monthsOfSpouseAretirement
+        }
+
+        //Calculate number of months of spouseA survivorBenefit w/ retirementBenefit and number of months of spouseA survivorBenefit w/o retirementBenefit
         let monthsBeforeSpouseAsurvivor: number = spouseAsurvivorFRA.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAsurvivorFRA.getFullYear() - currentCalculationDate.getFullYear())
+        let monthsOfSpouseAsurvivor: number
+        let monthsOfSpouseAsurvivorWithRetirement: number
+        let monthsOfSpouseAsurvivorWithoutRetirement: number
+        if (monthsBeforeSpouseAsurvivor >= 12) {
+          monthsOfSpouseAsurvivor = 0
+        } else if (monthsBeforeSpouseAsurvivor > 0) {
+          monthsOfSpouseAsurvivor = 12 - monthsBeforeSpouseAsurvivor
+        } else {
+          monthsOfSpouseAsurvivor = 12
+        }
+        if (monthsOfSpouseAretirement >= monthsOfSpouseAsurvivor) {
+          monthsOfSpouseAsurvivorWithRetirement = monthsOfSpouseAsurvivor
+          monthsOfSpouseAsurvivorWithoutRetirement = 0
+        } else {
+          monthsOfSpouseAsurvivorWithRetirement = monthsOfSpouseAretirement
+          monthsOfSpouseAsurvivorWithoutRetirement = monthsOfSpouseAsurvivor - monthsOfSpouseAretirement
+        }
+
+        //Calculate number of months of spouseB retirement benefit
+        let monthsBeforeSpouseBretirement: number = spouseBretirementBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBretirementBenefitDate.getFullYear() - currentCalculationDate.getFullYear())
+        let monthsOfSpouseBretirement: number
+        if (monthsBeforeSpouseBretirement >= 12) {
+          monthsOfSpouseBretirement = 0
+        } else if (monthsBeforeSpouseBretirement > 0) {
+          monthsOfSpouseBretirement = 12 - monthsBeforeSpouseBretirement
+        } else {
+          monthsOfSpouseBretirement = 12
+        }
+
+        //Calculate number of months of spouseB spousalBenefit w/ retirementBenefit and number of months of spouseB spousalBenefit w/o retirementBenefit
+        let monthsBeforeSpouseBspousal: number = spouseBspousalBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBspousalBenefitDate.getFullYear() - currentCalculationDate.getFullYear())
+        let monthsOfSpouseBspousal: number
+        let monthsOfSpouseBspousalWithRetirement: number
+        let monthsOfSpouseBspousalWithoutRetirement: number
+        if (monthsBeforeSpouseBspousal >= 12) {
+          monthsOfSpouseBspousal = 0
+        } else if (monthsBeforeSpouseBspousal > 0) {
+          monthsOfSpouseBspousal = 12 - monthsBeforeSpouseBspousal
+        } else {
+          monthsOfSpouseBspousal = 12
+        }
+        if (monthsOfSpouseBretirement >= monthsOfSpouseBspousal) {
+          monthsOfSpouseBspousalWithRetirement = monthsOfSpouseBspousal
+          monthsOfSpouseBspousalWithoutRetirement = 0
+        } else {
+          monthsOfSpouseBspousalWithRetirement = monthsOfSpouseBretirement
+          monthsOfSpouseBspousalWithoutRetirement = monthsOfSpouseBspousal - monthsOfSpouseBretirement
+        }
+
+        //Calculate number of months of spouseB survivorBenefit w/ retirementBenefit and number of months of spouseB survivorBenefit w/o retirementBenefit
         let monthsBeforeSpouseBsurvivor: number = spouseBsurvivorFRA.getMonth() - currentCalculationDate.getMonth() + 12*(spouseBsurvivorFRA.getFullYear() - currentCalculationDate.getFullYear())
-
-        //spouseAretirementBenefit is zero if currentCalculationDate is more than 1 year prior to year in which spouseAretirementBenefit starts.
-        if (monthsBeforeSpouseAretirement >= 12 ) {
-        spouseAretirementBenefit = 0
-        spouseAannualRetirementBenefit = 0
-        }
-        //spouseAannualRetirementBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseAretirementBenefitDate
-        else if (currentCalculationDate < spouseAretirementBenefitDate) {
-          spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAretirementBenefitDate)
-          spouseAannualRetirementBenefit = spouseAretirementBenefit * (12 - monthsBeforeSpouseAretirement)
-        }
-        //Otherwise spouseAannualRetirementBenefit is 12x monthly benefit amount.
-        else {spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAretirementBenefitDate)
-          spouseAannualRetirementBenefit = spouseAretirementBenefit * 12
-        }
-
-       //spouseBretirementBenefit is zero if currentCalculationDate is more than 1 year prior to year in which spouseBretirementBenefit starts.
-       if (monthsBeforeSpouseBretirement >= 12 ) {
-        spouseBretirementBenefit = 0
-        spouseBannualRetirementBenefit = 0
-        }
-        //spouseBannualRetirementBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseBretirementBenefitDate
-        else if (currentCalculationDate < spouseBretirementBenefitDate) {
-          spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBretirementBenefitDate)
-          spouseBannualRetirementBenefit = spouseBretirementBenefit * (12 - monthsBeforeSpouseBretirement)
-        }
-        //Otherwise spouseBannualRetirementBenefit is 12x monthly benefit amount.
-        else {spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBretirementBenefitDate)
-          spouseBannualRetirementBenefit = spouseBretirementBenefit * 12
-        }
-
-
-        //spouseAspousalBenefit is zero if currentCalculationDate is more than 1 year prior to year in which spouseAspousalBenefit starts. Don't need to check here if other spouse has filed for retirement benefit yet, because that's being done with input validation.
-        if (monthsBeforeSpouseAspousal >= 12){
-          spouseAspousalBenefit = 0
-          spouseAannualSpousalBenefit = 0
-          }
-        //spouseAannualSpousalBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseAspousalBenefitDate
-          else if (currentCalculationDate < spouseAspousalBenefitDate) {
-          spouseAspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAretirementBenefit, spouseAspousalBenefitDate, spouseAgovernmentPension)
-          spouseAannualSpousalBenefit = spouseAspousalBenefit * (12 - monthsBeforeSpouseAspousal)
-          }
-        //Otherwise spouseAannualSpousalBenefit is 12x monthly benefit amount.
-          else {
-            spouseAspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAretirementBenefit, spouseAspousalBenefitDate, spouseAgovernmentPension)
-            spouseAannualSpousalBenefit = spouseAspousalBenefit * 12
-          }
-
-        //spouseBspousalBenefit is zero if currentCalculationDate is more than 1 year prior to year in which spouseBspousalBenefit starts. Don't need to check here if other spouse has filed for retirement benefit yet, because that's being done with input validation.
-        if (monthsBeforeSpouseBspousal >= 12){
-          spouseBspousalBenefit = 0
-          spouseBannualSpousalBenefit = 0
-          }
-        //spouseBannualSpousalBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseBspousalBenefitDate
-          else if (currentCalculationDate < spouseBspousalBenefitDate) {
-          spouseBspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBretirementBenefit, spouseBspousalBenefitDate, spouseBgovernmentPension)
-          spouseBannualSpousalBenefit = spouseBspousalBenefit * (12 - monthsBeforeSpouseBspousal)
-          }
-        //Otherwise spouseBannualSpousalBenefit is 12x monthly benefit amount.
-          else {
-            spouseBspousalBenefit = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBretirementBenefit, spouseBspousalBenefitDate, spouseBgovernmentPension)
-            spouseBannualSpousalBenefit = spouseBspousalBenefit * 12
-          }
-        
-      //Survivor benefits are zero before the applicable person's survivorFRA. After survivorFRA, calculate each spouse's survivor benefit using other spouse's intended claiming age as their date of death. (That is, assuming that other spouse lives to their intended claiming age.)
-        //spouseAsurvivorBenefit is zero if currentCalculationDate is more than 1 year prior to spouseAsurvivorFRA.
-          if (monthsBeforeSpouseAsurvivor >= 12) {
-            spouseAsurvivorBenefit = 0    //<-- This will get changed when we incorporate restricted applications for survivor benefits
-            spouseAannualSurvivorBenefit = 0 //This too
-          }
-          //spouseAannualSurvivorBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseAsurvivorFRA
-          else if (currentCalculationDate < spouseAsurvivorFRA) {
-          spouseAsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefit, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBretirementBenefitDate, spouseAgovernmentPension)
-          spouseAannualSurvivorBenefit = spouseAsurvivorBenefit * (12 - monthsBeforeSpouseAsurvivor)
-          }
-          //Otherwise spouseAannualSurvivorBenefit is 12x monthly benefit amount.
-          else {
-            spouseAsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefit, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBretirementBenefitDate, spouseAgovernmentPension)
-            spouseAannualSurvivorBenefit = spouseAsurvivorBenefit * 12
-          }
-
-        //spouseBsurvivorBenefit is zero if currentCalculationDate is more than 1 year prior to spouseBsurvivorFRA.
+        let monthsOfSpouseBsurvivor: number
+        let monthsOfSpouseBsurvivorWithRetirement: number
+        let monthsOfSpouseBsurvivorWithoutRetirement: number
         if (monthsBeforeSpouseBsurvivor >= 12) {
-          spouseBsurvivorBenefit = 0    //<-- This will get changed when we incorporate restricted applications for survivor benefits
-          spouseBannualSurvivorBenefit = 0 //This too
+          monthsOfSpouseBsurvivor = 0
+        } else if (monthsBeforeSpouseBsurvivor > 0) {
+          monthsOfSpouseBsurvivor = 12 - monthsBeforeSpouseBsurvivor
+        } else {
+          monthsOfSpouseBsurvivor = 12
         }
-        //spouseBannualSurvivorBenefit is weighted for appropriate number of months, if currentCalculationDate is within 1 year from spouseBsurvivorFRA
-        else if (currentCalculationDate < spouseBsurvivorFRA) {
-        spouseBsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefit, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAretirementBenefitDate, spouseBgovernmentPension)
-        spouseBannualSurvivorBenefit = spouseBsurvivorBenefit * (12 - monthsBeforeSpouseBsurvivor)
+        if (monthsOfSpouseBretirement >= monthsOfSpouseBsurvivor) {
+          monthsOfSpouseBsurvivorWithRetirement = monthsOfSpouseBsurvivor
+          monthsOfSpouseBsurvivorWithoutRetirement = 0
+        } else {
+          monthsOfSpouseBsurvivorWithRetirement = monthsOfSpouseBretirement
+          monthsOfSpouseBsurvivorWithoutRetirement = monthsOfSpouseBsurvivor - monthsOfSpouseBretirement
         }
-        //Otherwise spouseBannualSurvivorBenefit is 12x monthly benefit amount.
-        else {
-          spouseBsurvivorBenefit = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefit, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAretirementBenefitDate, spouseBgovernmentPension)
-          spouseBannualSurvivorBenefit = spouseBsurvivorBenefit * 12
-        }
+
+        //Calculate monthly benefit amounts
+        spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAretirementBenefitDate)
+        spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBretirementBenefitDate)
+        spouseAspousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, 0, spouseAspousalBenefitDate, spouseAgovernmentPension)
+        spouseAspousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAretirementBenefit, spouseAspousalBenefitDate, spouseAgovernmentPension)
+        spouseBspousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, 0, spouseBspousalBenefitDate, spouseBgovernmentPension)
+        spouseBspousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBretirementBenefit, spouseBspousalBenefitDate, spouseBgovernmentPension)
+        spouseAsurvivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, 0, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBretirementBenefitDate, spouseAgovernmentPension)
+        spouseAsurvivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefit, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBretirementBenefitDate, spouseAgovernmentPension)
+        spouseBsurvivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, 0, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAretirementBenefitDate, spouseBgovernmentPension)
+        spouseBsurvivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefit, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAretirementBenefitDate, spouseBgovernmentPension)
+
+
+        //Calculate annual benefits
+        spouseAannualRetirementBenefit = monthsOfSpouseAretirement * spouseAretirementBenefit
+        spouseBannualRetirementBenefit = monthsOfSpouseBretirement * spouseBretirementBenefit
+        spouseAannualSpousalBenefit = (monthsOfSpouseAspousalWithoutRetirement * spouseAspousalBenefitWithoutRetirement) + (monthsOfSpouseAspousalWithRetirement * spouseAspousalBenefitWithRetirement)
+        spouseBannualSpousalBenefit = (monthsOfSpouseBspousalWithoutRetirement * spouseBspousalBenefitWithoutRetirement) + (monthsOfSpouseBspousalWithRetirement * spouseBspousalBenefitWithRetirement)
+        spouseAannualSurvivorBenefit = (monthsOfSpouseAsurvivorWithoutRetirement * spouseAsurvivorBenefitWithoutRetirement) + (monthsOfSpouseAsurvivorWithRetirement * spouseAsurvivorBenefitWithRetirement)
+        spouseBannualSurvivorBenefit = (monthsOfSpouseBsurvivorWithoutRetirement * spouseBsurvivorBenefitWithoutRetirement) + (monthsOfSpouseBsurvivorWithRetirement * spouseBsurvivorBenefitWithRetirement)
+
 
           //Calculate probability of spouseA being alive at end of age in question
           //If spouseA is older than 62 when filling out form, denominator is lives remaining at age when filling out form. Otherwise it's lives remaining at age 62
@@ -398,6 +422,41 @@ export class PresentvalueService {
           spouseBspousalDate.setMonth(spouseAretirementDate.getMonth())
           spouseBspousalDate.setFullYear(spouseAretirementDate.getFullYear())
         }
+
+          //After spouse B's retirement testdate has been reset, reset spouseA's spousal date as necessary
+            //If spouseA has new deemed filing rules, set spouseA spousalDate to later of spouseA retirementDate or spouseB retirementDate
+            if (spouseAactualBirthDate > deemedFilingCutoff) {
+              if (spouseAretirementDate > spouseBretirementDate) {
+                spouseAspousalDate.setMonth(spouseAretirementDate.getMonth())
+                spouseAspousalDate.setFullYear(spouseAretirementDate.getFullYear())
+              } else {
+                spouseAspousalDate.setMonth(spouseBretirementDate.getMonth())
+                spouseAspousalDate.setFullYear(spouseBretirementDate.getFullYear())
+              }
+            }
+            else {//i.e., if spouseA has old deemed filing rules
+              if (spouseAretirementDate < spouseAFRA) {
+                //Set spouseA spousal testdate to later of spouseA retirementDate or spouseB retirementDate
+                if (spouseAretirementDate > spouseBretirementDate) {
+                  spouseAspousalDate.setMonth(spouseAretirementDate.getMonth())
+                  spouseAspousalDate.setFullYear(spouseAretirementDate.getFullYear())
+                } else {
+                  spouseAspousalDate.setMonth(spouseBretirementDate.getMonth())
+                  spouseAspousalDate.setFullYear(spouseBretirementDate.getFullYear())
+                }
+              }
+              else {//i.e., if spouseAretirementDate currently after spouseAFRA
+                //Set spouseA spousalDate to earliest possible restricted application date (later of FRA or spouse B's retirementDate)
+                if (spouseAFRA > spouseBretirementDate) {
+                  spouseAspousalDate.setMonth(spouseAFRA.getMonth())
+                  spouseAspousalDate.setFullYear(spouseAFRA.getFullYear())
+                } else {
+                  spouseAspousalDate.setMonth(spouseBretirementDate.getMonth())
+                  spouseAspousalDate.setFullYear(spouseBretirementDate.getFullYear())
+                }
+              }
+            }
+
         while (spouseBretirementDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
             let currentTestPV: number = this.calculateCouplePV(spouseAgender, spouseBgender, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
@@ -1246,7 +1305,43 @@ maleNS1 = [
   0, 
   0, 
   0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
 ]
 
 maleNS2 = [
@@ -1370,7 +1465,38 @@ maleNS2 = [
   0, 
   0, 
   0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
 ]
 
 maleSM1 = [
@@ -1494,7 +1620,38 @@ maleSM1 = [
   0, 
   0, 
   0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
 ]
 
 maleSM2 = [
@@ -1618,7 +1775,38 @@ maleSM2 = [
   0, 
   0, 
   0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
 ]
 
 femaleNS1 = [
@@ -1742,7 +1930,38 @@ femaleNS1 = [
   0, 
   0, 
   0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
 ]
 
 femaleNS2 = [
@@ -1866,7 +2085,38 @@ femaleNS2 = [
   0, 
   0, 
   0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
 ]
 
 femaleSM1 = [
@@ -1990,7 +2240,38 @@ femaleSM1 = [
   0, 
   0, 
   0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
 ]
 
 femaleSM2 = [
@@ -2114,7 +2395,38 @@ femaleSM2 = [
   0, 
   0, 
   0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
 ]
 
 }
