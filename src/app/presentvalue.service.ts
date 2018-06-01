@@ -100,6 +100,8 @@ export class PresentvalueService {
     let currentCalculationDate: Date = new Date(firstStartDate)
     while (spouseAage < 115 || spouseBage < 115){
 
+        //Variable for number of months in calculation year that are before each of the 4 claimingDates?
+
         //spouseAretirementBenefit is zero if currentCalculationDate is more than 1 year prior to year in which spouseAretirementBenefit starts.
         if (spouseAretirementBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(spouseAretirementBenefitDate.getFullYear() - currentCalculationDate.getFullYear()) >= 12 ) {
         spouseAretirementBenefit = 0

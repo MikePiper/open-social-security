@@ -98,7 +98,7 @@ export class InputFormComponent implements OnInit {
   spouseBretirementDateError:string
   spouseAspousalDateError:string
   spouseBspousalDateError:string
-  exSpouseRetirementBenefitDateError:string
+  exSpouseRetirementDateError:string
 
   //solution variables
   customPV: number
@@ -125,7 +125,7 @@ export class InputFormComponent implements OnInit {
   onSubmit() {
   let startTime = performance.now() //for testing performance
   console.log("-------------")
-  //Calculate ages, SSbirthdates, FRAs, etc.
+  //Use inputs to calculate ages, SSbirthdates, FRAs, etc.
   this.spouseAactualBirthDate = new Date (this.spouseAinputYear, this.spouseAinputMonth-1, this.spouseAinputDay)
   this.spouseASSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseAinputMonth, this.spouseAinputDay, this.spouseAinputYear))
   this.spouseAFRA = new Date(this.birthdayService.findFRA(this.spouseASSbirthDate))
@@ -138,6 +138,8 @@ export class InputFormComponent implements OnInit {
   this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
   this.spouseAageRounded = Math.round(this.spouseAage)
   this.spouseBageRounded = Math.round(this.spouseBage)
+  this.exSpouseRetirementBenefitDate = new Date(this.exSpouseRetirementBenefitYear, this.exSpouseRetirementBenefitMonth-1, 1)
+
   //Determine appropriate mortality table based on user input
   if (this.spouseAgender == "male") {
     if (this.spouseAmortalityInput == "NS1") {this.spouseAmortalityTable = this.presentvalueService.maleNS1}
@@ -176,7 +178,7 @@ export class InputFormComponent implements OnInit {
     this.solutionSet = this.presentvalueService.maximizeCouplePV(Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
     }
   if(this.maritalStatus == "divorced") {
-    this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.exSpouseRetirementBenefitDate)
+    this.exSpouseRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.exSpouseRetirementBenefitDate)
     //TODO: Run a function...
   }
 
@@ -207,16 +209,19 @@ export class InputFormComponent implements OnInit {
     this.spouseAspousalBenefitDate = null
     this.spouseBretirementBenefitDate = null
     this.spouseBspousalBenefitDate = null
+    this.exSpouseRetirementBenefitDate = null
     this.spouseAretirementBenefitDate = new Date(this.spouseAretirementBenefitYear, this.spouseAretirementBenefitMonth-1, 1)
     this.spouseAspousalBenefitDate = new Date(this.spouseAspousalBenefitYear, this.spouseAspousalBenefitMonth-1, 1)
     this.spouseBretirementBenefitDate = new Date(this.spouseBretirementBenefitYear, this.spouseBretirementBenefitMonth-1, 1)
     this.spouseBspousalBenefitDate = new Date(this.spouseBspousalBenefitYear, this.spouseBspousalBenefitMonth-1, 1)
+    this.exSpouseRetirementBenefitDate = new Date(this.exSpouseRetirementBenefitYear, this.exSpouseRetirementBenefitMonth-1, 1)
 
     //Check for errors in input dates
     this.spouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAretirementBenefitDate)
     this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBretirementBenefitDate)
     this.spouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseAretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBretirementBenefitDate)
     this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate)
+    this.exSpouseRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.exSpouseRetirementBenefitDate)
 
     //Get spousal benefit dates if there were no inputs from user (i.e. if spouseA won't actually file for a spousal benefit at any time, get the input that makes function run appropriately)
     if (this.spouseAPIA > 0.5 * this.spouseBPIA && this.spouseAactualBirthDate > this.deemedFilingCutoff) {

@@ -101,7 +101,7 @@
               <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
             </select>
             <span *ngIf="this.exSpouseRetirementDateError" class="alert alert-danger">{{this.exSpouseRetirementDateError}}</span>
-            <p class="inputexplanation">This information is necessary in order to do the required math. If you do not know the answer, you can call the SSA to see if your ex-spouse has filed for his/her retirement benefit. Alternatively, you can guess as to your ex-spouse's plans (e.g., assume they file at age 66 or at age 67).</p>
+            <p class="inputexplanation">Your ex-spouse's filing date is necessary in order to do the required math. If you do not know the answer, you can call the SSA to see if your ex-spouse has filed for his/her retirement benefit. Alternatively, you can guess as to your ex-spouse's plans (e.g., assume they file at age 66 or at age 67).</p>
           </div>
         <div *ngIf="this.advanced == true" class="form-inline">
           <label>Mortality table</label>
