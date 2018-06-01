@@ -181,7 +181,6 @@ export class InputFormComponent implements OnInit {
     this.exSpouseRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.exSpouseRetirementBenefitDate)
       if (!this.exSpouseRetirementDateError){
         this.solutionSet = this.presentvalueService.maximizeDivorceePV(this.maritalStatus, this.exSpouseRetirementBenefitDate, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
-        //this.presentvalueService.calculateCouplePV(this.maritalStatus, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, this.spouseAageRounded, this.spouseBageRounded, this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), new Date(2022, 3, 1), this.exSpouseRetirementBenefitDate, new Date(2019, 3, 1), this.exSpouseRetirementBenefitDate, this.spouseAgovernmentPension, this.spouseBgovernmentPension, Number(this.discountRate))
       }
   }
 
@@ -228,12 +227,18 @@ export class InputFormComponent implements OnInit {
 
     //Get spousal benefit dates if there were no inputs from user (i.e. if spouseA won't actually file for a spousal benefit at any time, get the input that makes function run appropriately)
     if (this.spouseAPIA > 0.5 * this.spouseBPIA && this.spouseAactualBirthDate > this.deemedFilingCutoff) {
-      //spouseA spousal date is later of retirement dates
-      if (this.spouseAretirementBenefitDate > this.spouseBretirementBenefitDate) {
+      //If married, spouseA spousal date is later of retirement dates
+      if (this.maritalStatus == "married") {
+        if (this.spouseAretirementBenefitDate > this.spouseBretirementBenefitDate) {
+          this.spouseAspousalBenefitDate = new Date(this.spouseAretirementBenefitDate)
+        } else {
+          this.spouseAspousalBenefitDate = new Date(this.spouseBretirementBenefitDate)
+          }
+      }
+      //If divorced, spouseA spousal date is spouseA retirementdate
+      if (this.maritalStatus == "divorced"){
         this.spouseAspousalBenefitDate = new Date(this.spouseAretirementBenefitDate)
-      } else {
-        this.spouseAspousalBenefitDate = new Date(this.spouseBretirementBenefitDate)
-        }
+      }
       //eliminate spouseAspousalDateError, because user didn't even input anything
       this.spouseAspousalDateError = undefined
     }
@@ -268,7 +273,6 @@ export class InputFormComponent implements OnInit {
     if ( isNaN(retirementBenefitDate.getFullYear()) || isNaN(retirementBenefitDate.getMonth()) ) {
       error = "Please enter a date."
     }
-
 
     //Validation in case they try to start benefit earlier than possible or after 70
     let earliestDate: Date = new Date(SSbirthDate.getFullYear()+62, 1, 1)
