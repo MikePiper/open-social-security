@@ -102,6 +102,7 @@ export class InputFormComponent implements OnInit {
 
   //solution variables
   customPV: number
+  differenceInPV: number
   solutionSet: SolutionSet = {
     "solutionPV":null,
     "spouseAretirementSolutionDate":null,
@@ -264,6 +265,7 @@ export class InputFormComponent implements OnInit {
     if(this.maritalStatus == "divorced" && !this.exSpouseRetirementDateError && !this.spouseAretirementDateError && !this.spouseAspousalDateError) {
       this.customPV = this.presentvalueService.calculateCouplePV(this.maritalStatus, this.spouseAgender, this.spouseBgender, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.exSpouseRetirementBenefitDate, this.spouseAspousalBenefitDate, this.exSpouseRetirementBenefitDate, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate) )
     }
+    this.differenceInPV = this.solutionSet.solutionPV - this.customPV
   }
 
   checkValidRetirementInputs(FRA: Date, SSbirthDate: Date, actualBirthDate:Date, retirementBenefitDate:Date) {

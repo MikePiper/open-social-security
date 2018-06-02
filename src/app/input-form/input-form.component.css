@@ -28,5 +28,9 @@ padding: 10px;
 
 .inputexplanation li {
     list-style-position: inside;
-    }
+}
 
+.bookimg {
+float:left;
+margin-right:25px;
+}
