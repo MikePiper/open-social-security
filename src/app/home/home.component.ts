@@ -8,11 +8,11 @@ import {PresentvalueService} from '../presentvalue.service'
 import {SolutionSet} from '../solutionset'
 
 @Component({
-  selector: 'app-input-form',
-  templateUrl: './input-form.component.html',
-  styleUrls: ['./input-form.component.css']
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css']
 })
-export class InputFormComponent implements OnInit {
+export class HomeComponent implements OnInit {
 
   constructor(private benefitService: BenefitService, private birthdayService: BirthdayService, private presentvalueService: PresentvalueService, private http: HttpClient) { }
 

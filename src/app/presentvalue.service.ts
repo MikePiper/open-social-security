@@ -554,13 +554,10 @@ export class PresentvalueService {
                   }
                 }
               }
-    
-    
-
         }
         //Add 1 month to spouseAretirementDate (with a "settimeout" to pause the function every 10 years, so javascript doesn't hang up)
-        if (spouseAretirementDate.getFullYear()%10 == 0) {
-          setTimeout(spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1), 1)
+        if (spouseAretirementDate.getFullYear()%5 == 0) {
+          setTimeout(spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1), 5)
         } else {
           spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1)
         }

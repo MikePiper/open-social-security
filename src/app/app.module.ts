@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CollapseModule, BsDropdownModule } from 'ngx-bootstrap';
 
 import { AppComponent } from './app.component';
-import { InputFormComponent } from './input-form/input-form.component';
+import { HomeComponent } from './home/home.component';
 import { BenefitService } from './benefit.service';
 import { AppRoutingModule } from './/app-routing.module';
 import { BirthdayService } from './birthday.service';
@@ -17,7 +17,7 @@ import { HttpClientModule } from '@angular/common/http';
 @NgModule({
   declarations: [
     AppComponent,
-    InputFormComponent,
+    HomeComponent,
     AboutComponent,
     ContactComponent
   ],
