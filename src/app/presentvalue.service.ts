@@ -239,11 +239,12 @@ export class PresentvalueService {
         spouseBannualSpousalBenefit = (monthsOfSpouseBspousalWithoutRetirement * spouseBspousalBenefitWithoutRetirement) + (monthsOfSpouseBspousalWithRetirement * spouseBspousalBenefitWithRetirement)
         spouseAannualSurvivorBenefit = (monthsOfSpouseAsurvivorWithoutRetirement * spouseAsurvivorBenefitWithoutRetirement) + (monthsOfSpouseAsurvivorWithRetirement * spouseAsurvivorBenefitWithRetirement)
         spouseBannualSurvivorBenefit = (monthsOfSpouseBsurvivorWithoutRetirement * spouseBsurvivorBenefitWithoutRetirement) + (monthsOfSpouseBsurvivorWithRetirement * spouseBsurvivorBenefitWithRetirement)
-        if (maritalStatus == "divorced") {
-          spouseBannualRetirementBenefit = 0
-          spouseBannualSpousalBenefit = 0
-          spouseBannualSurvivorBenefit = 0
-        }
+          //If user is divorced, we don't actually want to include the ex-spouse's benefit amounts in our PV sum
+          if (maritalStatus == "divorced") {
+            spouseBannualRetirementBenefit = 0
+            spouseBannualSpousalBenefit = 0
+            spouseBannualSurvivorBenefit = 0
+          }
 
 
           //Calculate probability of spouseA being alive at end of age in question

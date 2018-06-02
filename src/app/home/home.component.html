@@ -129,8 +129,8 @@
       <div>
         <button type="submit" id="maximizeSubmit" class="btn btn-primary" (mousedown)="waitCursor()">Submit</button>
       </div>
-      <p *ngIf="!this.solutionSet.solutionPV">If you are married, depending on your browser and your computer's processor speed, this calculation may take up to a minute. Please be patient with your computer. It's doing quite a lot of math.</p>
-      <p *ngIf="!this.solutionSet.solutionPV">For reference, this calculator runs <em>about 10-times faster</em> in Chrome or Firefox than it does in Safari, Edge, or Internet Explorer.</p>
+      <p *ngIf="!this.solutionSet.solutionPV && maritalStatus == 'married'">If you are married, depending on your browser and your computer's processor speed, this calculation may take up to a minute. Please be patient with your computer. It's doing quite a lot of math.</p>
+      <p *ngIf="!this.solutionSet.solutionPV && maritalStatus == 'married'">For reference, this calculator runs <em>about 10-times faster</em> in Chrome or Firefox than it does in Safari, Edge, or Internet Explorer.</p>
   </span>
 </form>
 <span *ngIf="this.solutionSet.solutionPV">
