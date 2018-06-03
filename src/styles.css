@@ -51,3 +51,19 @@ label {
     color: #267bc5 !important;
     background-color: #fff !important;
 }
+
+.footer {
+
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #267bc5;
+    color: white;
+    text-align: center;
+}
+
+.footer a {
+    color: white;
+    text-decoration:underline;
+}
