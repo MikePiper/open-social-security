@@ -222,8 +222,8 @@ export class HomeComponent implements OnInit {
     //Check for errors in input dates
     this.spouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAretirementBenefitDate)
     this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBretirementBenefitDate)
-    this.spouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseAretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBretirementBenefitDate)
-    this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate)
+    this.spouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseAretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBretirementBenefitDate)
+    this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate)
     this.exSpouseRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.exSpouseRetirementBenefitDate)
 
     //Get spousal benefit dates if there were no inputs from user (i.e. if spouseA won't actually file for a spousal benefit at any time, get the input that makes function run appropriately)
@@ -290,7 +290,7 @@ export class HomeComponent implements OnInit {
   }
 
 
-  checkValidSpousalInputs(FRA: Date, actualBirthDate:Date, SSbirthDate: Date, ownRetirementBenefitDate:Date, spousalBenefitDate:Date, otherSpouseRetirementBenefitDate:Date) {
+  checkValidSpousalInputs(FRA: Date, actualBirthDate:Date, SSbirthDate: Date, otherSpouseActualBirthDate:Date, otherSpouseSSbirthDate:Date, ownRetirementBenefitDate:Date, spousalBenefitDate:Date, otherSpouseRetirementBenefitDate:Date) {
     let error = undefined
     let secondStartDate:Date = new Date(1,1,1)
     //Make sure there is an input (Note that this will get overrode in the customDates function after the error check, in cases where there isn't supposed to be a user input)
@@ -298,31 +298,58 @@ export class HomeComponent implements OnInit {
       error = "Please enter a date."
     }
 
-
-    //TODO: Needs validation for spousal benefit before retirement benefit if deemed filing should apply (i.e., under 62 on 1/1/2016 or if under FRA on input age for claiming spousal)
+    //Deemed filing validation
     if (actualBirthDate < this.deemedFilingCutoff) {//old deemed filing rules apply: If spousalBenefitDate < FRA, it must be equal to ownRetirementBenefitDate
         if ( spousalBenefitDate < FRA && ( spousalBenefitDate.getMonth() !== ownRetirementBenefitDate.getMonth() || spousalBenefitDate.getFullYear() !== ownRetirementBenefitDate.getFullYear() ) )
         {
         error = "You can't file a restricted application (i.e., application for spousal-only) prior to your FRA."
         }
     }
-    else {//new deemed filing rules apply: Own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's retirementBenefitDate
-        if (ownRetirementBenefitDate < otherSpouseRetirementBenefitDate) {
-          secondStartDate.setFullYear(otherSpouseRetirementBenefitDate.getFullYear())
-          secondStartDate.setMonth(otherSpouseRetirementBenefitDate.getMonth())
+    else {//new deemed filing rules apply
+      //Married version: own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's retirementBenefitDate
+        if(this.maritalStatus == "married") {
+          if (ownRetirementBenefitDate < otherSpouseRetirementBenefitDate) {
+            secondStartDate.setFullYear(otherSpouseRetirementBenefitDate.getFullYear())
+            secondStartDate.setMonth(otherSpouseRetirementBenefitDate.getMonth())
+          }
+          else {
+            secondStartDate.setFullYear(ownRetirementBenefitDate.getFullYear())
+            secondStartDate.setMonth(ownRetirementBenefitDate.getMonth())
+          }
+          if ( spousalBenefitDate.getMonth() !== secondStartDate.getMonth() || spousalBenefitDate.getFullYear() !== secondStartDate.getFullYear() ) {
+          error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or your spouse's retirement benefit date."
+          }
         }
-        else {
-          secondStartDate.setFullYear(ownRetirementBenefitDate.getFullYear())
-          secondStartDate.setMonth(ownRetirementBenefitDate.getMonth())
-        }
-        if ( spousalBenefitDate.getMonth() !== secondStartDate.getMonth() || spousalBenefitDate.getFullYear() !== secondStartDate.getFullYear() ) {
-        error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or your spouse's retirement benefit date."
+      //Divorced version: own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's age62 date
+        if(this.maritalStatus == "divorced") {
+          let exSpouse62Date = new Date(otherSpouseSSbirthDate.getFullYear()+62, 1, 1)
+          if (otherSpouseActualBirthDate.getDate() <= 2){
+            exSpouse62Date.setMonth(otherSpouseActualBirthDate.getMonth())
+          } else {
+            exSpouse62Date.setMonth(otherSpouseActualBirthDate.getMonth()+1)
+          }
+          if (ownRetirementBenefitDate < exSpouse62Date) {
+            secondStartDate.setFullYear(exSpouse62Date.getFullYear())
+            secondStartDate.setMonth(exSpouse62Date.getMonth())
+          }
+          else {
+            secondStartDate.setFullYear(ownRetirementBenefitDate.getFullYear())
+            secondStartDate.setMonth(ownRetirementBenefitDate.getMonth())
+          }
+          if ( spousalBenefitDate.getMonth() !== secondStartDate.getMonth() || spousalBenefitDate.getFullYear() !== secondStartDate.getFullYear() ) {
+          error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month."
+          }
         }
     }
 
-    //Validation in case they try to start benefit earlier than possible. (Just ignoring the "must be 62 for entire month" rule right now.) (No validation check for after age 70, because sometimes that will be earliest they can -- if they're much younger than other spouse.)
-    let claimingAge: number = ( spousalBenefitDate.getMonth() - SSbirthDate.getMonth() + 12 * (spousalBenefitDate.getFullYear() - SSbirthDate.getFullYear()) )/12
-    if (claimingAge < 61.99) {error = "Please enter a later date. You cannot file for spousal benefits before age 62."}
+    //Validation in case they try to start benefit earlier than possible.
+    let earliestDate: Date = new Date(SSbirthDate.getFullYear()+62, 1, 1)
+    if (actualBirthDate.getDate() <= 2) {
+      earliestDate.setMonth(actualBirthDate.getMonth())
+    } else {
+      earliestDate.setMonth(actualBirthDate.getMonth()+1)
+    }
+    if (spousalBenefitDate < earliestDate) {error = "Please enter a later date. You cannot file for spousal benefits before the first month in which you are 62 for the entire month."}
 
     //Validation in case they try to start spousal benefit before other spouse's retirement benefit.
     if (spousalBenefitDate < otherSpouseRetirementBenefitDate && this.maritalStatus == "married") {error = "You cannot start your spousal benefit before your spouse has filed for his/her own retirement benefit."}

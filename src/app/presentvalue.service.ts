@@ -651,6 +651,18 @@ export class PresentvalueService {
         spouseAspousalDate.setFullYear(today.getFullYear())
       }
 
+      //Don't let spouseAspousalDate be earlier than first month for which ex-spouse is 62 for whole month
+      let exSpouse62Date = new Date(spouseBSSbirthDate.getFullYear()+62, 1, 1)
+      if (spouseBactualBirthDate.getDate() <= 2){
+        exSpouse62Date.setMonth(spouseBactualBirthDate.getMonth())
+      } else {
+        exSpouse62Date.setMonth(spouseBactualBirthDate.getMonth()+1)
+      }
+      if (spouseAspousalDate < exSpouse62Date) {
+        spouseAspousalDate.setFullYear(exSpouse62Date.getFullYear())
+        spouseAspousalDate.setMonth(exSpouse62Date.getMonth())
+      }
+
       //Initialize savedPV as zero. Set saved dates equal to their current testDates.
       let savedPV: number = 0
       let spouseAsavedRetirementDate = new Date(spouseAretirementDate)
@@ -675,17 +687,22 @@ export class PresentvalueService {
           spouseAsavedSpousalDate.setMonth(spouseAspousalDate.getMonth())
           spouseAsavedSpousalDate.setFullYear(spouseAspousalDate.getFullYear())
           }
-
+        
+        
         //Increment spouseA's dates (keep spouseB's fixed)
           //if new deemed filing rules, increment both by 1 month
           if (spouseAactualBirthDate > deemedFilingCutoff) {
             spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1)
-            spouseAspousalDate.setMonth(spouseAspousalDate.getMonth()+1)
+            if (spouseAspousalDate <= spouseAretirementDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
+              spouseAspousalDate.setMonth(spouseAspousalDate.getMonth()+1)
+            }
           } else { //i.e., if old deemed filling rules apply
             //If current retirement test date younger than FRA, increment both by 1 month
             if (spouseAretirementDate < spouseAFRA) {
               spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1)
+              if (spouseAspousalDate <= spouseAretirementDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
               spouseAspousalDate.setMonth(spouseAspousalDate.getMonth()+1)
+              }
             }
             else {//If current retirement test date beyond FRA, increment retirement by 1 month and keep spousal where it is (at FRA, unless they're older than FRA when filling form)
               spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1)
