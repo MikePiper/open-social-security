@@ -59,7 +59,7 @@
           </select>
           <p class="inputexplanation"><a href="about#mortality" target="_blank">See here</a> for more information about these mortality table options.</p>
         </div>
-        <div *ngIf="maritalStatus == 'married' && this.advanced == true">
+        <div *ngIf="maritalStatus != 'single' && this.advanced == true">
           <label for="spouseAgovernmentPension">Monthly government pension (from non-covered employment)</label>
           <input type="text" [(ngModel)]="spouseAgovernmentPension" id="spouseAgovernmentPension" name="spouseAgovernmentPension">
         </div>    
@@ -133,6 +133,7 @@
       <p *ngIf="!this.solutionSet.solutionPV && maritalStatus == 'married'">For reference, this calculator runs <em>many-times faster</em> in Chrome or Firefox than it does in Safari, Edge, or Internet Explorer.</p>
   </span>
 </form>
+
 <span *ngIf="this.solutionSet.solutionPV">
   <p>The strategy that maximizes the total dollars you can be expected to spend over your lifetime<span *ngIf="maritalStatus == 'married'">s</span> is as follows:</p>
   <ul>
