@@ -94,6 +94,7 @@ export class HomeComponent implements OnInit {
 
 
   //Error variables
+  statusMessage:string = ""
   spouseAretirementDateError:string
   spouseBretirementDateError:string
   spouseAspousalDateError:string
@@ -126,6 +127,7 @@ export class HomeComponent implements OnInit {
   onSubmit() {
   let startTime = performance.now() //for testing performance
   console.log("-------------")
+  
   //Use inputs to calculate ages, SSbirthdates, FRAs, etc.
   this.spouseAactualBirthDate = new Date (this.spouseAinputYear, this.spouseAinputMonth-1, this.spouseAinputDay)
   this.spouseASSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseAinputMonth, this.spouseAinputDay, this.spouseAinputYear))
@@ -170,6 +172,7 @@ export class HomeComponent implements OnInit {
     if (this.spouseBmortalityInput == "SM1") {this.spouseBmortalityTable = this.presentvalueService.femaleSM1}
     if (this.spouseBmortalityInput == "SM2") {this.spouseBmortalityTable = this.presentvalueService.femaleSM2}
   }
+
   //Call appropriate "maximizePV" function to find best solution
   if (this.maritalStatus == "single") {
     this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAgender, this.spouseAmortalityTable, Number(this.discountRate))
@@ -189,6 +192,7 @@ export class HomeComponent implements OnInit {
     //For testing performance
     let endTime = performance.now()
     let elapsed = (endTime - startTime) /1000
+    this.statusMessage = ""
     console.log("Time elapsed: " + elapsed)
   }
 
@@ -360,6 +364,7 @@ export class HomeComponent implements OnInit {
   waitCursor() {
     document.getElementById("container").style.cursor = "wait";
     document.getElementById("maximizeSubmit").style.cursor = "wait";
+    this.statusMessage = "Calculating the optimal strategy..."
   }
 
   normalCursor(){

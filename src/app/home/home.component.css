@@ -30,6 +30,14 @@ padding: 10px;
     list-style-position: inside;
 }
 
+.statusMessage {
+    background-color: #feffbb;
+    border-radius: 6px;
+    padding: 10px;
+    margin: 10px;
+    }
+
+
 .bookimg {
 float:left;
 margin-right:45px;
