@@ -10,6 +10,9 @@ export class PresentvalueService {
 
   constructor(private benefitService: BenefitService, private birthdayService: BirthdayService) { }
   
+  //Has maximize calc been run?
+  maximizedOrNot: boolean = false
+
   today: Date = new Date()
 
   calculateSinglePersonPV(FRA: Date, SSbirthDate: Date, initialAge: number, PIA: number, inputBenefitDate: Date, gender: string, mortalityTable:number[], discountRate: number)
@@ -21,7 +24,7 @@ export class PresentvalueService {
     let probabilityAlive: number
 
     //Find Jan 1 of the year they plan to start benefit
-    let currentCalculationDate = new Date(inputBenefitDate.getFullYear(), 1, 1)
+    let currentCalculationDate = new Date(inputBenefitDate.getFullYear(), 0, 1)
 
     //calculate age as of that date
     let age: number = ( 12 * (currentCalculationDate.getFullYear() - SSbirthDate.getFullYear()) + (currentCalculationDate.getMonth()) - SSbirthDate.getMonth()  )/12
@@ -61,6 +64,15 @@ export class PresentvalueService {
           //Discount that benefit to age 62
           annualPV = annualPV / (1 + discountRate/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
           annualPV = annualPV / Math.pow((1 + discountRate),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
+
+          //Log test dates if maximize function has already been run. (This way we avoid logging a zillion things when maximizing for the first time)
+          if (this.maximizedOrNot == true) {
+            console.log(currentCalculationDate)
+            console.log("age: " + age)
+            console.log("annualRetirementBenefit: " + annualRetirementBenefit)
+            console.log("AnnualPV: " + annualPV)
+          }
+
 
           //Add discounted benefit to ongoing count of retirementPV, add 1 year to age and calculationYear, and start loop over
           retirementPV = retirementPV + annualPV
@@ -371,6 +383,7 @@ export class PresentvalueService {
       "spouseBspousalSolutionAgeYears":null,
       "spouseBspousalSolutionAgeMonths":null
     }
+    this.maximizedOrNot = true
     return solutionSet
   }
 
