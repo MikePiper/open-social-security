@@ -137,12 +137,14 @@ export class PresentvalueService {
       }
     }
     
-    //Find age of each spouse as of firstStartDate
-    spouseAage = ( firstStartDate.getMonth() - spouseASSbirthDate.getMonth() + 12 * (firstStartDate.getFullYear() - spouseASSbirthDate.getFullYear()) )/12
-    spouseBage = ( firstStartDate.getMonth() - spouseBSSbirthDate.getMonth() + 12 * (firstStartDate.getFullYear() - spouseBSSbirthDate.getFullYear()) )/12
+    //Find Jan 1 of the year containing firstStartDate
+    let currentCalculationDate: Date = new Date(firstStartDate.getFullYear(), 0, 1)
 
-    //Calculate PV via loop until both spouses are at least age 115 (by which point "remaining lives" alive is zero)
-    let currentCalculationDate: Date = new Date(firstStartDate)
+    //Find age of each spouse as of that Jan 1
+    spouseAage = ( currentCalculationDate.getMonth() - spouseASSbirthDate.getMonth() + 12 * (currentCalculationDate.getFullYear() - spouseASSbirthDate.getFullYear()) )/12
+    spouseBage = ( currentCalculationDate.getMonth() - spouseBSSbirthDate.getMonth() + 12 * (currentCalculationDate.getFullYear() - spouseBSSbirthDate.getFullYear()) )/12
+
+    //Calculate PV via loop until both spouses are at least age 115 (by which point "remaining lives" is zero)
     while (spouseAage < 115 || spouseBage < 115){
 
         //Calculate number of months of spouseA retirement benefit
