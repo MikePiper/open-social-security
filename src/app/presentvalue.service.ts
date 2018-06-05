@@ -20,17 +20,30 @@ export class PresentvalueService {
     let denominatorAge: number
     let probabilityAlive: number
 
-    //calculate age in month in which they start benefit
-    let age: number = ( 12 * (inputBenefitDate.getFullYear() - SSbirthDate.getFullYear()) + (inputBenefitDate.getMonth()) - SSbirthDate.getMonth()  )/12
+    //Find Jan 1 of the year they plan to start benefit
+    let currentCalculationDate = new Date(inputBenefitDate.getFullYear(), 1, 1)
 
-    //calculate age when filling out form
-    let today: Date = new Date()
-    let initialAgeRounded: number = Math.round(initialAge)
-    
+    //calculate age as of that date
+    let age: number = ( 12 * (currentCalculationDate.getFullYear() - SSbirthDate.getFullYear()) + (currentCalculationDate.getMonth()) - SSbirthDate.getMonth()  )/12
+
     //Calculate PV via loop until they hit age 115 (by which point "remaining lives" is zero)
       while (age < 115) {
+
+          //Calculate number of months in year that are before/after inputBenefitDate
+          let monthsBeforeRetirement: number = inputBenefitDate.getMonth() - currentCalculationDate.getMonth() + 12*(inputBenefitDate.getFullYear() - currentCalculationDate.getFullYear())
+          let monthsOfRetirement: number
+          if (monthsBeforeRetirement > 0) {
+            monthsOfRetirement = 12 - monthsBeforeRetirement
+          } else {
+            monthsOfRetirement = 12
+          }
+
+          //Calculate annual benefit before probability-weighting and discounting
+          let annualRetirementBenefit = monthsOfRetirement * retirementBenefit
+
           //Calculate probability of being alive at end of age in question
           //If user is older than 62 when filling out form, denominator is lives remaining at age when filling out form. Otherwise it's lives remaining at age 62
+          let initialAgeRounded: number = Math.round(initialAge) //"initialAge" is age when filling out the form.
           if (initialAgeRounded > 62) {
             denominatorAge = initialAgeRounded
           }
@@ -38,18 +51,21 @@ export class PresentvalueService {
             denominatorAge = 62
           }
           ageLastBirthday = Math.floor(age)
-          probabilityAlive = //need probability of being alive at end of "age"
-            mortalityTable[ageLastBirthday + 1] / mortalityTable[denominatorAge] * (1 - (age%1)) //eg if user is 72 and 4 months, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
+          probabilityAlive = //need probability of being alive at end of "currentCalculationDate" year
+            mortalityTable[ageLastBirthday + 1] / mortalityTable[denominatorAge] * (1 - (age%1)) //eg if user is 72 and 4 months at beginning of year, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
           + mortalityTable[ageLastBirthday + 2] / mortalityTable[denominatorAge] * (age%1)
           
           //Calculate probability-weighted benefit
-          let annualPV = retirementBenefit * 12 * probabilityAlive
+          let annualPV = annualRetirementBenefit * probabilityAlive
+
           //Discount that benefit to age 62
           annualPV = annualPV / (1 + discountRate/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
           annualPV = annualPV / Math.pow((1 + discountRate),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
+
           //Add discounted benefit to ongoing count of retirementPV, add 1 year to age and calculationYear, and start loop over
           retirementPV = retirementPV + annualPV
           age = age + 1
+          currentCalculationDate.setFullYear(currentCalculationDate.getFullYear()+1)
       }
         return retirementPV
   }
