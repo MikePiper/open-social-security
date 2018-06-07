@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-import {BirthdayService} from './birthday.service'
 
 @Injectable()
 export class BenefitService {
 
-  constructor(private birthdayService: BirthdayService) { }
+  constructor() { }
 
   calculateRetirementBenefit(PIA: number, FRA: Date, benefitDate: Date)
   {

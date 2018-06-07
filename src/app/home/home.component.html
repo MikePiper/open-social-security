@@ -1,5 +1,5 @@
 <div id="container" class="container">
-<form #inputForm="ngForm" (ngSubmit)="onSubmit()">
+<form #inputForm="ngForm" (ngSubmit)="onSubmit()" novalidate>
       <div>
         <label for="advanced">Advanced Options</label>
         <input type="checkbox" [(ngModel)]="advanced" id="advanced" name="advanced" value="true">
@@ -45,9 +45,34 @@
         </div>
         <div>
           <label>PIA</label>
-          <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" required>
+          <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" #spouseAPIAinput="ngModel" id="spouseAPIA" required pattern="[0-9]{1,7}">
+          <span *ngIf="spouseAPIAinput.invalid" class="alert alert-danger">digits only, please</span>
           <p class="inputexplanation">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. You can get an estimate of your PIA from the SSA.gov website or from your Social Security statement.</p>
         </div>
+        
+        <!--Begin SpouseA Earnings Test Inputs -->
+            <div>
+                <label>Are you still working?</label>
+                <input type="radio" id="spouseAworkingYes" [(ngModel)]="spouseAworking" name="spouseAworking" [value]="true">
+                <label for="spouseAworkingYes">Yes</label>
+                <input type="radio" id="spouseAworkingNo" [(ngModel)]="spouseAworking" name="spouseAworking" [value]="false">
+                <label for="spouseAworkingNo">No</label>
+            </div>
+            <div *ngIf="this.spouseAworking" class="form-inline">
+                <label>Approximate month in which you will stop working</label>
+                <select class="form-control" [(ngModel)]="spouseAquitWorkMonth" name="spouseAquitWorkMonth" required>
+                  <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+                </select>
+                <select class="form-control" [(ngModel)]="spouseAquitWorkYear" name="spouseAquitWorkYear" required>
+                  <option *ngFor="let year of quitWorkYears" [value]="year">{{year}}</option>
+                </select>
+            </div>
+            <div *ngIf="this.spouseAworking">
+                <label>Your estimated monthly earnings until the month in which you retire</label>
+                <input type="text" [(ngModel)]="spouseAmonthlyEarnings" name="spouseAmonthlyEarnings" required>
+            </div>
+        <!--End Spouse A Earnings Test Inputs -->
+
         <div *ngIf="this.advanced == true" class="form-inline">
           <label>Mortality table</label>
           <select [(ngModel)]="spouseAmortalityInput" name="spouseAmortalityInput" class="form-control">
@@ -90,9 +115,35 @@
         </div>
         <div>
           <label>PIA</label>
-          <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" required>
+          <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" #spouseBPIAinput="ngModel" required pattern="[0-9]{1,7}">
+          <span *ngIf="spouseBPIAinput.invalid" class="alert alert-danger">digits only, please</span>
         </div>
-        <div *ngIf="maritalStatus == 'divorced'" class="form-inline">
+
+        <!--Begin SpouseB Earnings Test Inputs -->
+            <div>
+                <label>Is your spouse still working?</label>
+                <input type="radio" id="spouseBworkingYes" [(ngModel)]="spouseBworking" name="spouseBworking" [value]="true">
+                <label for="spouseBworkingYes">Yes</label>
+                <input type="radio" id="spouseBworkingNo" [(ngModel)]="spouseBworking" name="spouseBworking" [value]="false">
+                <label for="spouseBworkingNo">No</label>
+            </div>
+            <div *ngIf="this.spouseBworking" class="form-inline">
+                <label>Approximate month in which your spouse will stop working</label>
+                <select class="form-control" [(ngModel)]="spouseBquitWorkMonth" name="spouseBquitWorkMonth" required>
+                  <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+                </select>
+                <select class="form-control" [(ngModel)]="spouseBquitWorkYear" name="spouseBquitWorkYear" required>
+                  <option *ngFor="let year of quitWorkYears" [value]="year">{{year}}</option>
+                </select>
+            </div>
+            <div *ngIf="this.spouseBworking">
+                <label>Your spouse's estimated monthly earnings until the month in which he/she retires</label>
+                <input type="text" [(ngModel)]="spouseBmonthlyEarnings" name="spouseBmonthlyEarnings" required>
+            </div>
+        <!--End SpouseB Earnings Test Inputs -->
+
+        <!--Ex-spouse Retirement Date Inputs -->
+          <div *ngIf="maritalStatus == 'divorced'" class="form-inline">
             <label>Month in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
             <select class="form-control" [(ngModel)]="exSpouseRetirementBenefitMonth" name="exSpouseRetirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
@@ -103,6 +154,8 @@
             <span *ngIf="this.exSpouseRetirementDateError" class="alert alert-danger">{{this.exSpouseRetirementDateError}}</span>
             <p class="inputexplanation">Your ex-spouse's filing date is necessary in order to run the calculation. If you do not know the answer, you can call the SSA to see if your ex-spouse has filed for his/her retirement benefit. Alternatively, you can guess as to your ex-spouse's plans (e.g., assume they file at age 66).</p>
           </div>
+        <!--Ex-spouse Retirement Date Inputs -->
+
         <div *ngIf="this.advanced == true" class="form-inline">
           <label>Mortality table</label>
           <select [(ngModel)]="spouseBmortalityInput" name="spouseBmortalityInput" class="form-control">
