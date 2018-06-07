@@ -1,27 +1,29 @@
 import { Injectable } from '@angular/core';
-import {BirthdayService} from './birthday.service'
 import {BenefitService} from './benefit.service'
-import { CurrencyPipe } from '@angular/common';
 import {SolutionSet} from './solutionset'
-import { first } from 'rxjs/operators';
 
 @Injectable()
 export class PresentvalueService {
 
-  constructor(private benefitService: BenefitService, private birthdayService: BirthdayService) { }
+  constructor(private benefitService: BenefitService) { }
   
   //Has maximize calc been run?
   maximizedOrNot: boolean = false
 
   today: Date = new Date()
 
-  calculateSinglePersonPV(FRA: Date, SSbirthDate: Date, initialAge: number, PIA: number, inputBenefitDate: Date, gender: string, mortalityTable:number[], discountRate: number)
+  calculateSinglePersonPV(FRA: Date, SSbirthDate: Date, initialAge: number, PIA: number, inputBenefitDate: Date, quitWorkDate:Date, monthlyEarnings:number, mortalityTable:number[], discountRate: number)
   {
     let retirementBenefit: number = this.benefitService.calculateRetirementBenefit(PIA, FRA, inputBenefitDate)
+    let retirementBenefitAfterARF: number = 0
+    let adjustedBenefitDate: Date
+    let annualRetirementBenefit: number
     let retirementPV: number = 0
     let ageLastBirthday: number
     let denominatorAge: number
     let probabilityAlive: number
+    let withholdingAmount: number
+    let monthsWithheld: number = 0
 
     //Find Jan 1 of the year they plan to start benefit
     let currentCalculationDate = new Date(inputBenefitDate.getFullYear(), 0, 1)
@@ -41,8 +43,80 @@ export class PresentvalueService {
             monthsOfRetirement = 12
           }
 
-          //Calculate annual benefit before probability-weighting and discounting
-          let annualRetirementBenefit = monthsOfRetirement * retirementBenefit
+          //Earnings test
+          if (!isNaN(quitWorkDate.getTime())) {//If quitWorkDate is an invalid date (because there was no input), this whole business below gets skipped
+              //Determine annual earnings subject to earnings test
+              let annualEarnings: number = 0
+              if (currentCalculationDate.getFullYear() > quitWorkDate.getFullYear() || currentCalculationDate.getFullYear() > FRA.getFullYear()) {//If current calc year after FRAyear or quitYear, zero earnings to consider
+                annualEarnings = 0            
+              } else if (currentCalculationDate.getFullYear() < quitWorkDate.getFullYear() && currentCalculationDate.getFullYear() < FRA.getFullYear()) {//If current calc year before FRAyear AND before quitYear, 12 months of earnings to consider
+                annualEarnings = 12 * monthlyEarnings
+              } else {//Annual earnings is equal to monthlyEarnings, times number of months before earlier of FRAmonth or quitMonth
+                if (FRA < quitWorkDate) {
+                  annualEarnings = monthlyEarnings * FRA.getMonth() //e.g,. if FRA is in March, "getMonth" returns 2, which is how many months of earnings we want to consider
+                } else {
+                  annualEarnings = monthlyEarnings * quitWorkDate.getMonth() //e.g,. if quitWorkDate is in March, "getMonth" returns 2, which is how many months of earnings we want to consider
+                }
+              }
+              //determine withholdingAmount
+              withholdingAmount = 0
+              if (currentCalculationDate.getFullYear() < FRA.getFullYear()) {
+                //withhold using $17,040 threshold, $1 per $2 excess
+                withholdingAmount = (annualEarnings - 17040) / 2
+              } else if (currentCalculationDate.getFullYear() == FRA.getFullYear()) {
+                //withhold using $45,360 threshold, $1 per $3 excess
+                withholdingAmount = (annualEarnings - 45360) / 2
+              }
+              //Don't let withholdingAmount be negative
+              if (withholdingAmount < 0) {
+                withholdingAmount = 0
+              }
+              //"Grace Year" rule: We're assuming that in the year they quit work, following months are non-service months and therefore unaffected by earnings test
+              if (currentCalculationDate.getFullYear() == quitWorkDate.getFullYear()){
+                  //Limit withholding to months before quitworkdate (i.e., limit withholdingAmount to retirementBenefit * quitWorkDate.getMonth())
+                  if (withholdingAmount > retirementBenefit * quitWorkDate.getMonth()) {
+                    withholdingAmount = retirementBenefit * quitWorkDate.getMonth()
+                  }
+              }
+              //Calculate total number of months that have been withheld
+              let monthsWithheldThisYear = Math.ceil(withholdingAmount / retirementBenefit)
+              if (monthsWithheldThisYear > 12) { //Can't have more than 12 months of withholding in a year
+                monthsWithheldThisYear = 12
+              }
+              if (currentCalculationDate.getFullYear() == inputBenefitDate.getFullYear()) {//If for example inputBenefitDate is in November (i.e., 10), can't have more than 2 month of withholding.
+                if (monthsWithheldThisYear > 12 - inputBenefitDate.getMonth()) {
+                  monthsWithheldThisYear = 12 - inputBenefitDate.getMonth()
+                }
+              }
+              monthsWithheld = monthsWithheld + monthsWithheldThisYear  
+              //Find new retirementBenefit, after recalculation ("AdjustmentReductionFactor") at FRA
+                adjustedBenefitDate = new Date(inputBenefitDate.getFullYear(), inputBenefitDate.getMonth()+monthsWithheld, 1)
+                retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(PIA, FRA, adjustedBenefitDate)
+            }
+
+            //Ignore earnings test if user wasn't working
+            else {
+              withholdingAmount = 0
+              retirementBenefitAfterARF = retirementBenefit}
+
+          //Calculate annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
+          if (currentCalculationDate.getFullYear() < FRA.getFullYear()) {
+            annualRetirementBenefit = monthsOfRetirement * retirementBenefit - withholdingAmount
+          } else if (currentCalculationDate.getFullYear() == FRA.getFullYear()){
+              //total monthsOfRetirement is monthsOfRetirement. Some will be retirementBenefitAfterARF. Rest will be retirementBenefit.  Then subtract withholdingAmount
+              //ARF should be applied for (12 - FRA.getMonth) months (e.g., all 12 if FRA is January). But limited to monthsOfRetirement.
+              let ARFmonths = 12 - FRA.getMonth()
+              if (ARFmonths > monthsOfRetirement) {
+                ARFmonths = monthsOfRetirement
+              }
+              annualRetirementBenefit = ARFmonths * retirementBenefitAfterARF + (monthsOfRetirement - ARFmonths) * retirementBenefit - withholdingAmount
+            } else {//i.e., if whole year is past FRA
+            annualRetirementBenefit = monthsOfRetirement * retirementBenefitAfterARF
+            }
+          //If withholding would reduce benefit below zero, benefit is zero
+          if (annualRetirementBenefit < 0){
+            annualRetirementBenefit = 0
+          }
 
           //Calculate probability of being alive at end of age in question
           //If user is older than 62 when filling out form, denominator is lives remaining at age when filling out form. Otherwise it's lives remaining at age 62
@@ -66,12 +140,19 @@ export class PresentvalueService {
           annualPV = annualPV / Math.pow((1 + discountRate),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
 
           //Log test dates if maximize function has already been run. (This way we avoid logging a zillion things when maximizing for the first time)
+          
           if (this.maximizedOrNot == true) {
             console.log(currentCalculationDate)
             console.log("age: " + age)
+            console.log("adjustedBenefitDate: " + adjustedBenefitDate)
+            console.log("retirementBenefit: " + retirementBenefit)
+            console.log("retirementBenefitAfterARF: " + retirementBenefitAfterARF)
+            console.log("withholdingAmount: " + withholdingAmount)
+            console.log("monthsWithheld: " + monthsWithheld)
             console.log("annualRetirementBenefit: " + annualRetirementBenefit)
             console.log("AnnualPV: " + annualPV)
           }
+          
 
 
           //Add discounted benefit to ongoing count of retirementPV, add 1 year to age and calculationYear, and start loop over
@@ -82,7 +163,7 @@ export class PresentvalueService {
         return retirementPV
   }
 
-  calculateCouplePV(maritalStatus:string, spouseAgender: string, spouseBgender:string, spouseAmortalityTable:number[], spouseBmortalityTable:number[], spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
+  calculateCouplePV(maritalStatus:string, spouseAmortalityTable:number[], spouseBmortalityTable:number[], spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
     spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
     spouseAPIA: number, spouseBPIA: number, spouseAretirementBenefitDate: Date, spouseBretirementBenefitDate: Date, spouseAspousalBenefitDate: Date, spouseBspousalBenefitDate: Date,
     spouseAgovernmentPension: number, spouseBgovernmentPension:number, discountRate:number){
@@ -110,20 +191,18 @@ export class PresentvalueService {
     let probabilityBalive: number
     let couplePV = 0
     let firstStartDate: Date
-    let secondStartDate: Date
     let spouseAdenominatorAge: number
     let spouseBdenominatorAge: number
 
-    //If married, set firstStartDate to earlier of two retirement benefit dates. Set secondStartDate to the other.
+
+    //If married, set firstStartDate to earlier of two retirement benefit dates.
     if (maritalStatus == "married"){
       if (spouseAretirementBenefitDate < spouseBretirementBenefitDate)
         {
         firstStartDate = new Date(spouseAretirementBenefitDate)
-        secondStartDate = new Date(spouseBretirementBenefitDate)
         }
       else {//This is fine as a simple "else" statement. If the two input benefit dates are equal, doing it as of either date is fine.
       firstStartDate = new Date(spouseBretirementBenefitDate)
-      secondStartDate = new Date(spouseAretirementBenefitDate)
         }
     }
 
@@ -306,7 +385,9 @@ export class PresentvalueService {
         (probabilityAalive * (1-probabilityBalive) * (spouseAannualRetirementBenefit + spouseAannualSurvivorBenefit)) //Scenario where A is alive, B is deceased
         + (probabilityBalive * (1-probabilityAalive) * (spouseBannualRetirementBenefit + spouseBannualSurvivorBenefit)) //Scenario where B is alive, A is deceased
         + ((probabilityAalive * probabilityBalive) * (spouseAannualRetirementBenefit + spouseAannualSpousalBenefit + spouseBannualRetirementBenefit + spouseBannualSpousalBenefit)) //Scenario where both are alive
-      
+
+
+
       //Discount that benefit
             //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
             let olderAge: number
@@ -326,7 +407,7 @@ export class PresentvalueService {
   }
 
 
-  maximizeSinglePersonPV(PIA: number, SSbirthDate: Date, actualBirthDate:Date, initialAge:number, FRA: Date, gender: string, mortalityTable:number[], discountRate: number){
+  maximizeSinglePersonPV(PIA: number, SSbirthDate: Date, actualBirthDate:Date, initialAge:number, FRA: Date, quitWorkDate, monthlyEarnings, mortalityTable:number[], discountRate: number){
     //find initial testClaimingDate for age 62
     let testClaimingDate = new Date(SSbirthDate.getFullYear()+62, 1, 1)
     if (actualBirthDate.getDate() <= 2){
@@ -343,7 +424,7 @@ export class PresentvalueService {
     }
 
     //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
-    let savedPV: number = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, testClaimingDate, gender, mortalityTable, discountRate)
+    let savedPV: number = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, testClaimingDate, quitWorkDate, monthlyEarnings, mortalityTable, discountRate)
     let savedClaimingDate = new Date(testClaimingDate)
 
     //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
@@ -351,7 +432,7 @@ export class PresentvalueService {
     while (testClaimingDate <= endingTestDate){
       //Add 1 month to claiming age and run both calculations again and compare results. Save better of the two.
       testClaimingDate.setMonth(testClaimingDate.getMonth() + 1)
-      let currentTestPV = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, testClaimingDate, gender, mortalityTable, discountRate)
+      let currentTestPV = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, testClaimingDate, quitWorkDate, monthlyEarnings, mortalityTable, discountRate)
       if (currentTestPV > savedPV)
         {savedClaimingDate.setMonth(testClaimingDate.getMonth())
           savedClaimingDate.setFullYear(testClaimingDate.getFullYear())
@@ -392,7 +473,7 @@ export class PresentvalueService {
 
   maximizeCouplePV(maritalStatus:string, spouseAPIA: number, spouseBPIA: number, spouseAactualBirthDate:Date, spouseBactualBirthDate:Date, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
     spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
-    spouseAgender: string, spouseBgender:string, spouseAmortalityTable:number[], spouseBmortalityTable:number[], spouseAgovernmentPension:number, spouseBgovernmentPension:number, discountRate: number){
+    spouseAmortalityTable:number[], spouseBmortalityTable:number[], spouseAgovernmentPension:number, spouseBgovernmentPension:number, discountRate: number){
 
     let deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
@@ -508,7 +589,7 @@ export class PresentvalueService {
 
         while (spouseBretirementDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(maritalStatus, spouseAgender, spouseBgender, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
+            let currentTestPV: number = this.calculateCouplePV(maritalStatus, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
             //If PV is greater than saved PV, save new PV and save new testDates
             if (currentTestPV > savedPV) {
               savedPV = currentTestPV
@@ -647,13 +728,14 @@ export class PresentvalueService {
       if (spouseAPIA == 0) {solutionSet.spouseAretirementSolutionDate = null}
       if (spouseBPIA == 0) {solutionSet.spouseBretirementSolutionDate = null}
 
+      this.maximizedOrNot = true
       return solutionSet
   }
 
 
   maximizeDivorceePV(maritalStatus:string, exSpouseRetirementBenefitDate:Date, spouseAPIA: number, spouseBPIA: number, spouseAactualBirthDate:Date, spouseBactualBirthDate:Date, spouseASSbirthDate: Date, spouseBSSbirthDate: Date,
     spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number, spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
-    spouseAgender: string, spouseBgender:string, spouseAmortalityTable:number[], spouseBmortalityTable:number[], spouseAgovernmentPension:number, spouseBgovernmentPension:number, discountRate: number){
+    spouseAmortalityTable:number[], spouseBmortalityTable:number[], spouseAgovernmentPension:number, spouseBgovernmentPension:number, discountRate: number){
 
       let deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
@@ -703,7 +785,7 @@ export class PresentvalueService {
 
       while (spouseAretirementDate <= spouseAendTestDate) {
         //Calculate PV using current test dates for spouseA and fixed dates for spouseB
-        let currentTestPV: number = this.calculateCouplePV(maritalStatus, spouseAgender, spouseBgender, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, exSpouseRetirementBenefitDate, spouseAspousalDate, spouseBspousalDate, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
+        let currentTestPV: number = this.calculateCouplePV(maritalStatus, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, exSpouseRetirementBenefitDate, spouseAspousalDate, spouseBspousalDate, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
 
         //If PV is greater than saved PV, save new PV and save new testDates
         if (currentTestPV > savedPV) {
