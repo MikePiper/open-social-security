@@ -387,4 +387,17 @@ export class HomeComponent implements OnInit {
     document.getElementById("container").style.cursor = "default";
     document.getElementById("maximizeSubmit").style.cursor = "default";
   }
+
+  resetWorkInputs() {
+    if (this.spouseAworking === false) {
+      this.spouseAmonthlyEarnings = 0
+      this.spouseAquitWorkMonth = null
+      this.spouseAquitWorkYear = null
+    }
+    if (this.spouseBworking === false) {
+      this.spouseBmonthlyEarnings = 0
+      this.spouseBquitWorkMonth = null
+      this.spouseBquitWorkYear = null
+    }
+  }
 }

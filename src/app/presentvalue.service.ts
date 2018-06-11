@@ -191,32 +191,43 @@ export class PresentvalueService {
     spouseAPIA: number, spouseBPIA: number, spouseAretirementBenefitDate: Date, spouseBretirementBenefitDate: Date, spouseAspousalBenefitDate: Date, spouseBspousalBenefitDate: Date,
     spouseAquitWorkDate: Date, spouseBquitWorkDate: Date, spouseAmonthlyEarnings: number, spouseBmonthlyEarnings: number,
     spouseAgovernmentPension: number, spouseBgovernmentPension:number, discountRate:number){
+    
+    //Monthly benefit variables pre-ARF
     let spouseAretirementBenefit: number = 0
-    let spouseAadjustedBenefitDate: Date
-    let spouseAretirementBenefitAfterARF: number = 0
-    let spouseAannualRetirementBenefit: number = 0
-    let spouseBretirementBenefit: number = 0
-    let spouseBadjustedBenefitDate: Date
-    let spouseBretirementBenefitAfterARF: number = 0
-    let spouseBannualRetirementBenefit: number = 0
-    let spouseAspousalBenefitWithRetirement: number = 0
     let spouseAspousalBenefitWithoutRetirement: number = 0
-    let spouseAspousalBenefitWithRetirementAfterARF: number = 0
-    let spouseAannualSpousalBenefit: number = 0
-    let spouseBspousalBenefitWithRetirement: number = 0
-    let spouseBspousalBenefitWithoutRetirement: number = 0
-    let spouseBspousalBenefitWithRetirementAfterARF: number = 0
-    let spouseBannualSpousalBenefit: number = 0
+    let spouseAspousalBenefitWithRetirement: number = 0
     let spouseAsurvivorBenefitWithoutRetirement: number = 0
-    let spouseAsurvivorBenefitWithoutRetirementAfterARF: number = 0
     let spouseAsurvivorBenefitWithRetirement: number = 0
-    let spouseAsurvivorBenefitWithRetirementAfterARF: number = 0
-    let spouseAannualSurvivorBenefit: number = 0
+    let spouseBretirementBenefit: number = 0
+    let spouseBspousalBenefitWithoutRetirement: number = 0
+    let spouseBspousalBenefitWithRetirement: number = 0
     let spouseBsurvivorBenefitWithoutRetirement: number = 0
-    let spouseBsurvivorBenefitWithoutRetirementAfterARF: number = 0
     let spouseBsurvivorBenefitWithRetirement: number = 0
-    let spouseBsurvivorBenefitWithRetirementAfterARF: number = 0
+    //Annual benefit variables
+    let spouseAannualRetirementBenefit: number = 0
+    let spouseAannualSpousalBenefit: number = 0
+    let spouseAannualSurvivorBenefit: number = 0
+    let spouseBannualRetirementBenefit: number = 0
+    let spouseBannualSpousalBenefit: number = 0
     let spouseBannualSurvivorBenefit: number = 0
+    //Adjusted claiming date variables. (Don't need adjusted survivor benefit dates, because we're assuming no early filing for survivor benefits anyway.)
+    let spouseAadjustedRetirementBenefitDate: Date
+    let spouseAadjustedSpousalBenefitDate: Date
+    let spouseBadjustedRetirementBenefitDate: Date
+    let spouseBadjustedSpousalBenefitDate: Date
+    //Monthly benefit variable post-ARF
+    let spouseAretirementBenefitAfterARF: number = 0
+    let spouseAspousalBenefitWithRetirementAfterARF: number = 0
+    let spouseAspousalBenefitWithoutRetirementAfterARF: number = 0
+    let spouseAsurvivorBenefitWithoutRetirementAfterARF: number = 0
+    let spouseAsurvivorBenefitWithRetirementAfterARF: number = 0
+    let spouseBretirementBenefitAfterARF: number = 0
+    let spouseBspousalBenefitWithRetirementAfterARF: number = 0
+    let spouseBspousalBenefitWithoutRetirementAfterARF: number = 0
+    let spouseBsurvivorBenefitWithoutRetirementAfterARF: number = 0
+    let spouseBsurvivorBenefitWithRetirementAfterARF: number = 0
+
+    //Other assorted variables
     let spouseAage: number
     let spouseAageLastBirthday: number
     let probabilityAalive: number
@@ -230,7 +241,9 @@ export class PresentvalueService {
     let withholdingDueToSpouseAearnings: number
     let withholdingDueToSpouseBearnings: number
     let monthsSpouseAretirementWithheld: number = 0
+    let monthsSpouseAspousalWithheld: number = 0
     let monthsSpouseBretirementWithheld: number = 0
+    let monthsSpouseBspousalWithheld: number = 0
     let spouseAgraceYear: boolean = false
     let spouseAhasHadGraceYear: boolean = false
     let spouseBgraceYear: boolean = false
@@ -488,7 +501,7 @@ export class PresentvalueService {
                   availableForWithholding = 0 //reset availableForWithholding for new month
                   //Check what benefits there *are* this month from which we can withhold
                     if (earningsTestMonth >= spouseAretirementBenefitDate //Make sure they started their retirement benefit
-                      && (!spouseAgraceYear || earningsTestMonth < spouseAquitWorkDate) //Make sure it's not a nonservice month in a grace year
+                      && (spouseAgraceYear === false || earningsTestMonth < spouseAquitWorkDate) //Make sure it's not a nonservice month in a grace year
                       && (earningsTestMonth < spouseAFRA) //Make sure current month is prior to FRA
                     ) {  
                       availableForWithholding = availableForWithholding + spouseAretirementBenefit
@@ -497,18 +510,20 @@ export class PresentvalueService {
                     }
                     if (maritalStatus == "married"){//Only make spouse B's benefit as a spouse available for withholding if they're currently married (as opposed to divorced). If divorced, spouseB is automatically "not working," so we don't have any withholding due to their earnings to worry about.
                       if (earningsTestMonth >= spouseBspousalBenefitDate && earningsTestMonth >= spouseBretirementBenefitDate //i.e., if this is a "spouseBspousalBenefitWithRetirementBenefit" month
-                        && (!spouseBgraceYear || earningsTestMonth < spouseBquitWorkDate) //Make sure it isn't a nonservice month in grace year
+                        && (spouseBgraceYear === false || earningsTestMonth < spouseBquitWorkDate) //Make sure it isn't a nonservice month in grace year
                         && (earningsTestMonth < spouseBFRA) //Make sure current month is prior to spouseB FRA
                       ) {
                       availableForWithholding = availableForWithholding + spouseBspousalBenefitWithRetirement
                       monthsOfSpouseBspousalWithRetirement = monthsOfSpouseBspousalWithRetirement - 1
+                      monthsSpouseBspousalWithheld = monthsSpouseBspousalWithheld + 1
                       }
                       if (earningsTestMonth >= spouseBspousalBenefitDate && earningsTestMonth < spouseBretirementBenefitDate //i.e., if this is a "spouseBspousalBenefitWithoutRetirementBenefit" month
-                        && (!spouseBgraceYear || earningsTestMonth < spouseBquitWorkDate) //Make sure it isn't a nonservice month in grace year
+                        && (spouseBgraceYear === false || earningsTestMonth < spouseBquitWorkDate) //Make sure it isn't a nonservice month in grace year
                         && (earningsTestMonth < spouseBFRA) //Make sure current month is prior to spouseB FRA
                       ){
                       availableForWithholding = availableForWithholding + spouseBspousalBenefitWithoutRetirement
                       monthsOfSpouseBspousalWithoutRetirement = monthsOfSpouseBspousalWithoutRetirement - 1
+                      monthsSpouseBspousalWithheld = monthsSpouseBspousalWithheld + 1
                       }
                     }
 
@@ -524,7 +539,7 @@ export class PresentvalueService {
                   availableForWithholding = 0 //reset availableForWithholding for new month
                   //Check what benefits there *are* this month from which we can withhold:
                     if (earningsTestMonth >= spouseBretirementBenefitDate //Make sure they started their retirement benefit
-                      && (!spouseBgraceYear || earningsTestMonth < spouseBquitWorkDate) //Make sure it's not a nonservice month in a grace year
+                      && (spouseBgraceYear === false || earningsTestMonth < spouseBquitWorkDate) //Make sure it's not a nonservice month in a grace year
                       && (earningsTestMonth < spouseBFRA) //Make sure current month is prior to FRA
                     ) {
                       availableForWithholding = availableForWithholding + spouseBretirementBenefit
@@ -532,18 +547,20 @@ export class PresentvalueService {
                       monthsSpouseBretirementWithheld  = monthsSpouseBretirementWithheld  + 1
                     }
                     if (earningsTestMonth >= spouseAspousalBenefitDate && earningsTestMonth >= spouseAretirementBenefitDate //i.e., if this is a "spouseAspousalBenefitWithRetirementBenefit" month
-                      && (!spouseAgraceYear || earningsTestMonth < spouseAquitWorkDate) //Make sure it's not a nonservice month in a grace year
+                      && (spouseAgraceYear === false || earningsTestMonth < spouseAquitWorkDate) //Make sure it's not a nonservice month in a grace year
                       && (earningsTestMonth < spouseAFRA) //Make sure current month is prior to FRA
                     ) {
                     availableForWithholding = availableForWithholding + spouseAspousalBenefitWithRetirement
                     monthsOfSpouseAspousalWithRetirement = monthsOfSpouseAspousalWithRetirement - 1
+                    monthsSpouseAspousalWithheld = monthsSpouseAspousalWithheld + 1
                     }
                     if (earningsTestMonth >= spouseAspousalBenefitDate && earningsTestMonth < spouseAretirementBenefitDate //i.e., if this is a "spouseAspousalBenefitWithoutRetirementBenefit" month
-                      && (!spouseAgraceYear || earningsTestMonth < spouseAquitWorkDate) //Make sure it's not a nonservice month in a grace year
+                      && (spouseAgraceYear === false || earningsTestMonth < spouseAquitWorkDate) //Make sure it's not a nonservice month in a grace year
                       && (earningsTestMonth < spouseAFRA) //Make sure current month is prior to FRA
                     ){
                     availableForWithholding = availableForWithholding + spouseAspousalBenefitWithoutRetirement
                     monthsOfSpouseAspousalWithoutRetirement = monthsOfSpouseAspousalWithoutRetirement - 1
+                    monthsSpouseAspousalWithheld = monthsSpouseAspousalWithheld + 1
                     }
                   //Subtracting 1 from the above months will often result in overwithholding (as it does in real life) for a partial month. Gets added back later.
                   //Reduce necessary withholding by the amount we withhold this month:
@@ -558,11 +575,12 @@ export class PresentvalueService {
                     availableForWithholding = 0
                     //Check if there is a spouseAspousal benefit this month (Always "spousalBenefitWithRetirement" because without retirement requires a restricted app. And spouseA is by definition younger than FRA here, otherwise there are no excess earnings.)
                     if (earningsTestMonth >= spouseAspousalBenefitDate && earningsTestMonth >= spouseAretirementBenefitDate
-                      && (!spouseAgraceYear || earningsTestMonth < spouseAquitWorkDate) //Make sure it's not a nonservice month in a grace year
+                      && (spouseAgraceYear === false || earningsTestMonth < spouseAquitWorkDate) //Make sure it's not a nonservice month in a grace year
                       && (earningsTestMonth < spouseAFRA) //Make sure current month is prior to FRA
                     ) {
                     availableForWithholding = availableForWithholding + spouseAspousalBenefitWithRetirement
                     monthsOfSpouseAspousalWithRetirement = monthsOfSpouseAspousalWithRetirement - 1 //<-- This is going to result in overwithholding for the partial months.
+                    monthsSpouseAspousalWithheld = monthsSpouseAspousalWithheld + 1
                     }
                     withholdingDueToSpouseAearnings = withholdingDueToSpouseAearnings - availableForWithholding //(this kicks us out of loop, potentially)
                     earningsTestMonth.setMonth(earningsTestMonth.getMonth()+1) //add 1 to earningsTestMonth (kicks us out of loop at end of year)
@@ -576,11 +594,12 @@ export class PresentvalueService {
                     availableForWithholding = 0
                     //Check if there is a spouseBspousal benefit this month (Always "spousalBenefitWithRetirement" because without retirement requires a restricted app. And spouseB is by definition younger than FRA here, otherwise there are no excess earnings.)
                     if (earningsTestMonth >= spouseBspousalBenefitDate && earningsTestMonth >= spouseBretirementBenefitDate
-                      && (!spouseBgraceYear || spouseBquitWorkDate > earningsTestMonth) //Make sure it's not a nonservice month in a grace year
+                      && (spouseBgraceYear === false || spouseBquitWorkDate > earningsTestMonth) //Make sure it's not a nonservice month in a grace year
                       && (earningsTestMonth < spouseBFRA) //Make sure current month is prior to FRA
                     ) {
                       availableForWithholding = availableForWithholding + spouseBspousalBenefitWithRetirement
                       monthsOfSpouseBspousalWithRetirement = monthsOfSpouseBspousalWithRetirement - 1 //<-- This is going to result in overwithholding for the partial months.
+                      monthsSpouseBspousalWithheld = monthsSpouseBspousalWithheld + 1
                       }
                     withholdingDueToSpouseBearnings = withholdingDueToSpouseBearnings - availableForWithholding //(this kicks us out of loop, potentially)
                     earningsTestMonth.setMonth(earningsTestMonth.getMonth()+1) //add 1 to earningsTestMonth (kicks us out of loop at end of year)
@@ -588,22 +607,29 @@ export class PresentvalueService {
                 }
                   
 
-            //Find new post-ARF ("AdjustmentReductionFactor") monthly benefit amounts, for use at/after FRA
-                  //Spousal "withoutRetirement" amounts don't have to be recalculated, because they don't require retirementBenefit amount for calculation, nor do any dates for other person have to be adjusted.
-              spouseAadjustedBenefitDate = new Date(spouseAretirementBenefitDate.getFullYear(), spouseAretirementBenefitDate.getMonth()+monthsSpouseAretirementWithheld, 1)
-              spouseAretirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAadjustedBenefitDate)
-              spouseAspousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAretirementBenefitAfterARF, spouseAspousalBenefitDate, spouseAgovernmentPension)
-              spouseAsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefitAfterARF, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBadjustedBenefitDate, spouseAgovernmentPension)
-                      //^^^^In addition to spouseA's retirement benefit having been adjusted here for ARF, we're accounting for spouseB's retirement benefit filing date having been adjusted for ARF
-              spouseAsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, 0, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBadjustedBenefitDate, spouseAgovernmentPension)
-                      //^^^Only reason this is an "after ARF" is that spouseB's retirement benefit filing date has been adjusted
-              spouseBadjustedBenefitDate = new Date(spouseBretirementBenefitDate.getFullYear(), spouseBretirementBenefitDate.getMonth()+monthsSpouseBretirementWithheld, 1)
-              spouseBretirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBadjustedBenefitDate)
+            //Find post-ARF ("AdjustmentReductionFactor") monthly benefit amounts, for use at/after FRA
+              //Find adjusted dates
+              spouseAadjustedRetirementBenefitDate = new Date(spouseAretirementBenefitDate.getFullYear(), spouseAretirementBenefitDate.getMonth()+monthsSpouseAretirementWithheld, 1)
+              spouseAadjustedSpousalBenefitDate = new Date(spouseAspousalBenefitDate.getFullYear(), spouseAspousalBenefitDate.getMonth()+monthsSpouseAspousalWithheld , 1)
+              spouseBadjustedRetirementBenefitDate = new Date(spouseBretirementBenefitDate.getFullYear(), spouseBretirementBenefitDate.getMonth()+monthsSpouseBretirementWithheld, 1)
+              spouseBadjustedSpousalBenefitDate = new Date(spouseBspousalBenefitDate.getFullYear(), spouseBspousalBenefitDate.getMonth()+monthsSpouseBspousalWithheld , 1)
+              //Find adjusted retirement benefits
+              spouseAretirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAadjustedRetirementBenefitDate)
+              spouseBretirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBadjustedRetirementBenefitDate)
+              //Find adjusted spousal benefits
+              spouseAspousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAretirementBenefitAfterARF, spouseAadjustedSpousalBenefitDate, spouseAgovernmentPension)
+              spouseAspousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, 0, spouseAadjustedSpousalBenefitDate, spouseAgovernmentPension)
               spouseBspousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBretirementBenefitAfterARF, spouseBspousalBenefitDate, spouseBgovernmentPension)
-              spouseBsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefitAfterARF, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAadjustedBenefitDate, spouseBgovernmentPension)
-                      //^^^^In addition to spouseB's retirement benefit having been adjusted here for ARF, we're accounting for spouseA's retirement benefit filing date having been adjusted for ARF
-              spouseBsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, 0, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAadjustedBenefitDate, spouseBgovernmentPension)
-                      //^^^Only reason this is an "after ARF" is that spouseA's retirement benefit filing date has been adjusted
+              spouseBspousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, 0, spouseBadjustedSpousalBenefitDate, spouseBgovernmentPension)
+              //Find adjusted survivor benefits
+              spouseAsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefitAfterARF, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBadjustedRetirementBenefitDate, spouseAgovernmentPension)
+                  //^^^^In addition to spouseA's retirement benefit having been adjusted here for ARF, we're accounting for spouseB's retirement benefit filing date having been adjusted for ARF
+              spouseAsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, 0, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBadjustedRetirementBenefitDate, spouseAgovernmentPension)
+                  //^^^Only reason this is an "after ARF" is that spouseB's retirement benefit filing date has been adjusted
+              spouseBsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefitAfterARF, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAadjustedRetirementBenefitDate, spouseBgovernmentPension)
+                  //^^^^In addition to spouseB's retirement benefit having been adjusted here for ARF, we're accounting for spouseA's retirement benefit filing date having been adjusted for ARF
+              spouseBsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, 0, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAadjustedRetirementBenefitDate, spouseBgovernmentPension)
+                  //^^^Only reason this is an "after ARF" is that spouseA's retirement benefit filing date has been adjusted
           }
 
           //Ignore earnings test if users aren't working
@@ -612,6 +638,14 @@ export class PresentvalueService {
             withholdingDueToSpouseBearnings = 0
             spouseAretirementBenefitAfterARF = spouseAretirementBenefit
             spouseBretirementBenefitAfterARF = spouseBretirementBenefit
+            spouseAspousalBenefitWithoutRetirementAfterARF = spouseAspousalBenefitWithoutRetirement
+            spouseAspousalBenefitWithRetirementAfterARF = spouseAspousalBenefitWithRetirement
+            spouseBspousalBenefitWithoutRetirementAfterARF = spouseBspousalBenefitWithoutRetirement
+            spouseBspousalBenefitWithRetirementAfterARF = spouseBspousalBenefitWithRetirement
+            spouseAsurvivorBenefitWithoutRetirementAfterARF = spouseAsurvivorBenefitWithoutRetirement
+            spouseAsurvivorBenefitWithRetirementAfterARF = spouseAsurvivorBenefitWithRetirement
+            spouseBsurvivorBenefitWithoutRetirementAfterARF = spouseBsurvivorBenefitWithoutRetirement
+            spouseBsurvivorBenefitWithRetirementAfterARF = spouseBsurvivorBenefitWithRetirement
           }
 
           //WithholdingDueToSpouseAearnings and withholdingDueToSpouseBearnings are negative at this point if we overwithheld. Have to add those negative amounts back to annual benefit amounts
@@ -626,43 +660,59 @@ export class PresentvalueService {
             }
 
 
-        //Calculate annual benefits
-          //TODO:include new auxiliary ARF benefits as necessary (survivor is always with ARF since we assume it doesn't even get claimed until FRA?) Also, "withoutRetirement" amounts don't have to be recalculated, because they don't require retirementBenefit amount for calculation
-          //Calculate spouseA retirement benefit, accounting for Adjustment Reduction Factor in years beginning at FRA
+        //Calculate annual benefits, accounting for Adjustment Reduction Factor in years beginning at FRA
+          //Spouse A retirement and spousal
           if (currentCalculationDate.getFullYear() < spouseAFRA.getFullYear()) {
             spouseAannualRetirementBenefit = monthsOfSpouseAretirement * spouseAretirementBenefit
+            spouseAannualSpousalBenefit = (monthsOfSpouseAspousalWithoutRetirement * spouseAspousalBenefitWithoutRetirement) + (monthsOfSpouseAspousalWithRetirement * spouseAspousalBenefitWithRetirement)
           } else if (currentCalculationDate.getFullYear() == spouseAFRA.getFullYear()){
-              //total monthsOfRetirement is monthsOfRetirement. Some will be retirementBenefitAfterARF. Rest will be retirementBenefit.
-              //ARF should be applied for (12 - FRA.getMonth) months (e.g., all 12 if FRA is January). But limited to monthsOfRetirement.
+              //Calculate number of ARF months (e.g., 10 if FRA is March)
               let ARFmonths = 12 - spouseAFRA.getMonth()
               if (ARFmonths > monthsOfSpouseAretirement) {
-                ARFmonths = monthsOfSpouseAretirement
+                ARFmonths = monthsOfSpouseAretirement //Limit ARFmonths to number of months of retirement benefit
               }
               spouseAannualRetirementBenefit = ARFmonths * spouseAretirementBenefitAfterARF + (monthsOfSpouseAretirement - ARFmonths) * spouseAretirementBenefit
+              //Figure out how many months there are of "pre-ARF with retirement benefit" "post-ARF with retirement benefit" and "post-ARF without retirement benefit" ("Without" months require restricted app. So none are pre-ARF)
+              ARFmonths = 12 - spouseAFRA.getMonth() //reset ARFmonths
+              spouseAannualSpousalBenefit =
+                spouseAspousalBenefitWithoutRetirementAfterARF * monthsOfSpouseAspousalWithoutRetirement //Without retirement is always after ARF
+              + spouseAspousalBenefitWithRetirementAfterARF * (ARFmonths - monthsOfSpouseAspousalWithoutRetirement) //post-ARF "with retirement" months is ARF months minus the "without retirement months"
+              + spouseAspousalBenefitWithRetirement * (monthsOfSpouseAspousalWithRetirement - (ARFmonths - monthsOfSpouseAspousalWithoutRetirement)) //pre-ARF "with retirement" months is total "with retirement" months minus the post-ARF "with" months (calculated in line above)
             } else {//i.e., if whole year is past FRA
               spouseAannualRetirementBenefit = monthsOfSpouseAretirement * spouseAretirementBenefitAfterARF
+              spouseAannualSpousalBenefit = (monthsOfSpouseAspousalWithoutRetirement * spouseAspousalBenefitWithoutRetirementAfterARF) + (monthsOfSpouseAspousalWithRetirement * spouseAspousalBenefitWithRetirementAfterARF)
             }
-          //Calculate spouseB retirement benefit, accounting for Adjustment Reduction Factor in years beginning at FRA
+
+          //Spouse B retirement and spousal
           if (currentCalculationDate.getFullYear() < spouseBFRA.getFullYear()) {
             spouseBannualRetirementBenefit = monthsOfSpouseBretirement * spouseBretirementBenefit
+            spouseBannualSpousalBenefit = (monthsOfSpouseBspousalWithoutRetirement * spouseBspousalBenefitWithoutRetirement) + (monthsOfSpouseBspousalWithRetirement * spouseBspousalBenefitWithRetirement)
           } else if (currentCalculationDate.getFullYear() == spouseBFRA.getFullYear()){
-              //total monthsOfRetirement is monthsOfRetirement. Some will be retirementBenefitAfterARF. Rest will be retirementBenefit.
-              //ARF should be applied for (12 - FRA.getMonth) months (e.g., all 12 if FRA is January). But limited to monthsOfRetirement.
+              //Calculate number of ARF months (e.g., 10 if FRA is March)
               let ARFmonths = 12 - spouseBFRA.getMonth()
               if (ARFmonths > monthsOfSpouseBretirement) {
-                ARFmonths = monthsOfSpouseBretirement
+                ARFmonths = monthsOfSpouseBretirement //Limit ARFmonths to number of months of retirement benefit
               }
               spouseBannualRetirementBenefit = ARFmonths * spouseBretirementBenefitAfterARF + (monthsOfSpouseBretirement - ARFmonths) * spouseBretirementBenefit
+              //Figure out how many months there are of "pre-ARF with retirement benefit" "post-ARF with retirement benefit" and "post-ARF without retirement benefit" ("Without" months require restricted app. So none are pre-ARF)
+              ARFmonths = 12 - spouseAFRA.getMonth() //reset ARFmonths
+              spouseBannualSpousalBenefit =
+                spouseBspousalBenefitWithoutRetirementAfterARF * monthsOfSpouseBspousalWithoutRetirement //Without retirement is always after ARF
+              + spouseBspousalBenefitWithRetirementAfterARF * (ARFmonths - monthsOfSpouseBspousalWithoutRetirement) //post-ARF "with retirement" months is ARF months minus the "without retirement months"
+              + spouseBspousalBenefitWithRetirement * (monthsOfSpouseBspousalWithRetirement - (ARFmonths - monthsOfSpouseBspousalWithoutRetirement)) //pre-ARF "with retirement" months is total "with retirement" months minus the post-ARF "with" months (calculated in line above)
             } else {//i.e., if whole year is past FRA
               spouseBannualRetirementBenefit = monthsOfSpouseBretirement * spouseBretirementBenefitAfterARF
+              spouseBannualSpousalBenefit = (monthsOfSpouseBspousalWithoutRetirement * spouseBspousalBenefitWithoutRetirementAfterARF) + (monthsOfSpouseBspousalWithRetirement * spouseBspousalBenefitWithRetirementAfterARF)
             }
-        
-        spouseAannualRetirementBenefit = spouseAannualRetirementBenefit + spouseAoverWithholding
-        spouseBannualRetirementBenefit = spouseBannualRetirementBenefit + spouseBoverWithholding
-        spouseAannualSpousalBenefit = (monthsOfSpouseAspousalWithoutRetirement * spouseAspousalBenefitWithoutRetirement) + (monthsOfSpouseAspousalWithRetirement * spouseAspousalBenefitWithRetirement)
-        spouseBannualSpousalBenefit = (monthsOfSpouseBspousalWithoutRetirement * spouseBspousalBenefitWithoutRetirement) + (monthsOfSpouseBspousalWithRetirement * spouseBspousalBenefitWithRetirement)
-        spouseAannualSurvivorBenefit = (monthsOfSpouseAsurvivorWithoutRetirement * spouseAsurvivorBenefitWithoutRetirement) + (monthsOfSpouseAsurvivorWithRetirement * spouseAsurvivorBenefitWithRetirement)
-        spouseBannualSurvivorBenefit = (monthsOfSpouseBsurvivorWithoutRetirement * spouseBsurvivorBenefitWithoutRetirement) + (monthsOfSpouseBsurvivorWithRetirement * spouseBsurvivorBenefitWithRetirement)
+
+            //Survivor benefits are always with ARF since we assume it doesn't even get claimed until FRA
+            spouseAannualSurvivorBenefit = (monthsOfSpouseAsurvivorWithoutRetirement * spouseAsurvivorBenefitWithoutRetirementAfterARF) + (monthsOfSpouseAsurvivorWithRetirement * spouseAsurvivorBenefitWithRetirementAfterARF) 
+            spouseBannualSurvivorBenefit = (monthsOfSpouseBsurvivorWithoutRetirement * spouseBsurvivorBenefitWithoutRetirementAfterARF) + (monthsOfSpouseBsurvivorWithRetirement * spouseBsurvivorBenefitWithRetirementAfterARF)
+    
+          //Add back overwithholding
+          spouseAannualRetirementBenefit = spouseAannualRetirementBenefit + spouseAoverWithholding
+          spouseBannualRetirementBenefit = spouseBannualRetirementBenefit + spouseBoverWithholding
+
           //If user is divorced, we don't actually want to include the ex-spouse's benefit amounts in our PV sum
           if (maritalStatus == "divorced") {
             spouseBannualRetirementBenefit = 0
@@ -712,24 +762,36 @@ export class PresentvalueService {
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             annualPV = annualPV / (1 + discountRate/2) / Math.pow((1 + discountRate),(olderAge - 62))
 
-      //Calc separate survivorPV for debugging...
-      let annualSurvivorPV = (probabilityAalive * (1-probabilityBalive) * (spouseAannualSurvivorBenefit)) //Scenario where A is alive, B is deceased
-      + (probabilityBalive * (1-probabilityAalive) * (spouseBannualSurvivorBenefit)) //Scenario where B is alive, A is deceased
-      annualSurvivorPV = annualSurvivorPV / (1 + discountRate/2) / Math.pow((1 + discountRate),(olderAge - 62))
-      
+
+      /*
       //Logging for debugging purposes
         if (this.maximizedOrNot === true) {
           console.log(currentCalculationDate)
+          console.log("spouseAage: " + spouseAage)
+          console.log("monthsSpouseAretirementWithheld: " + monthsSpouseAretirementWithheld)
+          console.log("spouseAadjustedBenefitDate: " + spouseAadjustedRetirementBenefitDate)
+          console.log("spouseAretirementBenefit: " + spouseAretirementBenefit)
+          console.log("spouseAretirementBenefitAfterARF: " + spouseAretirementBenefitAfterARF)
+          console.log("monthsOfSpouseAretirement: " + monthsOfSpouseAretirement)
+          console.log("spouseAannualRetirementBenefit: " + spouseAannualRetirementBenefit)
+          console.log("spouseAannualSpousalBenefit: " + spouseAannualSpousalBenefit)
+          console.log("monthly spouseAsurvivorBenefitWithoutRetirement: " + spouseAsurvivorBenefitWithoutRetirementAfterARF)
+          console.log("monthly spouseAsurvivorBenefitWithRetirement: " + spouseAsurvivorBenefitWithRetirementAfterARF)
+          console.log("spouseAannualSurvivorBenefit: " + spouseAannualSurvivorBenefit)
           console.log("spouseBage: " + spouseBage)
           console.log("monthsSpouseBretirementWithheld: " + monthsSpouseBretirementWithheld)
-          console.log("spouseBadjustedBenefitDate: " + spouseBadjustedBenefitDate)
+          console.log("spouseBadjustedBenefitDate: " + spouseBadjustedRetirementBenefitDate)
           console.log("spouseBretirementBenefit: " + spouseBretirementBenefit)
           console.log("spouseBretirementBenefitAfterARF: " + spouseBretirementBenefitAfterARF)
           console.log("monthsOfSpouseBretirement: " + monthsOfSpouseBretirement)
           console.log("spouseBannualRetirementBenefit: " + spouseBannualRetirementBenefit)
-          console.log("annualSurvivorPV: " + annualSurvivorPV)
+          console.log("spouseBannualSpousalBenefit: " + spouseBannualSpousalBenefit)
+          console.log("monthly spouseBsurvivorBenefitWithoutRetirement: " + spouseBsurvivorBenefitWithoutRetirementAfterARF)
+          console.log("monthly spouseBsurvivorBenefitWithRetirement: " + spouseBsurvivorBenefitWithRetirementAfterARF)
+          console.log("spouseBannualSurvivorBenefit: " + spouseBannualSurvivorBenefit)
           console.log("AnnualPV: " + annualPV)
         }
+        */
 
       //Add discounted benefit to ongoing count of retirementPV, add 1 to each age, add 1 year to currentCalculationDate, and start loop over
         couplePV = couplePV + annualPV

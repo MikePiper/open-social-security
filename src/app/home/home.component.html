@@ -53,9 +53,9 @@
         <!--Begin SpouseA Earnings Test Inputs -->
             <div>
                 <label>Are you still working?</label>
-                <input type="radio" id="spouseAworkingYes" [(ngModel)]="spouseAworking" name="spouseAworking" [value]="true">
+                <input type="radio" id="spouseAworkingYes" [(ngModel)]="spouseAworking" name="spouseAworking" [value]="true" (change)="resetWorkInputs()">
                 <label for="spouseAworkingYes">Yes</label>
-                <input type="radio" id="spouseAworkingNo" [(ngModel)]="spouseAworking" name="spouseAworking" [value]="false">
+                <input type="radio" id="spouseAworkingNo" [(ngModel)]="spouseAworking" name="spouseAworking" [value]="false" (change)="resetWorkInputs()">
                 <label for="spouseAworkingNo">No</label>
             </div>
             <div *ngIf="this.spouseAworking" class="form-inline">
@@ -123,9 +123,9 @@
         <!--Begin SpouseB Earnings Test Inputs -->
             <div *ngIf="maritalStatus == 'married'">
                 <label>Is your spouse still working?</label>
-                <input type="radio" id="spouseBworkingYes" [(ngModel)]="spouseBworking" name="spouseBworking" [value]="true">
+                <input type="radio" id="spouseBworkingYes" [(ngModel)]="spouseBworking" name="spouseBworking" [value]="true" (change)="resetWorkInputs()">
                 <label for="spouseBworkingYes">Yes</label>
-                <input type="radio" id="spouseBworkingNo" [(ngModel)]="spouseBworking" name="spouseBworking" [value]="false">
+                <input type="radio" id="spouseBworkingNo" [(ngModel)]="spouseBworking" name="spouseBworking" [value]="false" (change)="resetWorkInputs()">
                 <label for="spouseBworkingNo">No</label>
             </div>
             <div *ngIf="this.spouseBworking" class="form-inline">
