@@ -622,14 +622,10 @@ export class PresentvalueService {
               spouseBspousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBretirementBenefitAfterARF, spouseBspousalBenefitDate, spouseBgovernmentPension)
               spouseBspousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, 0, spouseBadjustedSpousalBenefitDate, spouseBgovernmentPension)
               //Find adjusted survivor benefits
-              spouseAsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefitAfterARF, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBadjustedRetirementBenefitDate, spouseAgovernmentPension)
-                  //^^^^In addition to spouseA's retirement benefit having been adjusted here for ARF, we're accounting for spouseB's retirement benefit filing date having been adjusted for ARF
-              spouseAsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, 0, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBadjustedRetirementBenefitDate, spouseAgovernmentPension)
-                  //^^^Only reason this is an "after ARF" is that spouseB's retirement benefit filing date has been adjusted
-              spouseBsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefitAfterARF, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAadjustedRetirementBenefitDate, spouseBgovernmentPension)
-                  //^^^^In addition to spouseB's retirement benefit having been adjusted here for ARF, we're accounting for spouseA's retirement benefit filing date having been adjusted for ARF
-              spouseBsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, 0, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAadjustedRetirementBenefitDate, spouseBgovernmentPension)
-                  //^^^Only reason this is an "after ARF" is that spouseA's retirement benefit filing date has been adjusted
+              spouseAsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, spouseAretirementBenefitAfterARF, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBretirementBenefitDate, spouseAgovernmentPension)
+              spouseAsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseASSbirthDate, spouseAsurvivorFRA, 0, spouseAsurvivorFRA, spouseBFRA, spouseBretirementBenefitDate, spouseBPIA, spouseBretirementBenefitDate, spouseAgovernmentPension)
+              spouseBsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, spouseBretirementBenefitAfterARF, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAretirementBenefitDate, spouseBgovernmentPension)
+              spouseBsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(spouseBSSbirthDate, spouseBsurvivorFRA, 0, spouseBsurvivorFRA, spouseAFRA, spouseAretirementBenefitDate, spouseAPIA, spouseAretirementBenefitDate, spouseBgovernmentPension)
           }
 
           //Ignore earnings test if users aren't working
@@ -775,8 +771,6 @@ export class PresentvalueService {
           console.log("monthsOfSpouseAretirement: " + monthsOfSpouseAretirement)
           console.log("spouseAannualRetirementBenefit: " + spouseAannualRetirementBenefit)
           console.log("spouseAannualSpousalBenefit: " + spouseAannualSpousalBenefit)
-          console.log("monthly spouseAsurvivorBenefitWithoutRetirement: " + spouseAsurvivorBenefitWithoutRetirementAfterARF)
-          console.log("monthly spouseAsurvivorBenefitWithRetirement: " + spouseAsurvivorBenefitWithRetirementAfterARF)
           console.log("spouseAannualSurvivorBenefit: " + spouseAannualSurvivorBenefit)
           console.log("spouseBage: " + spouseBage)
           console.log("monthsSpouseBretirementWithheld: " + monthsSpouseBretirementWithheld)
@@ -786,8 +780,6 @@ export class PresentvalueService {
           console.log("monthsOfSpouseBretirement: " + monthsOfSpouseBretirement)
           console.log("spouseBannualRetirementBenefit: " + spouseBannualRetirementBenefit)
           console.log("spouseBannualSpousalBenefit: " + spouseBannualSpousalBenefit)
-          console.log("monthly spouseBsurvivorBenefitWithoutRetirement: " + spouseBsurvivorBenefitWithoutRetirementAfterARF)
-          console.log("monthly spouseBsurvivorBenefitWithRetirement: " + spouseBsurvivorBenefitWithRetirementAfterARF)
           console.log("spouseBannualSurvivorBenefit: " + spouseBannualSurvivorBenefit)
           console.log("AnnualPV: " + annualPV)
         }
