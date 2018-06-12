@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import {BirthdayService} from '../birthday.service'
 import {PresentvalueService} from '../presentvalue.service'
 import {SolutionSet} from '../solutionset'
+import {FREDresponse} from '../fredresponse'
+import {HttpClient} from '@angular/common/http';
+
 
 @Component({
   selector: 'app-home',
@@ -10,10 +13,16 @@ import {SolutionSet} from '../solutionset'
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private birthdayService: BirthdayService, private presentvalueService: PresentvalueService) { }
+  constructor(private birthdayService: BirthdayService, private presentvalueService: PresentvalueService, private http: HttpClient) { }
 
   ngOnInit() {
+    this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")
+    .subscribe(
+      data => {this.discountRate = data.dataset.data[0][1]},
+      error => {this.discountRate = 1}
+    )
   }
+
   today = new Date()
   deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
@@ -74,7 +83,7 @@ export class HomeComponent implements OnInit {
   spouseBspousalBenefitDate: Date
   spouseBgender: string = "female"
   spouseBmortalityInput: string = "SSA"
-  discountRate: number = 0.01
+  discountRate: number
   advanced: boolean = false
   spouseAgovernmentPension: number = 0
   spouseBgovernmentPension: number = 0
@@ -141,7 +150,6 @@ export class HomeComponent implements OnInit {
   onSubmit() {
   let startTime = performance.now() //for testing performance
   console.log("-------------")
-  
   //Use inputs to calculate ages, SSbirthdates, FRAs, etc.
   this.spouseAactualBirthDate = new Date (this.spouseAinputYear, this.spouseAinputMonth-1, this.spouseAinputDay)
   this.spouseASSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseAinputMonth, this.spouseAinputDay, this.spouseAinputYear))

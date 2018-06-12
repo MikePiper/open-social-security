@@ -175,8 +175,8 @@
       </span>
         <div *ngIf="this.advanced == true">
           <h2>Other Inputs</h2>
-          <label class="customtooltip">Real discount rate<span class="tooltiptext">As a decimal (0.01 for a 1% discount rate, for example).</span></label>
-          <input type="text" [(ngModel)]="discountRate" name="discountRate" required>
+          <label>Real discount rate</label>
+          <input type="text" [(ngModel)]="discountRate" name="discountRate" class="discountRateInput" required>%
           <p class="inputexplanation">A "discount rate" is necessary to reflect the fact that a dollar today is worth more than a dollar in the future, because a dollar today can be invested.
             The <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a> is generally considered an appropriate discount rate for these purposes.
             See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a dicussion of that topic.</p>
