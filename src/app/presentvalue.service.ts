@@ -62,33 +62,34 @@ export class PresentvalueService {
                 graceYear = true
                 hasHadGraceYear = true
                 }
-    
-              //Determine annual earnings subject to earnings test
-              let annualEarnings: number = 0
-              if (currentCalculationDate.getFullYear() > quitWorkDate.getFullYear() || currentCalculationDate.getFullYear() > FRA.getFullYear()) {//If current calc year after FRAyear or quitYear, zero earnings to consider
-                annualEarnings = 0            
-              } else if (currentCalculationDate.getFullYear() < quitWorkDate.getFullYear() && currentCalculationDate.getFullYear() < FRA.getFullYear()) {//If current calc year before FRAyear AND before quitYear, 12 months of earnings to consider
-                annualEarnings = 12 * monthlyEarnings
-              } else {//Annual earnings is equal to monthlyEarnings, times number of months before earlier of FRAmonth or quitMonth
-                if (FRA < quitWorkDate) {
-                  annualEarnings = monthlyEarnings * FRA.getMonth() //e.g,. if FRA is in March, "getMonth" returns 2, which is how many months of earnings we want to consider
-                } else {
-                  annualEarnings = monthlyEarnings * quitWorkDate.getMonth() //e.g,. if quitWorkDate is in March, "getMonth" returns 2, which is how many months of earnings we want to consider
-                }
-              }
-              //determine withholdingAmount
-              withholdingAmount = 0
-              if (currentCalculationDate.getFullYear() < FRA.getFullYear()) {
-                //withhold using $17,040 threshold, $1 per $2 excess
-                withholdingAmount = (annualEarnings - 17040) / 2
-              } else if (currentCalculationDate.getFullYear() == FRA.getFullYear()) {
-                //withhold using $45,360 threshold, $1 per $3 excess
-                withholdingAmount = (annualEarnings - 45360) / 3
-              }
-              //Don't let withholdingAmount be negative
-              if (withholdingAmount < 0) {
-                withholdingAmount = 0
-              }
+               //This chunk could be pulled out into a "calculateWithholding" function in an "earnings test" service 
+                              //Determine annual earnings subject to earnings test
+                              let annualEarnings: number = 0
+                              if (currentCalculationDate.getFullYear() > quitWorkDate.getFullYear() || currentCalculationDate.getFullYear() > FRA.getFullYear()) {//If current calc year after FRAyear or quitYear, zero earnings to consider
+                                annualEarnings = 0            
+                              } else if (currentCalculationDate.getFullYear() < quitWorkDate.getFullYear() && currentCalculationDate.getFullYear() < FRA.getFullYear()) {//If current calc year before FRAyear AND before quitYear, 12 months of earnings to consider
+                                annualEarnings = 12 * monthlyEarnings
+                              } else {//Annual earnings is equal to monthlyEarnings, times number of months before earlier of FRAmonth or quitMonth
+                                if (FRA < quitWorkDate) {
+                                  annualEarnings = monthlyEarnings * FRA.getMonth() //e.g,. if FRA is in March, "getMonth" returns 2, which is how many months of earnings we want to consider
+                                } else {
+                                  annualEarnings = monthlyEarnings * quitWorkDate.getMonth() //e.g,. if quitWorkDate is in March, "getMonth" returns 2, which is how many months of earnings we want to consider
+                                }
+                              }
+                              //determine withholdingAmount
+                              withholdingAmount = 0
+                              if (currentCalculationDate.getFullYear() < FRA.getFullYear()) {
+                                //withhold using $17,040 threshold, $1 per $2 excess
+                                withholdingAmount = (annualEarnings - 17040) / 2
+                              } else if (currentCalculationDate.getFullYear() == FRA.getFullYear()) {
+                                //withhold using $45,360 threshold, $1 per $3 excess
+                                withholdingAmount = (annualEarnings - 45360) / 3
+                              }
+                              //Don't let withholdingAmount be negative
+                              if (withholdingAmount < 0) {
+                                withholdingAmount = 0
+                              }
+
               //Have to loop monthly for earnings test
               let earningsTestMonth:Date = new Date(currentCalculationDate) //set earningsTestMonth to beginning of year
               let earningsTestEndDate:Date = new Date(currentCalculationDate.getFullYear(), 11, 1) //set earningsTestEndDate to Dec of currentCalculationYear
@@ -235,7 +236,7 @@ export class PresentvalueService {
     let spouseBageLastBirthday: number
     let probabilityBalive: number
     let couplePV = 0
-    let firstStartDate: Date
+    let initialCalcDate: Date
     let spouseAdenominatorAge: number
     let spouseBdenominatorAge: number
     let withholdingDueToSpouseAearnings: number
@@ -250,29 +251,24 @@ export class PresentvalueService {
     let spouseBhasHadGraceYear: boolean = false
 
 
-    //If married, set firstStartDate to earlier of two retirement benefit dates.
+    //If married, set initialCalcDate to date on which first spouse reaches age 62
     if (maritalStatus == "married"){
-      if (spouseAretirementBenefitDate < spouseBretirementBenefitDate)
+      if (spouseASSbirthDate < spouseBSSbirthDate)
         {
-        firstStartDate = new Date(spouseAretirementBenefitDate)
+        initialCalcDate = new Date(spouseASSbirthDate.getFullYear()+62, spouseASSbirthDate.getMonth(), 1)
         }
-      else {//This is fine as a simple "else" statement. If the two input benefit dates are equal, doing it as of either date is fine.
-      firstStartDate = new Date(spouseBretirementBenefitDate)
+      else {//This is fine as a simple "else" statement. If the two SSbirth dates are equal, doing it as of either date is fine.
+      initialCalcDate = new Date(spouseBSSbirthDate.getFullYear()+62, spouseBSSbirthDate.getMonth(), 1)
         }
+    }
+    //If divorced, we want initialCalcDate to equal SpouseA's age62 date.
+    if (maritalStatus == "divorced") {
+      initialCalcDate = new Date(spouseASSbirthDate.getFullYear()+62, spouseASSbirthDate.getMonth(), 1)
     }
 
-    //If divorced, we want firstStartDate to equal earlier of SpouseA's retirement date or SpouseA's spousal date.
-    if (maritalStatus == "divorced") {
-      if (spouseAretirementBenefitDate < spouseAspousalBenefitDate) {
-        firstStartDate = new Date(spouseAretirementBenefitDate)
-      }
-      else {
-        firstStartDate = new Date(spouseAspousalBenefitDate)
-      }
-    }
-    
-    //Find Jan 1 of the year containing firstStartDate
-    let currentCalculationDate: Date = new Date(firstStartDate.getFullYear(), 0, 1)
+
+    //Find Jan 1 of the year containing initialCalcDate
+    let currentCalculationDate: Date = new Date(initialCalcDate.getFullYear(), 0, 1)
 
     //Find age of each spouse as of that Jan 1
     spouseAage = ( currentCalculationDate.getMonth() - spouseASSbirthDate.getMonth() + 12 * (currentCalculationDate.getFullYear() - spouseASSbirthDate.getFullYear()) )/12
@@ -484,6 +480,10 @@ export class PresentvalueService {
               }
               //Don't let withholdingAmount be negative
               if (withholdingDueToSpouseBearnings < 0) {
+                withholdingDueToSpouseBearnings = 0
+              }
+              //If divorced, withholding due to spouseB's earnings is zero
+              if (maritalStatus == "divorced"){
                 withholdingDueToSpouseBearnings = 0
               }
 
@@ -759,7 +759,7 @@ export class PresentvalueService {
             annualPV = annualPV / (1 + discountRate/2) / Math.pow((1 + discountRate),(olderAge - 62))
 
 
-      /*
+      
       //Logging for debugging purposes
         if (this.maximizedOrNot === true) {
           console.log(currentCalculationDate)
@@ -783,7 +783,7 @@ export class PresentvalueService {
           console.log("spouseBannualSurvivorBenefit: " + spouseBannualSurvivorBenefit)
           console.log("AnnualPV: " + annualPV)
         }
-        */
+        
 
       //Add discounted benefit to ongoing count of retirementPV, add 1 to each age, add 1 year to currentCalculationDate, and start loop over
         couplePV = couplePV + annualPV
@@ -1255,6 +1255,7 @@ export class PresentvalueService {
         //Set retirement date to null if person has 0 PIA.
         if (spouseAPIA == 0) {solutionSet.spouseAretirementSolutionDate = null}
   
+        this.maximizedOrNot = true
         return solutionSet
 
 
