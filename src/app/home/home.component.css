@@ -42,3 +42,7 @@ padding: 10px;
 float:left;
 margin-right:45px;
 }
+
+.discountRateInput {
+    width:50px;
+}

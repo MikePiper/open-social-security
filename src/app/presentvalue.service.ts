@@ -129,8 +129,8 @@ export class PresentvalueService {
           let annualPV = annualRetirementBenefit * probabilityAlive
 
           //Discount that benefit to age 62
-          annualPV = annualPV / (1 + discountRate/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
-          annualPV = annualPV / Math.pow((1 + discountRate),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
+          annualPV = annualPV / (1 + discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
+          annualPV = annualPV / Math.pow((1 + discountRate/100),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
 
           /*
           //Logging for debugging, if maximize function has already been run. (This way we avoid logging a zillion things when maximizing for the first time)
@@ -622,7 +622,7 @@ export class PresentvalueService {
               olderAge = spouseAage
             } else {olderAge = spouseBage}
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
-            annualPV = annualPV / (1 + discountRate/2) / Math.pow((1 + discountRate),(olderAge - 62))
+            annualPV = annualPV / (1 + discountRate/100/2) / Math.pow((1 + discountRate/100),(olderAge - 62))
 
 
      /* 
