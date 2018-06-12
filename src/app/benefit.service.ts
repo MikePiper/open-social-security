@@ -121,4 +121,19 @@ export class BenefitService {
       
     return Number(survivorBenefit)
   }
+
+  countBenefitMonths(benefitFilingDate:Date, currentCalculationDate:Date){
+    let monthsBeforeBenefit: number = benefitFilingDate.getMonth() - currentCalculationDate.getMonth() + 12*(benefitFilingDate.getFullYear() - currentCalculationDate.getFullYear())
+    let monthsOfBenefit: number
+    if (monthsBeforeBenefit >= 12) {
+      monthsOfBenefit = 0
+    }
+    else if (monthsBeforeBenefit > 0) {
+      monthsOfBenefit = 12 - monthsBeforeBenefit
+    } else {
+      monthsOfBenefit = 12
+    }
+    return Number(monthsOfBenefit)
+  }
+  
 }
