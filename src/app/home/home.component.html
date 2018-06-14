@@ -74,22 +74,24 @@
             </div>
         <!--End Spouse A Earnings Test Inputs -->
 
-        <div *ngIf="this.advanced === true" class="form-inline">
-          <label>Mortality table</label>
-          <select [(ngModel)]="spouseAmortalityInput" name="spouseAmortalityInput" class="form-control">
-            <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
-            <option value="NS2">2017 CSO Nonsmoker Preferred</option>
-            <option value="SSA">2015 Social Security Period Life Table</option>
-            <option value="SM1">2017 CSO Smoker Preferred</option>
-            <option value="SM2">2017 CSO Smoker Residual Standard</option>
-            <option value="fixed">Assumed age at death</option>
-          </select>
-        </div>
-          <span *ngIf="this.spouseAmortalityInput == 'fixed'">
-            <label for="spouseAassumedDeathAge" class="customtooltip">Assumed age at death<span class="tooltiptext">whole numbers only, please</span></label>
-            <input type="text" class="smallTextInput" [(ngModel)]="spouseAassumedDeathAge" id="spouseAassumedDeathAge" name="spouseAassumedDeathAge">
-          </span>
-          <p class="inputexplanation"><a href="about#mortality" target="_blank">See here</a> for more information about these mortality table options.</p>
+        <span *ngIf="this.advanced === true">
+          <div class="form-inline">
+            <label>Mortality table</label>
+            <select [(ngModel)]="spouseAmortalityInput" name="spouseAmortalityInput" class="form-control">
+              <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
+              <option value="NS2">2017 CSO Nonsmoker Preferred</option>
+              <option value="SSA">2015 Social Security Period Life Table</option>
+              <option value="SM1">2017 CSO Smoker Preferred</option>
+              <option value="SM2">2017 CSO Smoker Residual Standard</option>
+              <option value="fixed">Assumed age at death</option>
+            </select>
+          </div>
+            <span *ngIf="this.spouseAmortalityInput == 'fixed'">
+              <label for="spouseAassumedDeathAge" class="customtooltip">Assumed age at death<span class="tooltiptext">whole numbers only, please</span></label>
+              <input type="text" class="smallTextInput" [(ngModel)]="spouseAassumedDeathAge" id="spouseAassumedDeathAge" name="spouseAassumedDeathAge">
+            </span>
+            <p class="inputexplanation"><a href="about#mortality" target="_blank">See here</a> for more information about these mortality table options.</p>
+        </span>
         <div *ngIf="maritalStatus != 'single' && this.advanced === true">
           <label for="spouseAgovernmentPension">Monthly government pension (from non-covered employment)</label>
           <input type="text" [(ngModel)]="spouseAgovernmentPension" id="spouseAgovernmentPension" name="spouseAgovernmentPension">
