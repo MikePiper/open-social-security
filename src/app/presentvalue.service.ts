@@ -133,12 +133,13 @@ export class PresentvalueService {
           annualPV = annualPV / (1 + discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
           annualPV = annualPV / Math.pow((1 + discountRate/100),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
 
-          /*
+          
           //Logging for debugging, if maximize function has already been run. (This way we avoid logging a zillion things when maximizing for the first time)
           if (this.maximizedOrNot === true) {
             console.log("-----")
             console.log("currentCalculationDate: " + currentCalculationDate.getMonth() + 1 + "/" + currentCalculationDate.getFullYear())
             console.log("age: " + age)
+            console.log("probabilityAlive: " + probabilityAlive)
             console.log("adjustedBenefitDate: " + adjustedBenefitDate)
             console.log("retirementBenefit: " + retirementBenefit)
             console.log("retirementBenefitAfterARF: " + retirementBenefitAfterARF)
@@ -149,7 +150,7 @@ export class PresentvalueService {
             console.log("annualRetirementBenefit: " + annualRetirementBenefit)
             console.log("AnnualPV: " + annualPV)
           }
-          */
+          
          
           //Add discounted benefit to ongoing count of retirementPV, add 1 year to age and calculationYear, and start loop over
           retirementPV = retirementPV + annualPV

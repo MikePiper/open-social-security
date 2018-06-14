@@ -34,10 +34,10 @@ export class MortalityService {
     let yearInTable: number = 0
     let newMortTable: number[] = []
     while (yearInTable < 140 ) {
-      if (yearInTable < deathAge) {
-        newMortTable.push(1) //Lives remaining at every year prior to death age is 1 (100% probability alive)
+      if (yearInTable <= deathAge) {
+        newMortTable.push(1) //Lives remaining at every year up to and including death age is 1 (100% probability alive)
       } else {
-        newMortTable.push(0) //Lives remaining at every year including and after death age is 0 (0% probability alive)
+        newMortTable.push(0) //Lives remaining at every year after death age is 0 (0% probability alive) -- we're assuming they live to the end of input death age
       }
       yearInTable = yearInTable + 1
     }

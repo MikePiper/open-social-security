@@ -86,7 +86,7 @@
           </select>
         </div>
           <span *ngIf="this.spouseAmortalityInput == 'fixed'">
-            <label for="spouseAassumedDeathAge">Assumed age at death</label>
+            <label for="spouseAassumedDeathAge" class="customtooltip">Assumed age at death<span class="tooltiptext">whole numbers only, please</span></label>
             <input type="text" class="smallTextInput" [(ngModel)]="spouseAassumedDeathAge" id="spouseAassumedDeathAge" name="spouseAassumedDeathAge">
           </span>
           <p class="inputexplanation"><a href="about#mortality" target="_blank">See here</a> for more information about these mortality table options.</p>
@@ -175,7 +175,7 @@
           </select>
         </div>
           <span *ngIf="this.spouseBmortalityInput == 'fixed'">
-            <label for="spouseBassumedDeathAge">Assumed age at death</label>
+            <label for="spouseBassumedDeathAge" class="customtooltip">Assumed age at death<span class="tooltiptext">whole numbers only, please</span></label>
             <input type="text" class="smallTextInput" [(ngModel)]="spouseBassumedDeathAge" id="spouseBassumedDeathAge" name="spouseBassumedDeathAge">
           </span>
         <div *ngIf="this.advanced === true">
