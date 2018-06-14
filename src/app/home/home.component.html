@@ -58,7 +58,7 @@
                 <input type="radio" id="spouseAworkingNo" [(ngModel)]="spouseAworking" name="spouseAworking" [value]="false" (change)="resetWorkInputs()">
                 <label for="spouseAworkingNo">No</label>
             </div>
-            <div *ngIf="this.spouseAworking" class="form-inline">
+            <div *ngIf="this.spouseAworking === true" class="form-inline">
                 <label>Approximate month in which you will stop working</label>
                 <select class="form-control" [(ngModel)]="spouseAquitWorkMonth" name="spouseAquitWorkMonth" required>
                   <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
@@ -67,14 +67,14 @@
                   <option *ngFor="let year of quitWorkYears" [value]="year">{{year}}</option>
                 </select>
             </div>
-            <div *ngIf="this.spouseAworking">
+            <div *ngIf="this.spouseAworking === true">
                 <label>Your estimated monthly earnings until the month in which you retire</label>
                 <input type="text" [(ngModel)]="spouseAmonthlyEarnings" name="spouseAmonthlyEarnings" #spouseAmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,8}">
                 <span *ngIf="spouseAmonthlyEarningsInput.invalid" class="alert alert-danger">digits only, please</span>
             </div>
         <!--End Spouse A Earnings Test Inputs -->
 
-        <div *ngIf="this.advanced == true" class="form-inline">
+        <div *ngIf="this.advanced === true" class="form-inline">
           <label>Mortality table</label>
           <select [(ngModel)]="spouseAmortalityInput" name="spouseAmortalityInput" class="form-control">
             <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
@@ -82,10 +82,15 @@
             <option value="SSA">2015 Social Security Period Life Table</option>
             <option value="SM1">2017 CSO Smoker Preferred</option>
             <option value="SM2">2017 CSO Smoker Residual Standard</option>
+            <option value="fixed">Assumed age at death</option>
           </select>
-          <p class="inputexplanation"><a href="about#mortality" target="_blank">See here</a> for more information about these mortality table options.</p>
         </div>
-        <div *ngIf="maritalStatus != 'single' && this.advanced == true">
+          <span *ngIf="this.spouseAmortalityInput == 'fixed'">
+            <label for="spouseAassumedDeathAge">Assumed age at death</label>
+            <input type="text" class="smallTextInput" [(ngModel)]="spouseAassumedDeathAge" id="spouseAassumedDeathAge" name="spouseAassumedDeathAge">
+          </span>
+          <p class="inputexplanation"><a href="about#mortality" target="_blank">See here</a> for more information about these mortality table options.</p>
+        <div *ngIf="maritalStatus != 'single' && this.advanced === true">
           <label for="spouseAgovernmentPension">Monthly government pension (from non-covered employment)</label>
           <input type="text" [(ngModel)]="spouseAgovernmentPension" id="spouseAgovernmentPension" name="spouseAgovernmentPension">
         </div>    
@@ -128,7 +133,7 @@
                 <input type="radio" id="spouseBworkingNo" [(ngModel)]="spouseBworking" name="spouseBworking" [value]="false" (change)="resetWorkInputs()">
                 <label for="spouseBworkingNo">No</label>
             </div>
-            <div *ngIf="this.spouseBworking" class="form-inline">
+            <div *ngIf="this.spouseBworking === true" class="form-inline">
                 <label>Approximate month in which your spouse will stop working</label>
                 <select class="form-control" [(ngModel)]="spouseBquitWorkMonth" name="spouseBquitWorkMonth" required>
                   <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
@@ -137,7 +142,7 @@
                   <option *ngFor="let year of quitWorkYears" [value]="year">{{year}}</option>
                 </select>
             </div>
-            <div *ngIf="this.spouseBworking">
+            <div *ngIf="this.spouseBworking === true">
                 <label>Your spouse's estimated monthly earnings until the month in which he/she retires</label>
                 <input type="text" [(ngModel)]="spouseBmonthlyEarnings" name="spouseBmonthlyEarnings" #spouseBmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,7}">
                 <span *ngIf="spouseBmonthlyEarningsInput.invalid" class="alert alert-danger">digits only, please</span>
@@ -158,7 +163,7 @@
           </div>
         <!--Ex-spouse Retirement Date Inputs -->
 
-        <div *ngIf="this.advanced == true" class="form-inline">
+        <div *ngIf="this.advanced === true" class="form-inline">
           <label>Mortality table</label>
           <select [(ngModel)]="spouseBmortalityInput" name="spouseBmortalityInput" class="form-control">
             <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
@@ -166,17 +171,22 @@
             <option value="SSA">2015 Social Security Period Life Table</option>
             <option value="SM1">2017 CSO Smoker Preferred</option>
             <option value="SM2">2017 CSO Smoker Residual Standard</option>
+            <option value="fixed">Assumed age at death</option>
           </select>
         </div>
-        <div *ngIf="this.advanced == true">
+          <span *ngIf="this.spouseBmortalityInput == 'fixed'">
+            <label for="spouseBassumedDeathAge">Assumed age at death</label>
+            <input type="text" class="smallTextInput" [(ngModel)]="spouseBassumedDeathAge" id="spouseBassumedDeathAge" name="spouseBassumedDeathAge">
+          </span>
+        <div *ngIf="this.advanced === true">
             <label for="spouseBgovernmentPension">Monthly government pension (from non-covered employment)</label>
             <input type="text" [(ngModel)]="spouseBgovernmentPension" id="spouseBgovernmentPension" name="spouseBgovernmentPension">
         </div>
       </span>
-        <div *ngIf="this.advanced == true">
+        <div *ngIf="this.advanced === true">
           <h2>Other Inputs</h2>
           <label>Real discount rate</label>
-          <input type="text" [(ngModel)]="discountRate" name="discountRate" class="discountRateInput" required>%
+          <input type="text" [(ngModel)]="discountRate" name="discountRate" class="smallTextInput" required>%
           <p class="inputexplanation">A "discount rate" is necessary to reflect the fact that a dollar today is worth more than a dollar in the future, because a dollar today can be invested.
             The <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a> is generally considered an appropriate discount rate for these purposes.
             See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a dicussion of that topic.</p>

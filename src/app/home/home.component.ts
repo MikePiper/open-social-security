@@ -71,6 +71,7 @@ export class HomeComponent implements OnInit {
   exSpouseRetirementBenefitYear: number
   exSpouseRetirementBenefitDate: Date
   spouseAgender: string = "male"
+  spouseAassumedDeathAge: number = 0
   spouseAmortalityInput: string = "SSA"
   spouseBinputMonth: number = 4
   spouseBinputDay: number = 15
@@ -84,6 +85,7 @@ export class HomeComponent implements OnInit {
   spouseBspousalBenefitDate: Date
   spouseBgender: string = "female"
   spouseBmortalityInput: string = "SSA"
+  spouseBassumedDeathAge: number = 0
   discountRate: number
   advanced: boolean = false
   spouseAgovernmentPension: number = 0
@@ -255,8 +257,8 @@ export class HomeComponent implements OnInit {
     this.spouseAquitWorkDate = new Date(this.spouseAquitWorkYear, this.spouseAquitWorkMonth-1, 1)
     this.spouseBquitWorkDate = new Date(this.spouseBquitWorkYear, this.spouseBquitWorkMonth-1, 1)
     this.exSpouseRetirementBenefitDate = new Date(this.exSpouseRetirementBenefitYear, this.exSpouseRetirementBenefitMonth-1, 1)
-    this.spouseAmortalityTable = this.mortalityService.determineMortalityTable(this.spouseAgender, this.spouseAmortalityInput)
-    this.spouseBmortalityTable = this.mortalityService.determineMortalityTable(this.spouseBgender, this.spouseBmortalityInput)
+    this.spouseAmortalityTable = this.mortalityService.determineMortalityTable(this.spouseAgender, this.spouseAmortalityInput, this.spouseAassumedDeathAge)
+    this.spouseBmortalityTable = this.mortalityService.determineMortalityTable(this.spouseBgender, this.spouseBmortalityInput, this.spouseBassumedDeathAge)
   }
 
   checkValidRetirementInputs(FRA: Date, SSbirthDate: Date, actualBirthDate:Date, retirementBenefitDate:Date) {
