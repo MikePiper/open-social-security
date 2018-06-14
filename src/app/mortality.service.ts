@@ -7,7 +7,7 @@ export class MortalityService {
 
   constructor() { }
 
-  determineMortalityTable (gender:string, mortalityInput:string) {
+  determineMortalityTable (gender:string, mortalityInput:string, assumedDeathAge:number) {
     let mortalityTable: number[] = []
     if (gender == "male") {
       if (mortalityInput == "NS1") {mortalityTable = this.maleNS1}
@@ -23,6 +23,10 @@ export class MortalityService {
       if (mortalityInput == "SM1") {mortalityTable = this.femaleSM1}
       if (mortalityInput == "SM2") {mortalityTable = this.femaleSM2}
     }
+    if (mortalityInput == "fixed") {
+      mortalityTable = this.createMortalityTable(assumedDeathAge)
+    }
+    
     return mortalityTable
   }
 
@@ -37,6 +41,7 @@ export class MortalityService {
       }
       yearInTable = yearInTable + 1
     }
+    return newMortTable
   }
 
 
