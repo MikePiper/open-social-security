@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {BirthdayService} from '../birthday.service'
 import {PresentvalueService} from '../presentvalue.service'
+import {MortalityService} from '../mortality.service'
 import {SolutionSet} from '../solutionset'
 import {FREDresponse} from '../fredresponse'
 import {HttpClient} from '@angular/common/http';
@@ -13,7 +14,7 @@ import {HttpClient} from '@angular/common/http';
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private birthdayService: BirthdayService, private presentvalueService: PresentvalueService, private http: HttpClient) { }
+  constructor(private birthdayService: BirthdayService, private presentvalueService: PresentvalueService, private mortalityService: MortalityService, private http: HttpClient) { }
 
   ngOnInit() {
     this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")
@@ -115,7 +116,6 @@ export class HomeComponent implements OnInit {
   spouseAmortalityTable: number[]
   spouseBmortalityTable: number[]
 
-
   //Error variables
   statusMessage:string = ""
   spouseAretirementDateError:string
@@ -148,92 +148,34 @@ export class HomeComponent implements OnInit {
   }
 
   onSubmit() {
-  let startTime = performance.now() //for testing performance
-  console.log("-------------")
-  //Use inputs to calculate ages, SSbirthdates, FRAs, etc.
-  this.spouseAactualBirthDate = new Date (this.spouseAinputYear, this.spouseAinputMonth-1, this.spouseAinputDay)
-  this.spouseASSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseAinputMonth, this.spouseAinputDay, this.spouseAinputYear))
-  this.spouseAFRA = new Date(this.birthdayService.findFRA(this.spouseASSbirthDate))
-  this.spouseAsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseASSbirthDate))
-  this.spouseBactualBirthDate = new Date (this.spouseBinputYear, this.spouseBinputMonth-1, this.spouseBinputDay)
-  this.spouseBSSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseBinputMonth, this.spouseBinputDay, this.spouseBinputYear))
-  this.spouseBFRA = new Date(this.birthdayService.findFRA(this.spouseBSSbirthDate))
-  this.spouseBsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseBSSbirthDate))
-  this.spouseAage =  ( this.today.getMonth() - this.spouseASSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseASSbirthDate.getFullYear()) )/12
-  this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
-  this.spouseAageRounded = Math.round(this.spouseAage)
-  this.spouseBageRounded = Math.round(this.spouseBage)
-  this.spouseAquitWorkDate = new Date(this.spouseAquitWorkYear, this.spouseAquitWorkMonth-1, 1)
-  this.spouseBquitWorkDate = new Date(this.spouseBquitWorkYear, this.spouseBquitWorkMonth-1, 1)
-  this.exSpouseRetirementBenefitDate = new Date(this.exSpouseRetirementBenefitYear, this.exSpouseRetirementBenefitMonth-1, 1)
+    let startTime = performance.now() //for testing performance
+    console.log("-------------")
+    this.getPrimaryFormInputs() //Use inputs to calculate ages, SSbirthdates, FRAs, etc.
 
-  //Determine appropriate mortality table based on user input
-  if (this.spouseAgender == "male") {
-    if (this.spouseAmortalityInput == "NS1") {this.spouseAmortalityTable = this.presentvalueService.maleNS1}
-    if (this.spouseAmortalityInput == "NS2") {this.spouseAmortalityTable = this.presentvalueService.maleNS2}
-    if (this.spouseAmortalityInput == "SSA") {this.spouseAmortalityTable = this.presentvalueService.maleSSAtable}
-    if (this.spouseAmortalityInput == "SM1") {this.spouseAmortalityTable = this.presentvalueService.maleSM1}
-    if (this.spouseAmortalityInput == "SM2") {this.spouseAmortalityTable = this.presentvalueService.maleSM2}
-  }
-  if (this.spouseAgender == "female") {
-    if (this.spouseAmortalityInput == "NS1") {this.spouseAmortalityTable = this.presentvalueService.femaleNS1}
-    if (this.spouseAmortalityInput == "NS2") {this.spouseAmortalityTable = this.presentvalueService.femaleNS2}
-    if (this.spouseAmortalityInput == "SSA") {this.spouseAmortalityTable = this.presentvalueService.femaleSSAtable}
-    if (this.spouseAmortalityInput == "SM1") {this.spouseAmortalityTable = this.presentvalueService.femaleSM1}
-    if (this.spouseAmortalityInput == "SM2") {this.spouseAmortalityTable = this.presentvalueService.femaleSM2}
-  }
-  if (this.spouseBgender == "male") {
-    if (this.spouseBmortalityInput == "NS1") {this.spouseBmortalityTable = this.presentvalueService.maleNS1}
-    if (this.spouseBmortalityInput == "NS2") {this.spouseBmortalityTable = this.presentvalueService.maleNS2}
-    if (this.spouseBmortalityInput == "SSA") {this.spouseBmortalityTable = this.presentvalueService.maleSSAtable}
-    if (this.spouseBmortalityInput == "SM1") {this.spouseBmortalityTable = this.presentvalueService.maleSM1}
-    if (this.spouseBmortalityInput == "SM2") {this.spouseBmortalityTable = this.presentvalueService.maleSM2}
-  }
-  if (this.spouseBgender == "female") {
-    if (this.spouseBmortalityInput == "NS1") {this.spouseBmortalityTable = this.presentvalueService.femaleNS1}
-    if (this.spouseBmortalityInput == "NS2") {this.spouseBmortalityTable = this.presentvalueService.femaleNS2}
-    if (this.spouseBmortalityInput == "SSA") {this.spouseBmortalityTable = this.presentvalueService.femaleSSAtable}
-    if (this.spouseBmortalityInput == "SM1") {this.spouseBmortalityTable = this.presentvalueService.femaleSM1}
-    if (this.spouseBmortalityInput == "SM2") {this.spouseBmortalityTable = this.presentvalueService.femaleSM2}
-  }
-
-  //Call appropriate "maximizePV" function to find best solution
-  if (this.maritalStatus == "single") {
-    this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAquitWorkDate, this.spouseAmonthlyEarnings, this.spouseAmortalityTable, Number(this.discountRate))
-    }
-  if(this.maritalStatus == "married")
-    {
-    this.solutionSet = this.presentvalueService.maximizeCouplePV(this.maritalStatus, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
-    }
-  if(this.maritalStatus == "divorced") {
-    this.exSpouseRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.exSpouseRetirementBenefitDate)
-      if (!this.exSpouseRetirementDateError){
-        this.solutionSet = this.presentvalueService.maximizeDivorceePV(this.maritalStatus, this.exSpouseRetirementBenefitDate, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+    //Call appropriate "maximizePV" function to find best solution
+    if (this.maritalStatus == "single") {
+      this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAquitWorkDate, this.spouseAmonthlyEarnings, this.spouseAmortalityTable, Number(this.discountRate))
       }
-  }
-
-  this.normalCursor()
-    //For testing performance
-    let endTime = performance.now()
-    let elapsed = (endTime - startTime) /1000
-    this.statusMessage = ""
-    console.log("Time elapsed: " + elapsed)
+    if(this.maritalStatus == "married")
+      {
+      this.solutionSet = this.presentvalueService.maximizeCouplePV(this.maritalStatus, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+      }
+    if(this.maritalStatus == "divorced") {
+      this.exSpouseRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.exSpouseRetirementBenefitDate)
+        if (!this.exSpouseRetirementDateError){
+          this.solutionSet = this.presentvalueService.maximizeDivorceePV(this.maritalStatus, this.exSpouseRetirementBenefitDate, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+        }
+    }
+    this.normalCursor()
+      //For testing performance
+      let endTime = performance.now()
+      let elapsed = (endTime - startTime) /1000
+      this.statusMessage = ""
+      console.log("Time elapsed: " + elapsed)
   }
 
   customDates() {
-    //TODO: Get all the normal inputs from above, calc SSbirthdates, FRAs, etc.
-    this.spouseAactualBirthDate = new Date (this.spouseAinputYear, this.spouseAinputMonth-1, this.spouseAinputDay)
-    this.spouseASSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseAinputMonth, this.spouseAinputDay, this.spouseAinputYear))
-    this.spouseAFRA = new Date(this.birthdayService.findFRA(this.spouseASSbirthDate))
-    this.spouseAsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseASSbirthDate))
-    this.spouseBactualBirthDate = new Date (this.spouseBinputYear, this.spouseBinputMonth-1, this.spouseBinputDay)
-    this.spouseBSSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseBinputMonth, this.spouseBinputDay, this.spouseBinputYear))
-    this.spouseBFRA = new Date(this.birthdayService.findFRA(this.spouseBSSbirthDate))
-    this.spouseBsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseBSSbirthDate))
-    this.spouseAage =  ( this.today.getMonth() - this.spouseASSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseASSbirthDate.getFullYear()) )/12
-    this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
-    this.spouseAageRounded = Math.round(this.spouseAage)
-    this.spouseBageRounded = Math.round(this.spouseBage)
+    this.getPrimaryFormInputs() //Use inputs to calculate ages, SSbirthdates, FRAs, etc.
 
     //Reset input benefit dates, then get from user input
     this.spouseAretirementBenefitDate = null
@@ -294,6 +236,27 @@ export class HomeComponent implements OnInit {
       this.customPV = this.presentvalueService.calculateCouplePV(this.maritalStatus, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.exSpouseRetirementBenefitDate, this.spouseAspousalBenefitDate, this.exSpouseRetirementBenefitDate, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate) )
     }
     this.differenceInPV = this.solutionSet.solutionPV - this.customPV
+  }
+
+  //Use inputs to calculate ages, SSbirthdates, FRAs, etc.
+  getPrimaryFormInputs() {
+    this.spouseAactualBirthDate = new Date (this.spouseAinputYear, this.spouseAinputMonth-1, this.spouseAinputDay)
+    this.spouseASSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseAinputMonth, this.spouseAinputDay, this.spouseAinputYear))
+    this.spouseAFRA = new Date(this.birthdayService.findFRA(this.spouseASSbirthDate))
+    this.spouseAsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseASSbirthDate))
+    this.spouseBactualBirthDate = new Date (this.spouseBinputYear, this.spouseBinputMonth-1, this.spouseBinputDay)
+    this.spouseBSSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.spouseBinputMonth, this.spouseBinputDay, this.spouseBinputYear))
+    this.spouseBFRA = new Date(this.birthdayService.findFRA(this.spouseBSSbirthDate))
+    this.spouseBsurvivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.spouseBSSbirthDate))
+    this.spouseAage =  ( this.today.getMonth() - this.spouseASSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseASSbirthDate.getFullYear()) )/12
+    this.spouseBage =  ( this.today.getMonth() - this.spouseBSSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.spouseBSSbirthDate.getFullYear()) )/12
+    this.spouseAageRounded = Math.round(this.spouseAage)
+    this.spouseBageRounded = Math.round(this.spouseBage)
+    this.spouseAquitWorkDate = new Date(this.spouseAquitWorkYear, this.spouseAquitWorkMonth-1, 1)
+    this.spouseBquitWorkDate = new Date(this.spouseBquitWorkYear, this.spouseBquitWorkMonth-1, 1)
+    this.exSpouseRetirementBenefitDate = new Date(this.exSpouseRetirementBenefitYear, this.exSpouseRetirementBenefitMonth-1, 1)
+    this.spouseAmortalityTable = this.mortalityService.determineMortalityTable(this.spouseAgender, this.spouseAmortalityInput)
+    this.spouseBmortalityTable = this.mortalityService.determineMortalityTable(this.spouseBgender, this.spouseBmortalityInput)
   }
 
   checkValidRetirementInputs(FRA: Date, SSbirthDate: Date, actualBirthDate:Date, retirementBenefitDate:Date) {
