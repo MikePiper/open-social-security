@@ -74,6 +74,27 @@
             </div>
         <!--End Spouse A Earnings Test Inputs -->
 
+        <!--Begin Spouse A Already-Filed Inputs-->
+        <div *ngIf="maritalStatus == 'married'">
+          <label>Have you already filed for retirement benefits?</label>
+          <input type="radio" id="spouseAfiledYes" [(ngModel)]="spouseAhasFiled" name="spouseAhasFiled" [value]="true" (change)="resetFixedRetirementDateInputs()">
+          <label for="spouseAfiledYes">Yes</label>
+          <input type="radio" id="spouseAfiledNo" [(ngModel)]="spouseAhasFiled" name="spouseAhasFiled" [value]="false" (change)="resetFixedRetirementDateInputs()">
+          <label for="spouseAfiledNo">No</label>
+        </div>
+        <div *ngIf="spouseAhasFiled === true" class="form-inline">
+            <label *ngIf="spouseAhasFiled === true">Month in which you filed for your retirement benefit:</label>
+            <select class="form-control" [(ngModel)]="spouseAfixedRetirementBenefitMonth" name="spouseAfixedRetirementBenefitMonth" required>
+              <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+            </select>
+            <select class="form-control" [(ngModel)]="spouseAfixedRetirementBenefitYear" name="spouseAfixedRetirementBenefitYear" required>
+              <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+            </select>
+            <span *ngIf="this.spouseAfixedRetirementDateError" class="alert alert-danger">{{this.spouseAfixedRetirementDateError}}</span>
+        </div>
+        <!--End Spouse A Already-Filed Inputs -->
+
+        <!--Begin Spouse A Mortality Inputs -->
         <span *ngIf="this.advanced === true">
           <div class="form-inline">
             <label>Mortality table</label>
@@ -92,11 +113,12 @@
             </span>
             <p class="inputexplanation"><a href="about#mortality" target="_blank">See here</a> for more information about these mortality table options.</p>
         </span>
+        <!--End Spouse A Mortality Inputs -->
+
         <div *ngIf="maritalStatus != 'single' && this.advanced === true">
           <label for="spouseAgovernmentPension">Monthly government pension (from non-covered employment)</label>
           <input type="text" [(ngModel)]="spouseAgovernmentPension" id="spouseAgovernmentPension" name="spouseAgovernmentPension">
         </div>    
-
 
       <span *ngIf="maritalStatus == 'married' || maritalStatus == 'divorced'">
 
@@ -151,20 +173,32 @@
             </div>
         <!--End SpouseB Earnings Test Inputs -->
 
-        <!--Ex-spouse Retirement Date Inputs -->
-          <div *ngIf="maritalStatus == 'divorced'" class="form-inline">
-            <label>Month in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
-            <select class="form-control" [(ngModel)]="exSpouseRetirementBenefitMonth" name="exSpouseRetirementBenefitMonth" required>
+
+
+        <!--Ex-spouse Retirement Date Inputs (Also, SpouseB already-filed inputs-->
+          <div *ngIf="maritalStatus == 'married'">
+            <label>Has your spouse already filed for retirement benefits?</label>
+            <input type="radio" id="spouseBfiledYes" [(ngModel)]="spouseBhasFiled" name="spouseBhasFiled" [value]="true" (change)="resetFixedRetirementDateInputs()">
+            <label for="spouseBfiledYes">Yes</label>
+            <input type="radio" id="spouseBfiledNo" [(ngModel)]="spouseBhasFiled" name="spouseBhasFiled" [value]="false" (change)="resetFixedRetirementDateInputs()">
+            <label for="spouseBfiledNo">No</label>
+          </div>
+      
+          <div *ngIf="maritalStatus == 'divorced' || spouseBhasFiled === true" class="form-inline">
+            <label *ngIf="maritalStatus == 'divorced'">Month in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
+            <label *ngIf="spouseBhasFiled === true">Month in which your spouse filed for his/her retirement benefit:</label>
+            <select class="form-control" [(ngModel)]="spouseBfixedRetirementBenefitMonth" name="spouseBfixedRetirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
-            <select class="form-control" [(ngModel)]="exSpouseRetirementBenefitYear" name="exSpouseRetirementBenefitYear" required>
+            <select class="form-control" [(ngModel)]="spouseBfixedRetirementBenefitYear" name="spouseBfixedRetirementBenefitYear" required>
               <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
             </select>
-            <span *ngIf="this.exSpouseRetirementDateError" class="alert alert-danger">{{this.exSpouseRetirementDateError}}</span>
-            <p class="inputexplanation">Your ex-spouse's filing date is necessary in order to run the calculation. If you do not know the answer, you can call the SSA to see if your ex-spouse has filed for his/her retirement benefit. Alternatively, you can guess as to your ex-spouse's plans (e.g., assume they file at age 66).</p>
+            <span *ngIf="this.spouseBfixedRetirementDateError" class="alert alert-danger">{{this.spouseBfixedRetirementDateError}}</span>
+            <p *ngIf="maritalStatus == 'divorced'" class="inputexplanation">Your ex-spouse's filing date is necessary in order to run the calculation. If you do not know the answer, you can call the SSA to see if your ex-spouse has filed for his/her retirement benefit. Alternatively, you can guess as to your ex-spouse's plans (e.g., assume they file at age 66).</p>
           </div>
-        <!--Ex-spouse Retirement Date Inputs -->
+        <!--Ex-spouse Retirement Date Inputs (Also, SpouseB already-filed inputs-->
 
+        <!--Begin Spouse B Mortality Inputs -->
         <div *ngIf="this.advanced === true" class="form-inline">
           <label>Mortality table</label>
           <select [(ngModel)]="spouseBmortalityInput" name="spouseBmortalityInput" class="form-control">
@@ -180,6 +214,8 @@
             <label for="spouseBassumedDeathAge" class="customtooltip">Assumed age at death<span class="tooltiptext">whole numbers only, please</span></label>
             <input type="text" class="smallTextInput" [(ngModel)]="spouseBassumedDeathAge" id="spouseBassumedDeathAge" name="spouseBassumedDeathAge">
           </span>
+        <!--End Spouse B Mortality Inputs -->
+
         <div *ngIf="this.advanced === true">
             <label for="spouseBgovernmentPension">Monthly government pension (from non-covered employment)</label>
             <input type="text" [(ngModel)]="spouseBgovernmentPension" id="spouseBgovernmentPension" name="spouseBgovernmentPension">
@@ -219,46 +255,46 @@
   <h2>Test an alternative claiming strategy:</h2>
   <div class="form-inline">
       <label>Your month/year to claim retirement benefit:</label>
-      <select class="form-control" [(ngModel)]="spouseAretirementBenefitMonth" name="spouseAretirementBenefitMonth" required>
+      <select class="form-control" [(ngModel)]="customSpouseAretirementBenefitMonth" name="customSpouseAretirementBenefitMonth" required>
         <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
       </select>
-      <select class="form-control" [(ngModel)]="spouseAretirementBenefitYear" name="spouseAretirementBenefitYear" required>
+      <select class="form-control" [(ngModel)]="customSpouseAretirementBenefitYear" name="customSpouseAretirementBenefitYear" required>
         <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
       </select>
-      <span *ngIf="this.spouseAretirementDateError" class="alert alert-danger">{{this.spouseAretirementDateError}}</span>
+      <span *ngIf="this.customSpouseAretirementDateError" class="alert alert-danger">{{this.customSpouseAretirementDateError}}</span>
     </div>
     <span *ngIf="maritalStatus == 'married' || maritalStatus == 'divorced'">
         <div class="form-inline" *ngIf="this.spouseAPIA < 0.5 * this.spouseBPIA || this.spouseAactualBirthDate < this.deemedFilingCutoff">
           <label>Your month/year to claim spousal benefit:</label>
-          <select class="form-control" [(ngModel)]="spouseAspousalBenefitMonth" name="spouseAspousalBenefitMonth" required>
+          <select class="form-control" [(ngModel)]="customSpouseAspousalBenefitMonth" name="customSpouseAspousalBenefitMonth" required>
             <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
           </select>
-          <select class="form-control" [(ngModel)]="spouseAspousalBenefitYear" name="spouseAspousalBenefitYear" required>
+          <select class="form-control" [(ngModel)]="customSpouseAspousalBenefitYear" name="customSpouseAspousalBenefitYear" required>
             <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
           </select>
-          <span *ngIf="this.spouseAspousalDateError" class="alert alert-danger">{{this.spouseAspousalDateError}}</span>
+          <span *ngIf="this.customSpouseAspousalDateError" class="alert alert-danger">{{this.customSpouseAspousalDateError}}</span>
         </div>
         <div *ngIf="maritalStatus == 'married'" class="form-inline">
             <label>Your spouse's month/year to claim retirement benefit:</label>
-            <select class="form-control" [(ngModel)]="spouseBretirementBenefitMonth" name="spouseBretirementBenefitMonth" required>
+            <select class="form-control" [(ngModel)]="customSpouseBretirementBenefitMonth" name="customSpouseBretirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
-            <select class="form-control" [(ngModel)]="spouseBretirementBenefitYear" name="spouseBretirementBenefitYear" required>
+            <select class="form-control" [(ngModel)]="customSpouseBretirementBenefitYear" name="customSpouseBretirementBenefitYear" required>
               <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
             </select>
-            <span *ngIf="this.spouseBretirementDateError" class="alert alert-danger">{{this.spouseBretirementDateError}}</span>
+            <span *ngIf="this.customSpouseBretirementDateError" class="alert alert-danger">{{this.customSpouseBretirementDateError}}</span>
           </div>
           <div class="form-inline" *ngIf="this.spouseBPIA < 0.5 * this.spouseAPIA || this.spouseBactualBirthDate < this.deemedFilingCutoff">
             <span *ngIf="maritalStatus == 'married'">
             <label>Your spouse's month/year to claim spousal benefit:</label>
-            <select class="form-control" [(ngModel)]="spouseBspousalBenefitMonth" name="spouseBspousalBenefitMonth" required>
+            <select class="form-control" [(ngModel)]="customSpouseBspousalBenefitMonth" name="customSpouseBspousalBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
-            <select class="form-control" [(ngModel)]="spouseBspousalBenefitYear" name="spouseBspousalBenefitYear" required>
+            <select class="form-control" [(ngModel)]="customSpouseBspousalBenefitYear" name="customSpouseBspousalBenefitYear" required>
               <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
             </select>
             </span>
-            <span *ngIf="this.spouseBspousalDateError" class="alert alert-danger">{{this.spouseBspousalDateError}}</span>
+            <span *ngIf="this.customSpouseBspousalDateError" class="alert alert-danger">{{this.customSpouseBspousalDateError}}</span>
           </div>
       </span>
     <div>
