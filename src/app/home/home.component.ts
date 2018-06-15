@@ -31,7 +31,8 @@ export class HomeComponent implements OnInit {
   inputMonths: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
   inputDays: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
               16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
-  inputYears = [1943, 1944, 1945, 1946, 1947, 1948, 1949,
+  inputYears = [1938, 1939,
+              1940, 1941, 1942, 1943, 1944, 1945, 1946, 1947, 1948, 1949,
               1950, 1951, 1952, 1953, 1954, 1955, 1956, 1957, 1958, 1959,
               1960, 1961, 1962, 1963, 1964, 1965, 1966, 1967, 1968, 1969,
               1970, 1971, 1972, 1973, 1974, 1975, 1976, 1977, 1978, 1979,
@@ -40,7 +41,9 @@ export class HomeComponent implements OnInit {
               2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
               2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018]
 
-  inputBenefitYears = [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+  inputBenefitYears = [
+                    2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+                    2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
                     2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029,
                     2030, 2031, 2032, 2033, 2034, 2035, 2036, 2037, 2038, 2039,
                     2040, 2041, 2042, 2043, 2044, 2045, 2046, 2047, 2048, 2049,
@@ -61,15 +64,12 @@ export class HomeComponent implements OnInit {
   spouseAinputDay: number = 15
   spouseAinputYear: number = 1960
   spouseAPIA: number = 1000
-  spouseAretirementBenefitMonth: number
-  spouseAretirementBenefitYear: number
-  spouseAretirementBenefitDate: Date
-  spouseAspousalBenefitMonth: number
-  spouseAspousalBenefitYear: number
-  spouseAspousalBenefitDate: Date
-  exSpouseRetirementBenefitMonth: number
-  exSpouseRetirementBenefitYear: number
-  exSpouseRetirementBenefitDate: Date
+  spouseAfixedRetirementBenefitMonth: number
+  spouseAfixedRetirementBenefitYear: number
+  spouseAfixedRetirementBenefitDate: Date
+  spouseBfixedRetirementBenefitMonth: number
+  spouseBfixedRetirementBenefitYear: number
+  spouseBfixedRetirementBenefitDate: Date
   spouseAgender: string = "male"
   spouseAassumedDeathAge: number = 0
   spouseAmortalityInput: string = "SSA"
@@ -77,12 +77,6 @@ export class HomeComponent implements OnInit {
   spouseBinputDay: number = 15
   spouseBinputYear: number = 1960
   spouseBPIA: number = 1000
-  spouseBretirementBenefitMonth: number
-  spouseBretirementBenefitYear: number
-  spouseBretirementBenefitDate: Date
-  spouseBspousalBenefitMonth: number
-  spouseBspousalBenefitYear: number
-  spouseBspousalBenefitDate: Date
   spouseBgender: string = "female"
   spouseBmortalityInput: string = "SSA"
   spouseBassumedDeathAge: number = 0
@@ -90,6 +84,8 @@ export class HomeComponent implements OnInit {
   advanced: boolean = false
   spouseAgovernmentPension: number = 0
   spouseBgovernmentPension: number = 0
+  spouseAhasFiled: boolean = false
+  spouseBhasFiled: boolean = false
     //earnings test inputs
     spouseAworking: boolean = false
     spouseAquitWorkYear: number
@@ -101,6 +97,21 @@ export class HomeComponent implements OnInit {
     spouseBquitWorkMonth: number
     spouseBquitWorkDate: Date
     spouseBmonthlyEarnings: number = 0
+
+  //Inputs from custom date form
+  customSpouseAretirementBenefitMonth: number
+  customSpouseAretirementBenefitYear: number
+  customSpouseAretirementBenefitDate: Date
+  customSpouseAspousalBenefitMonth: number
+  customSpouseAspousalBenefitYear: number
+  customSpouseAspousalBenefitDate: Date
+  customSpouseBretirementBenefitMonth: number
+  customSpouseBretirementBenefitYear: number
+  customSpouseBretirementBenefitDate: Date
+  customSpouseBspousalBenefitMonth: number
+  customSpouseBspousalBenefitYear: number
+  customSpouseBspousalBenefitDate: Date
+
 
   //Calculated dates and related info
   spouseAactualBirthDate: Date
@@ -120,11 +131,12 @@ export class HomeComponent implements OnInit {
 
   //Error variables
   statusMessage:string = ""
-  spouseAretirementDateError:string
-  spouseBretirementDateError:string
-  spouseAspousalDateError:string
-  spouseBspousalDateError:string
-  exSpouseRetirementDateError:string
+  customSpouseAretirementDateError:string
+  customSpouseBretirementDateError:string
+  customSpouseAspousalDateError:string
+  customSpouseBspousalDateError:string
+  spouseAfixedRetirementDateError:string
+  spouseBfixedRetirementDateError:string
 
   //solution variables
   customPV: number
@@ -158,14 +170,25 @@ export class HomeComponent implements OnInit {
     if (this.maritalStatus == "single") {
       this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAquitWorkDate, this.spouseAmonthlyEarnings, this.spouseAmortalityTable, Number(this.discountRate))
       }
-    if(this.maritalStatus == "married")
-      {
-      this.solutionSet = this.presentvalueService.maximizeCouplePV(this.maritalStatus, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+    if(this.maritalStatus == "married") {
+      if (this.spouseAhasFiled === false && this.spouseBhasFiled === false) {//i.e., if neither spouse has filed
+        this.solutionSet = this.presentvalueService.maximizeCouplePV(this.maritalStatus, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+      } else if (this.spouseAhasFiled === true && this.spouseBhasFiled === false) {//i.e., if spouseA has filed and B has not
+        this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAfixedRetirementBenefitDate)
+        if (!this.spouseAfixedRetirementDateError){
+          this.solutionSet = this.presentvalueService.maximizeCouleOneHasFiledPV(this.maritalStatus, this.spouseAhasFiled, this.spouseBhasFiled, this.spouseAfixedRetirementBenefitDate, Number(this.spouseBPIA), Number(this.spouseAPIA), this.spouseBactualBirthDate, this.spouseAactualBirthDate, this.spouseBSSbirthDate, this.spouseASSbirthDate, Number(this.spouseBageRounded), Number(this.spouseAageRounded), this.spouseBFRA, this.spouseAFRA, this.spouseBsurvivorFRA, this.spouseAsurvivorFRA, this.spouseBmortalityTable, this.spouseAmortalityTable, this.spouseBquitWorkDate, this.spouseAquitWorkDate, this.spouseBmonthlyEarnings, this.spouseAmonthlyEarnings, Number(this.spouseBgovernmentPension), Number(this.spouseAgovernmentPension), Number(this.discountRate))
+        }
+      } else if (this.spouseBhasFiled === true && this.spouseAhasFiled === false) {//i.e., if spouseB has filed and A has not
+        this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBfixedRetirementBenefitDate)
+        if (!this.spouseBfixedRetirementDateError){
+          this.solutionSet = this.presentvalueService.maximizeCouleOneHasFiledPV(this.maritalStatus, this.spouseAhasFiled, this.spouseBhasFiled, this.spouseBfixedRetirementBenefitDate, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+        }
       }
+    }
     if(this.maritalStatus == "divorced") {
-      this.exSpouseRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.exSpouseRetirementBenefitDate)
-        if (!this.exSpouseRetirementDateError){
-          this.solutionSet = this.presentvalueService.maximizeDivorceePV(this.maritalStatus, this.exSpouseRetirementBenefitDate, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+      this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBfixedRetirementBenefitDate)
+        if (!this.spouseBfixedRetirementDateError){
+          this.solutionSet = this.presentvalueService.maximizeCouleOneHasFiledPV(this.maritalStatus, this.spouseAhasFiled, this.spouseBhasFiled, this.spouseBfixedRetirementBenefitDate, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
         }
     }
     this.normalCursor()
@@ -180,62 +203,63 @@ export class HomeComponent implements OnInit {
     this.getPrimaryFormInputs() //Use inputs to calculate ages, SSbirthdates, FRAs, etc.
 
     //Reset input benefit dates, then get from user input
-    this.spouseAretirementBenefitDate = null
-    this.spouseAspousalBenefitDate = null
-    this.spouseBretirementBenefitDate = null
-    this.spouseBspousalBenefitDate = null
-    this.exSpouseRetirementBenefitDate = null
-    this.spouseAretirementBenefitDate = new Date(this.spouseAretirementBenefitYear, this.spouseAretirementBenefitMonth-1, 1)
-    this.spouseAspousalBenefitDate = new Date(this.spouseAspousalBenefitYear, this.spouseAspousalBenefitMonth-1, 1)
-    this.spouseBretirementBenefitDate = new Date(this.spouseBretirementBenefitYear, this.spouseBretirementBenefitMonth-1, 1)
-    this.spouseBspousalBenefitDate = new Date(this.spouseBspousalBenefitYear, this.spouseBspousalBenefitMonth-1, 1)
-    this.exSpouseRetirementBenefitDate = new Date(this.exSpouseRetirementBenefitYear, this.exSpouseRetirementBenefitMonth-1, 1)
+    this.customSpouseAretirementBenefitDate = null
+    this.customSpouseAspousalBenefitDate = null
+    this.customSpouseBretirementBenefitDate = null
+    this.customSpouseBspousalBenefitDate = null
+    this.spouseBfixedRetirementBenefitDate = null
+    this.customSpouseAretirementBenefitDate = new Date(this.customSpouseAretirementBenefitYear, this.customSpouseAretirementBenefitMonth-1, 1)
+    this.customSpouseAspousalBenefitDate = new Date(this.customSpouseAspousalBenefitYear, this.customSpouseAspousalBenefitMonth-1, 1)
+    this.customSpouseBretirementBenefitDate = new Date(this.customSpouseBretirementBenefitYear, this.customSpouseBretirementBenefitMonth-1, 1)
+    this.customSpouseBspousalBenefitDate = new Date(this.customSpouseBspousalBenefitYear, this.customSpouseBspousalBenefitMonth-1, 1)
+    this.spouseBfixedRetirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitYear, this.spouseBfixedRetirementBenefitMonth-1, 1)
 
     //Check for errors in input dates
-    this.spouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAretirementBenefitDate)
-    this.spouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBretirementBenefitDate)
-    this.spouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseAretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBretirementBenefitDate)
-    this.spouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseBretirementBenefitDate, this.spouseBspousalBenefitDate, this.spouseAretirementBenefitDate)
-    this.exSpouseRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.exSpouseRetirementBenefitDate)
+    this.customSpouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.customSpouseAretirementBenefitDate)
+    this.customSpouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.customSpouseBretirementBenefitDate)
+    this.customSpouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.customSpouseAretirementBenefitDate, this.customSpouseAspousalBenefitDate, this.customSpouseBretirementBenefitDate)
+    this.customSpouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.customSpouseBretirementBenefitDate, this.customSpouseBspousalBenefitDate, this.customSpouseAretirementBenefitDate)
+    this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBfixedRetirementBenefitDate)
+
 
     //Get spousal benefit dates if there were no inputs from user (i.e. if spouseA won't actually file for a spousal benefit at any time, get the input that makes function run appropriately)
     if (this.spouseAPIA > 0.5 * this.spouseBPIA && this.spouseAactualBirthDate > this.deemedFilingCutoff) {
       //If married, spouseA spousal date is later of retirement dates
       if (this.maritalStatus == "married") {
-        if (this.spouseAretirementBenefitDate > this.spouseBretirementBenefitDate) {
-          this.spouseAspousalBenefitDate = new Date(this.spouseAretirementBenefitDate)
+        if (this.customSpouseAretirementBenefitDate > this.customSpouseBretirementBenefitDate) {
+          this.customSpouseAspousalBenefitDate = new Date(this.customSpouseAretirementBenefitDate)
         } else {
-          this.spouseAspousalBenefitDate = new Date(this.spouseBretirementBenefitDate)
+          this.customSpouseAspousalBenefitDate = new Date(this.customSpouseBretirementBenefitDate)
           }
       }
       //If divorced, spouseA spousal date is spouseA retirementdate
       if (this.maritalStatus == "divorced"){
-        this.spouseAspousalBenefitDate = new Date(this.spouseAretirementBenefitDate)
+        this.customSpouseAspousalBenefitDate = new Date(this.customSpouseAretirementBenefitDate)
       }
       //eliminate spouseAspousalDateError, because user didn't even input anything
-      this.spouseAspousalDateError = undefined
+      this.customSpouseAspousalDateError = undefined
     }
     //Ditto, for spouseB
     if (this.spouseBPIA > 0.5 * this.spouseAPIA && this.spouseBactualBirthDate > this.deemedFilingCutoff) {
       //spouseB spousal date is later of retirement dates
-      if (this.spouseAretirementBenefitDate > this.spouseBretirementBenefitDate) {
-        this.spouseBspousalBenefitDate = new Date(this.spouseAretirementBenefitDate)
+      if (this.customSpouseAretirementBenefitDate > this.customSpouseBretirementBenefitDate) {
+        this.customSpouseBspousalBenefitDate = new Date(this.customSpouseAretirementBenefitDate)
       } else {
-        this.spouseBspousalBenefitDate = new Date(this.spouseBretirementBenefitDate)
+        this.customSpouseBspousalBenefitDate = new Date(this.customSpouseBretirementBenefitDate)
         }
       //eliminate spouseAspousalDateError, because user didn't even input anything
-      this.spouseBspousalDateError = undefined
+      this.customSpouseBspousalDateError = undefined
     }
     
     //Calc PV with input dates
-    if (this.maritalStatus == "single" && !this.spouseAretirementDateError) {
-      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseASSbirthDate, Number(this.spouseAage), Number(this.spouseAPIA), this.spouseAretirementBenefitDate, this.spouseAquitWorkDate, this.spouseAmonthlyEarnings, this.spouseAmortalityTable, Number(this.discountRate))
+    if (this.maritalStatus == "single" && !this.customSpouseAretirementDateError) {
+      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.spouseAFRA, this.spouseASSbirthDate, Number(this.spouseAage), Number(this.spouseAPIA), this.customSpouseAretirementBenefitDate, this.spouseAquitWorkDate, this.spouseAmonthlyEarnings, this.spouseAmortalityTable, Number(this.discountRate))
       }
-    if(this.maritalStatus == "married" && !this.spouseAretirementDateError && !this.spouseBretirementDateError && !this.spouseAspousalDateError && !this.spouseBspousalDateError) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.maritalStatus, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.spouseBretirementBenefitDate, this.spouseAspousalBenefitDate, this.spouseBspousalBenefitDate, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
+    if(this.maritalStatus == "married" && !this.customSpouseAretirementDateError && !this.customSpouseBretirementDateError && !this.customSpouseAspousalDateError && !this.customSpouseBspousalDateError) {
+      this.customPV = this.presentvalueService.calculateCouplePV(this.maritalStatus, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.customSpouseAretirementBenefitDate, this.customSpouseBretirementBenefitDate, this.customSpouseAspousalBenefitDate, this.customSpouseBspousalBenefitDate, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
       }
-    if(this.maritalStatus == "divorced" && !this.exSpouseRetirementDateError && !this.spouseAretirementDateError && !this.spouseAspousalDateError) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.maritalStatus, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAretirementBenefitDate, this.exSpouseRetirementBenefitDate, this.spouseAspousalBenefitDate, this.exSpouseRetirementBenefitDate, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate) )
+    if(this.maritalStatus == "divorced" && !this.spouseBfixedRetirementDateError && !this.customSpouseAretirementDateError && !this.customSpouseAspousalDateError) {
+      this.customPV = this.presentvalueService.calculateCouplePV(this.maritalStatus, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, Number(this.spouseAPIA), Number(this.spouseBPIA), this.customSpouseAretirementBenefitDate, this.spouseBfixedRetirementBenefitDate, this.customSpouseAspousalBenefitDate, this.spouseBfixedRetirementBenefitDate, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate) )
     }
     this.differenceInPV = this.solutionSet.solutionPV - this.customPV
   }
@@ -256,7 +280,8 @@ export class HomeComponent implements OnInit {
     this.spouseBageRounded = Math.round(this.spouseBage)
     this.spouseAquitWorkDate = new Date(this.spouseAquitWorkYear, this.spouseAquitWorkMonth-1, 1)
     this.spouseBquitWorkDate = new Date(this.spouseBquitWorkYear, this.spouseBquitWorkMonth-1, 1)
-    this.exSpouseRetirementBenefitDate = new Date(this.exSpouseRetirementBenefitYear, this.exSpouseRetirementBenefitMonth-1, 1)
+    this.spouseAfixedRetirementBenefitDate = new Date(this.spouseAfixedRetirementBenefitYear, this.spouseAfixedRetirementBenefitMonth-1, 1)
+    this.spouseBfixedRetirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitYear, this.spouseBfixedRetirementBenefitMonth-1, 1)
     this.spouseAmortalityTable = this.mortalityService.determineMortalityTable(this.spouseAgender, this.spouseAmortalityInput, this.spouseAassumedDeathAge)
     this.spouseBmortalityTable = this.mortalityService.determineMortalityTable(this.spouseBgender, this.spouseBmortalityInput, this.spouseBassumedDeathAge)
   }
@@ -373,4 +398,18 @@ export class HomeComponent implements OnInit {
       this.spouseBquitWorkYear = null
     }
   }
+
+resetFixedRetirementDateInputs(){
+  if (this.spouseAhasFiled === false) {
+    this.spouseAfixedRetirementBenefitMonth = null
+    this.spouseAfixedRetirementBenefitYear = null
+    this.spouseAfixedRetirementBenefitDate = null
+  }
+  if (this.spouseBhasFiled === false) {
+    this.spouseBfixedRetirementBenefitMonth = null
+    this.spouseBfixedRetirementBenefitYear = null
+    this.spouseBfixedRetirementBenefitDate = null
+  }
+}
+
 }

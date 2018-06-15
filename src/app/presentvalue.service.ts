@@ -993,135 +993,174 @@ export class PresentvalueService {
       return solutionSet
   }
 
-
-  maximizeDivorceePV(maritalStatus:string, exSpouseRetirementBenefitDate:Date, spouseAPIA: number, spouseBPIA: number, spouseAactualBirthDate:Date, spouseBactualBirthDate:Date, spouseASSbirthDate: Date, spouseBSSbirthDate: Date,
-    spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number, spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
-    spouseAmortalityTable:number[], spouseBmortalityTable:number[],
-    spouseAquitWorkDate: Date, spouseBquitworkDate: Date, spouseAmonthlyEarnings: number, spouseBmonthlyEarnings: number,
-    spouseAgovernmentPension:number, spouseBgovernmentPension:number, discountRate: number){
+  //This function is for when one spouse has already filed. Also is the function for a divorcee, because we take the ex-spouse's filing date as a given (i.e., as an input)
+  maximizeCouleOneHasFiledPV(maritalStatus:string, spouseAhasFiled:boolean, spouseBhasFiled:boolean,
+    fixedSpouseRetirementBenefitDate:Date, flexibleSpousePIA: number, fixedSpousePIA: number, flexibleSpouseActualBirthDate:Date, fixedSpouseActualBirthDate:Date, flexibleSpouseSSbirthDate: Date, fixedSpouseSSbirthDate: Date,
+    flexibleSpouseInitialAgeRounded:number, fixedSpouseInitialAgeRounded:number, flexibleSpouseFRA: Date, fixedSpouseFRA: Date, flexibleSpouseSurvivorFRA:Date, fixedSpouseSurvivorFRA:Date,
+    flexibleSpouseMortalityTable:number[], fixedSpouseMortalityTable:number[],
+    flexibleSpouseQuitWorkDate: Date, fixedSpouseQuitworkDate: Date, flexibleSpouseMonthlyEarnings: number, fixedSpouseMonthlyEarnings: number,
+    flexibleSpouseGovernmentPension:number, fixedSpouseGovernmentPension:number, discountRate: number){
 
       let deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
-      //find initial test dates for spouseA (first month for which spouseA is considered 62 for entire month)
-      let spouseAretirementDate = new Date(spouseASSbirthDate.getFullYear()+62, 1, 1)
-      let spouseAspousalDate = new Date(spouseASSbirthDate.getFullYear()+62, 1, 1)
-      if (spouseAactualBirthDate.getDate() <= 2){
-        spouseAretirementDate.setMonth(spouseAactualBirthDate.getMonth())
-        spouseAspousalDate.setMonth(spouseAactualBirthDate.getMonth())
+      //find initial test dates for flexibleSpouse (first month for which flexibleSpouse is considered 62 for entire month)
+      let flexibleSpouseRetirementDate = new Date(flexibleSpouseSSbirthDate.getFullYear()+62, 1, 1)
+      let flexibleSpouseSpousalDate = new Date(flexibleSpouseSSbirthDate.getFullYear()+62, 1, 1)
+      if (flexibleSpouseActualBirthDate.getDate() <= 2){
+        flexibleSpouseRetirementDate.setMonth(flexibleSpouseActualBirthDate.getMonth())
+        flexibleSpouseSpousalDate.setMonth(flexibleSpouseActualBirthDate.getMonth())
       } else {
-        spouseAretirementDate.setMonth(spouseAactualBirthDate.getMonth()+1)
-        spouseAspousalDate.setMonth(spouseAactualBirthDate.getMonth()+1)
+        flexibleSpouseRetirementDate.setMonth(flexibleSpouseActualBirthDate.getMonth()+1)
+        flexibleSpouseSpousalDate.setMonth(flexibleSpouseActualBirthDate.getMonth()+1)
       }
-      //If spouseA is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
-      let today = new Date()
-      let spouseAageToday: number = today.getFullYear() - spouseASSbirthDate.getFullYear() + (today.getMonth() - spouseASSbirthDate.getMonth()) /12
-      if (spouseAageToday > 62){
-        spouseAretirementDate.setMonth(today.getMonth())
-        spouseAretirementDate.setFullYear(today.getFullYear())
-        spouseAspousalDate.setMonth(today.getMonth())
-        spouseAspousalDate.setFullYear(today.getFullYear())
+      //If flexibleSpouse is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
+      let flexibleSpouseAgeToday: number = this.today.getFullYear() - flexibleSpouseSSbirthDate.getFullYear() + (this.today.getMonth() - flexibleSpouseSSbirthDate.getMonth()) /12
+      if (flexibleSpouseAgeToday > 62){
+        flexibleSpouseRetirementDate.setMonth(this.today.getMonth())
+        flexibleSpouseRetirementDate.setFullYear(this.today.getFullYear())
+        flexibleSpouseSpousalDate.setMonth(this.today.getMonth())
+        flexibleSpouseSpousalDate.setFullYear(this.today.getFullYear())
       }
 
-      //Don't let spouseAspousalDate be earlier than first month for which ex-spouse is 62 for whole month
-      let exSpouse62Date = new Date(spouseBSSbirthDate.getFullYear()+62, 1, 1)
-      if (spouseBactualBirthDate.getDate() <= 2){
-        exSpouse62Date.setMonth(spouseBactualBirthDate.getMonth())
+      //Don't let flexibleSpouseSpousalDate be earlier than first month for which fixedSpouse is 62 for whole month.
+        //This only matters for divorcee scenario. For still-married scenario where one spouse has filed, that filing date is already in the past, so it won't suggest an earlier spousal date for flexible spouse anyway.
+      let fixedSpouse62Date = new Date(fixedSpouseSSbirthDate.getFullYear()+62, 1, 1)
+      if (fixedSpouseActualBirthDate.getDate() <= 2){
+        fixedSpouse62Date.setMonth(fixedSpouseActualBirthDate.getMonth())
       } else {
-        exSpouse62Date.setMonth(spouseBactualBirthDate.getMonth()+1)
+        fixedSpouse62Date.setMonth(fixedSpouseActualBirthDate.getMonth()+1)
       }
-      if (spouseAspousalDate < exSpouse62Date) {
-        spouseAspousalDate.setFullYear(exSpouse62Date.getFullYear())
-        spouseAspousalDate.setMonth(exSpouse62Date.getMonth())
+      if (flexibleSpouseSpousalDate < fixedSpouse62Date) {
+        flexibleSpouseSpousalDate.setFullYear(fixedSpouse62Date.getFullYear())
+        flexibleSpouseSpousalDate.setMonth(fixedSpouse62Date.getMonth())
       }
 
       //Initialize savedPV as zero. Set saved dates equal to their current testDates.
       let savedPV: number = 0
-      let spouseAsavedRetirementDate = new Date(spouseAretirementDate)
-      let spouseAsavedSpousalDate = new Date(spouseAspousalDate)
+      let flexibleSpouseSavedRetirementDate = new Date(flexibleSpouseRetirementDate)
+      let flexibleSpouseSavedSpousalDate = new Date(flexibleSpouseSpousalDate)
 
-      //Set endingTestDate equal to the month user turns 70
-      let spouseAendTestDate = new Date(spouseASSbirthDate.getFullYear()+70, spouseASSbirthDate.getMonth(), 1)
+      //Set endTestDate equal to the month flexibleSpouse turns 70
+      let endTestDate = new Date(flexibleSpouseSSbirthDate.getFullYear()+70, flexibleSpouseSSbirthDate.getMonth(), 1)
 
-      //Set spouseB's spousalDate equal to spouseB's retirement date. (This date won't matter at all, since annual PV is ultimately set to zero for spouse b's spousal benefit, but PV calc will require it.)
-      let spouseBspousalDate: Date = new Date(exSpouseRetirementBenefitDate)
+      //In theory: set fixed spouse's spousalDate equal to later of their own retirement benefit date or flexible spouse's retirement benefit date
+          //In actuality: set it equal to flexible spouse's retirement benefit date, because that's always the later of the two (since fixed has already filed) 
+          //For divorcee this date won't matter at all, since annual PV is ultimately set to zero for spouse b's spousal benefit, but PV calc will require it.
+      let fixedSpouseSpousalDate: Date = new Date(flexibleSpouseRetirementDate)
+                  
 
-
-      while (spouseAretirementDate <= spouseAendTestDate) {
-        //Calculate PV using current test dates for spouseA and fixed dates for spouseB
-        let currentTestPV: number = this.calculateCouplePV(maritalStatus, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, exSpouseRetirementBenefitDate, spouseAspousalDate, spouseBspousalDate, spouseAquitWorkDate, spouseBquitworkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
+      while (flexibleSpouseRetirementDate <= endTestDate) {
+        //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
+        let currentTestPV: number = this.calculateCouplePV(maritalStatus, flexibleSpouseMortalityTable, fixedSpouseMortalityTable, flexibleSpouseSSbirthDate, fixedSpouseSSbirthDate, Number(flexibleSpouseInitialAgeRounded), Number(fixedSpouseInitialAgeRounded), flexibleSpouseFRA, fixedSpouseFRA, flexibleSpouseSurvivorFRA, fixedSpouseSurvivorFRA, Number(flexibleSpousePIA), Number(fixedSpousePIA), flexibleSpouseRetirementDate, fixedSpouseRetirementBenefitDate, flexibleSpouseSpousalDate, fixedSpouseSpousalDate, flexibleSpouseQuitWorkDate, fixedSpouseQuitworkDate, flexibleSpouseMonthlyEarnings, fixedSpouseMonthlyEarnings, Number(flexibleSpouseGovernmentPension), Number(fixedSpouseGovernmentPension), Number(discountRate))
 
         //If PV is greater than or equal to saved PV, save new PV and save new testDates
         if (currentTestPV >= savedPV) {
           savedPV = currentTestPV
-          spouseAsavedRetirementDate.setMonth(spouseAretirementDate.getMonth())
-          spouseAsavedRetirementDate.setFullYear(spouseAretirementDate.getFullYear())
-          spouseAsavedSpousalDate.setMonth(spouseAspousalDate.getMonth())
-          spouseAsavedSpousalDate.setFullYear(spouseAspousalDate.getFullYear())
+          flexibleSpouseSavedRetirementDate.setMonth(flexibleSpouseRetirementDate.getMonth())
+          flexibleSpouseSavedRetirementDate.setFullYear(flexibleSpouseRetirementDate.getFullYear())
+          flexibleSpouseSavedSpousalDate.setMonth(flexibleSpouseSpousalDate.getMonth())
+          flexibleSpouseSavedSpousalDate.setFullYear(flexibleSpouseSpousalDate.getFullYear())
           }
         
-        
-        //Increment spouseA's dates (keep spouseB's fixed)
-          //if new deemed filing rules, increment both by 1 month
-          if (spouseAactualBirthDate > deemedFilingCutoff) {
-            spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1)
-            if (spouseAspousalDate <= spouseAretirementDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
-              spouseAspousalDate.setMonth(spouseAspousalDate.getMonth()+1)
+        //Increment flexibleSpouse's dates (and fixedSpouse's spousal date, since it is just set to be same as flexible spouse's retirement date)
+          //if new deemed filing rules, increment flexibleSpouse's retirement and spousal by 1 month
+          if (flexibleSpouseActualBirthDate > deemedFilingCutoff) {
+            flexibleSpouseRetirementDate.setMonth(flexibleSpouseRetirementDate.getMonth()+1)
+            fixedSpouseSpousalDate.setMonth(fixedSpouseSpousalDate.getMonth()+1)
+            if (flexibleSpouseSpousalDate <= flexibleSpouseRetirementDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
+              flexibleSpouseSpousalDate.setMonth(flexibleSpouseSpousalDate.getMonth()+1)
             }
           } else { //i.e., if old deemed filling rules apply
-            //If current retirement test date younger than FRA, increment both by 1 month
-            if (spouseAretirementDate < spouseAFRA) {
-              spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1)
-              if (spouseAspousalDate <= spouseAretirementDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
-              spouseAspousalDate.setMonth(spouseAspousalDate.getMonth()+1)
+            //If current retirement test date younger than FRA, increment flexibleSpouse's retirement and spousal by 1 month
+            if (flexibleSpouseRetirementDate < flexibleSpouseFRA) {
+              flexibleSpouseRetirementDate.setMonth(flexibleSpouseRetirementDate.getMonth()+1)
+              fixedSpouseSpousalDate.setMonth(fixedSpouseSpousalDate.getMonth()+1)
+              if (flexibleSpouseSpousalDate <= flexibleSpouseRetirementDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
+              flexibleSpouseSpousalDate.setMonth(flexibleSpouseSpousalDate.getMonth()+1)
               }
             }
-            else {//If current retirement test date beyond FRA, increment retirement by 1 month and keep spousal where it is (at FRA, unless they're older than FRA when filling form)
-              spouseAretirementDate.setMonth(spouseAretirementDate.getMonth()+1)
+            else {//If current retirement test date beyond FRA, increment flexibleSpouse's retirement by 1 month and keep flexibleSpouse's spousal where it is (at FRA, unless they're older than FRA when filling form)
+              flexibleSpouseRetirementDate.setMonth(flexibleSpouseRetirementDate.getMonth()+1)
+              fixedSpouseSpousalDate.setMonth(fixedSpouseSpousalDate.getMonth()+1)
             }
           }
 
       }
         //after loop is finished
         console.log("saved PV: " + savedPV)
-        console.log("saved spouseAretirementDate: " + spouseAsavedRetirementDate)
-        console.log("saved spouseAspousalDate: " + spouseAsavedSpousalDate)
+        console.log("saved flexibleSpouseRetirementDate: " + flexibleSpouseSavedRetirementDate)
+        console.log("saved flexibleSpouseSpousalDate: " + flexibleSpouseSavedSpousalDate)
     
         //Find age at saved claiming dates, for sake of output statement.
-        let spouseAsavedRetirementAge = spouseAsavedRetirementDate.getFullYear() - spouseASSbirthDate.getFullYear() + (spouseAsavedRetirementDate.getMonth() - spouseASSbirthDate.getMonth())/12
-        let spouseAsavedRetirementAgeYears = Math.floor(spouseAsavedRetirementAge)
-        let spouseAsavedRetirementAgeMonths = Math.round((spouseAsavedRetirementAge%1)*12)
-        let spouseAsavedSpousalAge = spouseAsavedSpousalDate.getFullYear() - spouseASSbirthDate.getFullYear() + (spouseAsavedSpousalDate.getMonth() - spouseASSbirthDate.getMonth())/12
-        let spouseAsavedSpousalAgeYears = Math.floor(spouseAsavedSpousalAge)
-        let spouseAsavedSpousalAgeMonths = Math.round((spouseAsavedSpousalAge%1)*12)
+        let flexibleSpouseSavedRetirementAge = flexibleSpouseSavedRetirementDate.getFullYear() - flexibleSpouseSSbirthDate.getFullYear() + (flexibleSpouseSavedRetirementDate.getMonth() - flexibleSpouseSSbirthDate.getMonth())/12
+        let flexibleSpouseSavedRetirementAgeYears = Math.floor(flexibleSpouseSavedRetirementAge)
+        let flexibleSpouseSavedRetirementAgeMonths = Math.round((flexibleSpouseSavedRetirementAge%1)*12)
+        let flexibleSpouseSavedSpousalAge = flexibleSpouseSavedSpousalDate.getFullYear() - flexibleSpouseSSbirthDate.getFullYear() + (flexibleSpouseSavedSpousalDate.getMonth() - flexibleSpouseSSbirthDate.getMonth())/12
+        let flexibleSpouseSavedSpousalAgeYears = Math.floor(flexibleSpouseSavedSpousalAge)
+        let flexibleSpouseSavedSpousalAgeMonths = Math.round((flexibleSpouseSavedSpousalAge%1)*12)
 
-        let solutionSet: SolutionSet = {
-          "solutionPV":savedPV,
-          "spouseAretirementSolutionDate":spouseAsavedRetirementDate,
-          "spouseAretirementSolutionAmount":null,
-          "spouseAretirementSolutionAgeYears":spouseAsavedRetirementAgeYears,
-          "spouseAretirementSolutionAgeMonths":spouseAsavedRetirementAgeMonths,
-          "spouseBretirementSolutionDate":null,
-          "spouseBretirementSolutionAmount":null,
-          "spouseBretirementSolutionAgeYears":null,
-          "spouseBretirementSolutionAgeMonths":null,
-          "spouseAspousalSolutionDate":spouseAsavedSpousalDate,
-          "spouseAspousalSolutionAmount":null,
-          "spouseAspousalSolutionAgeYears":spouseAsavedSpousalAgeYears,
-          "spouseAspousalSolutionAgeMonths":spouseAsavedSpousalAgeMonths,
-          "spouseBspousalSolutionDate":null,
-          "spouseBspousalSolutionAmount":null,
-          "spouseBspousalSolutionAgeYears":null,
-          "spouseBspousalSolutionAgeMonths":null
-        }
-
-      //Set spousal date back to null in cases in which there will be no spousal benefit, so user doesn't see a suggested spousal claiming age that makes no sense.
-        //need to recalculate spousal benefit using the saved dates.
-        let finalCheckSpouseAretirement = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAsavedRetirementDate)
-        let finalCheckSpouseAspousal = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, finalCheckSpouseAretirement, spouseAsavedSpousalDate, spouseAgovernmentPension)
-        if (finalCheckSpouseAspousal == 0 && spouseAsavedSpousalDate >= spouseAsavedRetirementDate) //We compare the dates because we don't want to eliminate the spousal date from output if it's prior to retirement date (as in restricted app)
-          {solutionSet.spouseAspousalSolutionDate = null}
-        //Set retirement date to null if person has 0 PIA.
-        if (spouseAPIA == 0) {solutionSet.spouseAretirementSolutionDate = null}
+        //Spouse A is the one with solution values if divorced or if B has filed. If A is the one who has filed, B is the one with solution values.
+        if (maritalStatus == "divorced" || spouseBhasFiled === true){
+            var solutionSet: SolutionSet = {
+              "solutionPV":savedPV,
+              "spouseAretirementSolutionDate":flexibleSpouseSavedRetirementDate,
+              "spouseAretirementSolutionAmount":null,
+              "spouseAretirementSolutionAgeYears":flexibleSpouseSavedRetirementAgeYears,
+              "spouseAretirementSolutionAgeMonths":flexibleSpouseSavedRetirementAgeMonths,
+              "spouseBretirementSolutionDate":null,
+              "spouseBretirementSolutionAmount":null,
+              "spouseBretirementSolutionAgeYears":null,
+              "spouseBretirementSolutionAgeMonths":null,
+              "spouseAspousalSolutionDate":flexibleSpouseSavedSpousalDate,
+              "spouseAspousalSolutionAmount":null,
+              "spouseAspousalSolutionAgeYears":flexibleSpouseSavedSpousalAgeYears,
+              "spouseAspousalSolutionAgeMonths":flexibleSpouseSavedSpousalAgeMonths,
+              "spouseBspousalSolutionDate":null,
+              "spouseBspousalSolutionAmount":null,
+              "spouseBspousalSolutionAgeYears":null,
+              "spouseBspousalSolutionAgeMonths":null
+            }
+        } else if (spouseAhasFiled === true) {
+          var solutionSet: SolutionSet = {
+            "solutionPV":savedPV,
+            "spouseAretirementSolutionDate":null,
+            "spouseAretirementSolutionAmount":null,
+            "spouseAretirementSolutionAgeYears":null,
+            "spouseAretirementSolutionAgeMonths":null,
+            "spouseBretirementSolutionDate":flexibleSpouseSavedRetirementDate,
+            "spouseBretirementSolutionAmount":null,
+            "spouseBretirementSolutionAgeYears":flexibleSpouseSavedRetirementAgeYears,
+            "spouseBretirementSolutionAgeMonths":flexibleSpouseSavedRetirementAgeMonths,
+            "spouseAspousalSolutionDate":null,
+            "spouseAspousalSolutionAmount":null,
+            "spouseAspousalSolutionAgeYears":null,
+            "spouseAspousalSolutionAgeMonths":null,
+            "spouseBspousalSolutionDate":flexibleSpouseSavedSpousalDate,
+            "spouseBspousalSolutionAmount":null,
+            "spouseBspousalSolutionAgeYears":flexibleSpouseSavedSpousalAgeYears,
+            "spouseBspousalSolutionAgeMonths":flexibleSpouseSavedSpousalAgeMonths
+            }
+          }
+        //Set spousal date back to null in cases in which there will be no spousal benefit, so user doesn't see a suggested spousal claiming age that makes no sense.
+          //need to recalculate spousal benefit using the saved dates.
+          let finalCheckFlexibleSpouseRetirement = this.benefitService.calculateRetirementBenefit(flexibleSpousePIA, flexibleSpouseFRA, flexibleSpouseSavedRetirementDate)
+          let finalCheckFlexibleSpouseSpousal = this.benefitService.calculateSpousalBenefit(flexibleSpousePIA, fixedSpousePIA, flexibleSpouseFRA, finalCheckFlexibleSpouseRetirement, flexibleSpouseSavedSpousalDate, flexibleSpouseGovernmentPension)
+          if (finalCheckFlexibleSpouseSpousal == 0 && flexibleSpouseSavedSpousalDate >= flexibleSpouseSavedRetirementDate) { //We compare the dates because we don't want to eliminate the spousal date from output if it's prior to retirement date (as in restricted app)
+              if (maritalStatus == "divorced" || spouseBhasFiled === true) {//i.e., if spouseA is "flexibleSpouse"
+                solutionSet.spouseAspousalSolutionDate = null
+              }
+              else if (spouseAhasFiled === true) {//i.e., if spouseB is "flexibleSpouse"
+                solutionSet.spouseBspousalSolutionDate = null
+              }
+            }
+          //Set flexible spouse's retirement date to null if person has 0 PIA.
+          if (flexibleSpousePIA == 0) {
+            if (maritalStatus == "divorced" || spouseBhasFiled === true) {//i.e., if spouseA is "flexibleSpouse"
+              solutionSet.spouseAretirementSolutionDate = null
+            } else if (spouseAhasFiled === true) {//i.e., if spouseB is "flexibleSpouse"
+            solutionSet.spouseBretirementSolutionDate = null
+            }
+          }
   
         this.maximizedOrNot = true
         return solutionSet
