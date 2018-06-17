@@ -208,7 +208,7 @@ export class PresentvalueService {
     let spouseBage: number
     let spouseBageLastBirthday: number
     let probabilityBalive: number
-    let couplePV = 0
+    let couplePV: number = 0
     let initialCalcDate: Date
     let spouseAdenominatorAge: number
     let spouseBdenominatorAge: number
@@ -615,8 +615,6 @@ export class PresentvalueService {
         + (probabilityBalive * (1-probabilityAalive) * (spouseBannualRetirementBenefit + spouseBannualSurvivorBenefit)) //Scenario where B is alive, A is deceased
         + ((probabilityAalive * probabilityBalive) * (spouseAannualRetirementBenefit + spouseAannualSpousalBenefit + spouseBannualRetirementBenefit + spouseBannualSpousalBenefit)) //Scenario where both are alive
 
-        
-
       //Discount that benefit
             //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
             let olderAge: number
@@ -625,8 +623,7 @@ export class PresentvalueService {
             } else {olderAge = spouseBage}
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             annualPV = annualPV / (1 + discountRate/100/2) / Math.pow((1 + discountRate/100),(olderAge - 62))
-
-
+ 
      /* 
       //Logging for debugging purposes
         if (this.maximizedOrNot === true) {
@@ -658,7 +655,6 @@ export class PresentvalueService {
         spouseAage = spouseAage + 1
         spouseBage = spouseBage + 1
         currentCalculationDate.setFullYear(currentCalculationDate.getFullYear()+1)
-
     }
 
     return couplePV
