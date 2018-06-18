@@ -251,6 +251,8 @@
     <a href="https://obliviousinvestor.com/what-does-present-value-mean/" target="_blank">See this article</a> for a more thorough explanation of the "present value" concept.</p>
   </span>
   <hr>
+
+  <!--Custom Date(s) Form -->
   <form #customDateForm="ngForm" (ngSubmit)="customDates()">
   <h2>Test an alternative claiming strategy:</h2>
   <div class="form-inline">
@@ -264,7 +266,7 @@
       <span *ngIf="this.customSpouseAretirementDateError" class="alert alert-danger">{{this.customSpouseAretirementDateError}}</span>
     </div>
     <span *ngIf="maritalStatus == 'married' || maritalStatus == 'divorced'">
-        <div class="form-inline" *ngIf="this.spouseAPIA < 0.5 * this.spouseBPIA || this.spouseAactualBirthDate < this.deemedFilingCutoff">
+        <div class="form-inline" *ngIf="(this.spouseAPIA < 0.5 * this.spouseBPIA || this.spouseAactualBirthDate < this.deemedFilingCutoff) && this.spouseAdeclineSpousal === false">
           <label>Your month/year to claim spousal benefit:</label>
           <select class="form-control" [(ngModel)]="customSpouseAspousalBenefitMonth" name="customSpouseAspousalBenefitMonth" required>
             <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
@@ -274,6 +276,10 @@
           </select>
           <span *ngIf="this.customSpouseAspousalDateError" class="alert alert-danger">{{this.customSpouseAspousalDateError}}</span>
         </div>
+        <span *ngIf="this.spouseAPIA > 0.5 * this.spouseBPIA && this.spouseAactualBirthDate < this.deemedFilingCutoff">
+          <label>Check this box to test a scenario in which you do not file for a spousal benefit:</label>
+          <input id="spouseAdeclineSpousal" [(ngModel)]="spouseAdeclineSpousal" name="spouseAdeclineSpousal" value="true" type="checkbox">
+        </span>
         <div *ngIf="maritalStatus == 'married'" class="form-inline">
             <label>Your spouse's month/year to claim retirement benefit:</label>
             <select class="form-control" [(ngModel)]="customSpouseBretirementBenefitMonth" name="customSpouseBretirementBenefitMonth" required>
@@ -284,7 +290,7 @@
             </select>
             <span *ngIf="this.customSpouseBretirementDateError" class="alert alert-danger">{{this.customSpouseBretirementDateError}}</span>
           </div>
-          <div class="form-inline" *ngIf="this.spouseBPIA < 0.5 * this.spouseAPIA || this.spouseBactualBirthDate < this.deemedFilingCutoff">
+          <div class="form-inline" *ngIf="(this.spouseBPIA < 0.5 * this.spouseAPIA || this.spouseBactualBirthDate < this.deemedFilingCutoff) && this.spouseBdeclineSpousal === false">
             <span *ngIf="maritalStatus == 'married'">
             <label>Your spouse's month/year to claim spousal benefit:</label>
             <select class="form-control" [(ngModel)]="customSpouseBspousalBenefitMonth" name="customSpouseBspousalBenefitMonth" required>
@@ -296,6 +302,10 @@
             </span>
             <span *ngIf="this.customSpouseBspousalDateError" class="alert alert-danger">{{this.customSpouseBspousalDateError}}</span>
           </div>
+          <span *ngIf="maritalStatus == 'married' && this.spouseBPIA > 0.5 * this.spouseAPIA && this.spouseBactualBirthDate < this.deemedFilingCutoff">
+            <label>Check this box to test a scenario in which your spouse does not file for a spousal benefit:</label>
+            <input id="spouseBdeclineSpousal" [(ngModel)]="spouseBdeclineSpousal" name="spouseBdeclineSpousal" value="true" type="checkbox">
+          </span>
       </span>
     <div>
         <button type="submit" class="btn btn-primary">Submit</button>
@@ -304,6 +314,8 @@
       The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} from the recommended strategy, a difference of {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.
     </span>
   </form>
+   <!--End Custom Date(s) Form -->
+
   <hr>
   <h2>Want to Learn More about Social Security? Pick Up a Copy of My Book:</h2>
       <div class="container">

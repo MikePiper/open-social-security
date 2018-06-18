@@ -111,6 +111,8 @@ export class HomeComponent implements OnInit {
   customSpouseBspousalBenefitMonth: number
   customSpouseBspousalBenefitYear: number
   customSpouseBspousalBenefitDate: Date
+  spouseAdeclineSpousal: boolean = false
+  spouseBdeclineSpousal: boolean = false
 
 
   //Calculated dates and related info
@@ -218,12 +220,12 @@ export class HomeComponent implements OnInit {
     this.customSpouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.customSpouseAretirementBenefitDate)
     this.customSpouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.customSpouseBretirementBenefitDate)
     this.customSpouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.customSpouseAretirementBenefitDate, this.customSpouseAspousalBenefitDate, this.customSpouseBretirementBenefitDate)
-    this.customSpouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.customSpouseBretirementBenefitDate, this.customSpouseBspousalBenefitDate, this.customSpouseAretirementBenefitDate)
+    if (this.maritalStatus == "married") {this.customSpouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.customSpouseBretirementBenefitDate, this.customSpouseBspousalBenefitDate, this.customSpouseAretirementBenefitDate)}
     this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBfixedRetirementBenefitDate)
 
 
     //Get spousal benefit dates if there were no inputs from user (i.e. if spouseA won't actually file for a spousal benefit at any time, get the input that makes function run appropriately)
-    if (this.spouseAPIA > 0.5 * this.spouseBPIA && this.spouseAactualBirthDate > this.deemedFilingCutoff) {
+    if ( (this.spouseAPIA > 0.5 * this.spouseBPIA && this.spouseAactualBirthDate > this.deemedFilingCutoff) || this.spouseAdeclineSpousal === true ) {
       //If married, spouseA spousal date is later of retirement dates
       if (this.maritalStatus == "married") {
         if (this.customSpouseAretirementBenefitDate > this.customSpouseBretirementBenefitDate) {
@@ -240,7 +242,7 @@ export class HomeComponent implements OnInit {
       this.customSpouseAspousalDateError = undefined
     }
     //Ditto, for spouseB
-    if (this.spouseBPIA > 0.5 * this.spouseAPIA && this.spouseBactualBirthDate > this.deemedFilingCutoff) {
+    if ( (this.spouseBPIA > 0.5 * this.spouseAPIA && this.spouseBactualBirthDate > this.deemedFilingCutoff) || this.spouseBdeclineSpousal === true ) {
       //spouseB spousal date is later of retirement dates
       if (this.customSpouseAretirementBenefitDate > this.customSpouseBretirementBenefitDate) {
         this.customSpouseBspousalBenefitDate = new Date(this.customSpouseAretirementBenefitDate)
