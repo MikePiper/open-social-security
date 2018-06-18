@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {BenefitService} from './benefit.service'
 import {EarningsTestService} from './earningstest.service'
 import {MortalityService} from './mortality.service'
-import {SolutionSet} from './solutionset'
+import {claimingSolution} from './claimingsolution'
 
 @Injectable()
 export class PresentvalueService {
@@ -701,7 +701,7 @@ export class PresentvalueService {
     let savedClaimingAgeYears = Math.floor(savedClaimingAge)
     let savedClaimingAgeMonths = Math.round((savedClaimingAge%1)*12)
 
-    let solutionSet:SolutionSet = {
+    let solutionSet:claimingSolution = {
       "solutionPV":savedPV,
       "spouseAretirementSolutionDate":savedClaimingDate,
       "spouseAretirementSolutionAmount":null,
@@ -952,7 +952,7 @@ export class PresentvalueService {
     let spouseBsavedSpousalAgeMonths = Math.round((spouseBsavedSpousalAge%1)*12)
 
 
-      let solutionSet: SolutionSet = {
+      let solutionSet: claimingSolution = {
         "solutionPV":savedPV,
         "spouseAretirementSolutionDate":spouseAsavedRetirementDate,
         "spouseAretirementSolutionAmount":null,
@@ -1097,7 +1097,7 @@ export class PresentvalueService {
 
         //Spouse A is the one with solution values if divorced or if B has filed. If A is the one who has filed, B is the one with solution values.
         if (maritalStatus == "divorced" || spouseBhasFiled === true){
-            var solutionSet: SolutionSet = {
+            var solutionSet: claimingSolution = {
               "solutionPV":savedPV,
               "spouseAretirementSolutionDate":flexibleSpouseSavedRetirementDate,
               "spouseAretirementSolutionAmount":null,
@@ -1117,7 +1117,7 @@ export class PresentvalueService {
               "spouseBspousalSolutionAgeMonths":null
             }
         } else if (spouseAhasFiled === true) {
-          var solutionSet: SolutionSet = {
+          var solutionSet: claimingSolution = {
             "solutionPV":savedPV,
             "spouseAretirementSolutionDate":null,
             "spouseAretirementSolutionAmount":null,

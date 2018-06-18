@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {BirthdayService} from '../birthday.service'
 import {PresentvalueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
-import {SolutionSet} from '../solutionset'
+import {claimingSolution} from '../claimingsolution'
 import {FREDresponse} from '../fredresponse'
 import {HttpClient} from '@angular/common/http';
 
@@ -143,7 +143,7 @@ export class HomeComponent implements OnInit {
   //solution variables
   customPV: number
   differenceInPV: number
-  solutionSet: SolutionSet = {
+  solutionSet: claimingSolution = {
     "solutionPV":null,
     "spouseAretirementSolutionDate":null,
     "spouseAretirementSolutionAmount":null,
