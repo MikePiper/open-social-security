@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import {BirthdayService} from '../birthday.service'
 import {PresentvalueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
-import {claimingSolution} from '../claimingsolution'
+import {solutionSet} from '../solutionset'
+import {claimingSolution} from '../claimingSolution'
 import {FREDresponse} from '../fredresponse'
 import {HttpClient} from '@angular/common/http';
 
@@ -143,24 +144,9 @@ export class HomeComponent implements OnInit {
   //solution variables
   customPV: number
   differenceInPV: number
-  solutionSet: claimingSolution = {
+  solutionSet: solutionSet = {
     "solutionPV":null,
-    "spouseAretirementSolutionDate":null,
-    "spouseAretirementSolutionAmount":null,
-    "spouseAretirementSolutionAgeYears":null,
-    "spouseAretirementSolutionAgeMonths":null,
-    "spouseBretirementSolutionDate":null,
-    "spouseBretirementSolutionAmount":null,
-    "spouseBretirementSolutionAgeYears":null,
-    "spouseBretirementSolutionAgeMonths":null,
-    "spouseAspousalSolutionDate":null,
-    "spouseAspousalSolutionAmount":null,
-    "spouseAspousalSolutionAgeYears":null,
-    "spouseAspousalSolutionAgeMonths":null,
-    "spouseBspousalSolutionDate":null,
-    "spouseBspousalSolutionAmount":null,
-    "spouseBspousalSolutionAgeYears":null,
-    "spouseBspousalSolutionAgeMonths":null
+    "solutionsArray": []
   }
 
   onSubmit() {

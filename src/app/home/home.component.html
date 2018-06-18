@@ -240,6 +240,7 @@
 <span *ngIf="this.solutionSet.solutionPV">
   <p>The strategy that maximizes the total dollars you can be expected to spend over your lifetime<span *ngIf="maritalStatus == 'married'">s</span> is as follows:</p>
   <ul>
+    <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
     <li *ngIf="this.solutionSet.spouseAretirementSolutionDate">You file for your retirement benefit to begin {{this.solutionSet.spouseAretirementSolutionDate.getMonth()+1}}/{{this.solutionSet.spouseAretirementSolutionDate.getFullYear()}}, at age {{this.solutionSet.spouseAretirementSolutionAgeYears}} and {{this.solutionSet.spouseAretirementSolutionAgeMonths}} months.</li>
     <li *ngIf="this.solutionSet.spouseAspousalSolutionDate">You file for your spousal benefit to begin {{this.solutionSet.spouseAspousalSolutionDate.getMonth()+1}}/{{this.solutionSet.spouseAspousalSolutionDate.getFullYear()}}, at age {{this.solutionSet.spouseAspousalSolutionAgeYears}} and {{this.solutionSet.spouseAspousalSolutionAgeMonths}} months.</li>
     <li *ngIf="this.solutionSet.spouseBretirementSolutionDate">Your spouse files for his/her retirement benefit to begin {{this.solutionSet.spouseBretirementSolutionDate.getMonth()+1}}/{{this.solutionSet.spouseBretirementSolutionDate.getFullYear()}}, at age {{this.solutionSet.spouseBretirementSolutionAgeYears}} and {{this.solutionSet.spouseBretirementSolutionAgeMonths}} months.</li>
