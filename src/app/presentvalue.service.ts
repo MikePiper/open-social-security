@@ -382,7 +382,6 @@ export class PresentvalueService {
                     if (maritalStatus == "married"){//Only make spouse B's benefit as a spouse available for withholding if they're currently married (as opposed to divorced). If divorced, spouseB is automatically "not working," so we don't have any withholding due to their earnings to worry about.
                       if (earningsTestMonth >= spouseBspousalBenefitDate && earningsTestMonth >= spouseBretirementBenefitDate //i.e., if this is a "spouseBspousalBenefitWithRetirementBenefit" month
                         && (spouseBgraceYear === false || earningsTestMonth < spouseBquitWorkDate) //Make sure it isn't a nonservice month in grace year
-                        && (earningsTestMonth < spouseBFRA) //Make sure current month is prior to spouseB FRA
                       ) {
                       availableForWithholding = availableForWithholding + spouseBspousalBenefitWithRetirement
                       monthsOfSpouseBspousalWithRetirement = monthsOfSpouseBspousalWithRetirement - 1
@@ -390,7 +389,6 @@ export class PresentvalueService {
                       }
                       if (earningsTestMonth >= spouseBspousalBenefitDate && earningsTestMonth < spouseBretirementBenefitDate //i.e., if this is a "spouseBspousalBenefitWithoutRetirementBenefit" month
                         && (spouseBgraceYear === false || earningsTestMonth < spouseBquitWorkDate) //Make sure it isn't a nonservice month in grace year
-                        && (earningsTestMonth < spouseBFRA) //Make sure current month is prior to spouseB FRA
                       ){
                       availableForWithholding = availableForWithholding + spouseBspousalBenefitWithoutRetirement
                       monthsOfSpouseBspousalWithoutRetirement = monthsOfSpouseBspousalWithoutRetirement - 1
@@ -419,7 +417,6 @@ export class PresentvalueService {
                     }
                     if (earningsTestMonth >= spouseAspousalBenefitDate && earningsTestMonth >= spouseAretirementBenefitDate //i.e., if this is a "spouseAspousalBenefitWithRetirementBenefit" month
                       && (spouseAgraceYear === false || earningsTestMonth < spouseAquitWorkDate) //Make sure it's not a nonservice month in a grace year
-                      && (earningsTestMonth < spouseAFRA) //Make sure current month is prior to FRA
                     ) {
                     availableForWithholding = availableForWithholding + spouseAspousalBenefitWithRetirement
                     monthsOfSpouseAspousalWithRetirement = monthsOfSpouseAspousalWithRetirement - 1
@@ -427,7 +424,6 @@ export class PresentvalueService {
                     }
                     if (earningsTestMonth >= spouseAspousalBenefitDate && earningsTestMonth < spouseAretirementBenefitDate //i.e., if this is a "spouseAspousalBenefitWithoutRetirementBenefit" month
                       && (spouseAgraceYear === false || earningsTestMonth < spouseAquitWorkDate) //Make sure it's not a nonservice month in a grace year
-                      && (earningsTestMonth < spouseAFRA) //Make sure current month is prior to FRA
                     ){
                     availableForWithholding = availableForWithholding + spouseAspousalBenefitWithoutRetirement
                     monthsOfSpouseAspousalWithoutRetirement = monthsOfSpouseAspousalWithoutRetirement - 1
