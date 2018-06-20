@@ -258,16 +258,16 @@
   <!--Custom Date(s) Form -->
   <form #customDateForm="ngForm" (ngSubmit)="customDates()">
   <h2>Test an alternative claiming strategy:</h2>
-  <div class="form-inline">
-      <label>Your month/year to claim retirement benefit:</label>
-      <select class="form-control" [(ngModel)]="customSpouseAretirementBenefitMonth" name="customSpouseAretirementBenefitMonth" required>
-        <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-      </select>
-      <select class="form-control" [(ngModel)]="customSpouseAretirementBenefitYear" name="customSpouseAretirementBenefitYear" required>
-        <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-      </select>
-      <span *ngIf="this.customSpouseAretirementDateError" class="alert alert-danger">{{this.customSpouseAretirementDateError}}</span>
-    </div>
+        <div class="form-inline" *ngIf="spouseAhasFiled === false">
+            <label>Your month/year to claim retirement benefit:</label>
+            <select class="form-control" [(ngModel)]="customSpouseAretirementBenefitMonth" name="customSpouseAretirementBenefitMonth" required>
+              <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+            </select>
+            <select class="form-control" [(ngModel)]="customSpouseAretirementBenefitYear" name="customSpouseAretirementBenefitYear" required>
+              <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+            </select>
+            <span *ngIf="this.customSpouseAretirementDateError" class="alert alert-danger">{{this.customSpouseAretirementDateError}}</span>
+        </div>
     <span *ngIf="maritalStatus == 'married' || maritalStatus == 'divorced'">
         <div class="form-inline" *ngIf="(this.spouseAPIA < 0.5 * this.spouseBPIA || this.spouseAactualBirthDate < this.deemedFilingCutoff) && this.spouseAdeclineSpousal === false">
           <label>Your month/year to claim spousal benefit:</label>
@@ -283,7 +283,7 @@
           <label>Check this box to test a scenario in which you do not file for a spousal benefit:</label>
           <input id="spouseAdeclineSpousal" [(ngModel)]="spouseAdeclineSpousal" name="spouseAdeclineSpousal" value="true" type="checkbox">
         </span>
-        <div *ngIf="maritalStatus == 'married'" class="form-inline">
+        <div *ngIf="maritalStatus == 'married' && spouseBhasFiled === false" class="form-inline">
             <label>Your spouse's month/year to claim retirement benefit:</label>
             <select class="form-control" [(ngModel)]="customSpouseBretirementBenefitMonth" name="customSpouseBretirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>

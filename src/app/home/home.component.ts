@@ -195,12 +195,18 @@ export class HomeComponent implements OnInit {
     this.customSpouseAspousalBenefitDate = null
     this.customSpouseBretirementBenefitDate = null
     this.customSpouseBspousalBenefitDate = null
-    this.spouseBfixedRetirementBenefitDate = null
+    this.spouseAfixedRetirementBenefitDate = new Date(this.spouseAfixedRetirementBenefitYear, this.spouseAfixedRetirementBenefitMonth-1, 1)
+    this.spouseBfixedRetirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitYear, this.spouseBfixedRetirementBenefitMonth-1, 1)
+
     this.customSpouseAretirementBenefitDate = new Date(this.customSpouseAretirementBenefitYear, this.customSpouseAretirementBenefitMonth-1, 1)
+      //If spouse A has already filed, there will be no input regarding their retirement date in custom dates form, so go get "fixed" date from above
+      if (this.spouseAhasFiled === true) {this.customSpouseAretirementBenefitDate = new Date(this.spouseAfixedRetirementBenefitDate)}
     this.customSpouseAspousalBenefitDate = new Date(this.customSpouseAspousalBenefitYear, this.customSpouseAspousalBenefitMonth-1, 1)
     this.customSpouseBretirementBenefitDate = new Date(this.customSpouseBretirementBenefitYear, this.customSpouseBretirementBenefitMonth-1, 1)
+          //If spouse B has already filed, there will be no input regarding their retirement date in custom dates form, so go get "fixed" date from above
+          if (this.spouseBhasFiled === true) {this.customSpouseBretirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitDate)}
     this.customSpouseBspousalBenefitDate = new Date(this.customSpouseBspousalBenefitYear, this.customSpouseBspousalBenefitMonth-1, 1)
-    this.spouseBfixedRetirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitYear, this.spouseBfixedRetirementBenefitMonth-1, 1)
+
 
     //Check for errors in input dates
     this.customSpouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.customSpouseAretirementBenefitDate)
