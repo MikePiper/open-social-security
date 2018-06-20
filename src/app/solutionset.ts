@@ -1,6 +1,6 @@
-import { claimingSolution } from "./claimingSolution";
+import { claimingSolution } from "./claimingsolution";
 
-export class solutionSet {
+export class SolutionSet {
     solutionPV:number
     solutionsArray: claimingSolution[]
   }

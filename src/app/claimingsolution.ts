@@ -1,4 +1,5 @@
   export class claimingSolution {
+    maritalStatus: string
     benefitType: string //retirementAlone, retirementReplacingSpousal, spousalAlone, spousalWithRetirement, survivor
     person: string //spouseA or spouseB
     date: Date
@@ -7,7 +8,8 @@
     ageMonths: number
     message: string //build one of messages below
 
-    constructor(typeOfBenefit:string, person:string, date:Date, benefitAmount: number, ageYears:number, ageMonths:number){
+    constructor(maritalStatus: string, typeOfBenefit:string, person:string, date:Date, benefitAmount: number, ageYears:number, ageMonths:number){
+        this.maritalStatus = maritalStatus
         this.benefitType = typeOfBenefit
         this.person = person
         this.date = date
@@ -31,8 +33,15 @@
             this.message = "You file for your spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
             this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ", in addition to your monthly retirement benefit)"
           }
-          if (this.benefitType == "survivor") {
-            this. message = "In the event that your spouse predeceases you, you will be able to file for a survivor benefit. In combination with your retirement benefit, you would then receive a total of $XXXX per month -- assuming you wait at least until your full retirement age to file for that survivor benefit."
+          if (this.benefitType == "survivor" && this.maritalStatus == "married") {
+            this. message = "If you outlive your spouse, your total benefit (including survivor benefit) would be " +
+            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) +
+           " per month -- assuming you wait at least until your full retirement age to file for that survivor benefit."
+          }
+          if (this.benefitType == "survivor" && this.maritalStatus == "divorced") {
+            this. message = "If you outlive your ex-spouse, your total benefit (including survivor benefit) would be " +
+            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) +
+           " per month -- assuming you wait at least until your full retirement age to file for that survivor benefit."
           }
         }
         if (this.person == "spouseB") {
@@ -52,8 +61,10 @@
             this.message = "Your spouse files for his/her spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
             this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ", in addition to his/her monthly retirement benefit)"
           }
-          if (this.benefitType == "survivor") {
-           this.message = "In the event that you predecease your spouse, he/she will be able to file for a survivor benefit. In combination with his/her retirement benefit, your surviving spouse would then receive a total of $XXXX per month -- assuming he/she waits at least until full retirement age to file for that survivor benefit."
+          if (this.benefitType == "survivor" && this.maritalStatus == "married") {
+           this.message = "If your spouse outlives you, his/her total benefit (including survivor benefit) would be " +
+           this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) +
+           " per month -- assuming he/she waits at least until full retirement age to file for that survivor benefit."
           }
         }
     }

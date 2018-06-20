@@ -238,19 +238,21 @@
   </span>
 </form>
 <span *ngIf="this.solutionSet.solutionPV">
+
+   <!--Recommended Strategy Output-->
   <p>The strategy that maximizes the total dollars you can be expected to spend over your lifetime<span *ngIf="maritalStatus == 'married'">s</span> is as follows:</p>
   <ul>
-    <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
-    <li *ngIf="this.solutionSet.spouseAretirementSolutionDate">You file for your retirement benefit to begin {{this.solutionSet.spouseAretirementSolutionDate.getMonth()+1}}/{{this.solutionSet.spouseAretirementSolutionDate.getFullYear()}}, at age {{this.solutionSet.spouseAretirementSolutionAgeYears}} and {{this.solutionSet.spouseAretirementSolutionAgeMonths}} months.</li>
-    <li *ngIf="this.solutionSet.spouseAspousalSolutionDate">You file for your spousal benefit to begin {{this.solutionSet.spouseAspousalSolutionDate.getMonth()+1}}/{{this.solutionSet.spouseAspousalSolutionDate.getFullYear()}}, at age {{this.solutionSet.spouseAspousalSolutionAgeYears}} and {{this.solutionSet.spouseAspousalSolutionAgeMonths}} months.</li>
-    <li *ngIf="this.solutionSet.spouseBretirementSolutionDate">Your spouse files for his/her retirement benefit to begin {{this.solutionSet.spouseBretirementSolutionDate.getMonth()+1}}/{{this.solutionSet.spouseBretirementSolutionDate.getFullYear()}}, at age {{this.solutionSet.spouseBretirementSolutionAgeYears}} and {{this.solutionSet.spouseBretirementSolutionAgeMonths}} months.</li>
-    <li *ngIf="this.solutionSet.spouseBspousalSolutionDate">Your spouse files for his/her spousal benefit to begin {{this.solutionSet.spouseBspousalSolutionDate.getMonth()+1}}/{{this.solutionSet.spouseBspousalSolutionDate.getFullYear()}}, at age {{this.solutionSet.spouseBspousalSolutionAgeYears}} and {{this.solutionSet.spouseBspousalSolutionAgeMonths}} months.</li>
+    <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}<span *ngIf="this.spouseAworking === true || this.spouseBworking === true">*</span></li>
   </ul>
   <span  *ngIf="this.solutionSet.solutionPV">
-  <p><strong>The present value of this proposed solution would be {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}</strong>.</p>
-  <p> This means that with this strategy you could expect to receive, on average, {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} of total Social Security benefits over the course of your lifetime, after adjusting for the fact that a dollar received in the future is worth less than a dollar received today (because the sooner you receive a dollar the sooner you can invest it).
-    <a href="https://obliviousinvestor.com/what-does-present-value-mean/" target="_blank">See this article</a> for a more thorough explanation of the "present value" concept.</p>
+    <p><strong>The present value of this proposed solution would be {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}</strong>.</p>
+    <p> This means that with this strategy you could expect to receive, on average, {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} of total Social Security benefits over the course of your lifetime, after adjusting for the fact that a dollar received in the future is worth less than a dollar received today (because the sooner you receive a dollar the sooner you can invest it).
+      <a href="https://obliviousinvestor.com/what-does-present-value-mean/" target="_blank">See this article</a> for a more thorough explanation of the "present value" concept.</p>
   </span>
+  <p *ngIf="this.spouseAworking === true || this.spouseBworking === true">
+    *Please note that while the calculator does account for the earnings test (i.e., benefit adjustments for people who file and who are still working prior to full retirement age), 
+    the monthly benefit amounts quoted here do not reflect such adjustments.
+  </p>
   <hr>
 
   <!--Custom Date(s) Form -->

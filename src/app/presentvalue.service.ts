@@ -1,14 +1,13 @@
 import { Injectable } from '@angular/core';
 import {BenefitService} from './benefit.service'
 import {EarningsTestService} from './earningstest.service'
-import {MortalityService} from './mortality.service'
-import {solutionSet} from './solutionset'
-import { claimingSolution } from './claimingSolution';
+import {ClaimingSolutionService} from './claimingsolution.service'
+import {SolutionSet} from './solutionset'
 
 @Injectable()
 export class PresentvalueService {
 
-  constructor(private benefitService: BenefitService, private earningsTestService: EarningsTestService, private mortalityService: MortalityService) { }
+  constructor(private benefitService: BenefitService, private earningsTestService: EarningsTestService, private claimingSolutionService: ClaimingSolutionService) { }
   
   //Has maximize calc been run?
   maximizedOrNot: boolean = false
@@ -660,7 +659,7 @@ export class PresentvalueService {
   }
 
 
-  maximizeSinglePersonPV(PIA: number, SSbirthDate: Date, actualBirthDate:Date, initialAge:number, FRA: Date, quitWorkDate, monthlyEarnings, mortalityTable:number[], discountRate: number){
+  maximizeSinglePersonPV(maritalStatus: string, PIA: number, SSbirthDate: Date, actualBirthDate:Date, initialAge:number, FRA: Date, quitWorkDate, monthlyEarnings, mortalityTable:number[], discountRate: number){
     //find initial testClaimingDate for age 62
     let testClaimingDate = new Date(SSbirthDate.getFullYear()+62, 1, 1)
     if (actualBirthDate.getDate() <= 2){
@@ -695,21 +694,9 @@ export class PresentvalueService {
     console.log("saved PV: " + savedPV)
     console.log("savedClaimingDate: " + savedClaimingDate)
 
-    //Find age and monthly benefit amount at savedClaimingDate, for sake of output statement.
-    let savedClaimingAge = savedClaimingDate.getFullYear() - SSbirthDate.getFullYear() + (savedClaimingDate.getMonth() - SSbirthDate.getMonth())/12
-    let savedClaimingAgeYears = Math.floor(savedClaimingAge)
-    let savedClaimingAgeMonths = Math.round((savedClaimingAge%1)*12)
-    let savedRetirementBenefit = this.benefitService.calculateRetirementBenefit(PIA, FRA, savedClaimingDate)
-
-    //Create "solutionSet" object and claimingSolution object to populate it
-    let solutionSet:solutionSet = {
-      "solutionPV":savedPV,
-      "solutionsArray": []
-    }
-    let retirementSolution = new claimingSolution("retirementAlone", "spouseA", savedClaimingDate, savedRetirementBenefit, savedClaimingAgeYears, savedClaimingAgeMonths)
-    solutionSet.solutionsArray.push(retirementSolution)
-
-
+    //Generate solution set (for sake of output) from saved values
+    let solutionSet:SolutionSet = this.claimingSolutionService.generateSingleSolutionSet(maritalStatus, SSbirthDate, FRA, Number(PIA), Number(savedPV), savedClaimingDate)
+  
     this.maximizedOrNot = true
     return solutionSet
   }
@@ -926,74 +913,9 @@ export class PresentvalueService {
       console.log("spouseAspousalDate: " + spouseAsavedSpousalDate)
       console.log("spouseBspousalDate: " + spouseBsavedSpousalDate)
 
-
-    //Find monthly benefit amounts and ages at saved claiming dates, for sake of output statement.
-      //spouseA retirement stuff
-      let spouseAsavedRetirementBenefit = this.benefitService.calculateRetirementBenefit(spouseAPIA, spouseAFRA, spouseAsavedRetirementDate)
-      let spouseAsavedRetirementAge = spouseAsavedRetirementDate.getFullYear() - spouseASSbirthDate.getFullYear() + (spouseAsavedRetirementDate.getMonth() - spouseASSbirthDate.getMonth())/12
-      let spouseAsavedRetirementAgeYears = Math.floor(spouseAsavedRetirementAge)
-      let spouseAsavedRetirementAgeMonths = Math.round((spouseAsavedRetirementAge%1)*12)
-      //spouseB retirement stuff
-      let spouseBsavedRetirementBenefit = this.benefitService.calculateRetirementBenefit(spouseBPIA, spouseBFRA, spouseBsavedRetirementDate)
-      let spouseBsavedRetirementAge = spouseBsavedRetirementDate.getFullYear() - spouseBSSbirthDate.getFullYear() + (spouseBsavedRetirementDate.getMonth() - spouseBSSbirthDate.getMonth())/12
-      let spouseBsavedRetirementAgeYears = Math.floor(spouseBsavedRetirementAge)
-      let spouseBsavedRetirementAgeMonths = Math.round((spouseBsavedRetirementAge%1)*12)
-      //spouseA spousal stuff
-      let spouseAsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, spouseAsavedRetirementBenefit, spouseAsavedSpousalDate, spouseAgovernmentPension)
-        if (spouseAsavedSpousalBenefit == 0 && spouseAsavedSpousalDate < spouseAsavedRetirementDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
-          spouseAsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, spouseAFRA, 0, spouseAsavedSpousalDate, spouseAgovernmentPension)
-        }
-      let spouseAsavedSpousalAge = spouseAsavedSpousalDate.getFullYear() - spouseASSbirthDate.getFullYear() + (spouseAsavedSpousalDate.getMonth() - spouseASSbirthDate.getMonth())/12
-      let spouseAsavedSpousalAgeYears = Math.floor(spouseAsavedSpousalAge)
-      let spouseAsavedSpousalAgeMonths = Math.round((spouseAsavedSpousalAge%1)*12)
-      //spouseB spousal stuff
-      let spouseBsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, spouseBsavedRetirementBenefit, spouseBsavedSpousalDate, spouseBgovernmentPension)
-      if (spouseBsavedSpousalBenefit == 0 && spouseBsavedSpousalDate < spouseBsavedRetirementDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
-        spouseBsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, spouseBFRA, 0, spouseBsavedSpousalDate, spouseBgovernmentPension)
-      }
-      let spouseBsavedSpousalAge = spouseBsavedSpousalDate.getFullYear() - spouseBSSbirthDate.getFullYear() + (spouseBsavedSpousalDate.getMonth() - spouseBSSbirthDate.getMonth())/12
-      let spouseBsavedSpousalAgeYears = Math.floor(spouseBsavedSpousalAge)
-      let spouseBsavedSpousalAgeMonths = Math.round((spouseBsavedSpousalAge%1)*12)
-
-
-      let solutionSet: solutionSet = {
-        "solutionPV":savedPV,
-        solutionsArray: []
-      }
-      //Determine claimingSolution objects
-      if (spouseAsavedRetirementDate > spouseAsavedSpousalDate) {
-        var spouseAretirementSolution = new claimingSolution("retirementReplacingSpousal", "spouseA", spouseAsavedRetirementDate, spouseAsavedRetirementBenefit, spouseAsavedRetirementAgeYears, spouseAsavedRetirementAgeMonths)
-      } else {
-        var spouseAretirementSolution = new claimingSolution("retirementAlone", "spouseA", spouseAsavedRetirementDate, spouseAsavedRetirementBenefit, spouseAsavedRetirementAgeYears, spouseAsavedRetirementAgeMonths)
-      }
-      if (spouseBsavedRetirementDate > spouseBsavedSpousalDate) {
-        var spouseBretirementSolution = new claimingSolution("retirementReplacingSpousal", "spouseB", spouseBsavedRetirementDate, spouseBsavedRetirementBenefit, spouseBsavedRetirementAgeYears, spouseBsavedRetirementAgeMonths)
-      } else {
-        var spouseBretirementSolution = new claimingSolution("retirementAlone", "spouseB", spouseBsavedRetirementDate, spouseBsavedRetirementBenefit, spouseBsavedRetirementAgeYears, spouseBsavedRetirementAgeMonths)
-      }
-      if (spouseAsavedSpousalDate < spouseAsavedRetirementDate) {
-        var spouseAspousalSolution = new claimingSolution("spousalAlone", "spouseA", spouseAsavedSpousalDate, spouseAsavedSpousalBenefit, spouseAsavedSpousalAgeYears, spouseAsavedSpousalAgeMonths)
-      } else {
-        var spouseAspousalSolution = new claimingSolution("spousalWithRetirement", "spouseA", spouseAsavedSpousalDate, spouseAsavedSpousalBenefit, spouseAsavedSpousalAgeYears, spouseAsavedSpousalAgeMonths)
-      }
-      if (spouseBsavedSpousalDate < spouseBsavedRetirementDate) {
-        var spouseBspousalSolution = new claimingSolution("spousalAlone", "spouseB", spouseBsavedSpousalDate, spouseBsavedSpousalBenefit, spouseBsavedSpousalAgeYears, spouseBsavedSpousalAgeMonths)
-      } else {
-        var spouseBspousalSolution = new claimingSolution("spousalWithRetirement", "spouseB", spouseBsavedSpousalDate, spouseBsavedSpousalBenefit, spouseBsavedSpousalAgeYears, spouseBsavedSpousalAgeMonths)
-      }
-
-      //Push claimingSolution objects to solutionSet.solutionsArray (But don't push them if the benefit amount is zero.)
-      if (spouseAsavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(spouseAretirementSolution)}
-      if (spouseBsavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(spouseBretirementSolution)}
-      if (spouseAsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(spouseAspousalSolution)}
-      if (spouseBsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(spouseBspousalSolution)}
-  
-      //Sort array by date
-      solutionSet.solutionsArray.sort(function(a,b){
-        // Turn your strings into dates, and then subtract them
-        // to get a value that is either negative, positive, or zero.
-        return a.date.getTime() - b.date.getTime()
-      })
+      //Generate solution set (for sake of output) from saved values
+      let solutionSet:SolutionSet = this.claimingSolutionService.generateCoupleSolutionSet(maritalStatus, spouseASSbirthDate, spouseBSSbirthDate, spouseAFRA, spouseBFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, Number(savedPV), Number(spouseAgovernmentPension), Number(spouseBgovernmentPension))
+      
       this.maximizedOrNot = true
       return solutionSet
   }
@@ -1096,84 +1018,8 @@ export class PresentvalueService {
         console.log("saved flexibleSpouseRetirementDate: " + flexibleSpouseSavedRetirementDate)
         console.log("saved flexibleSpouseSpousalDate: " + flexibleSpouseSavedSpousalDate)
     
-        //Find age at saved claiming dates, for sake of output statement.
-        let flexibleSpouseSavedRetirementAge = flexibleSpouseSavedRetirementDate.getFullYear() - flexibleSpouseSSbirthDate.getFullYear() + (flexibleSpouseSavedRetirementDate.getMonth() - flexibleSpouseSSbirthDate.getMonth())/12
-        let flexibleSpouseSavedRetirementAgeYears = Math.floor(flexibleSpouseSavedRetirementAge)
-        let flexibleSpouseSavedRetirementAgeMonths = Math.round((flexibleSpouseSavedRetirementAge%1)*12)
-        let flexibleSpouseSavedSpousalAge = flexibleSpouseSavedSpousalDate.getFullYear() - flexibleSpouseSSbirthDate.getFullYear() + (flexibleSpouseSavedSpousalDate.getMonth() - flexibleSpouseSSbirthDate.getMonth())/12
-        let flexibleSpouseSavedSpousalAgeYears = Math.floor(flexibleSpouseSavedSpousalAge)
-        let flexibleSpouseSavedSpousalAgeMonths = Math.round((flexibleSpouseSavedSpousalAge%1)*12)
+        let solutionSet:SolutionSet = this.claimingSolutionService.generateCoupleOneHasFiledSolutionSet(maritalStatus, spouseAhasFiled, spouseBhasFiled, Number(flexibleSpousePIA), Number(fixedSpousePIA), flexibleSpouseSSbirthDate, flexibleSpouseFRA, fixedSpouseFRA, Number(flexibleSpouseGovernmentPension), flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, Number(savedPV))
 
-        //Spouse A is the one with solution values if divorced or if B has filed. If A is the one who has filed, B is the one with solution values.
-        if (maritalStatus == "divorced" || spouseBhasFiled === true){
-            var solutionSet: solutionSet = {
-              "solutionPV":savedPV,
-              "solutionsArray": []
-              /*TODO: CHECK ALL THIS
-              "spouseAretirementSolutionDate":flexibleSpouseSavedRetirementDate,
-              "spouseAretirementSolutionAmount":null,
-              "spouseAretirementSolutionAgeYears":flexibleSpouseSavedRetirementAgeYears,
-              "spouseAretirementSolutionAgeMonths":flexibleSpouseSavedRetirementAgeMonths,
-              "spouseBretirementSolutionDate":null,
-              "spouseBretirementSolutionAmount":null,
-              "spouseBretirementSolutionAgeYears":null,
-              "spouseBretirementSolutionAgeMonths":null,
-              "spouseAspousalSolutionDate":flexibleSpouseSavedSpousalDate,
-              "spouseAspousalSolutionAmount":null,
-              "spouseAspousalSolutionAgeYears":flexibleSpouseSavedSpousalAgeYears,
-              "spouseAspousalSolutionAgeMonths":flexibleSpouseSavedSpousalAgeMonths,
-              "spouseBspousalSolutionDate":null,
-              "spouseBspousalSolutionAmount":null,
-              "spouseBspousalSolutionAgeYears":null,
-              "spouseBspousalSolutionAgeMonths":null
-              */
-            }
-        } else if (spouseAhasFiled === true) {
-          var solutionSet: solutionSet = {
-            "solutionPV":savedPV,
-            "solutionsArray": []
-            /*TODO: CHECK ALL THIS
-            "spouseAretirementSolutionDate":null,
-            "spouseAretirementSolutionAmount":null,
-            "spouseAretirementSolutionAgeYears":null,
-            "spouseAretirementSolutionAgeMonths":null,
-            "spouseBretirementSolutionDate":flexibleSpouseSavedRetirementDate,
-            "spouseBretirementSolutionAmount":null,
-            "spouseBretirementSolutionAgeYears":flexibleSpouseSavedRetirementAgeYears,
-            "spouseBretirementSolutionAgeMonths":flexibleSpouseSavedRetirementAgeMonths,
-            "spouseAspousalSolutionDate":null,
-            "spouseAspousalSolutionAmount":null,
-            "spouseAspousalSolutionAgeYears":null,
-            "spouseAspousalSolutionAgeMonths":null,
-            "spouseBspousalSolutionDate":flexibleSpouseSavedSpousalDate,
-            "spouseBspousalSolutionAmount":null,
-            "spouseBspousalSolutionAgeYears":flexibleSpouseSavedSpousalAgeYears,
-            "spouseBspousalSolutionAgeMonths":flexibleSpouseSavedSpousalAgeMonths
-            */
-            }
-          }
-        //Set spousal date back to null in cases in which there will be no spousal benefit, so user doesn't see a suggested spousal claiming age that makes no sense.
-          //need to recalculate spousal benefit using the saved dates.
-          let finalCheckFlexibleSpouseRetirement = this.benefitService.calculateRetirementBenefit(flexibleSpousePIA, flexibleSpouseFRA, flexibleSpouseSavedRetirementDate)
-          let finalCheckFlexibleSpouseSpousal = this.benefitService.calculateSpousalBenefit(flexibleSpousePIA, fixedSpousePIA, flexibleSpouseFRA, finalCheckFlexibleSpouseRetirement, flexibleSpouseSavedSpousalDate, flexibleSpouseGovernmentPension)
-          /*TODO: CHECK ALL THIS
-          if (finalCheckFlexibleSpouseSpousal == 0 && flexibleSpouseSavedSpousalDate >= flexibleSpouseSavedRetirementDate) { //We compare the dates because we don't want to eliminate the spousal date from output if it's prior to retirement date (as in restricted app)
-              if (maritalStatus == "divorced" || spouseBhasFiled === true) {//i.e., if spouseA is "flexibleSpouse"
-                solutionSet.spouseAspousalSolutionDate = null
-              }
-              else if (spouseAhasFiled === true) {//i.e., if spouseB is "flexibleSpouse"
-                solutionSet.spouseBspousalSolutionDate = null
-              }
-            }
-          //Set flexible spouse's retirement date to null if person has 0 PIA.
-          if (flexibleSpousePIA == 0) {
-            if (maritalStatus == "divorced" || spouseBhasFiled === true) {//i.e., if spouseA is "flexibleSpouse"
-              solutionSet.spouseAretirementSolutionDate = null
-            } else if (spouseAhasFiled === true) {//i.e., if spouseB is "flexibleSpouse"
-            solutionSet.spouseBretirementSolutionDate = null
-            }
-          }
-          */
 
         this.maximizedOrNot = true
         return solutionSet

@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import {BirthdayService} from '../birthday.service'
 import {PresentvalueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
-import {solutionSet} from '../solutionset'
-import {claimingSolution} from '../claimingSolution'
+import {SolutionSet} from '../solutionset'
+import {claimingSolution} from '../claimingsolution'
 import {FREDresponse} from '../fredresponse'
 import {HttpClient} from '@angular/common/http';
 
@@ -144,7 +144,7 @@ export class HomeComponent implements OnInit {
   //solution variables
   customPV: number
   differenceInPV: number
-  solutionSet: solutionSet = {
+  solutionSet: SolutionSet = {
     "solutionPV":null,
     "solutionsArray": []
   }
@@ -156,7 +156,7 @@ export class HomeComponent implements OnInit {
 
     //Call appropriate "maximizePV" function to find best solution
     if (this.maritalStatus == "single") {
-      this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAquitWorkDate, this.spouseAmonthlyEarnings, this.spouseAmortalityTable, Number(this.discountRate))
+      this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(this.maritalStatus, Number(this.spouseAPIA), this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAage, this.spouseAFRA, this.spouseAquitWorkDate, this.spouseAmonthlyEarnings, this.spouseAmortalityTable, Number(this.discountRate))
       }
     if(this.maritalStatus == "married") {
       if (this.spouseAhasFiled === false && this.spouseBhasFiled === false) {//i.e., if neither spouse has filed
