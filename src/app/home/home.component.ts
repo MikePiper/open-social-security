@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {BirthdayService} from '../birthday.service'
-import {PresentvalueService} from '../presentvalue.service'
+import {PresentValueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
 import {SolutionSet} from '../solutionset'
 import {claimingSolution} from '../claimingsolution'
@@ -15,7 +15,7 @@ import {HttpClient} from '@angular/common/http';
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private birthdayService: BirthdayService, private presentvalueService: PresentvalueService, private mortalityService: MortalityService, private http: HttpClient) { }
+  constructor(private birthdayService: BirthdayService, private presentvalueService: PresentValueService, private mortalityService: MortalityService, private http: HttpClient) { }
 
   ngOnInit() {
     this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")

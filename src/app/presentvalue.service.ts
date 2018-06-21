@@ -5,7 +5,7 @@ import {ClaimingSolutionService} from './claimingsolution.service'
 import {SolutionSet} from './solutionset'
 
 @Injectable()
-export class PresentvalueService {
+export class PresentValueService {
 
   constructor(private benefitService: BenefitService, private earningsTestService: EarningsTestService, private claimingSolutionService: ClaimingSolutionService) { }
   

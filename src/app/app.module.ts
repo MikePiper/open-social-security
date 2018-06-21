@@ -9,7 +9,7 @@ import { BenefitService } from './benefit.service';
 import { AppRoutingModule } from './/app-routing.module';
 import { BirthdayService } from './birthday.service';
 import { AboutComponent } from './about/about.component';
-import { PresentvalueService } from './presentvalue.service';
+import { PresentValueService } from './presentvalue.service';
 import { ContactComponent } from './contact/contact.component';
 import { HttpClientModule } from '@angular/common/http';
 
@@ -29,7 +29,7 @@ import { HttpClientModule } from '@angular/common/http';
     CollapseModule.forRoot(),
     BsDropdownModule.forRoot()
   ],
-  providers: [BenefitService, BirthdayService, PresentvalueService],
+  providers: [BenefitService, BirthdayService, PresentValueService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
