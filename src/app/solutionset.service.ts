@@ -6,7 +6,7 @@ import {claimingSolution} from './claimingsolution';
 @Injectable({
   providedIn: 'root'
 })
-export class ClaimingSolutionService {
+export class SolutionSetService {
 
   constructor(private benefitService: BenefitService) { }
 
@@ -116,7 +116,8 @@ export class ClaimingSolutionService {
         return solutionSet
   }
 
-  generateCoupleOneHasFiledSolutionSet(maritalStatus:string, spouseAhasFiled:boolean, spouseBhasFiled:boolean, flexibleSpousePIA:number, fixedSpousePIA:number, flexibleSpouseSSbirthDate:Date, flexibleSpouseFRA:Date, fixedSpouseFRA:Date, flexibleSpouseGovernmentPension:number, flexibleSpouseSavedRetirementDate:Date, flexibleSpouseSavedSpousalDate:Date, fixedSpouseRetirementBenefitDate:Date, savedPV:number){
+  generateCoupleOneHasFiledSolutionSet(maritalStatus:string, spouseAhasFiled:boolean, spouseBhasFiled:boolean, flexibleSpousePIA:number, fixedSpousePIA:number, flexibleSpouseSSbirthDate:Date,
+    flexibleSpouseFRA:Date, fixedSpouseFRA:Date, flexibleSpouseGovernmentPension:number, flexibleSpouseSavedRetirementDate:Date, flexibleSpouseSavedSpousalDate:Date, fixedSpouseRetirementBenefitDate:Date, savedPV:number){
         let fixedSpouseRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(Number(fixedSpousePIA), fixedSpouseFRA, fixedSpouseRetirementBenefitDate)
         //flexible spouse retirement age/benefitAmount
         let flexibleSpouseSavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(flexibleSpousePIA, flexibleSpouseFRA, flexibleSpouseSavedRetirementDate)

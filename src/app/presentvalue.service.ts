@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import {BenefitService} from './benefit.service'
 import {EarningsTestService} from './earningstest.service'
-import {ClaimingSolutionService} from './claimingsolution.service'
+import {SolutionSetService} from './solutionset.service'
 import {SolutionSet} from './solutionset'
 
 @Injectable()
 export class PresentValueService {
 
-  constructor(private benefitService: BenefitService, private earningsTestService: EarningsTestService, private claimingSolutionService: ClaimingSolutionService) { }
+  constructor(private benefitService: BenefitService, private earningsTestService: EarningsTestService, private claimingSolutionService: SolutionSetService) { }
   
   //Has maximize calc been run?
   maximizedOrNot: boolean = false
@@ -696,7 +696,6 @@ export class PresentValueService {
 
     //Generate solution set (for sake of output) from saved values
     let solutionSet:SolutionSet = this.claimingSolutionService.generateSingleSolutionSet(maritalStatus, SSbirthDate, FRA, Number(PIA), Number(savedPV), savedClaimingDate)
-  
     this.maximizedOrNot = true
     return solutionSet
   }
