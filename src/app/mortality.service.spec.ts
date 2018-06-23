@@ -1,17 +1,17 @@
-import { TestBed, inject } from '@angular/core/testing';
+import { TestBed, inject } from '@angular/core/testing'
+import { MortalityService } from './mortality.service'
 
-import { MortalityService } from './mortality.service';
 
 describe('MortalityService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [MortalityService]
-    });
-  });
+    })
+  })
 
   it('should be created', inject([MortalityService], (service: MortalityService) => {
     expect(service).toBeTruthy();
-  }));
+  }))
 
 
   //check that determineMortalityTable() gets the right table -- check via an indexed value
@@ -36,4 +36,4 @@ describe('MortalityService', () => {
   }))
 
 
-});
+})

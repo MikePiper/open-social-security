@@ -3,7 +3,6 @@ import {BirthdayService} from '../birthday.service'
 import {PresentValueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
 import {SolutionSet} from '../solutionset'
-import {claimingSolution} from '../claimingsolution'
 import {FREDresponse} from '../fredresponse'
 import {HttpClient} from '@angular/common/http';
 
@@ -165,19 +164,19 @@ export class HomeComponent implements OnInit {
       if (this.spouseAhasFiled === false && this.spouseBhasFiled === false) {//i.e., if neither spouse has filed
         this.solutionSet = this.presentvalueService.maximizeCouplePV(this.maritalStatus, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
       } else if (this.spouseAhasFiled === true && this.spouseBhasFiled === false) {//i.e., if spouseA has filed and B has not
-        this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAfixedRetirementBenefitDate)
+        this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseASSbirthDate, this.spouseAactualBirthDate, this.spouseAfixedRetirementBenefitDate)
         if (!this.spouseAfixedRetirementDateError){
           this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.maritalStatus, this.spouseAhasFiled, this.spouseBhasFiled, this.spouseAfixedRetirementBenefitDate, Number(this.spouseBPIA), Number(this.spouseAPIA), this.spouseBactualBirthDate, this.spouseAactualBirthDate, this.spouseBSSbirthDate, this.spouseASSbirthDate, Number(this.spouseBageRounded), Number(this.spouseAageRounded), this.spouseBFRA, this.spouseAFRA, this.spouseBsurvivorFRA, this.spouseAsurvivorFRA, this.spouseBmortalityTable, this.spouseAmortalityTable, this.spouseBquitWorkDate, this.spouseAquitWorkDate, this.spouseBmonthlyEarnings, this.spouseAmonthlyEarnings, Number(this.spouseBgovernmentPension), Number(this.spouseAgovernmentPension), Number(this.discountRate))
         }
       } else if (this.spouseBhasFiled === true && this.spouseAhasFiled === false) {//i.e., if spouseB has filed and A has not
-        this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBfixedRetirementBenefitDate)
+        this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBfixedRetirementBenefitDate)
         if (!this.spouseBfixedRetirementDateError){
           this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.maritalStatus, this.spouseAhasFiled, this.spouseBhasFiled, this.spouseBfixedRetirementBenefitDate, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
         }
       }
     }
     if(this.maritalStatus == "divorced") {
-      this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBfixedRetirementBenefitDate)
+      this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBfixedRetirementBenefitDate)
         if (!this.spouseBfixedRetirementDateError){
           this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.maritalStatus, this.spouseAhasFiled, this.spouseBhasFiled, this.spouseBfixedRetirementBenefitDate, Number(this.spouseAPIA), Number(this.spouseBPIA), this.spouseAactualBirthDate, this.spouseBactualBirthDate, this.spouseASSbirthDate, this.spouseBSSbirthDate, Number(this.spouseAageRounded), Number(this.spouseBageRounded), this.spouseAFRA, this.spouseBFRA, this.spouseAsurvivorFRA, this.spouseBsurvivorFRA, this.spouseAmortalityTable, this.spouseBmortalityTable, this.spouseAquitWorkDate, this.spouseBquitWorkDate, this.spouseAmonthlyEarnings, this.spouseBmonthlyEarnings, Number(this.spouseAgovernmentPension), Number(this.spouseBgovernmentPension), Number(this.discountRate))
         }
@@ -212,11 +211,11 @@ export class HomeComponent implements OnInit {
 
 
     //Check for errors in input dates
-    this.customSpouseAretirementDateError = this.checkValidRetirementInputs(this.spouseAFRA, this.spouseASSbirthDate, this.spouseAactualBirthDate, this.customSpouseAretirementBenefitDate)
-    this.customSpouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.customSpouseBretirementBenefitDate)
+    this.customSpouseAretirementDateError = this.checkValidRetirementInputs(this.spouseASSbirthDate, this.spouseAactualBirthDate, this.customSpouseAretirementBenefitDate)
+    this.customSpouseBretirementDateError = this.checkValidRetirementInputs(this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.customSpouseBretirementBenefitDate)
     this.customSpouseAspousalDateError = this.checkValidSpousalInputs(this.spouseAFRA, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.customSpouseAretirementBenefitDate, this.customSpouseAspousalBenefitDate, this.customSpouseBretirementBenefitDate)
     if (this.maritalStatus == "married") {this.customSpouseBspousalDateError = this.checkValidSpousalInputs(this.spouseBFRA, this.spouseBactualBirthDate, this.spouseBSSbirthDate, this.spouseAactualBirthDate, this.spouseASSbirthDate, this.customSpouseBretirementBenefitDate, this.customSpouseBspousalBenefitDate, this.customSpouseAretirementBenefitDate)}
-    this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseBFRA, this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBfixedRetirementBenefitDate)
+    this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.spouseBSSbirthDate, this.spouseBactualBirthDate, this.spouseBfixedRetirementBenefitDate)
 
 
     //Get spousal benefit dates if there were no inputs from user (i.e. if spouseA won't actually file for a spousal benefit at any time, get the input that makes function run appropriately)
@@ -283,7 +282,7 @@ export class HomeComponent implements OnInit {
     this.spouseBmortalityTable = this.mortalityService.determineMortalityTable(this.spouseBgender, this.spouseBmortalityInput, this.spouseBassumedDeathAge)
   }
 
-  checkValidRetirementInputs(FRA: Date, SSbirthDate: Date, actualBirthDate:Date, retirementBenefitDate:Date) {
+  checkValidRetirementInputs(SSbirthDate: Date, actualBirthDate:Date, retirementBenefitDate:Date) {
     let error = undefined
 
     //Make sure there is an input
