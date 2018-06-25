@@ -51,6 +51,7 @@
         </div>
         
         <!--Begin SpouseA Earnings Test Inputs -->
+        <span *ngIf="advanced === true">
             <div>
                 <label>Are you still working?</label>
                 <input type="radio" id="spouseAworkingYes" [(ngModel)]="spouseAworking" name="spouseAworking" [value]="true" (change)="resetWorkInputs()">
@@ -72,6 +73,9 @@
                 <input type="text" [(ngModel)]="spouseAmonthlyEarnings" name="spouseAmonthlyEarnings" #spouseAmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,8}">
                 <span *ngIf="spouseAmonthlyEarningsInput.invalid" class="alert alert-danger">digits only, please</span>
             </div>
+            <p class="inputexplanation">This information (about current work status) is only used for the purpose of applying the Social Security <a href="https://www.ssa.gov/oact/cola/rtea.html" target="_blank">earnings test</a>. It is not used for calculating your PIA.
+                The calculator relies on the user to provide the PIA. (Again, you can get such information by contacting the SSA, or by using one of the calculators on their website, such as <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">this one</a>.)</p>
+        </span>
         <!--End Spouse A Earnings Test Inputs -->
 
         <!--Begin Spouse A Already-Filed Inputs-->
@@ -150,6 +154,7 @@
         </div>
 
         <!--Begin SpouseB Earnings Test Inputs -->
+        <span *ngIf="advanced === true">
             <div *ngIf="maritalStatus == 'married'">
                 <label>Is your spouse still working?</label>
                 <input type="radio" id="spouseBworkingYes" [(ngModel)]="spouseBworking" name="spouseBworking" [value]="true" (change)="resetWorkInputs()">
@@ -171,6 +176,7 @@
                 <input type="text" [(ngModel)]="spouseBmonthlyEarnings" name="spouseBmonthlyEarnings" #spouseBmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,7}">
                 <span *ngIf="spouseBmonthlyEarningsInput.invalid" class="alert alert-danger">digits only, please</span>
             </div>
+        </span>
         <!--End SpouseB Earnings Test Inputs -->
 
 
