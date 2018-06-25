@@ -60,12 +60,7 @@ export class BenefitService {
     deceasedFRA: Date, dateOfDeath: Date,  deceasedPIA: number, deceasedClaimingDate: Date, governmentPension: number)
   {
     let deceasedRetirementBenefit: number
-    let survivorBenefit
-
-    //find percentage of the way survivor is from 60 to FRA
-    let monthsFrom60toFRA: number = (survivorSurvivorFRA.getFullYear() - (survivorSSbirthDate.getFullYear()+60))*12 + (survivorSurvivorFRA.getMonth() - survivorSSbirthDate.getMonth())
-    let monthsElapsed: number = (survivorSurvivorBenefitDate.getFullYear() - (survivorSSbirthDate.getFullYear()+60))*12 + (survivorSurvivorBenefitDate.getMonth() - survivorSSbirthDate.getMonth())
-    let percentageWaited: number = monthsElapsed / monthsFrom60toFRA
+    let survivorBenefit: number
 
     //If deceased had filed, survivorBenefit = deceased spouse's retirement benefit, but no less than 82.5% of deceased's PIA
     if (deceasedClaimingDate <= dateOfDeath) {
@@ -85,14 +80,22 @@ export class BenefitService {
         survivorBenefit = this.calculateRetirementBenefit(deceasedPIA, deceasedFRA, dateOfDeath)
         }
     }
+    
+    //If survivor files for survivor benefit prior to their survivorFRA...
+    if (survivorSurvivorBenefitDate < survivorSurvivorFRA){
 
-    //if deceased did not file before FRA, but survivor does file for survivor benefit before FRA, adjust survivor benefit downward. (Remember to use survivor's FRA as survivor.)
-    if (deceasedClaimingDate >= deceasedFRA && survivorSurvivorBenefitDate < survivorSurvivorFRA) {
-          survivorBenefit = survivorBenefit - (survivorBenefit * 0.285 * (1 - percentageWaited))
-    }
+      //find percentage of the way survivor is from 60 to FRA
+      let monthsFrom60toFRA: number = (survivorSurvivorFRA.getFullYear() - (survivorSSbirthDate.getFullYear()+60))*12 + (survivorSurvivorFRA.getMonth() - survivorSSbirthDate.getMonth())
+      let monthsElapsed: number = (survivorSurvivorBenefitDate.getFullYear() - (survivorSSbirthDate.getFullYear()+60))*12 + (survivorSurvivorBenefitDate.getMonth() - survivorSSbirthDate.getMonth())
+      let percentageWaited: number = monthsElapsed / monthsFrom60toFRA
 
-    //If deceased had filed before FRA, and survivor files for survivor benefit before FRA, do completely new calculation, with survivor benefit based on deceasedPIA rather than deceased retirement benefit.
-    if (deceasedClaimingDate < deceasedFRA && survivorSurvivorBenefitDate < survivorSurvivorFRA) {
+      //if deceased had not filed before FRA, adjust survivor benefit downward relative to initial survivor benefit calculation above.
+      if (deceasedClaimingDate >= deceasedFRA) {
+        survivorBenefit = survivorBenefit - (survivorBenefit * 0.285 * (1 - percentageWaited))
+      }
+
+      //If deceased had filed before FRA, do completely new calculation, with survivor benefit based on deceasedPIA rather than deceased retirement benefit.
+      if (deceasedClaimingDate < deceasedFRA && survivorSurvivorBenefitDate < survivorSurvivorFRA) {
         survivorBenefit = deceasedPIA - (deceasedPIA * 0.285 * (1 - percentageWaited))
         console.log("survivorFRA: " + survivorSurvivorFRA)
         console.log("percentageWaited: " + percentageWaited)
@@ -102,12 +105,14 @@ export class BenefitService {
           if (survivorBenefit > deceasedRetirementBenefit) {
             survivorBenefit = deceasedRetirementBenefit
           }
-        } else{
-          if (survivorBenefit > 0.825 * deceasedPIA) {
-            survivorBenefit = 0.825 * deceasedPIA
+        } else {
+            if (survivorBenefit > 0.825 * deceasedPIA) {
+              survivorBenefit = 0.825 * deceasedPIA
+            }
           }
-        }
       }
+    }
+
       //subtract own retirement benefit
       survivorBenefit = survivorBenefit - survivorRetirementBenefit
 
