@@ -60,5 +60,107 @@ describe('EarningstestService', () => {
         .toEqual(14880) //9 months x $10,000 per month = 90k earnings. Minus 45,360 = 44,640. Divided by 3 is 14,880
   }))
 
+  //Test isGraceYear() for single person
+  it('should return false for graceYear in year before quitWorkDate', inject([EarningsTestService], (service: EarningsTestService) => { 
+    let hasHadGraceYear:boolean = false
+    let quitWorkDate:Date = new Date(2025, 4, 1)
+    let currentCalculationDate:Date = new Date (2024, 0, 1)
+    let retirementBenefitDate:Date = new Date (2022, 4, 1)
+    expect(service.isGraceYear(hasHadGraceYear, quitWorkDate, currentCalculationDate, retirementBenefitDate))
+        .toEqual(false)
+  }))
 
+  it('should return false for graceYear in year before retirementBenefitDate', inject([EarningsTestService], (service: EarningsTestService) => { 
+    let hasHadGraceYear:boolean = false
+    let quitWorkDate:Date = new Date(2025, 4, 1)
+    let currentCalculationDate:Date = new Date(2026, 0, 1)
+    let retirementBenefitDate:Date = new Date(2027, 3, 1)
+    expect(service.isGraceYear(hasHadGraceYear, quitWorkDate, currentCalculationDate, retirementBenefitDate))
+        .toEqual(false)
+  }))
+
+  it('should return false for graceYear if hasHadGraceYear is true, even if it would otherwise be grace year', inject([EarningsTestService], (service: EarningsTestService) => { 
+    let hasHadGraceYear:boolean = true
+    let quitWorkDate:Date = new Date(2025, 4, 1)
+    let currentCalculationDate:Date = new Date(2026, 0, 1)
+    let retirementBenefitDate:Date = new Date(2025, 8, 1)
+    expect(service.isGraceYear(hasHadGraceYear, quitWorkDate, currentCalculationDate, retirementBenefitDate))
+        .toEqual(false)
+  }))
+
+  it('should return true for graceYear in a grace year', inject([EarningsTestService], (service: EarningsTestService) => { 
+    let hasHadGraceYear:boolean = false
+    let quitWorkDate:Date = new Date(2025, 4, 1)
+    let currentCalculationDate:Date = new Date(2025, 0, 1)
+    let retirementBenefitDate:Date = new Date(2025, 8, 1)
+    expect(service.isGraceYear(hasHadGraceYear, quitWorkDate, currentCalculationDate, retirementBenefitDate))
+        .toEqual(true)
+  }))
+  
+  //Test isGraceYear() for use in a calculateCouplePV scenario
+  it('should return false for graceYear in year before quitWorkDate', inject([EarningsTestService], (service: EarningsTestService) => { 
+    let hasHadGraceYear:boolean = false
+    let quitWorkDate:Date = new Date(2025, 4, 1)
+    let currentCalculationDate:Date = new Date (2024, 0, 1)
+    let retirementBenefitDate:Date = new Date (2022, 4, 1)
+    let spousalBenefitDate:Date = new Date (2022, 4, 1)
+    let survivorBenefitDate:Date = new Date (2022, 4, 1)
+    expect(service.isGraceYear(hasHadGraceYear, quitWorkDate, currentCalculationDate, retirementBenefitDate, spousalBenefitDate, survivorBenefitDate))
+        .toEqual(false)
+  }))
+
+  it('should return false for graceYear in year before any of benefitDates', inject([EarningsTestService], (service: EarningsTestService) => { 
+    let hasHadGraceYear:boolean = false
+    let quitWorkDate:Date = new Date(2025, 4, 1)
+    let currentCalculationDate:Date = new Date (2025, 0, 1)
+    let retirementBenefitDate:Date = new Date (2026, 4, 1)
+    let spousalBenefitDate:Date = new Date (2026, 4, 1)
+    let survivorBenefitDate:Date = new Date (2026, 4, 1)
+    expect(service.isGraceYear(hasHadGraceYear, quitWorkDate, currentCalculationDate, retirementBenefitDate, spousalBenefitDate, survivorBenefitDate))
+        .toEqual(false)
+  }))
+
+  it('should return false for graceYear if hasHadGraceYear is true, even if it would otherwise be grace year', inject([EarningsTestService], (service: EarningsTestService) => { 
+    let hasHadGraceYear:boolean = true
+    let quitWorkDate:Date = new Date(2025, 4, 1)
+    let currentCalculationDate:Date = new Date (2025, 0, 1)
+    let retirementBenefitDate:Date = new Date (2024, 4, 1)
+    let spousalBenefitDate:Date = new Date (2024, 4, 1)
+    let survivorBenefitDate:Date = new Date (2026, 4, 1)
+    expect(service.isGraceYear(hasHadGraceYear, quitWorkDate, currentCalculationDate, retirementBenefitDate, spousalBenefitDate, survivorBenefitDate))
+        .toEqual(false)
+  }))
+
+  it('should return true for graceYear in a grace year, triggered by retirement benefit starting', inject([EarningsTestService], (service: EarningsTestService) => { 
+    let hasHadGraceYear:boolean = false
+    let quitWorkDate:Date = new Date(2025, 4, 1)
+    let currentCalculationDate:Date = new Date (2025, 0, 1)
+    let retirementBenefitDate:Date = new Date (2024, 4, 1)
+    let spousalBenefitDate:Date = new Date (2028, 4, 1)
+    let survivorBenefitDate:Date = new Date (2028, 4, 1)
+    expect(service.isGraceYear(hasHadGraceYear, quitWorkDate, currentCalculationDate, retirementBenefitDate, spousalBenefitDate, survivorBenefitDate))
+        .toEqual(true)
+  }))
+
+  it('should return true for graceYear in a grace year, triggered by spousal benefit starting', inject([EarningsTestService], (service: EarningsTestService) => { 
+    let hasHadGraceYear:boolean = false
+    let quitWorkDate:Date = new Date(2025, 4, 1)
+    let currentCalculationDate:Date = new Date (2025, 0, 1)
+    let retirementBenefitDate:Date = new Date (2026, 4, 1)
+    let spousalBenefitDate:Date = new Date (2024, 4, 1)
+    let survivorBenefitDate:Date = new Date (2028, 4, 1)
+    expect(service.isGraceYear(hasHadGraceYear, quitWorkDate, currentCalculationDate, retirementBenefitDate, spousalBenefitDate, survivorBenefitDate))
+        .toEqual(true)
+  }))
+
+  it('should return true for graceYear in a grace year, triggered by survivor benefit starting', inject([EarningsTestService], (service: EarningsTestService) => { 
+    let hasHadGraceYear:boolean = false
+    let quitWorkDate:Date = new Date(2025, 4, 1)
+    let currentCalculationDate:Date = new Date (2025, 0, 1)
+    let retirementBenefitDate:Date = new Date (2028, 4, 1)
+    let spousalBenefitDate:Date = new Date (2028, 4, 1)
+    let survivorBenefitDate:Date = new Date (2024, 4, 1)
+    expect(service.isGraceYear(hasHadGraceYear, quitWorkDate, currentCalculationDate, retirementBenefitDate, spousalBenefitDate, survivorBenefitDate))
+        .toEqual(true)
+  }))
 });

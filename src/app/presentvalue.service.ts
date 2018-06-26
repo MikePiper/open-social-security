@@ -49,13 +49,8 @@ export class PresentValueService {
           if (quitWorkDate > this.today){//If quitWorkDate is an invalid date (because there was no input) or is in the past for some reason, this whole business below gets skipped  
               //Determine if it's a grace year. If quitWorkDate has already happened (or happens this year) and retirement benefit has started (or starts this year) it's a grace year
                 //Assumption: in the year they quit work, following months are non-service months.
-              if (hasHadGraceYear === true) { //if graceyear was true before, set it to false, so it's only true once. And only check if this year is grace year if last year *wasn't* a grace year -- because you only get one.
-                graceYear = false
-              } else if (quitWorkDate.getFullYear() <= currentCalculationDate.getFullYear() && inputBenefitDate.getFullYear() <= currentCalculationDate.getFullYear() )
-                {
-                graceYear = true
-                hasHadGraceYear = true
-                }
+              graceYear = this.earningsTestService.isGraceYear(hasHadGraceYear, quitWorkDate, currentCalculationDate, inputBenefitDate)
+              if (graceYear === true) {hasHadGraceYear = true}
                
               //Calculate necessary withholding based on earnings
               withholdingAmount = this.earningsTestService.calculateWithholding(currentCalculationDate, quitWorkDate, FRA, monthlyEarnings)
@@ -319,33 +314,10 @@ export class PresentValueService {
         if (spouseAquitWorkDate > this.today || spouseBquitWorkDate > this.today){//If quitWorkDates are invalid dates (because there was no input) or in the past for some reason, this whole business below gets skipped
           //Determine if it's a grace year for either spouse. If quitWorkDate has already happened (or happens this year) and at least one type of benefit has started (or starts this year)
             //Assumption: in the year they quit work, following months are non-service months.
-            //Grace year for spouseA?
-            if (spouseAhasHadGraceYear === true) {//if graceyear was true before, set it to false, so it's only true once
-              spouseAgraceYear = false
-            } else if (spouseAquitWorkDate.getFullYear() <= currentCalculationDate.getFullYear() &&
-              (
-              spouseAretirementBenefitDate.getFullYear() <= currentCalculationDate.getFullYear() ||
-              spouseAspousalBenefitDate.getFullYear() <= currentCalculationDate.getFullYear() ||
-              spouseAsurvivorFRA.getFullYear() <= currentCalculationDate.getFullYear()
-              )
-            ) {
-              spouseAgraceYear = true
-              spouseAhasHadGraceYear = true
-            }
-
-            //Grace year for spouseB? 
-            if (spouseBhasHadGraceYear === true) {//if graceyear was true before, set it to false, so it's only true once
-              spouseBgraceYear = false
-            } else if (spouseBquitWorkDate.getFullYear() <= currentCalculationDate.getFullYear() &&
-              (
-              spouseBretirementBenefitDate.getFullYear() <= currentCalculationDate.getFullYear() ||
-              spouseBspousalBenefitDate.getFullYear() <= currentCalculationDate.getFullYear() ||
-              spouseBsurvivorFRA.getFullYear() <= currentCalculationDate.getFullYear()
-              )
-            ) {
-              spouseBgraceYear = true
-              spouseBhasHadGraceYear = true
-            }
+          spouseAgraceYear = this.earningsTestService.isGraceYear(spouseAhasHadGraceYear, spouseAquitWorkDate, currentCalculationDate, spouseAretirementBenefitDate, spouseAspousalBenefitDate, spouseAsurvivorFRA)
+          if (spouseAgraceYear === true) {spouseAhasHadGraceYear = true}  
+          spouseBgraceYear = this.earningsTestService.isGraceYear(spouseBhasHadGraceYear, spouseBquitWorkDate, currentCalculationDate, spouseBretirementBenefitDate, spouseBspousalBenefitDate, spouseBsurvivorFRA)
+          if (spouseBgraceYear === true) {spouseBhasHadGraceYear = true}  
 
             //Calculate necessary withholding based on each spouse's earnings
             withholdingDueToSpouseAearnings = this.earningsTestService.calculateWithholding(currentCalculationDate, spouseAquitWorkDate, spouseAFRA, spouseAmonthlyEarnings)
@@ -622,11 +594,12 @@ export class PresentValueService {
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             annualPV = annualPV / (1 + discountRate/100/2) / Math.pow((1 + discountRate/100),(olderAge - 62))
  
-     /* 
+     /*
       //Logging for debugging purposes
         if (this.maximizedOrNot === true) {
           console.log(currentCalculationDate)
           console.log("spouseAage: " + spouseAage)
+          console.log("spouseAgraceYear: " + spouseAgraceYear)
           console.log("monthsSpouseAretirementWithheld: " + monthsSpouseAretirementWithheld)
           console.log("spouseAadjustedBenefitDate: " + spouseAadjustedRetirementBenefitDate)
           console.log("spouseAretirementBenefit: " + spouseAretirementBenefit)
@@ -636,6 +609,7 @@ export class PresentValueService {
           console.log("spouseAannualSpousalBenefit: " + spouseAannualSpousalBenefit)
           console.log("spouseAannualSurvivorBenefit: " + spouseAannualSurvivorBenefit)
           console.log("spouseBage: " + spouseBage)
+          console.log("spouseBgraceYear: " + spouseBgraceYear)
           console.log("monthsSpouseBretirementWithheld: " + monthsSpouseBretirementWithheld)
           console.log("spouseBadjustedBenefitDate: " + spouseBadjustedRetirementBenefitDate)
           console.log("spouseBretirementBenefit: " + spouseBretirementBenefit)
@@ -657,6 +631,8 @@ export class PresentValueService {
 
     return couplePV
   }
+
+
 
 
   maximizeSinglePersonPV(maritalStatus: string, PIA: number, SSbirthDate: Date, actualBirthDate:Date, initialAge:number, FRA: Date, quitWorkDate, monthlyEarnings, mortalityTable:number[], discountRate: number){
