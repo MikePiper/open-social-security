@@ -4,25 +4,27 @@
 <head>
 </head>
 <body>
-  <span id="contentarea">
-    <nav class="navbar navbar-default">
+    <span id="contentarea">
+      <nav class="navbar navbar-default">
+          <div class="container">
+            <ul class="nav navbar-nav navbar-right">
+              <li><a routerLink="/">HOME</a></li>
+              <li><a routerLink="/about">ABOUT</a></li>
+              <li><a routerLink="/contact">CONTACT</a></li>
+            </ul>
+            <a id="jumbolink" routerLink="/">
+              <div class="jumbotron text-center">
+                <h1>Open Social Security</h1>
+                <p>A free, open-source Social Security strategy calculator</p>
+              </div>
+            </a>
+          </div>
+      </nav>
       <div class="container">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a routerLink="/">HOME</a></li>
-            <li><a routerLink="/about">ABOUT</a></li>
-            <li><a routerLink="/contact">CONTACT</a></li>
-          </ul>
-          <a id="jumbolink" routerLink="/">
-            <div class="jumbotron text-center">
-              <h1>Open Social Security</h1>
-              <p>A free, open-source Social Security strategy calculator</p>
-            </div>
-          </a>
+        <router-outlet></router-outlet>
       </div>
-    </nav>
+    </span>
 
-      <router-outlet></router-outlet>
-  </span>
   <!-- Footer -->
           <hr><!-- Footer buffer so css "position: fixed" doesn't make it block bottom-most content on page-->
           <div class="footer">
