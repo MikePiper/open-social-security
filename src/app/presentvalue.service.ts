@@ -635,7 +635,7 @@ export class PresentValueService {
 
 
 
-  maximizeSinglePersonPV(maritalStatus: string, PIA: number, SSbirthDate: Date, actualBirthDate:Date, initialAge:number, FRA: Date, quitWorkDate, monthlyEarnings, mortalityTable:number[], discountRate: number){
+  maximizeSinglePersonPV(maritalStatus: string, PIA: number, SSbirthDate: Date, actualBirthDate:Date, initialAge:number, FRA: Date, quitWorkDate:Date, monthlyEarnings:number, mortalityTable:number[], discountRate: number){
     //find initial testClaimingDate for age 62
     let testClaimingDate = new Date(SSbirthDate.getFullYear()+62, 1, 1)
     if (actualBirthDate.getDate() <= 2){
