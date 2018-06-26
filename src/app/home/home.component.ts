@@ -304,7 +304,8 @@ export class HomeComponent implements OnInit {
   }
 
 
-  checkValidSpousalInputs(FRA: Date, actualBirthDate:Date, SSbirthDate: Date, otherSpouseActualBirthDate:Date, otherSpouseSSbirthDate:Date, ownRetirementBenefitDate:Date, spousalBenefitDate:Date, otherSpouseRetirementBenefitDate:Date) {
+  checkValidSpousalInputs(FRA: Date, actualBirthDate:Date, SSbirthDate: Date, otherSpouseActualBirthDate:Date, otherSpouseSSbirthDate:Date,
+    ownRetirementBenefitDate:Date, spousalBenefitDate:Date, otherSpouseRetirementBenefitDate:Date) {
     let error = undefined
     let secondStartDate:Date = new Date(1,1,1)
     //Make sure there is an input (Note that this will get overrode in the customDates function after the error check, in cases where there isn't supposed to be a user input)
