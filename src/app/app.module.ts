@@ -12,6 +12,7 @@ import { AboutComponent } from './about/about.component';
 import { PresentValueService } from './presentvalue.service';
 import { ContactComponent } from './contact/contact.component';
 import { HttpClientModule } from '@angular/common/http';
+import { LegalComponent } from './legal/legal.component';
 
 
 @NgModule({
@@ -19,7 +20,8 @@ import { HttpClientModule } from '@angular/common/http';
     AppComponent,
     HomeComponent,
     AboutComponent,
-    ContactComponent
+    ContactComponent,
+    LegalComponent
   ],
   imports: [
     BrowserModule,
