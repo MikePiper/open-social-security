@@ -1,10 +1,10 @@
-import { TestBed, inject } from '@angular/core/testing'
-import { PresentValueService } from './presentvalue.service'
+import {TestBed, inject} from '@angular/core/testing'
+import {PresentValueService} from './presentvalue.service'
 import {BenefitService} from './benefit.service'
 import {EarningsTestService} from './earningstest.service'
 import {SolutionSetService} from './solutionset.service'
 import {MortalityService} from './mortality.service'
-import { BirthdayService } from './birthday.service';
+import {BirthdayService} from './birthday.service';
 
 
 describe('PresentValueService', () => {
@@ -124,7 +124,7 @@ describe('PresentValueService', () => {
     let spouseAmortalityTable:number[] = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
     let spouseBmortalityTable:number[] = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
     let spouseASSbirthDate: Date = new Date(1964, 8, 1) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
-    let spouseBSSbirthDate: Date = new Date(1955, 3, 1) //Spouse B born in April  1955
+    let spouseBSSbirthDate: Date = new Date(1955, 3, 1) //Spouse B born in April 1955
     let spouseAinitialAgeRounded:number = 53
     let spouseBinitialAgeRounded:number = 63
     let birthdayService:BirthdayService = new BirthdayService()
