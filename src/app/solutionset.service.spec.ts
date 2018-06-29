@@ -72,16 +72,20 @@ describe('ClaimingsolutionService', () => {
     let spouseBhasFiled:boolean = true
     let flexibleSpouseSSbirthDate: Date = new Date(1960, 3, 1) //April 1, 1960
     let flexibleSpouseFRA: Date = new Date(2027, 3, 1) //FRA April 1, 2027
+    let fixedSpouseSSbirthDate: Date = new Date(1960, 3, 1) //April 1, 1960
     let fixedSpouseFRA: Date = new Date(2027, 3, 1) //FRA April 1, 2027
     let flexibleSpousePIA: number = 1200
     let fixedSpousePIA: number = 1900
     let flexibleSpouseSavedRetirementDate: Date = new Date(2033, 5, 1) //no particular reason for any of these dates
     let fixedSpouseRetirementBenefitDate: Date = new Date(2030, 5, 1)
     let flexibleSpouseSavedSpousalDate: Date = new Date(2031, 5, 1)
+    let fixedSpouseSavedSpousalDate: Date = new Date(2031, 5, 1)
     let savedPV: number = 380000 //completely making this up
     let flexibleSpouseGovernmentPension: number = 0
-    expect(service.generateCoupleOneHasFiledSolutionSet(maritalStatus, spouseAhasFiled, spouseBhasFiled, flexibleSpousePIA, fixedSpousePIA, flexibleSpouseSSbirthDate, flexibleSpouseFRA, fixedSpouseFRA,
-    flexibleSpouseGovernmentPension, flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, savedPV).solutionsArray[0].date)
+    let fixedSpouseGovernmentPension: number = 0
+    expect(service.generateCoupleOneHasFiledSolutionSet(maritalStatus, spouseAhasFiled, spouseBhasFiled, flexibleSpousePIA, fixedSpousePIA,
+      flexibleSpouseSSbirthDate, fixedSpouseSSbirthDate, flexibleSpouseFRA, fixedSpouseFRA,
+    flexibleSpouseGovernmentPension, fixedSpouseGovernmentPension, flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, savedPV).solutionsArray[0].date)
       .toEqual(flexibleSpouseSavedSpousalDate)
   }))
 

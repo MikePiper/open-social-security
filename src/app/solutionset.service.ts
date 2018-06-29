@@ -116,8 +116,10 @@ export class SolutionSetService {
         return solutionSet
   }
 
-  generateCoupleOneHasFiledSolutionSet(maritalStatus:string, spouseAhasFiled:boolean, spouseBhasFiled:boolean, flexibleSpousePIA:number, fixedSpousePIA:number, flexibleSpouseSSbirthDate:Date,
-    flexibleSpouseFRA:Date, fixedSpouseFRA:Date, flexibleSpouseGovernmentPension:number, flexibleSpouseSavedRetirementDate:Date, flexibleSpouseSavedSpousalDate:Date, fixedSpouseRetirementBenefitDate:Date, savedPV:number){
+  generateCoupleOneHasFiledSolutionSet(maritalStatus:string, spouseAhasFiled:boolean, spouseBhasFiled:boolean, flexibleSpousePIA:number, fixedSpousePIA:number,
+    flexibleSpouseSSbirthDate:Date, fixedSpouseSSbirthDate:Date, flexibleSpouseFRA:Date, fixedSpouseFRA:Date,
+    flexibleSpouseGovernmentPension:number, fixedSpouseGovernmentPension:number,
+    flexibleSpouseSavedRetirementDate:Date, flexibleSpouseSavedSpousalDate:Date, fixedSpouseRetirementBenefitDate:Date, fixedSpouseSavedSpousalDate:Date, savedPV:number){
         let fixedSpouseRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(Number(fixedSpousePIA), fixedSpouseFRA, fixedSpouseRetirementBenefitDate)
         //flexible spouse retirement age/benefitAmount
         let flexibleSpouseSavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(flexibleSpousePIA, flexibleSpouseFRA, flexibleSpouseSavedRetirementDate)
@@ -138,7 +140,18 @@ export class SolutionSetService {
         } else {
           var flexibleSpouseSavedSurvivorBenefitOutput: number = fixedSpouseRetirementBenefit
         }
- 
+        //fixed spouse spousal age/benefitAmount (no need to consider restricted app scenario, because this person has already filed for retirement benefit)
+        let fixedSpouseSavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(fixedSpousePIA, flexibleSpousePIA, fixedSpouseFRA, fixedSpouseRetirementBenefit, fixedSpouseSavedSpousalDate, fixedSpouseGovernmentPension)
+        let fixedSpouseSavedSpousalAge: number = fixedSpouseSavedSpousalDate.getFullYear() - fixedSpouseSSbirthDate.getFullYear() + (fixedSpouseSavedSpousalDate.getMonth() - fixedSpouseSSbirthDate.getMonth())/12
+        let fixedSpouseSavedSpousalAgeYears: number = Math.floor(fixedSpouseSavedSpousalAge)
+        let fixedSpouseSavedSpousalAgeMonths: number = Math.round((fixedSpouseSavedSpousalAge%1)*12)
+        //fixed spouse survivor benefitAmount
+        if (fixedSpouseRetirementBenefit >= flexibleSpouseSavedRetirementBenefit) {
+          var fixedSpouseSavedSurvivorBenefitOutput: number = 0
+        } else {
+          var fixedSpouseSavedSurvivorBenefitOutput: number = flexibleSpouseSavedRetirementBenefit
+        }
+
         let solutionSet: SolutionSet = {
           "solutionPV":savedPV,
           solutionsArray: []
@@ -156,7 +169,15 @@ export class SolutionSetService {
               var flexibleSpouseSpousalSolution = new claimingSolution(maritalStatus, "spousalWithRetirement", "spouseA", flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
             }
             var flexibleSpouseSurvivorSolution = new claimingSolution(maritalStatus, "survivor", "spouseA", new Date(9999,0,1), flexibleSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
-        } else if (spouseAhasFiled === true) {//i.e., if "flexibleSpouse" is spouseB
+           
+            if (maritalStatus == "married"){//if this is not a divorce scenario, set claimingSolution objects for fixed spouse's spousal and survivor benefit (doesn't have one for retirement, because already filed)
+             //fixedSpouseSpousalSolution: new claiming solution as spouseB ("with retirement" because already filed for retirement)
+            var fixedSpouseSpousalSolution = new claimingSolution(maritalStatus, "spousalWithRetirement", "spouseB", fixedSpouseSavedSpousalDate, fixedSpouseSavedSpousalBenefit, fixedSpouseSavedSpousalAgeYears, fixedSpouseSavedSpousalAgeMonths)
+            //fixedSpouseSurvivorSolution is a new claiming solution as spouseB
+            var fixedSpouseSurvivorSolution = new claimingSolution(maritalStatus, "survivor", "spouseB", new Date(9999,0,1), fixedSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+            }
+            
+          } else if (spouseAhasFiled === true) {//i.e., if "flexibleSpouse" is spouseB
             if (flexibleSpouseSavedRetirementDate > flexibleSpouseSavedSpousalDate) {
               var flexibleSpouseRetirementSolution = new claimingSolution(maritalStatus, "retirementReplacingSpousal", "spouseB", flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
             } else {
@@ -168,11 +189,19 @@ export class SolutionSetService {
               var flexibleSpouseSpousalSolution = new claimingSolution(maritalStatus, "spousalWithRetirement", "spouseB", flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
             }
             var flexibleSpouseSurvivorSolution = new claimingSolution(maritalStatus, "survivor", "spouseB", new Date(9999,0,1), flexibleSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
-        }
+            if (maritalStatus == "married"){//if this is not a divorce scenario, set claimingSolution objects for fixed spouse's spousal and survivor benefit (doesn't have one for retirement, because already filed)
+             //fixedSpouseSpousalSolution: new claiming solution as spouseA ("with retirement" because already filed for retirement)
+            var fixedSpouseSpousalSolution = new claimingSolution(maritalStatus, "spousalWithRetirement", "spouseA", fixedSpouseSavedSpousalDate, fixedSpouseSavedSpousalBenefit, fixedSpouseSavedSpousalAgeYears, fixedSpouseSavedSpousalAgeMonths)
+            //fixedSpouseSurvivorSolution is a new claiming solution as spouseA
+            var fixedSpouseSurvivorSolution = new claimingSolution(maritalStatus, "survivor", "spouseA", new Date(9999,0,1), fixedSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+            }
+          }
         //push claimingSolution objects to array
         if (flexibleSpouseSavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(flexibleSpouseRetirementSolution)}
         if (flexibleSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(flexibleSpouseSpousalSolution)}
         if (flexibleSpouseSavedSurvivorBenefitOutput > 0) {solutionSet.solutionsArray.push(flexibleSpouseSurvivorSolution)}
+        if (fixedSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(fixedSpouseSpousalSolution)}
+        if (fixedSpouseSavedSurvivorBenefitOutput > 0) {solutionSet.solutionsArray.push(fixedSpouseSurvivorSolution)}
 
 
         //Sort array by date

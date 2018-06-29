@@ -7,7 +7,7 @@ import {SolutionSet} from './solutionset'
 @Injectable()
 export class PresentValueService {
 
-  constructor(private benefitService: BenefitService, private earningsTestService: EarningsTestService, private claimingSolutionService: SolutionSetService) { }
+  constructor(private benefitService: BenefitService, private earningsTestService: EarningsTestService, private solutionSetService: SolutionSetService) { }
   
   //Has maximize calc been run?
   maximizedOrNot: boolean = false
@@ -63,7 +63,7 @@ export class PresentValueService {
                 availableForWithholding = 0 //reset availableForWithholding for new month
                 //Checks to see if there is a retirement benefit this month from which we can withhold:
                   if (earningsTestMonth >= inputBenefitDate  //check that they've started retirement benefit
-                    && (!graceYear || earningsTestMonth < quitWorkDate ) //make sure it isn't a nonservice month in grace year
+                    && (graceYear === false || earningsTestMonth < quitWorkDate ) //make sure it isn't a nonservice month in grace year
                     && (earningsTestMonth < FRA) //make sure current month is prior to FRA
                   ) {
                     availableForWithholding = availableForWithholding + retirementBenefit
@@ -671,7 +671,7 @@ export class PresentValueService {
     console.log("savedClaimingDate: " + savedClaimingDate)
 
     //Generate solution set (for sake of output) from saved values
-    let solutionSet:SolutionSet = this.claimingSolutionService.generateSingleSolutionSet(maritalStatus, SSbirthDate, FRA, Number(PIA), Number(savedPV), savedClaimingDate)
+    let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(maritalStatus, SSbirthDate, FRA, Number(PIA), Number(savedPV), savedClaimingDate)
     this.maximizedOrNot = true
     return solutionSet
   }
@@ -889,7 +889,7 @@ export class PresentValueService {
       console.log("spouseBspousalDate: " + spouseBsavedSpousalDate)
 
       //Generate solution set (for sake of output) from saved values
-      let solutionSet:SolutionSet = this.claimingSolutionService.generateCoupleSolutionSet(maritalStatus, spouseASSbirthDate, spouseBSSbirthDate, spouseAFRA, spouseBFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, Number(savedPV), Number(spouseAgovernmentPension), Number(spouseBgovernmentPension))
+      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(maritalStatus, spouseASSbirthDate, spouseBSSbirthDate, spouseAFRA, spouseBFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, Number(savedPV), Number(spouseAgovernmentPension), Number(spouseBgovernmentPension))
       
       this.maximizedOrNot = true
       return solutionSet
@@ -949,7 +949,7 @@ export class PresentValueService {
           //In actuality: set it equal to flexible spouse's retirement benefit date, because that's always the later of the two (since fixed has already filed) 
           //For divorcee this date won't matter at all, since annual PV is ultimately set to zero for spouse b's spousal benefit, but PV calc will require it.
       let fixedSpouseSpousalDate: Date = new Date(flexibleSpouseRetirementDate)
-                  
+      let fixedSpouseSavedSpousalDate: Date = new Date(fixedSpouseSpousalDate)            
 
       while (flexibleSpouseRetirementDate <= endTestDate) {
         //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
@@ -962,6 +962,8 @@ export class PresentValueService {
           flexibleSpouseSavedRetirementDate.setFullYear(flexibleSpouseRetirementDate.getFullYear())
           flexibleSpouseSavedSpousalDate.setMonth(flexibleSpouseSpousalDate.getMonth())
           flexibleSpouseSavedSpousalDate.setFullYear(flexibleSpouseSpousalDate.getFullYear())
+          fixedSpouseSavedSpousalDate.setMonth(fixedSpouseSpousalDate.getMonth())
+          fixedSpouseSavedSpousalDate.setFullYear(fixedSpouseSpousalDate.getFullYear())
           }
         
         //Increment flexibleSpouse's dates (and fixedSpouse's spousal date, since it is just set to be same as flexible spouse's retirement date)
@@ -993,7 +995,9 @@ export class PresentValueService {
         console.log("saved flexibleSpouseRetirementDate: " + flexibleSpouseSavedRetirementDate)
         console.log("saved flexibleSpouseSpousalDate: " + flexibleSpouseSavedSpousalDate)
     
-        let solutionSet:SolutionSet = this.claimingSolutionService.generateCoupleOneHasFiledSolutionSet(maritalStatus, spouseAhasFiled, spouseBhasFiled, Number(flexibleSpousePIA), Number(fixedSpousePIA), flexibleSpouseSSbirthDate, flexibleSpouseFRA, fixedSpouseFRA, Number(flexibleSpouseGovernmentPension), flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, Number(savedPV))
+        let solutionSet:SolutionSet = this.solutionSetService.generateCoupleOneHasFiledSolutionSet(maritalStatus, spouseAhasFiled, spouseBhasFiled, Number(flexibleSpousePIA), Number(fixedSpousePIA),
+        flexibleSpouseSSbirthDate, fixedSpouseSSbirthDate, flexibleSpouseFRA, fixedSpouseFRA, Number(flexibleSpouseGovernmentPension), Number(fixedSpouseGovernmentPension), flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate,
+        fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, Number(savedPV))
 
 
         this.maximizedOrNot = true
