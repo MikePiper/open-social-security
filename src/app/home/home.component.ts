@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {BirthdayService} from '../birthday.service'
 import {PresentValueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
+import {Person} from '../person'
 import {SolutionSet} from '../solutionset'
 import {FREDresponse} from '../fredresponse'
 import {HttpClient} from '@angular/common/http';
@@ -24,7 +25,9 @@ export class HomeComponent implements OnInit {
     )
   }
 
-  today = new Date()
+  spouseA: Person = new Person()
+  spouseB: Person = new Person()
+  today:Date = new Date()
   deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
 //Variables to make form work
