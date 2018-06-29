@@ -899,7 +899,7 @@ export class PresentValueService {
   //This function is for when one spouse has already filed. Also is the function for a divorcee, because we take the ex-spouse's filing date as a given (i.e., as an input)
   maximizeCoupleOneHasFiledPV(maritalStatus:string, spouseAhasFiled:boolean, spouseBhasFiled:boolean,
     fixedSpouseRetirementBenefitDate:Date, flexibleSpousePIA: number, fixedSpousePIA: number, flexibleSpouseActualBirthDate:Date, fixedSpouseActualBirthDate:Date, flexibleSpouseSSbirthDate: Date, fixedSpouseSSbirthDate: Date,
-    flexibleSpouseInitialAgeRounded:number, fixedSpouseInitialAgeRounded:number, flexibleSpouseFRA: Date, fixedSpouseFRA: Date, flexibleSpouseSurvivorFRA:Date, fixedSpouseSurvivorFRA:Date,
+    flexibleSpouseInitialAgeRounded:number, fixedSpouseInitialAgeRounded:number, flexibleSpouseSurvivorFRA:Date, fixedSpouseSurvivorFRA:Date,
     flexibleSpouse:Person, fixedSpouse:Person,
     flexibleSpouseQuitWorkDate: Date, fixedSpouseQuitworkDate: Date, flexibleSpouseMonthlyEarnings: number, fixedSpouseMonthlyEarnings: number,
     flexibleSpouseGovernmentPension:number, fixedSpouseGovernmentPension:number, discountRate: number){
@@ -977,7 +977,7 @@ export class PresentValueService {
             }
           } else { //i.e., if old deemed filling rules apply
             //If current retirement test date younger than FRA, increment flexibleSpouse's retirement and spousal by 1 month
-            if (flexibleSpouseRetirementDate < flexibleSpouseFRA) {
+            if (flexibleSpouseRetirementDate < flexibleSpouse.FRA) {
               flexibleSpouseRetirementDate.setMonth(flexibleSpouseRetirementDate.getMonth()+1)
               fixedSpouseSpousalDate.setMonth(fixedSpouseSpousalDate.getMonth()+1)
               if (flexibleSpouseSpousalDate <= flexibleSpouseRetirementDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
