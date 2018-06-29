@@ -201,8 +201,11 @@ export class SolutionSetService {
         if (flexibleSpouseSavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(flexibleSpouseRetirementSolution)}
         if (flexibleSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(flexibleSpouseSpousalSolution)}
         if (flexibleSpouseSavedSurvivorBenefitOutput > 0) {solutionSet.solutionsArray.push(flexibleSpouseSurvivorSolution)}
-        if (fixedSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(fixedSpouseSpousalSolution)}
-        if (fixedSpouseSavedSurvivorBenefitOutput > 0) {solutionSet.solutionsArray.push(fixedSpouseSurvivorSolution)}
+        if (maritalStatus == "married"){
+          if (fixedSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(fixedSpouseSpousalSolution)}
+          if (fixedSpouseSavedSurvivorBenefitOutput > 0) {solutionSet.solutionsArray.push(fixedSpouseSurvivorSolution)}
+        }
+
 
 
         //Sort array by date
