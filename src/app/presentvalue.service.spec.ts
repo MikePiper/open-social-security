@@ -5,6 +5,7 @@ import {EarningsTestService} from './earningstest.service'
 import {SolutionSetService} from './solutionset.service'
 import {MortalityService} from './mortality.service'
 import {BirthdayService} from './birthday.service';
+import { Person } from './person';
 
 
 describe('PresentValueService', () => {
@@ -19,7 +20,8 @@ describe('PresentValueService', () => {
   }))
 
   //Test calculateSinglePersonPV()
-  it('should return appropriate PV for single person, no complicating factors', inject([PresentValueService], (service: PresentValueService) => { 
+  it('should return appropriate PV for single person, no complicating factors', inject([PresentValueService], (service: PresentValueService) => {
+    let person:Person = new Person() 
     let SSbirthDate: Date = new Date(1960, 3, 1) //Person born April 1960
     let FRA: Date = new Date (2027, 3, 1) //FRA April 2027 (age 67)
     let initialAge: number = 58 //younger than 62 when fillling out form
@@ -29,12 +31,13 @@ describe('PresentValueService', () => {
     let monthlyEarnings:number = 4500 //Doesn't matter really, given date inputs
     let discountRate: number = 1 //1% discount rate
     let mortalityService:MortalityService = new MortalityService()
-    let mortalityTable:number[] = mortalityService.determineMortalityTable ("male", "SSA", 0)
-    expect(service.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, inputBenefitDate, quitWorkDate, monthlyEarnings, mortalityTable, discountRate))
+    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    expect(service.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, inputBenefitDate, quitWorkDate, monthlyEarnings, person, discountRate))
       .toBeCloseTo(151765, 0)
   }))
 
   it('should return appropriate PV for single person, but with "still working" inputs and a different mortality table', inject([PresentValueService], (service: PresentValueService) => { 
+    let person:Person = new Person() 
     let SSbirthDate: Date = new Date(1960, 3, 1) //Person born April 1960
     let FRA: Date = new Date (2027, 3, 1) //FRA April 2027 (age 67)
     let initialAge: number = 58 //younger than 62 when fillling out form
@@ -44,17 +47,19 @@ describe('PresentValueService', () => {
     let monthlyEarnings:number = 4500 //Just picking something here...
     let discountRate: number = 1 //1% discount rate
     let mortalityService:MortalityService = new MortalityService()
-    let mortalityTable:number[] = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
-    expect(service.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, inputBenefitDate, quitWorkDate, monthlyEarnings, mortalityTable, discountRate))
+    person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+    expect(service.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, inputBenefitDate, quitWorkDate, monthlyEarnings, person, discountRate))
       .toBeCloseTo(201310, 0)
   }))
   
   //Test calculateCouplePV
   it('should return appropriate PV for married couple, basic inputs', inject([PresentValueService], (service: PresentValueService) => { 
+    let personA:Person = new Person()
+    let personB:Person = new Person()
     let maritalStatus:string = "married"
     let mortalityService:MortalityService = new MortalityService()
-    let spouseAmortalityTable:number[] = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-    let spouseBmortalityTable:number[] = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
     let spouseASSbirthDate: Date = new Date(1964, 8, 1) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
     let spouseBSSbirthDate: Date = new Date(1963, 6, 1) //Spouse B born in July 1963
     let spouseAinitialAgeRounded:number = 61
@@ -77,17 +82,19 @@ describe('PresentValueService', () => {
     let spouseAgovernmentPension: number = 0
     let spouseBgovernmentPension:number = 0
     let discountRate:number = 1
-    expect(service.calculateCouplePV(maritalStatus, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded,
+    expect(service.calculateCouplePV(maritalStatus, personA, personB, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded,
     spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAPIA, spouseBPIA, spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate,
     spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate))
       .toBeCloseTo(578594, 0)
   }))
 
   it ('should return appropriate PV for married couple, including GPO', inject([PresentValueService], (service: PresentValueService) => {
+    let personA:Person = new Person()
+    let personB:Person = new Person()
     let maritalStatus:string = "married"
     let mortalityService:MortalityService = new MortalityService()
-    let spouseAmortalityTable:number[] = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-    let spouseBmortalityTable:number[] = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
     let spouseASSbirthDate: Date = new Date(1964, 8, 1) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
     let spouseBSSbirthDate: Date = new Date(1963, 6, 1) //Spouse B born in July 1963
     let spouseAinitialAgeRounded:number = 61
@@ -110,7 +117,7 @@ describe('PresentValueService', () => {
     let spouseAgovernmentPension: number = 900
     let spouseBgovernmentPension:number = 0
     let discountRate:number = 1
-    expect(service.calculateCouplePV(maritalStatus, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded,
+    expect(service.calculateCouplePV(maritalStatus, personA, personB, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded,
     spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAPIA, spouseBPIA, spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate,
     spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate))
       .toBeCloseTo(531263, 0)
@@ -119,10 +126,12 @@ describe('PresentValueService', () => {
 
   it ('should return appropriate PV for basic divorce scenario', inject([PresentValueService], (service: PresentValueService) => {
     //Can't really write a test for "one has filed" scenario for a still-married couple, because the PV will be different every time, as the person in question gets older (and remaing years decreases)
+    let personA:Person = new Person()
+    let personB:Person = new Person()
     let maritalStatus:string = "divorced"
     let mortalityService:MortalityService = new MortalityService()
-    let spouseAmortalityTable:number[] = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-    let spouseBmortalityTable:number[] = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
     let spouseASSbirthDate: Date = new Date(1964, 8, 1) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
     let spouseBSSbirthDate: Date = new Date(1955, 3, 1) //Spouse B born in April 1955
     let spouseAinitialAgeRounded:number = 53
@@ -145,7 +154,7 @@ describe('PresentValueService', () => {
     let spouseAgovernmentPension: number = 300
     let spouseBgovernmentPension:number = 0
     let discountRate:number = 1
-    expect(service.calculateCouplePV(maritalStatus, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded,
+    expect(service.calculateCouplePV(maritalStatus, personA, personB, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded,
     spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAPIA, spouseBPIA, spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate,
     spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate))
       .toBeCloseTo(161095, 0)
@@ -154,6 +163,7 @@ describe('PresentValueService', () => {
 
   //Test maximize functions
   it('should tell a single person to file ASAP with very high discount rate', inject([PresentValueService], (service: PresentValueService) => {
+    let person:Person = new Person()
     let maritalStatus:string = "single"
     let actualBirthDate:Date = new Date(1960, 3, 15) //Person born April 15 1960
     let SSbirthDate: Date = new Date(1960, 3, 1)
@@ -164,16 +174,18 @@ describe('PresentValueService', () => {
     let monthlyEarnings:number = 4500 //Doesn't matter really, given date inputs
     let discountRate: number = 9 //9% discount rate
     let mortalityService:MortalityService = new MortalityService()
-    let mortalityTable:number[] = mortalityService.determineMortalityTable ("male", "SSA", 0)
-    expect(service.maximizeSinglePersonPV(maritalStatus, PIA, SSbirthDate, actualBirthDate, initialAge, FRA, quitWorkDate, monthlyEarnings, mortalityTable, discountRate).solutionsArray[0].date)
+    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    expect(service.maximizeSinglePersonPV(maritalStatus, PIA, SSbirthDate, actualBirthDate, initialAge, FRA, quitWorkDate, monthlyEarnings, person, discountRate).solutionsArray[0].date)
       .toEqual(new Date(2022, 4, 1))
   }))
 
   it ('should tell a high-PIA spouse to wait until 70, with low discount rate and long lifespans', inject([PresentValueService], (service: PresentValueService) => {
+    let personA:Person = new Person()
+    let personB:Person = new Person()
     let maritalStatus:string = "married"
     let mortalityService:MortalityService = new MortalityService()
-    let spouseAmortalityTable:number[] = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-    let spouseBmortalityTable:number[] = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
     let spouseAactualBirthDate:Date = new Date(1964, 8, 15) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
     let spouseASSbirthDate: Date = new Date(1964, 8, 1)
     let spouseBactualBirthDate:Date = new Date(1964, 9, 11) //Spouse B born in October 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
@@ -195,7 +207,7 @@ describe('PresentValueService', () => {
     let spouseBgovernmentPension:number = 0
     let discountRate:number = 1
     expect(service.maximizeCouplePV(maritalStatus, spouseAPIA, spouseBPIA, spouseAactualBirthDate, spouseBactualBirthDate, spouseASSbirthDate, spouseBSSbirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded,
-    spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, spouseAmortalityTable, spouseBmortalityTable, spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate).solutionsArray[1].date)
+    spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, personA, personB, spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate).solutionsArray[1].date)
     .toEqual(new Date(2034, 9, 1))
     //We're looking at item [1] in the array. This array should have 3 items in it: retirement benefit dates for each spouse, and a survivor date for spouse A (lower earner).
     //No spousal dates because neither spouse gets a spousal benefit. Since it's sorted in date order, first retirement date will be low earner, second is higher earner, which we want. Third is survivor.

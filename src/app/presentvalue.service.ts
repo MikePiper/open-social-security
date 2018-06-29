@@ -3,6 +3,8 @@ import {BenefitService} from './benefit.service'
 import {EarningsTestService} from './earningstest.service'
 import {SolutionSetService} from './solutionset.service'
 import {SolutionSet} from './solutionset'
+import {Person} from './person'
+
 
 @Injectable()
 export class PresentValueService {
@@ -14,7 +16,7 @@ export class PresentValueService {
 
   today: Date = new Date()
 
-  calculateSinglePersonPV(FRA: Date, SSbirthDate: Date, initialAge: number, PIA: number, inputBenefitDate: Date, quitWorkDate:Date, monthlyEarnings:number, mortalityTable:number[], discountRate: number)
+  calculateSinglePersonPV(FRA: Date, SSbirthDate: Date, initialAge: number, PIA: number, inputBenefitDate: Date, quitWorkDate:Date, monthlyEarnings:number, PersonA:Person, discountRate: number)
   {
     let retirementBenefit: number = this.benefitService.calculateRetirementBenefit(PIA, FRA, inputBenefitDate)
     let retirementBenefitAfterARF: number = 0
@@ -118,8 +120,8 @@ export class PresentValueService {
           }
           ageLastBirthday = Math.floor(age)
           probabilityAlive = //need probability of being alive at end of "currentCalculationDate" year
-            mortalityTable[ageLastBirthday + 1] / mortalityTable[denominatorAge] * (1 - (age%1)) //eg if user is 72 and 4 months at beginning of year, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
-          + mortalityTable[ageLastBirthday + 2] / mortalityTable[denominatorAge] * (age%1)
+            PersonA.mortalityTable[ageLastBirthday + 1] / PersonA.mortalityTable[denominatorAge] * (1 - (age%1)) //eg if user is 72 and 4 months at beginning of year, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
+          + PersonA.mortalityTable[ageLastBirthday + 2] / PersonA.mortalityTable[denominatorAge] * (age%1)
           
           //Calculate probability-weighted benefit
           let annualPV = annualRetirementBenefit * probabilityAlive
@@ -157,7 +159,7 @@ export class PresentValueService {
         return retirementPV
   }
 
-  calculateCouplePV(maritalStatus:string, spouseAmortalityTable:number[], spouseBmortalityTable:number[], spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
+  calculateCouplePV(maritalStatus:string, PersonA:Person, PersonB:Person, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
     spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
     spouseAPIA: number, spouseBPIA: number, spouseAretirementBenefitDate: Date, spouseBretirementBenefitDate: Date, spouseAspousalBenefitDate: Date, spouseBspousalBenefitDate: Date,
     spouseAquitWorkDate: Date, spouseBquitWorkDate: Date, spouseAmonthlyEarnings: number, spouseBmonthlyEarnings: number,
@@ -565,8 +567,8 @@ export class PresentValueService {
           }
           spouseAageLastBirthday = Math.floor(spouseAage)
           probabilityAalive = //need probability of being alive at end of "age"
-            spouseAmortalityTable[spouseAageLastBirthday + 1] / spouseAmortalityTable[spouseAdenominatorAge] * (1 - (spouseAage%1)) //eg if user is 72 and 4 months, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
-          + spouseAmortalityTable[spouseAageLastBirthday + 2] / spouseAmortalityTable[spouseAdenominatorAge] * (spouseAage%1)
+            PersonA.mortalityTable[spouseAageLastBirthday + 1] / PersonA.mortalityTable[spouseAdenominatorAge] * (1 - (spouseAage%1)) //eg if user is 72 and 4 months, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
+          + PersonA.mortalityTable[spouseAageLastBirthday + 2] / PersonA.mortalityTable[spouseAdenominatorAge] * (spouseAage%1)
           //Do same math to calculate probability of spouseB being alive at given age
           if (spouseBinitialAgeRounded > 62) {
             spouseBdenominatorAge = spouseBinitialAgeRounded
@@ -576,8 +578,8 @@ export class PresentValueService {
           }
           spouseBageLastBirthday = Math.floor(spouseBage)
           probabilityBalive = //need probability of being alive at end of "age"
-            spouseBmortalityTable[spouseBageLastBirthday + 1] / spouseBmortalityTable[spouseBdenominatorAge] * (1 - (spouseBage%1))
-          + spouseBmortalityTable[spouseBageLastBirthday + 2] / spouseBmortalityTable[spouseBdenominatorAge] * (spouseBage%1)
+            PersonB.mortalityTable[spouseBageLastBirthday + 1] / PersonB.mortalityTable[spouseBdenominatorAge] * (1 - (spouseBage%1))
+          + PersonB.mortalityTable[spouseBageLastBirthday + 2] / PersonB.mortalityTable[spouseBdenominatorAge] * (spouseBage%1)
 
       //Find probability-weighted annual benefit
         let annualPV = 
@@ -635,7 +637,7 @@ export class PresentValueService {
 
 
 
-  maximizeSinglePersonPV(maritalStatus: string, PIA: number, SSbirthDate: Date, actualBirthDate:Date, initialAge:number, FRA: Date, quitWorkDate:Date, monthlyEarnings:number, mortalityTable:number[], discountRate: number){
+  maximizeSinglePersonPV(maritalStatus: string, PIA: number, SSbirthDate: Date, actualBirthDate:Date, initialAge:number, FRA: Date, quitWorkDate:Date, monthlyEarnings:number, PersonA:Person, discountRate: number){
     //find initial testClaimingDate for age 62
     let testClaimingDate = new Date(SSbirthDate.getFullYear()+62, 1, 1)
     if (actualBirthDate.getDate() <= 2){
@@ -652,7 +654,7 @@ export class PresentValueService {
     }
 
     //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
-    let savedPV: number = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, testClaimingDate, quitWorkDate, monthlyEarnings, mortalityTable, discountRate)
+    let savedPV: number = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, testClaimingDate, quitWorkDate, monthlyEarnings, PersonA, discountRate)
     let savedClaimingDate = new Date(testClaimingDate)
 
     //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
@@ -660,7 +662,7 @@ export class PresentValueService {
     while (testClaimingDate <= endingTestDate){
       //Add 1 month to claiming age and run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
       testClaimingDate.setMonth(testClaimingDate.getMonth() + 1)
-      let currentTestPV = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, testClaimingDate, quitWorkDate, monthlyEarnings, mortalityTable, discountRate)
+      let currentTestPV = this.calculateSinglePersonPV(FRA, SSbirthDate, initialAge, PIA, testClaimingDate, quitWorkDate, monthlyEarnings, PersonA, discountRate)
       if (currentTestPV >= savedPV)
         {savedClaimingDate.setMonth(testClaimingDate.getMonth())
           savedClaimingDate.setFullYear(testClaimingDate.getFullYear())
@@ -679,7 +681,7 @@ export class PresentValueService {
 
   maximizeCouplePV(maritalStatus:string, spouseAPIA: number, spouseBPIA: number, spouseAactualBirthDate:Date, spouseBactualBirthDate:Date, spouseASSbirthDate: Date, spouseBSSbirthDate: Date, spouseAinitialAgeRounded:number, spouseBinitialAgeRounded:number,
     spouseAFRA: Date, spouseBFRA: Date, spouseAsurvivorFRA:Date, spouseBsurvivorFRA:Date,
-    spouseAmortalityTable:number[], spouseBmortalityTable:number[],
+    PersonA:Person, PersonB:Person,
     spouseAquitWorkDate: Date, spouseBquitWorkDate: Date, spouseAmonthlyEarnings: number, spouseBmonthlyEarnings: number,
     spouseAgovernmentPension:number, spouseBgovernmentPension:number, discountRate: number){
 
@@ -797,7 +799,7 @@ export class PresentValueService {
 
         while (spouseBretirementDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(maritalStatus, spouseAmortalityTable, spouseBmortalityTable, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
+            let currentTestPV: number = this.calculateCouplePV(maritalStatus, PersonA, PersonB, spouseASSbirthDate, spouseBSSbirthDate, Number(spouseAinitialAgeRounded), Number(spouseBinitialAgeRounded), spouseAFRA, spouseBFRA, spouseAsurvivorFRA, spouseBsurvivorFRA, Number(spouseAPIA), Number(spouseBPIA), spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTestPV >= savedPV) {
               savedPV = currentTestPV
@@ -899,7 +901,7 @@ export class PresentValueService {
   maximizeCoupleOneHasFiledPV(maritalStatus:string, spouseAhasFiled:boolean, spouseBhasFiled:boolean,
     fixedSpouseRetirementBenefitDate:Date, flexibleSpousePIA: number, fixedSpousePIA: number, flexibleSpouseActualBirthDate:Date, fixedSpouseActualBirthDate:Date, flexibleSpouseSSbirthDate: Date, fixedSpouseSSbirthDate: Date,
     flexibleSpouseInitialAgeRounded:number, fixedSpouseInitialAgeRounded:number, flexibleSpouseFRA: Date, fixedSpouseFRA: Date, flexibleSpouseSurvivorFRA:Date, fixedSpouseSurvivorFRA:Date,
-    flexibleSpouseMortalityTable:number[], fixedSpouseMortalityTable:number[],
+    flexibleSpouse:Person, fixedSpouse:Person,
     flexibleSpouseQuitWorkDate: Date, fixedSpouseQuitworkDate: Date, flexibleSpouseMonthlyEarnings: number, fixedSpouseMonthlyEarnings: number,
     flexibleSpouseGovernmentPension:number, fixedSpouseGovernmentPension:number, discountRate: number){
 
@@ -953,7 +955,7 @@ export class PresentValueService {
 
       while (flexibleSpouseRetirementDate <= endTestDate) {
         //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
-        let currentTestPV: number = this.calculateCouplePV(maritalStatus, flexibleSpouseMortalityTable, fixedSpouseMortalityTable, flexibleSpouseSSbirthDate, fixedSpouseSSbirthDate, Number(flexibleSpouseInitialAgeRounded), Number(fixedSpouseInitialAgeRounded), flexibleSpouseFRA, fixedSpouseFRA, flexibleSpouseSurvivorFRA, fixedSpouseSurvivorFRA, Number(flexibleSpousePIA), Number(fixedSpousePIA), flexibleSpouseRetirementDate, fixedSpouseRetirementBenefitDate, flexibleSpouseSpousalDate, fixedSpouseSpousalDate, flexibleSpouseQuitWorkDate, fixedSpouseQuitworkDate, flexibleSpouseMonthlyEarnings, fixedSpouseMonthlyEarnings, Number(flexibleSpouseGovernmentPension), Number(fixedSpouseGovernmentPension), Number(discountRate))
+        let currentTestPV: number = this.calculateCouplePV(maritalStatus, flexibleSpouse, fixedSpouse, flexibleSpouseSSbirthDate, fixedSpouseSSbirthDate, Number(flexibleSpouseInitialAgeRounded), Number(fixedSpouseInitialAgeRounded), flexibleSpouseFRA, fixedSpouseFRA, flexibleSpouseSurvivorFRA, fixedSpouseSurvivorFRA, Number(flexibleSpousePIA), Number(fixedSpousePIA), flexibleSpouseRetirementDate, fixedSpouseRetirementBenefitDate, flexibleSpouseSpousalDate, fixedSpouseSpousalDate, flexibleSpouseQuitWorkDate, fixedSpouseQuitworkDate, flexibleSpouseMonthlyEarnings, fixedSpouseMonthlyEarnings, Number(flexibleSpouseGovernmentPension), Number(fixedSpouseGovernmentPension), Number(discountRate))
 
         //If PV is greater than or equal to saved PV, save new PV and save new testDates
         if (currentTestPV >= savedPV) {
