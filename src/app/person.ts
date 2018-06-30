@@ -12,7 +12,6 @@ export class Person {
     ageToday:number //as in, "age on the date they're filling out the form" whereas age/ageRounded/ageLastBirthday are all variables that get changed throughout process as we age the person from one year to the next
 
     mortalityTable: number[]
-    assumedDeathAge: number = 0
 
     hasFiled: boolean = false
     fixedRetirementBenefitMonth: number

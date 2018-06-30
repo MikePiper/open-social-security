@@ -58,7 +58,7 @@ export class BenefitService {
     return Number(spousalBenefit)
   }
 
-  calculateSurvivorBenefit(survivorSSbirthDate: Date, survivorSurvivorFRA: Date, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: Date,
+  calculateSurvivorBenefit(survivorSSbirthDate: Date, survivingPerson:Person, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: Date,
     deceasedPerson:Person, dateOfDeath: Date,  deceasedPIA: number, deceasedClaimingDate: Date, governmentPension: number)
   {
     let deceasedRetirementBenefit: number
@@ -84,10 +84,10 @@ export class BenefitService {
     }
     
     //If survivor files for survivor benefit prior to their survivorFRA...
-    if (survivorSurvivorBenefitDate < survivorSurvivorFRA){
+    if (survivorSurvivorBenefitDate < survivingPerson.survivorFRA){
 
       //find percentage of the way survivor is from 60 to FRA
-      let monthsFrom60toFRA: number = (survivorSurvivorFRA.getFullYear() - (survivorSSbirthDate.getFullYear()+60))*12 + (survivorSurvivorFRA.getMonth() - survivorSSbirthDate.getMonth())
+      let monthsFrom60toFRA: number = (survivingPerson.survivorFRA.getFullYear() - (survivorSSbirthDate.getFullYear()+60))*12 + (survivingPerson.survivorFRA.getMonth() - survivorSSbirthDate.getMonth())
       let monthsElapsed: number = (survivorSurvivorBenefitDate.getFullYear() - (survivorSSbirthDate.getFullYear()+60))*12 + (survivorSurvivorBenefitDate.getMonth() - survivorSSbirthDate.getMonth())
       let percentageWaited: number = monthsElapsed / monthsFrom60toFRA
 
@@ -97,9 +97,9 @@ export class BenefitService {
       }
 
       //If deceased had filed before FRA, do completely new calculation, with survivor benefit based on deceasedPIA rather than deceased retirement benefit.
-      if (deceasedClaimingDate < deceasedPerson.FRA && survivorSurvivorBenefitDate < survivorSurvivorFRA) {
+      if (deceasedClaimingDate < deceasedPerson.FRA && survivorSurvivorBenefitDate < survivingPerson.survivorFRA) {
         survivorBenefit = deceasedPIA - (deceasedPIA * 0.285 * (1 - percentageWaited))
-        console.log("survivorFRA: " + survivorSurvivorFRA)
+        console.log("survivorFRA: " + survivingPerson.survivorFRA)
         console.log("percentageWaited: " + percentageWaited)
         console.log("survivor benefit before limitation: " + survivorBenefit)
         //survivorBenefit then limited to greater of 82.5% of deceased's PIA or amount deceased was receiving on date of death
