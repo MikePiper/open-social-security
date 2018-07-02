@@ -5,7 +5,7 @@ import {SolutionSet} from './solutionset'
 import {Person} from './person';
 
 
-describe('ClaimingsolutionService', () => {
+describe('SolutionSetService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [SolutionSetService, SolutionSet, BenefitService]
@@ -51,8 +51,8 @@ describe('ClaimingsolutionService', () => {
     let personA:Person = new Person()
     let personB:Person = new Person()
     let maritalStatus:string = "married"
-    let spouseASSbirthDate: Date = new Date(1960, 3, 1) //April 1, 1960
-    let spouseBSSbirthDate: Date = new Date(1960, 3, 1) //April 1, 1960
+    personA.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
+    personB.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
     personA.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
     personB.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
     let spouseAPIA: number = 1200
@@ -64,7 +64,7 @@ describe('ClaimingsolutionService', () => {
     let savedPV: number = 380000 //completely making this up
     let spouseAgovernmentPension: number = 0
     let spouseBgovernmentPension:number = 0
-    expect(service.generateCoupleSolutionSet(maritalStatus, personA, personB, spouseASSbirthDate, spouseBSSbirthDate, spouseAPIA, spouseBPIA,
+    expect(service.generateCoupleSolutionSet(maritalStatus, personA, personB, spouseAPIA, spouseBPIA,
       spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, savedPV, spouseAgovernmentPension, spouseBgovernmentPension).solutionsArray[0].date)
       .toEqual(spouseBsavedRetirementDate)
   }))

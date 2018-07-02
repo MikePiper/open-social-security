@@ -29,18 +29,18 @@ export class SolutionSetService {
         return solutionSet
   }
 
-  generateCoupleSolutionSet(maritalStatus:string, personA:Person, personB:Person, spouseASSbirthDate: Date, spouseBSSbirthDate: Date,
+  generateCoupleSolutionSet(maritalStatus:string, personA:Person, personB:Person,
     spouseAPIA: number, spouseBPIA: number, spouseAsavedRetirementDate: Date, spouseBsavedRetirementDate: Date, spouseAsavedSpousalDate: Date, spouseBsavedSpousalDate: Date, savedPV: number,
     spouseAgovernmentPension: number, spouseBgovernmentPension:number){
         //Find monthly benefit amounts and ages at saved claiming dates, for sake of output statement.
         //spouseA retirement stuff
         let spouseAsavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(spouseAPIA, personA, spouseAsavedRetirementDate)
-        let spouseAsavedRetirementAge: number = spouseAsavedRetirementDate.getFullYear() - spouseASSbirthDate.getFullYear() + (spouseAsavedRetirementDate.getMonth() - spouseASSbirthDate.getMonth())/12
+        let spouseAsavedRetirementAge: number = spouseAsavedRetirementDate.getFullYear() - personA.SSbirthDate.getFullYear() + (spouseAsavedRetirementDate.getMonth() - personA.SSbirthDate.getMonth())/12
         let spouseAsavedRetirementAgeYears: number = Math.floor(spouseAsavedRetirementAge)
         let spouseAsavedRetirementAgeMonths: number = Math.round((spouseAsavedRetirementAge%1)*12)
         //spouseB retirement stuff
         let spouseBsavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(spouseBPIA, personB, spouseBsavedRetirementDate)
-        let spouseBsavedRetirementAge: number = spouseBsavedRetirementDate.getFullYear() - spouseBSSbirthDate.getFullYear() + (spouseBsavedRetirementDate.getMonth() - spouseBSSbirthDate.getMonth())/12
+        let spouseBsavedRetirementAge: number = spouseBsavedRetirementDate.getFullYear() - personB.SSbirthDate.getFullYear() + (spouseBsavedRetirementDate.getMonth() - personB.SSbirthDate.getMonth())/12
         let spouseBsavedRetirementAgeYears: number = Math.floor(spouseBsavedRetirementAge)
         let spouseBsavedRetirementAgeMonths: number = Math.round((spouseBsavedRetirementAge%1)*12)
         //spouseA spousal stuff
@@ -48,7 +48,7 @@ export class SolutionSetService {
           if (spouseAsavedSpousalBenefit == 0 && spouseAsavedSpousalDate < spouseAsavedRetirementDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
             spouseAsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(spouseAPIA, spouseBPIA, personA, 0, spouseAsavedSpousalDate, spouseAgovernmentPension)
           }
-        let spouseAsavedSpousalAge: number = spouseAsavedSpousalDate.getFullYear() - spouseASSbirthDate.getFullYear() + (spouseAsavedSpousalDate.getMonth() - spouseASSbirthDate.getMonth())/12
+        let spouseAsavedSpousalAge: number = spouseAsavedSpousalDate.getFullYear() - personA.SSbirthDate.getFullYear() + (spouseAsavedSpousalDate.getMonth() - personA.SSbirthDate.getMonth())/12
         let spouseAsavedSpousalAgeYears: number = Math.floor(spouseAsavedSpousalAge)
         let spouseAsavedSpousalAgeMonths: number = Math.round((spouseAsavedSpousalAge%1)*12)
         //spouseB spousal stuff
@@ -56,7 +56,7 @@ export class SolutionSetService {
         if (spouseBsavedSpousalBenefit == 0 && spouseBsavedSpousalDate < spouseBsavedRetirementDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
           spouseBsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(spouseBPIA, spouseAPIA, personB, 0, spouseBsavedSpousalDate, spouseBgovernmentPension)
         }
-        let spouseBsavedSpousalAge: number = spouseBsavedSpousalDate.getFullYear() - spouseBSSbirthDate.getFullYear() + (spouseBsavedSpousalDate.getMonth() - spouseBSSbirthDate.getMonth())/12
+        let spouseBsavedSpousalAge: number = spouseBsavedSpousalDate.getFullYear() - personB.SSbirthDate.getFullYear() + (spouseBsavedSpousalDate.getMonth() - personB.SSbirthDate.getMonth())/12
         let spouseBsavedSpousalAgeYears: number = Math.floor(spouseBsavedSpousalAge)
         let spouseBsavedSpousalAgeMonths: number = Math.round((spouseBsavedSpousalAge%1)*12)
         //spouseA survivor stuff

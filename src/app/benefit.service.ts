@@ -58,7 +58,7 @@ export class BenefitService {
     return Number(spousalBenefit)
   }
 
-  calculateSurvivorBenefit(survivorSSbirthDate: Date, survivingPerson:Person, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: Date,
+  calculateSurvivorBenefit(survivingPerson:Person, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: Date,
     deceasedPerson:Person, dateOfDeath: Date,  deceasedPIA: number, deceasedClaimingDate: Date, governmentPension: number)
   {
     let deceasedRetirementBenefit: number
@@ -87,8 +87,8 @@ export class BenefitService {
     if (survivorSurvivorBenefitDate < survivingPerson.survivorFRA){
 
       //find percentage of the way survivor is from 60 to FRA
-      let monthsFrom60toFRA: number = (survivingPerson.survivorFRA.getFullYear() - (survivorSSbirthDate.getFullYear()+60))*12 + (survivingPerson.survivorFRA.getMonth() - survivorSSbirthDate.getMonth())
-      let monthsElapsed: number = (survivorSurvivorBenefitDate.getFullYear() - (survivorSSbirthDate.getFullYear()+60))*12 + (survivorSurvivorBenefitDate.getMonth() - survivorSSbirthDate.getMonth())
+      let monthsFrom60toFRA: number = (survivingPerson.survivorFRA.getFullYear() - (survivingPerson.SSbirthDate.getFullYear()+60))*12 + (survivingPerson.survivorFRA.getMonth() - survivingPerson.SSbirthDate.getMonth())
+      let monthsElapsed: number = (survivorSurvivorBenefitDate.getFullYear() - (survivingPerson.SSbirthDate.getFullYear()+60))*12 + (survivorSurvivorBenefitDate.getMonth() - survivingPerson.SSbirthDate.getMonth())
       let percentageWaited: number = monthsElapsed / monthsFrom60toFRA
 
       //if deceased had not filed before FRA, adjust survivor benefit downward relative to initial survivor benefit calculation above.
