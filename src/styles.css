@@ -6,6 +6,7 @@
 body{
     font: 400 18px Lato, sans-serif;
     line-height: 2;
+    margin-bottom:150px;
 }
 
 #jumbolink { /* removes underline from the link in jumbotron */
@@ -52,13 +53,6 @@ label {
     background-color: #fff !important;
 }
 
-@media only screen and (max-width: 600px) {
-    .footer {
-            display:none;
-        }
-    }
-
-
 .footer {
     position: fixed;
     left: 0;
@@ -67,8 +61,8 @@ label {
     background-color: #267bc5;
     color: white;
     text-align: center;
-    margin-top:50px;
 }
+
 
 .footer a {
     color: white;
