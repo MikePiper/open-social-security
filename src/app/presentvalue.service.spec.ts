@@ -165,7 +165,7 @@ describe('PresentValueService', () => {
   it('should tell a single person to file ASAP with very high discount rate', inject([PresentValueService], (service: PresentValueService) => {
     let person:Person = new Person()
     let maritalStatus:string = "single"
-    let actualBirthDate:Date = new Date(1960, 3, 15) //Person born April 15 1960
+    person.actualBirthDate = new Date(1960, 3, 15) //Person born April 15 1960
     person.SSbirthDate = new Date(1960, 3, 1)
     person.FRA = new Date (2027, 3, 1) //FRA April 2027 (age 67)
     let initialAge: number = 58 //younger than 62 when fillling out form
@@ -175,7 +175,7 @@ describe('PresentValueService', () => {
     let discountRate: number = 9 //9% discount rate
     let mortalityService:MortalityService = new MortalityService()
     person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-    expect(service.maximizeSinglePersonPV(maritalStatus, person, PIA, actualBirthDate, initialAge, quitWorkDate, monthlyEarnings, discountRate).solutionsArray[0].date)
+    expect(service.maximizeSinglePersonPV(maritalStatus, person, PIA, initialAge, quitWorkDate, monthlyEarnings, discountRate).solutionsArray[0].date)
       .toEqual(new Date(2022, 4, 1))
   }))
 
@@ -186,9 +186,9 @@ describe('PresentValueService', () => {
     let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
-    let spouseAactualBirthDate:Date = new Date(1964, 8, 15) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
+    personA.actualBirthDate = new Date(1964, 8, 15) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
     personA.SSbirthDate = new Date(1964, 8, 1)
-    let spouseBactualBirthDate:Date = new Date(1964, 9, 11) //Spouse B born in October 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
+    personB.actualBirthDate = new Date(1964, 9, 11) //Spouse B born in October 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
     personB.SSbirthDate = new Date(1964, 9, 1)
     let spouseAinitialAgeRounded:number = 60
     let spouseBinitialAgeRounded:number = 60
@@ -206,7 +206,7 @@ describe('PresentValueService', () => {
     let spouseAgovernmentPension: number = 0
     let spouseBgovernmentPension:number = 0
     let discountRate:number = 1
-    expect(service.maximizeCouplePV(maritalStatus, personA, personB, spouseAPIA, spouseBPIA, spouseAactualBirthDate, spouseBactualBirthDate, spouseAinitialAgeRounded, spouseBinitialAgeRounded,
+    expect(service.maximizeCouplePV(maritalStatus, personA, personB, spouseAPIA, spouseBPIA, spouseAinitialAgeRounded, spouseBinitialAgeRounded,
     spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate).solutionsArray[1].date)
     .toEqual(new Date(2034, 9, 1))
     //We're looking at item [1] in the array. This array should have 3 items in it: retirement benefit dates for each spouse, and a survivor date for spouse A (lower earner).
