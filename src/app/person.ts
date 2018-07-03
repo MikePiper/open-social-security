@@ -1,39 +1,40 @@
 export class Person {
     actualBirthDate: Date
-    PIA: number = 1000
+    //PIA: number = 1000
 
     SSbirthDate: Date
     FRA: Date
     survivorFRA: Date
 
-    age: number
-    ageRounded: number
-    ageLastBirthday: number
-    ageToday:number //as in, "age on the date they're filling out the form" whereas age/ageRounded/ageLastBirthday are all variables that get changed throughout process as we age the person from one year to the next
+    //age: number
+    //ageRounded: number
+    //ageLastBirthday: number
+    initialAge: number //as in, "age on the date they're filling out the form" whereas age/ageRounded/ageLastBirthday are all variables that get changed throughout process as we age the person from one year to the next
+    initialAgeRounded: number
 
     mortalityTable: number[]
 
-    hasFiled: boolean = false
-    fixedRetirementBenefitMonth: number
-    fixedRetirementBenefitYear: number
-    fixedRetirementBenefitDate: Date
+    //hasFiled: boolean = false
+    //fixedRetirementBenefitMonth: number
+    //ixedRetirementBenefitYear: number
+    //fixedRetirementBenefitDate: Date
 
-    governmentPension: number = 0
+    //governmentPension: number = 0
 
-    working: boolean = false
-    quitWorkYear: number
-    quitWorkMonth: number
-    quitWorkDate: Date
-    monthlyEarnings: number = 0
-    hasHadGraceYear: boolean = false
+    //working: boolean = false
+    //quitWorkYear: number
+    //quitWorkMonth: number
+    //quitWorkDate: Date
+    //monthlyEarnings: number = 0
+    //hasHadGraceYear: boolean = false
 
-    retirementBenefit: number
-    adjustedRetirementBenefitDate: Date
-    retirementBenefitAfterARF: number
+    //retirementBenefit: number
+    //adjustedRetirementBenefitDate: Date
+    //retirementBenefitAfterARF: number
 
-    customRetirementBenefitMonth: number
-    customRetirementBenefitYear: number
-    customRetirementBenefitDate: Date
+    //customRetirementBenefitMonth: number
+    //customRetirementBenefitYear: number
+    //customRetirementBenefitDate: Date
 
     constructor(){
 
@@ -50,18 +51,18 @@ export class Person {
     //annualSurvivorBenefit: number Variable for calculationYear?
 
 export class MarriedPerson extends Person {
-    spousalBenefitWithoutRetirement: number
-    spousalBenefitWithRetirement: number
-    survivorBenefitWithoutRetirement: number
-    survivorBenefitWithRetirement: number
-    adjustedSpousalBenefitDate: Date
-    spousalBenefitWithoutRetirementAfterARF: number
-    spousalBenefitWithRetirementAfterARF: number
-    survivorBenefitWithoutRetirementAfterARF: number
-    survivorBenefitWithRetirementAfterARF: number
+    //spousalBenefitWithoutRetirement: number
+    //spousalBenefitWithRetirement: number
+    //survivorBenefitWithoutRetirement: number
+    //survivorBenefitWithRetirement: number
+    //adjustedSpousalBenefitDate: Date
+    //spousalBenefitWithoutRetirementAfterARF: number
+    //spousalBenefitWithRetirementAfterARF: number
+    //survivorBenefitWithoutRetirementAfterARF: number
+    //survivorBenefitWithRetirementAfterARF: number
 
-    customSpousalBenefitMonth: number
-    customSpousalBenefitYear: number
-    customSpousalBenefitDate: Date
-    declineSpousal: boolean = false
+    //customSpousalBenefitMonth: number
+    //customSpousalBenefitYear: number
+    //customSpousalBenefitDate: Date
+    //declineSpousal: boolean = false
 }
