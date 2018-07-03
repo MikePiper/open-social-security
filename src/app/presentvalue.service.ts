@@ -896,7 +896,7 @@ export class PresentValueService {
 
   //This function is for when one spouse has already filed. Also is the function for a divorcee, because we take the ex-spouse's filing date as a given (i.e., as an input)
   maximizeCoupleOneHasFiledPV(maritalStatus:string, spouseAhasFiled:boolean, spouseBhasFiled:boolean,
-    fixedSpouseRetirementBenefitDate:Date, flexibleSpousePIA: number, fixedSpousePIA: number, flexibleSpouseActualBirthDate:Date, fixedSpouseActualBirthDate:Date,
+    fixedSpouseRetirementBenefitDate:Date, flexibleSpousePIA: number, fixedSpousePIA: number,
     flexibleSpouseInitialAgeRounded:number, fixedSpouseInitialAgeRounded:number,
     flexibleSpouse:Person, fixedSpouse:Person,
     flexibleSpouseQuitWorkDate: Date, fixedSpouseQuitworkDate: Date, flexibleSpouseMonthlyEarnings: number, fixedSpouseMonthlyEarnings: number,
@@ -907,12 +907,12 @@ export class PresentValueService {
       //find initial test dates for flexibleSpouse (first month for which flexibleSpouse is considered 62 for entire month)
       let flexibleSpouseRetirementDate = new Date(flexibleSpouse.SSbirthDate.getFullYear()+62, 1, 1)
       let flexibleSpouseSpousalDate = new Date(flexibleSpouse.SSbirthDate.getFullYear()+62, 1, 1)
-      if (flexibleSpouseActualBirthDate.getDate() <= 2){
-        flexibleSpouseRetirementDate.setMonth(flexibleSpouseActualBirthDate.getMonth())
-        flexibleSpouseSpousalDate.setMonth(flexibleSpouseActualBirthDate.getMonth())
+      if (flexibleSpouse.actualBirthDate.getDate() <= 2){
+        flexibleSpouseRetirementDate.setMonth(flexibleSpouse.actualBirthDate.getMonth())
+        flexibleSpouseSpousalDate.setMonth(flexibleSpouse.actualBirthDate.getMonth())
       } else {
-        flexibleSpouseRetirementDate.setMonth(flexibleSpouseActualBirthDate.getMonth()+1)
-        flexibleSpouseSpousalDate.setMonth(flexibleSpouseActualBirthDate.getMonth()+1)
+        flexibleSpouseRetirementDate.setMonth(flexibleSpouse.actualBirthDate.getMonth()+1)
+        flexibleSpouseSpousalDate.setMonth(flexibleSpouse.actualBirthDate.getMonth()+1)
       }
       //If flexibleSpouse is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
       let flexibleSpouseAgeToday: number = this.today.getFullYear() - flexibleSpouse.SSbirthDate.getFullYear() + (this.today.getMonth() - flexibleSpouse.SSbirthDate.getMonth()) /12
@@ -926,10 +926,10 @@ export class PresentValueService {
       //Don't let flexibleSpouseSpousalDate be earlier than first month for which fixedSpouse is 62 for whole month.
         //This only matters for divorcee scenario. For still-married scenario where one spouse has filed, that filing date is already in the past, so it won't suggest an earlier spousal date for flexible spouse anyway.
       let fixedSpouse62Date = new Date(fixedSpouse.SSbirthDate.getFullYear()+62, 1, 1)
-      if (fixedSpouseActualBirthDate.getDate() <= 2){
-        fixedSpouse62Date.setMonth(fixedSpouseActualBirthDate.getMonth())
+      if (fixedSpouse.actualBirthDate.getDate() <= 2){
+        fixedSpouse62Date.setMonth(fixedSpouse.actualBirthDate.getMonth())
       } else {
-        fixedSpouse62Date.setMonth(fixedSpouseActualBirthDate.getMonth()+1)
+        fixedSpouse62Date.setMonth(fixedSpouse.actualBirthDate.getMonth()+1)
       }
       if (flexibleSpouseSpousalDate < fixedSpouse62Date) {
         flexibleSpouseSpousalDate.setFullYear(fixedSpouse62Date.getFullYear())
@@ -967,7 +967,7 @@ export class PresentValueService {
         
         //Increment flexibleSpouse's dates (and fixedSpouse's spousal date, since it is just set to be same as flexible spouse's retirement date)
           //if new deemed filing rules, increment flexibleSpouse's retirement and spousal by 1 month
-          if (flexibleSpouseActualBirthDate > deemedFilingCutoff) {
+          if (flexibleSpouse.actualBirthDate > deemedFilingCutoff) {
             flexibleSpouseRetirementDate.setMonth(flexibleSpouseRetirementDate.getMonth()+1)
             fixedSpouseSpousalDate.setMonth(fixedSpouseSpousalDate.getMonth()+1)
             if (flexibleSpouseSpousalDate <= flexibleSpouseRetirementDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule

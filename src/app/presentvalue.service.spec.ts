@@ -186,9 +186,9 @@ describe('PresentValueService', () => {
     let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
-    personA.actualBirthDate = new Date(1964, 8, 15) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
+    personA.actualBirthDate = new Date(1964, 8, 15) //Spouse A born in Sept 1964
     personA.SSbirthDate = new Date(1964, 8, 1)
-    personB.actualBirthDate = new Date(1964, 9, 11) //Spouse B born in October 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
+    personB.actualBirthDate = new Date(1964, 9, 11) //Spouse B born in October 1964
     personB.SSbirthDate = new Date(1964, 9, 1)
     let spouseAinitialAgeRounded:number = 60
     let spouseBinitialAgeRounded:number = 60
@@ -213,6 +213,80 @@ describe('PresentValueService', () => {
     //No spousal dates because neither spouse gets a spousal benefit. Since it's sorted in date order, first retirement date will be low earner, second is higher earner, which we want. Third is survivor.
   }))
 
+  it ('should tell a high-PIA spouse to file a restricted app when possible', inject([PresentValueService], (service: PresentValueService) => {
+    let personA:Person = new Person()
+    let personB:Person = new Person()
+    let maritalStatus:string = "married"
+    let mortalityService:MortalityService = new MortalityService()
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0) //Using male nonsmoker2 mortality table
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) //Using female nonsmoker1 mortality table
+    personA.actualBirthDate = new Date(1953, 8, 15) //Spouse A born in Sept 1953
+    personA.SSbirthDate = new Date(1953, 8, 1)
+    personB.actualBirthDate = new Date(1953, 9, 11) //Spouse B born in October 1953
+    personB.SSbirthDate = new Date(1953, 9, 1)
+    let spouseAinitialAgeRounded:number = 64
+    let spouseBinitialAgeRounded:number = 64
+    let birthdayService:BirthdayService = new BirthdayService()
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    let spouseAPIA: number = 2200
+    let spouseBPIA: number = 1400
+    let spouseAquitWorkDate: Date = new Date(2018,3,1) //already quit working
+    let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
+    let spouseAmonthlyEarnings: number = 0
+    let spouseBmonthlyEarnings: number = 0
+    let spouseAgovernmentPension: number = 0
+    let spouseBgovernmentPension:number = 0
+    let discountRate:number = 1
+    expect(service.maximizeCouplePV(maritalStatus, personA, personB, spouseAPIA, spouseBPIA, spouseAinitialAgeRounded, spouseBinitialAgeRounded,
+    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate).solutionsArray[1].date)
+    .toEqual(new Date(2019, 8, 1))
+    //We're looking at item [1] in the array. This array should have 4 items in it, in this order:
+      //low PIA retirement claiming date
+      //high PIA restricted app date
+      //high PIA retirement date
+      //Survivor for low-PIA
+  }))
+
+  it ('should tell a divorced user with significantly lower PIA to file ASAP', inject([PresentValueService], (service: PresentValueService) => {
+    let personA:Person = new Person()
+    let personB:Person = new Person()
+    let spouseAhasFiled: boolean = false
+    let spouseBhasFiled: boolean = false
+    let maritalStatus:string = "divorced"
+    let mortalityService:MortalityService = new MortalityService()
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personA.actualBirthDate = new Date(1964, 9, 15) //Spouse A born in October 1964
+    personA.SSbirthDate = new Date(1964, 9, 1)
+    personB.actualBirthDate = new Date(1960, 9, 11) //Spouse B born in October 1960
+    personB.SSbirthDate = new Date(1960, 9, 1)
+    let spouseBretirementBenefitDate:Date = new Date (2028, 9, 1) //Filing at exactly age 68
+    let spouseAinitialAgeRounded:number = 54
+    let spouseBinitialAgeRounded:number = 58
+    let birthdayService:BirthdayService = new BirthdayService()
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    let spouseAPIA: number = 700
+    let spouseBPIA: number = 1900
+    let spouseAquitWorkDate: Date = new Date(2018,3,1) //already quit working
+    let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
+    let spouseAmonthlyEarnings: number = 0
+    let spouseBmonthlyEarnings: number = 0
+    let spouseAgovernmentPension: number = 0
+    let spouseBgovernmentPension:number = 0
+    let discountRate:number = 1
+    expect(service.maximizeCoupleOneHasFiledPV(maritalStatus, spouseAhasFiled, spouseBhasFiled, spouseBretirementBenefitDate, spouseAPIA, spouseBPIA, spouseAinitialAgeRounded, spouseBinitialAgeRounded,
+    personA, personB, 
+    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate).solutionsArray[0].date)
+    .toEqual(new Date(2026, 10, 1))
+    //We're looking at item [0] in the array. This array should have 3 items in it: retirement benefit date and spousal benefit date for spouseA, and a survivor date for spouse A (lower earner).
+    //Since it's sorted in date order, we want first date (or second date -- they should be the same)
+  }))
 
 
 })
