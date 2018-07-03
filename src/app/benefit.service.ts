@@ -7,36 +7,36 @@ export class BenefitService {
 
   constructor() { }
 
-  calculateRetirementBenefit(PIA: number, person:Person, benefitDate: Date)
+  calculateRetirementBenefit(person:Person, benefitDate: Date)
   {
     let retirementBenefit: number = 0
     let monthsWaited = benefitDate.getMonth() - person.FRA.getMonth() + 12 * (benefitDate.getFullYear() - person.FRA.getFullYear())
 
       if (monthsWaited < -36)
-      {retirementBenefit = PIA - (PIA / 100 * 5 / 9 * 36) + (PIA / 100 * 5 / 12 * (monthsWaited+36))}
+      {retirementBenefit = person.PIA - (person.PIA / 100 * 5 / 9 * 36) + (person.PIA / 100 * 5 / 12 * (monthsWaited+36))}
       if (monthsWaited < 0 && monthsWaited >= -36)
-      {retirementBenefit = PIA + (PIA / 100 * 5 / 9 * monthsWaited)}
+      {retirementBenefit = person.PIA + (person.PIA / 100 * 5 / 9 * monthsWaited)}
       if (monthsWaited == 0)
-      {retirementBenefit = PIA}
+      {retirementBenefit = person.PIA}
       if (monthsWaited > 0 )
-      {retirementBenefit = PIA + (PIA / 100 * 2 / 3 * monthsWaited)}
+      {retirementBenefit = person.PIA + (person.PIA / 100 * 2 / 3 * monthsWaited)}
 
       return Number(retirementBenefit)
   }
 
-  calculateSpousalBenefit(PIA: number, otherSpousePIA: number, person:Person, retirementBenefit: number, spousalStartDate: Date, governmentPension: number)
+  calculateSpousalBenefit(person:Person, otherPerson:Person, retirementBenefit: number, spousalStartDate: Date, governmentPension: number)
   {
     //no need to check for filing prior to 62, because we're already checking for that in the input form component.
 
     //Initial calculation
-    let spousalBenefit = otherSpousePIA / 2
+    let spousalBenefit = otherPerson.PIA / 2
 
     //subtract greater of PIA or retirement benefit, but no more than spousal benefit. No subtraction if retirement benefit is zero (i.e., if not yet filed for retirement benefit)
-      if (retirementBenefit > 0 && retirementBenefit >= PIA) {
+      if (retirementBenefit > 0 && retirementBenefit >= person.PIA) {
         spousalBenefit = spousalBenefit - retirementBenefit
         }
-      else if (retirementBenefit > 0 && retirementBenefit < PIA) {
-        spousalBenefit = spousalBenefit - PIA
+      else if (retirementBenefit > 0 && retirementBenefit < person.PIA) {
+        spousalBenefit = spousalBenefit - person.PIA
       }
 
     //Multiply by a reduction factor if spousal benefit claimed prior to FRA
@@ -59,27 +59,27 @@ export class BenefitService {
   }
 
   calculateSurvivorBenefit(survivingPerson:Person, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: Date,
-    deceasedPerson:Person, dateOfDeath: Date,  deceasedPIA: number, deceasedClaimingDate: Date, governmentPension: number)
+    deceasedPerson:Person, dateOfDeath: Date, deceasedClaimingDate: Date, governmentPension: number)
   {
     let deceasedRetirementBenefit: number
     let survivorBenefit: number
 
     //If deceased had filed, survivorBenefit = deceased spouse's retirement benefit, but no less than 82.5% of deceased's PIA
     if (deceasedClaimingDate <= dateOfDeath) {
-      deceasedRetirementBenefit = this.calculateRetirementBenefit(deceasedPIA, deceasedPerson, deceasedClaimingDate)
+      deceasedRetirementBenefit = this.calculateRetirementBenefit(deceasedPerson, deceasedClaimingDate)
       survivorBenefit = deceasedRetirementBenefit
-      if (survivorBenefit < 0.825 * deceasedPIA) {
-        survivorBenefit = 0.825 * deceasedPIA
+      if (survivorBenefit < 0.825 * deceasedPerson.PIA) {
+        survivorBenefit = 0.825 * deceasedPerson.PIA
        }
       }
     else { //i.e., if deceased sposue had NOT filed as of date of death...
         //if deceased spouse was younger than FRA, survivor benefit = deceasedPIA
         if (dateOfDeath < deceasedPerson.FRA){
-          survivorBenefit = deceasedPIA
+          survivorBenefit = deceasedPerson.PIA
         }
         //if deceased spouse was older than FRA, survivorBenefit = deceased's retirement benefit on date of death
         else {
-        survivorBenefit = this.calculateRetirementBenefit(deceasedPIA, deceasedPerson, dateOfDeath)
+        survivorBenefit = this.calculateRetirementBenefit(deceasedPerson, dateOfDeath)
         }
     }
     
@@ -98,18 +98,18 @@ export class BenefitService {
 
       //If deceased had filed before FRA, do completely new calculation, with survivor benefit based on deceasedPIA rather than deceased retirement benefit.
       if (deceasedClaimingDate < deceasedPerson.FRA && survivorSurvivorBenefitDate < survivingPerson.survivorFRA) {
-        survivorBenefit = deceasedPIA - (deceasedPIA * 0.285 * (1 - percentageWaited))
+        survivorBenefit = deceasedPerson.PIA - (deceasedPerson.PIA * 0.285 * (1 - percentageWaited))
         console.log("survivorFRA: " + survivingPerson.survivorFRA)
         console.log("percentageWaited: " + percentageWaited)
         console.log("survivor benefit before limitation: " + survivorBenefit)
         //survivorBenefit then limited to greater of 82.5% of deceased's PIA or amount deceased was receiving on date of death
-        if (0.825 * deceasedPIA < deceasedRetirementBenefit) {
+        if (0.825 * deceasedPerson.PIA < deceasedRetirementBenefit) {
           if (survivorBenefit > deceasedRetirementBenefit) {
             survivorBenefit = deceasedRetirementBenefit
           }
         } else {
-            if (survivorBenefit > 0.825 * deceasedPIA) {
-              survivorBenefit = 0.825 * deceasedPIA
+            if (survivorBenefit > 0.825 * deceasedPerson.PIA) {
+              survivorBenefit = 0.825 * deceasedPerson.PIA
             }
           }
       }

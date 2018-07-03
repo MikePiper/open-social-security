@@ -4,7 +4,6 @@ import {BirthdayService} from '../birthday.service'
 import {PresentValueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
 import {BenefitService} from '../benefit.service'
-import {SolutionSet} from '../solutionset'
 import {FREDresponse} from '../fredresponse'
 import {HttpClient} from '@angular/common/http'
 import {Person} from '../person';
@@ -13,7 +12,7 @@ import {Person} from '../person';
 describe('HomeComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [HomeComponent, BirthdayService, PresentValueService, MortalityService, BenefitService, SolutionSet, FREDresponse, {provide: HttpClient, useValue: HttpClientStub }]
+      providers: [HomeComponent, BirthdayService, PresentValueService, MortalityService, BenefitService, FREDresponse, {provide: HttpClient, useValue: HttpClientStub }]
     })
   })
 

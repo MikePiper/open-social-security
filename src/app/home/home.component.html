@@ -45,7 +45,7 @@
         </div>
         <div>
           <label>PIA</label>
-          <input type="text" [(ngModel)]="spouseAPIA" name="spouseAPIA" #spouseAPIAinput="ngModel" id="spouseAPIA" required pattern="[0-9]{1,7}">
+          <input type="number" [(ngModel)]="personA.PIA" name="personA.PIA" #spouseAPIAinput="ngModel" id="spouseAPIA" required pattern="[0-9]{1,7}">
           <span *ngIf="spouseAPIAinput.invalid" class="alert alert-danger">digits only, please</span>
           <p class="inputexplanation">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age.
             You can get an <em>estimate</em> of your PIA from your Social Security statement.
@@ -153,7 +153,7 @@
         </div>
         <div>
           <label>PIA</label>
-          <input type="text" [(ngModel)]="spouseBPIA" name="spouseBPIA" #spouseBPIAinput="ngModel" required pattern="[0-9]{1,8}">
+          <input type="number" [(ngModel)]="personB.PIA" name="personB.PIA" #spouseBPIAinput="ngModel" required pattern="[0-9]{1,8}">
           <span *ngIf="spouseBPIAinput.invalid" class="alert alert-danger">digits only, please</span>
         </div>
 

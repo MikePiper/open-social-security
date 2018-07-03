@@ -1,6 +1,6 @@
 export class Person {
     actualBirthDate: Date
-    //PIA: number = 1000
+    PIA: number = 1000
 
     SSbirthDate: Date
     FRA: Date
@@ -41,7 +41,7 @@ export class Person {
     }
 
 }
-    //denominatorAge: number    Is this a variable in a class??
+    //denominatorAge: number Is this a variable in a class??
     //probabilityAlive: number Is this a variable in a class??
     //withholdingAmount: number Is this a variable in a class??
     //monthsWithheld: number = 0 Is this a variable in a class??
