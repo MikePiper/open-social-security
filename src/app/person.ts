@@ -19,7 +19,7 @@ export class Person {
     //ixedRetirementBenefitYear: number
     //fixedRetirementBenefitDate: Date
 
-    //governmentPension: number = 0
+    governmentPension: number = 0
 
     //working: boolean = false
     //quitWorkYear: number

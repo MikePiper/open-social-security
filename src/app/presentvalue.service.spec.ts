@@ -79,12 +79,12 @@ describe('PresentValueService', () => {
     let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
     let spouseAmonthlyEarnings: number = 0
     let spouseBmonthlyEarnings: number = 0
-    let spouseAgovernmentPension: number = 0
-    let spouseBgovernmentPension:number = 0
+    personA.governmentPension = 0
+    personB.governmentPension = 0
     let discountRate:number = 1
     expect(service.calculateCouplePV(maritalStatus, personA, personB,
     spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate,
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate))
+    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate))
       .toBeCloseTo(578594, 0)
   }))
 
@@ -114,12 +114,12 @@ describe('PresentValueService', () => {
     let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
     let spouseAmonthlyEarnings: number = 0
     let spouseBmonthlyEarnings: number = 0
-    let spouseAgovernmentPension: number = 900
-    let spouseBgovernmentPension:number = 0
+    personA.governmentPension = 900
+    personB.governmentPension = 0
     let discountRate:number = 1
     expect(service.calculateCouplePV(maritalStatus, personA, personB,
     spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate,
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate))
+    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate))
       .toBeCloseTo(531263, 0)
   }))
 
@@ -151,12 +151,12 @@ describe('PresentValueService', () => {
     let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
     let spouseAmonthlyEarnings: number = 0
     let spouseBmonthlyEarnings: number = 0
-    let spouseAgovernmentPension: number = 300
-    let spouseBgovernmentPension:number = 0
+    personA.governmentPension = 300
+    personB.governmentPension = 0
     let discountRate:number = 1
     expect(service.calculateCouplePV(maritalStatus, personA, personB,
     spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate,
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate))
+    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate))
       .toBeCloseTo(161095, 0)
   }))
 
@@ -203,11 +203,11 @@ describe('PresentValueService', () => {
     let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
     let spouseAmonthlyEarnings: number = 0
     let spouseBmonthlyEarnings: number = 0
-    let spouseAgovernmentPension: number = 0
-    let spouseBgovernmentPension:number = 0
+    personA.governmentPension = 0
+    personB.governmentPension = 0
     let discountRate:number = 1
     expect(service.maximizeCouplePV(maritalStatus, personA, personB,
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate).solutionsArray[1].date)
+    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate).solutionsArray[1].date)
     .toEqual(new Date(2034, 9, 1))
     //We're looking at item [1] in the array. This array should have 3 items in it: retirement benefit dates for each spouse, and a survivor date for spouse A (lower earner).
     //No spousal dates because neither spouse gets a spousal benefit. Since it's sorted in date order, first retirement date will be low earner, second is higher earner, which we want. Third is survivor.
@@ -237,11 +237,11 @@ describe('PresentValueService', () => {
     let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
     let spouseAmonthlyEarnings: number = 0
     let spouseBmonthlyEarnings: number = 0
-    let spouseAgovernmentPension: number = 0
-    let spouseBgovernmentPension:number = 0
+    personA.governmentPension = 0
+    personB.governmentPension = 0
     let discountRate:number = 1
     expect(service.maximizeCouplePV(maritalStatus, personA, personB,
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate).solutionsArray[1].date)
+    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate).solutionsArray[1].date)
     .toEqual(new Date(2019, 8, 1))
     //We're looking at item [1] in the array. This array should have 4 items in it, in this order:
       //low PIA retirement claiming date
@@ -277,12 +277,12 @@ describe('PresentValueService', () => {
     let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
     let spouseAmonthlyEarnings: number = 0
     let spouseBmonthlyEarnings: number = 0
-    let spouseAgovernmentPension: number = 0
-    let spouseBgovernmentPension:number = 0
+    personA.governmentPension = 0
+    personB.governmentPension = 0
     let discountRate:number = 1
     expect(service.maximizeCoupleOneHasFiledPV(maritalStatus, spouseAhasFiled, spouseBhasFiled, spouseBretirementBenefitDate,
     personA, personB, 
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, spouseAgovernmentPension, spouseBgovernmentPension, discountRate).solutionsArray[0].date)
+    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate).solutionsArray[0].date)
     .toEqual(new Date(2026, 10, 1))
     //We're looking at item [0] in the array. This array should have 3 items in it: retirement benefit date and spousal benefit date for spouseA, and a survivor date for spouse A (lower earner).
     //Since it's sorted in date order, we want first date (or second date -- they should be the same)

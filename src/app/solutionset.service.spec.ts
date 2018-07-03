@@ -62,10 +62,10 @@ describe('SolutionSetService', () => {
     let spouseAsavedSpousalDate: Date = new Date(2033, 5, 1)
     let spouseBsavedSpousalDate: Date = new Date(2035, 5, 1)
     let savedPV: number = 380000 //completely making this up
-    let spouseAgovernmentPension: number = 0
-    let spouseBgovernmentPension:number = 0
+    personA.governmentPension = 0
+    personB.governmentPension = 0
     expect(service.generateCoupleSolutionSet(maritalStatus, personA, personB,
-      spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, savedPV, spouseAgovernmentPension, spouseBgovernmentPension).solutionsArray[0].date)
+      spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, savedPV).solutionsArray[0].date)
       .toEqual(spouseBsavedRetirementDate)
   }))
 
@@ -88,10 +88,10 @@ describe('SolutionSetService', () => {
     let flexibleSpouseSavedSpousalDate: Date = new Date(2031, 5, 1)
     let fixedSpouseSavedSpousalDate: Date = new Date(2031, 5, 1)
     let savedPV: number = 380000 //completely making this up
-    let flexibleSpouseGovernmentPension: number = 0
-    let fixedSpouseGovernmentPension: number = 0
+    flexibleSpouse.governmentPension = 0
+    fixedSpouse.governmentPension = 0
     expect(service.generateCoupleOneHasFiledSolutionSet(maritalStatus, flexibleSpouse, fixedSpouse, spouseAhasFiled, spouseBhasFiled,
-      flexibleSpouseSSbirthDate, fixedSpouseSSbirthDate, flexibleSpouseGovernmentPension, fixedSpouseGovernmentPension,
+      flexibleSpouseSSbirthDate, fixedSpouseSSbirthDate,
       flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, savedPV).solutionsArray[0].date)
       .toEqual(flexibleSpouseSavedSpousalDate)
   }))

@@ -24,7 +24,7 @@ export class BenefitService {
       return Number(retirementBenefit)
   }
 
-  calculateSpousalBenefit(person:Person, otherPerson:Person, retirementBenefit: number, spousalStartDate: Date, governmentPension: number)
+  calculateSpousalBenefit(person:Person, otherPerson:Person, retirementBenefit: number, spousalStartDate: Date)
   {
     //no need to check for filing prior to 62, because we're already checking for that in the input form component.
 
@@ -47,7 +47,7 @@ export class BenefitService {
     {spousalBenefit = spousalBenefit - (spousalBenefit * 25/36/100 * 36) + (spousalBenefit * 5/12/100 * (monthsWaited+36))}
 
     //GPO: reduce by 2/3 of government pension
-    spousalBenefit = spousalBenefit - 2/3 * governmentPension
+    spousalBenefit = spousalBenefit - 2/3 * person.governmentPension
 
     //If GPO or reduction for own retirementBenefit/PIA reduced spousalBenefit below zero, spousalBenefit is zero.
     if (spousalBenefit < 0) {
@@ -59,7 +59,7 @@ export class BenefitService {
   }
 
   calculateSurvivorBenefit(survivingPerson:Person, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: Date,
-    deceasedPerson:Person, dateOfDeath: Date, deceasedClaimingDate: Date, governmentPension: number)
+    deceasedPerson:Person, dateOfDeath: Date, deceasedClaimingDate: Date)
   {
     let deceasedRetirementBenefit: number
     let survivorBenefit: number
@@ -119,7 +119,7 @@ export class BenefitService {
       survivorBenefit = survivorBenefit - survivorRetirementBenefit
 
       //GPO: reduce by 2/3 of government pension
-      survivorBenefit = survivorBenefit - 2/3 * governmentPension
+      survivorBenefit = survivorBenefit - 2/3 * survivingPerson.governmentPension
 
       //If GPO or reduction for own retirement benefit reduced spousalBenefit below zero, spousalBenefit is zero.
       if (survivorBenefit < 0) {

@@ -160,7 +160,7 @@ export class PresentValueService {
   calculateCouplePV(maritalStatus:string, personA:Person, personB:Person,
     spouseAretirementBenefitDate: Date, spouseBretirementBenefitDate: Date, spouseAspousalBenefitDate: Date, spouseBspousalBenefitDate: Date,
     spouseAquitWorkDate: Date, spouseBquitWorkDate: Date, spouseAmonthlyEarnings: number, spouseBmonthlyEarnings: number,
-    spouseAgovernmentPension: number, spouseBgovernmentPension:number, discountRate:number){
+    discountRate:number){
     
     //Monthly benefit variables pre-ARF
     let spouseAretirementBenefit: number = 0
@@ -293,14 +293,14 @@ export class PresentValueService {
         //Calculate monthly benefit amounts, pre-ARF
         spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(personA, spouseAretirementBenefitDate)
         spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(personB, spouseBretirementBenefitDate)
-        spouseAspousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, 0, spouseAspousalBenefitDate, spouseAgovernmentPension)
-        spouseAspousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, spouseAretirementBenefit, spouseAspousalBenefitDate, spouseAgovernmentPension)
-        spouseBspousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, 0, spouseBspousalBenefitDate, spouseBgovernmentPension)
-        spouseBspousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, spouseBretirementBenefit, spouseBspousalBenefitDate, spouseBgovernmentPension)
-        spouseAsurvivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate, spouseAgovernmentPension)
-        spouseAsurvivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(personA, spouseAretirementBenefit, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate, spouseAgovernmentPension)
-        spouseBsurvivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate, spouseBgovernmentPension)
-        spouseBsurvivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(personB, spouseBretirementBenefit, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate, spouseBgovernmentPension)
+        spouseAspousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, 0, spouseAspousalBenefitDate)
+        spouseAspousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, spouseAretirementBenefit, spouseAspousalBenefitDate)
+        spouseBspousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, 0, spouseBspousalBenefitDate)
+        spouseBspousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, spouseBretirementBenefit, spouseBspousalBenefitDate)
+        spouseAsurvivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate)
+        spouseAsurvivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(personA, spouseAretirementBenefit, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate)
+        spouseBsurvivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate)
+        spouseBsurvivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(personB, spouseBretirementBenefit, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate)
 
 
          //Earnings test
@@ -454,15 +454,15 @@ export class PresentValueService {
               spouseAretirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(personA, spouseAadjustedRetirementBenefitDate)
               spouseBretirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(personB, spouseBadjustedRetirementBenefitDate)
               //Find adjusted spousal benefits
-              spouseAspousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, spouseAretirementBenefitAfterARF, spouseAadjustedSpousalBenefitDate, spouseAgovernmentPension)
-              spouseAspousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, 0, spouseAadjustedSpousalBenefitDate, spouseAgovernmentPension)
-              spouseBspousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, spouseBretirementBenefitAfterARF, spouseBspousalBenefitDate, spouseBgovernmentPension)
-              spouseBspousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, 0, spouseBadjustedSpousalBenefitDate, spouseBgovernmentPension)
+              spouseAspousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, spouseAretirementBenefitAfterARF, spouseAadjustedSpousalBenefitDate)
+              spouseAspousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, 0, spouseAadjustedSpousalBenefitDate)
+              spouseBspousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, spouseBretirementBenefitAfterARF, spouseBspousalBenefitDate)
+              spouseBspousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, 0, spouseBadjustedSpousalBenefitDate)
               //Find adjusted survivor benefits
-              spouseAsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personA, spouseAretirementBenefitAfterARF, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate, spouseAgovernmentPension)
-              spouseAsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate, spouseAgovernmentPension)
-              spouseBsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personB, spouseBretirementBenefitAfterARF, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate, spouseBgovernmentPension)
-              spouseBsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate, spouseBgovernmentPension)
+              spouseAsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personA, spouseAretirementBenefitAfterARF, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate)
+              spouseAsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate)
+              spouseBsurvivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personB, spouseBretirementBenefitAfterARF, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate)
+              spouseBsurvivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate)
           }
 
           //Ignore earnings test if users aren't working
@@ -678,7 +678,7 @@ export class PresentValueService {
 
   maximizeCouplePV(maritalStatus:string, personA:Person, personB:Person,
     spouseAquitWorkDate: Date, spouseBquitWorkDate: Date, spouseAmonthlyEarnings: number, spouseBmonthlyEarnings: number,
-    spouseAgovernmentPension:number, spouseBgovernmentPension:number, discountRate: number){
+    discountRate: number){
 
     let deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
@@ -794,7 +794,7 @@ export class PresentValueService {
 
         while (spouseBretirementDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(maritalStatus, personA, personB, spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, Number(spouseAgovernmentPension), Number(spouseBgovernmentPension), Number(discountRate))
+            let currentTestPV: number = this.calculateCouplePV(maritalStatus, personA, personB, spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, Number(discountRate))
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTestPV >= savedPV) {
               savedPV = currentTestPV
@@ -886,7 +886,7 @@ export class PresentValueService {
       console.log("spouseBspousalDate: " + spouseBsavedSpousalDate)
 
       //Generate solution set (for sake of output) from saved values
-      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(maritalStatus, personA, personB, spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, Number(savedPV), Number(spouseAgovernmentPension), Number(spouseBgovernmentPension))
+      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(maritalStatus, personA, personB, spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, Number(savedPV))
       
       this.maximizedOrNot = true
       return solutionSet
@@ -896,7 +896,7 @@ export class PresentValueService {
   maximizeCoupleOneHasFiledPV(maritalStatus:string, spouseAhasFiled:boolean, spouseBhasFiled:boolean,
     fixedSpouseRetirementBenefitDate:Date, flexibleSpouse:Person, fixedSpouse:Person,
     flexibleSpouseQuitWorkDate: Date, fixedSpouseQuitworkDate: Date, flexibleSpouseMonthlyEarnings: number, fixedSpouseMonthlyEarnings: number,
-    flexibleSpouseGovernmentPension:number, fixedSpouseGovernmentPension:number, discountRate: number){
+    discountRate: number){
 
       let deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
@@ -948,7 +948,7 @@ export class PresentValueService {
 
       while (flexibleSpouseRetirementDate <= endTestDate) {
         //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
-        let currentTestPV: number = this.calculateCouplePV(maritalStatus, flexibleSpouse, fixedSpouse, flexibleSpouseRetirementDate, fixedSpouseRetirementBenefitDate, flexibleSpouseSpousalDate, fixedSpouseSpousalDate, flexibleSpouseQuitWorkDate, fixedSpouseQuitworkDate, flexibleSpouseMonthlyEarnings, fixedSpouseMonthlyEarnings, Number(flexibleSpouseGovernmentPension), Number(fixedSpouseGovernmentPension), Number(discountRate))
+        let currentTestPV: number = this.calculateCouplePV(maritalStatus, flexibleSpouse, fixedSpouse, flexibleSpouseRetirementDate, fixedSpouseRetirementBenefitDate, flexibleSpouseSpousalDate, fixedSpouseSpousalDate, flexibleSpouseQuitWorkDate, fixedSpouseQuitworkDate, flexibleSpouseMonthlyEarnings, fixedSpouseMonthlyEarnings, Number(discountRate))
 
         //If PV is greater than or equal to saved PV, save new PV and save new testDates
         if (currentTestPV >= savedPV) {
@@ -991,7 +991,7 @@ export class PresentValueService {
         console.log("saved flexibleSpouseSpousalDate: " + flexibleSpouseSavedSpousalDate)
     
         let solutionSet:SolutionSet = this.solutionSetService.generateCoupleOneHasFiledSolutionSet(maritalStatus, flexibleSpouse, fixedSpouse, spouseAhasFiled, spouseBhasFiled,
-        flexibleSpouse.SSbirthDate, fixedSpouse.SSbirthDate, Number(flexibleSpouseGovernmentPension), Number(fixedSpouseGovernmentPension), flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate,
+        flexibleSpouse.SSbirthDate, fixedSpouse.SSbirthDate, flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate,
         fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, Number(savedPV))
 
 

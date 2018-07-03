@@ -81,8 +81,8 @@ describe('BenefitService', () => {
     person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
     let retirementBenefit: number = 800
     let spousalStartDate = new Date (2027, 7 , 1)
-    let governmentPension: number = 0
-    expect(service.calculateSpousalBenefit(person, otherPerson, retirementBenefit, spousalStartDate, governmentPension))
+    person.governmentPension = 0
+    expect(service.calculateSpousalBenefit(person, otherPerson, retirementBenefit, spousalStartDate))
         .toEqual(0)
   }))
 
@@ -94,8 +94,8 @@ describe('BenefitService', () => {
       person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
       let retirementBenefit: number = 400
       let spousalStartDate = new Date (2027, 7 , 1)
-      let governmentPension: number = 0
-      expect(service.calculateSpousalBenefit(person, otherPerson, retirementBenefit, spousalStartDate, governmentPension))
+      person.governmentPension = 0
+      expect(service.calculateSpousalBenefit(person, otherPerson, retirementBenefit, spousalStartDate))
           .toEqual(187.5) //50% of 1500, minus 500 all times 75% for being 3 years early
     }))
 
@@ -107,8 +107,8 @@ describe('BenefitService', () => {
       person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
       let retirementBenefit: number = 400
       let spousalStartDate = new Date (2027, 7 , 1)
-      let governmentPension: number = 150
-      expect(service.calculateSpousalBenefit(person, otherPerson, retirementBenefit, spousalStartDate, governmentPension))
+      person.governmentPension = 150
+      expect(service.calculateSpousalBenefit(person, otherPerson, retirementBenefit, spousalStartDate))
           .toEqual(87.5) //same as prior, minus 2/3 of $150 monthly gov pension
     }))
 
@@ -120,8 +120,8 @@ describe('BenefitService', () => {
       person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
       let retirementBenefit: number = 400
       let spousalStartDate = new Date (2027, 7 , 1)
-      let governmentPension: number = 1000
-      expect(service.calculateSpousalBenefit(person, otherPerson, retirementBenefit, spousalStartDate, governmentPension))
+      person.governmentPension = 1000
+      expect(service.calculateSpousalBenefit(person, otherPerson, retirementBenefit, spousalStartDate))
           .toEqual(0)
     }))
 
@@ -133,8 +133,8 @@ describe('BenefitService', () => {
       person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
       let retirementBenefit: number = 864
       let spousalStartDate = new Date (2031, 7 , 1)
-      let governmentPension: number = 0
-      expect(service.calculateSpousalBenefit(person, otherPerson, retirementBenefit, spousalStartDate, governmentPension))
+      person.governmentPension = 0
+      expect(service.calculateSpousalBenefit(person, otherPerson, retirementBenefit, spousalStartDate))
           .toEqual(136) //50% of 2000, minus 864
     }))
 
@@ -153,8 +153,8 @@ describe('BenefitService', () => {
       let dateOfDeath: Date = new Date (2034, 2, 1) //deceased died at 71
       deceasedPerson.PIA = 1000
       let deceasedClaimingDate: Date = new Date (2033, 2, 1) //deceased filed 3 years after FRA
-      let governmentPension: number = 0
-      expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate, governmentPension))
+      survivingPerson.governmentPension = 0
+      expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
           .toEqual(540) //deceased filed at 70 with FRA of 67. Benefit would have been 1240. Minus survivor's own 700 retirement benefit, gives 540 survivor benefit
     }))
 
@@ -170,8 +170,8 @@ describe('BenefitService', () => {
       let deceasedClaimingDate: Date = new Date (2033, 2, 1) //deceased filed 3 years after FRA
       let dateOfDeath: Date = new Date (2034, 2, 1) //deceased died at 71
       deceasedPerson.PIA = 1000
-      let governmentPension: number = 0
-      expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate, governmentPension))
+      survivingPerson.governmentPension = 0
+      expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
           .toEqual(0) //deceased filed at 70 with FRA of 67. Benefit would have been 1240. Minus survivor's own 1500 retirement benefit, gives zero survivor benefit
     }))
 
@@ -187,8 +187,8 @@ describe('BenefitService', () => {
       let deceasedClaimingDate: Date = new Date (2024, 11, 1) //deceased filed 4 years after FRA (age 70)
       let dateOfDeath: Date = new Date (2025, 2, 1) //deceased died after age 70
       deceasedPerson.PIA = 1000
-      let governmentPension: number = 0
-      expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate, governmentPension))
+      survivingPerson.governmentPension = 0
+      expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
           .toBeCloseTo(566.28, 1) //deceased filed at 70 with FRA of 66. Benefit would have been 1320. But survivor benefit is being claimed 12 months prior to FRA.
             //That's 12 months early out of 84 possible months early (given FRA of 67), so we have 14.2857% of the reduction. Full reduction is 28.5%. So reduction is 4.07%. $1320 x .9593 = 1266.28. Minus own 700 retirement is 566.28
     }))
@@ -205,8 +205,8 @@ describe('BenefitService', () => {
       let deceasedClaimingDate: Date = new Date (2017, 11, 1) //deceased filed 3 years before FRA (age 63)
       let dateOfDeath: Date = new Date (2025, 2, 1) //deceased died after age 70
       deceasedPerson.PIA = 1000
-      let governmentPension: number = 0
-      expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate, governmentPension))
+      survivingPerson.governmentPension = 0
+      expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
           .toEqual(325) //deceased filed at 63 with FRA of 66. Benefit would have been 800. Survivor benefit also being claimed early (12 months early). So we have 'RIBLIM' situation.
             //Now we start with deceased's PIA (1000) rather than actual retirement benefit. And apply reduction from there.
             //Widow benefit 12 months early out of 84 possible months early (given FRA of 67), so we have 14.2857% of the reduction. Full reduction is 28.5%. So reduction is 4.07%.

@@ -125,7 +125,7 @@
 
         <div *ngIf="maritalStatus != 'single' && this.advanced === true">
           <label for="spouseAgovernmentPension">Monthly government pension (from non-covered employment)</label>
-          <input type="text" [(ngModel)]="spouseAgovernmentPension" id="spouseAgovernmentPension" name="spouseAgovernmentPension">
+          <input type="number" [(ngModel)]="personA.governmentPension" id="spouseAgovernmentPension" name="personA.governmentPension">
         </div>    
 
       <span *ngIf="maritalStatus == 'married' || maritalStatus == 'divorced'">
@@ -226,9 +226,9 @@
           </span>
         <!--End Spouse B Mortality Inputs -->
 
-        <div *ngIf="this.advanced === true">
+        <div *ngIf="this.advanced === true && maritalStatus == 'married'">
             <label for="spouseBgovernmentPension">Monthly government pension (from non-covered employment)</label>
-            <input type="text" [(ngModel)]="spouseBgovernmentPension" id="spouseBgovernmentPension" name="spouseBgovernmentPension">
+            <input type="number" [(ngModel)]="personB.governmentPension" id="spouseBgovernmentPension" name="personB.governmentPension">
         </div>
       </span>
         <div *ngIf="this.advanced === true">
