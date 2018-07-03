@@ -21,11 +21,8 @@ export class Person {
 
     governmentPension: number = 0
 
-    //working: boolean = false
-    //quitWorkYear: number
-    //quitWorkMonth: number
-    //quitWorkDate: Date
-    //monthlyEarnings: number = 0
+    quitWorkDate: Date
+    monthlyEarnings: number = 0
     //hasHadGraceYear: boolean = false
 
     //retirementBenefit: number

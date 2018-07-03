@@ -74,7 +74,7 @@
             </div>
             <div *ngIf="this.spouseAworking === true">
                 <label>Your estimated monthly earnings until the month in which you retire</label>
-                <input type="text" [(ngModel)]="spouseAmonthlyEarnings" name="spouseAmonthlyEarnings" #spouseAmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,8}">
+                <input type="number" [(ngModel)]="personA.monthlyEarnings" name="personA.monthlyEarnings" #spouseAmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,8}">
                 <span *ngIf="spouseAmonthlyEarningsInput.invalid" class="alert alert-danger">digits only, please</span>
             </div>
             <p class="inputexplanation">This information (about current work status) is only used for the purpose of applying the Social Security <a href="https://www.ssa.gov/oact/cola/rtea.html" target="_blank">earnings test</a>. It is not used for calculating your PIA.
@@ -177,7 +177,7 @@
             </div>
             <div *ngIf="this.spouseBworking === true">
                 <label>Your spouse's estimated monthly earnings until the month in which he/she retires</label>
-                <input type="text" [(ngModel)]="spouseBmonthlyEarnings" name="spouseBmonthlyEarnings" #spouseBmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,7}">
+                <input type="number" [(ngModel)]="personB.monthlyEarnings" name="personB.monthlyEarnings" #spouseBmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,7}">
                 <span *ngIf="spouseBmonthlyEarningsInput.invalid" class="alert alert-danger">digits only, please</span>
             </div>
         </span>

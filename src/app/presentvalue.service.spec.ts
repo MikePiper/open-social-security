@@ -27,12 +27,12 @@ describe('PresentValueService', () => {
     person.initialAgeRounded = 58 //younger than 62 when fillling out form
     person.PIA = 1000
     let inputBenefitDate: Date = new Date(2030, 3, 1) //filing at age 70
-    let quitWorkDate:Date = new Date (2026, 3, 1) //quitting work prior to filing date, earnings test not relevant
-    let monthlyEarnings:number = 4500 //Doesn't matter really, given date inputs
+    person.quitWorkDate = new Date (2026, 3, 1) //quitting work prior to filing date, earnings test not relevant
+    person.monthlyEarnings = 4500 //Doesn't matter really, given date inputs
     let discountRate: number = 1 //1% discount rate
     let mortalityService:MortalityService = new MortalityService()
     person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-    expect(service.calculateSinglePersonPV(person, inputBenefitDate, quitWorkDate, monthlyEarnings, discountRate))
+    expect(service.calculateSinglePersonPV(person, inputBenefitDate, discountRate))
       .toBeCloseTo(151765, 0)
   }))
 
@@ -43,12 +43,12 @@ describe('PresentValueService', () => {
     person.initialAgeRounded = 58 //younger than 62 when fillling out form
     person.PIA = 1000
     let inputBenefitDate: Date = new Date(2024, 3, 1) //filing at age 64
-    let quitWorkDate:Date = new Date (2026, 3, 1) //quitting work after filing date but before FRA, earnings test IS relevant
-    let monthlyEarnings:number = 4500 //Just picking something here...
+    person.quitWorkDate = new Date (2026, 3, 1) //quitting work after filing date but before FRA, earnings test IS relevant
+    person.monthlyEarnings = 4500 //Just picking something here...
     let discountRate: number = 1 //1% discount rate
     let mortalityService:MortalityService = new MortalityService()
     person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
-    expect(service.calculateSinglePersonPV(person, inputBenefitDate, quitWorkDate, monthlyEarnings, discountRate))
+    expect(service.calculateSinglePersonPV(person, inputBenefitDate, discountRate))
       .toBeCloseTo(201310, 0)
   }))
   
@@ -75,16 +75,15 @@ describe('PresentValueService', () => {
     let spouseBretirementBenefitDate: Date = new Date (2029, 8, 1) //At age 66 and 2 months
     let spouseAspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
     let spouseBspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
-    let spouseAquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseAmonthlyEarnings: number = 0
-    let spouseBmonthlyEarnings: number = 0
+    personA.quitWorkDate = new Date(2018,3,1) //already quit working
+    personB.quitWorkDate = new Date(2018,3,1) //already quit working
+    personA.monthlyEarnings = 0
+    personB.monthlyEarnings = 0
     personA.governmentPension = 0
     personB.governmentPension = 0
     let discountRate:number = 1
     expect(service.calculateCouplePV(maritalStatus, personA, personB,
-    spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate,
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate))
+    spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate, discountRate))
       .toBeCloseTo(578594, 0)
   }))
 
@@ -110,16 +109,15 @@ describe('PresentValueService', () => {
     let spouseBretirementBenefitDate: Date = new Date (2029, 8, 1) //At age 66 and 2 months
     let spouseAspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
     let spouseBspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
-    let spouseAquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseAmonthlyEarnings: number = 0
-    let spouseBmonthlyEarnings: number = 0
+    personA.quitWorkDate = new Date(2018,3,1) //already quit working
+    personB.quitWorkDate = new Date(2018,3,1) //already quit working
+    personA.monthlyEarnings = 0
+    personB.monthlyEarnings = 0
     personA.governmentPension = 900
     personB.governmentPension = 0
     let discountRate:number = 1
     expect(service.calculateCouplePV(maritalStatus, personA, personB,
-    spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate,
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate))
+    spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate, discountRate))
       .toBeCloseTo(531263, 0)
   }))
 
@@ -147,16 +145,15 @@ describe('PresentValueService', () => {
     let spouseBretirementBenefitDate: Date = new Date (2017, 4, 1) //ASAP at 62 and 1 month
     let spouseAspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
     let spouseBspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
-    let spouseAquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseAmonthlyEarnings: number = 0
-    let spouseBmonthlyEarnings: number = 0
+    personA.quitWorkDate = new Date(2018,3,1) //already quit working
+    personB.quitWorkDate = new Date(2018,3,1) //already quit working
+    personA.monthlyEarnings = 0
+    personB.monthlyEarnings = 0
     personA.governmentPension = 300
     personB.governmentPension = 0
     let discountRate:number = 1
     expect(service.calculateCouplePV(maritalStatus, personA, personB,
-    spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate,
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate))
+    spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate, discountRate))
       .toBeCloseTo(161095, 0)
   }))
 
@@ -170,12 +167,12 @@ describe('PresentValueService', () => {
     person.FRA = new Date (2027, 3, 1) //FRA April 2027 (age 67)
     person.initialAge = 58 //younger than 62 when fillling out form
     person.PIA = 1000
-    let quitWorkDate:Date = new Date (2020, 3, 1) //quitting work prior to age 62, earnings test not relevant
-    let monthlyEarnings:number = 4500 //Doesn't matter really, given date inputs
+    person.quitWorkDate = new Date (2020, 3, 1) //quitting work prior to age 62, earnings test not relevant
+    person.monthlyEarnings = 4500 //Doesn't matter really, given date inputs
     let discountRate: number = 9 //9% discount rate
     let mortalityService:MortalityService = new MortalityService()
     person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-    expect(service.maximizeSinglePersonPV(maritalStatus, person, quitWorkDate, monthlyEarnings, discountRate).solutionsArray[0].date)
+    expect(service.maximizeSinglePersonPV(maritalStatus, person, discountRate).solutionsArray[0].date)
       .toEqual(new Date(2022, 4, 1))
   }))
 
@@ -199,15 +196,14 @@ describe('PresentValueService', () => {
     personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
     personA.PIA = 1200
     personB.PIA = 1900
-    let spouseAquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseAmonthlyEarnings: number = 0
-    let spouseBmonthlyEarnings: number = 0
+    personA.quitWorkDate = new Date(2018,3,1) //already quit working
+    personB.quitWorkDate = new Date(2018,3,1) //already quit working
+    personA.monthlyEarnings = 0
+    personB.monthlyEarnings = 0
     personA.governmentPension = 0
     personB.governmentPension = 0
     let discountRate:number = 1
-    expect(service.maximizeCouplePV(maritalStatus, personA, personB,
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate).solutionsArray[1].date)
+    expect(service.maximizeCouplePV(maritalStatus, personA, personB, discountRate).solutionsArray[1].date)
     .toEqual(new Date(2034, 9, 1))
     //We're looking at item [1] in the array. This array should have 3 items in it: retirement benefit dates for each spouse, and a survivor date for spouse A (lower earner).
     //No spousal dates because neither spouse gets a spousal benefit. Since it's sorted in date order, first retirement date will be low earner, second is higher earner, which we want. Third is survivor.
@@ -233,15 +229,14 @@ describe('PresentValueService', () => {
     personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
     personA.PIA = 2200
     personB.PIA = 1400
-    let spouseAquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseAmonthlyEarnings: number = 0
-    let spouseBmonthlyEarnings: number = 0
+    personA.quitWorkDate = new Date(2018,3,1) //already quit working
+    personB.quitWorkDate = new Date(2018,3,1) //already quit working
+    personA.monthlyEarnings = 0
+    personB.monthlyEarnings = 0
     personA.governmentPension = 0
     personB.governmentPension = 0
     let discountRate:number = 1
-    expect(service.maximizeCouplePV(maritalStatus, personA, personB,
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate).solutionsArray[1].date)
+    expect(service.maximizeCouplePV(maritalStatus, personA, personB, discountRate).solutionsArray[1].date)
     .toEqual(new Date(2019, 8, 1))
     //We're looking at item [1] in the array. This array should have 4 items in it, in this order:
       //low PIA retirement claiming date
@@ -273,16 +268,15 @@ describe('PresentValueService', () => {
     personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
     personA.PIA = 700
     personB.PIA = 1900
-    let spouseAquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseBquitWorkDate: Date = new Date(2018,3,1) //already quit working
-    let spouseAmonthlyEarnings: number = 0
-    let spouseBmonthlyEarnings: number = 0
+    personA.quitWorkDate = new Date(2018,3,1) //already quit working
+    personB.quitWorkDate = new Date(2018,3,1) //already quit working
+    personA.monthlyEarnings = 0
+    personB.monthlyEarnings = 0
     personA.governmentPension = 0
     personB.governmentPension = 0
     let discountRate:number = 1
     expect(service.maximizeCoupleOneHasFiledPV(maritalStatus, spouseAhasFiled, spouseBhasFiled, spouseBretirementBenefitDate,
-    personA, personB, 
-    spouseAquitWorkDate, spouseBquitWorkDate, spouseAmonthlyEarnings, spouseBmonthlyEarnings, discountRate).solutionsArray[0].date)
+    personA, personB, discountRate).solutionsArray[0].date)
     .toEqual(new Date(2026, 10, 1))
     //We're looking at item [0] in the array. This array should have 3 items in it: retirement benefit date and spousal benefit date for spouseA, and a survivor date for spouse A (lower earner).
     //Since it's sorted in date order, we want first date (or second date -- they should be the same)
