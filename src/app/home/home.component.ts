@@ -2,9 +2,9 @@ import {Component, OnInit} from '@angular/core';
 import {BirthdayService} from '../birthday.service'
 import {PresentValueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
-import {Person} from '../person'
-import {SolutionSet} from '../solutionset'
-import {FREDresponse} from '../fredresponse'
+import {Person} from '../data model classes/person'
+import {SolutionSet} from '../data model classes/solutionset'
+import {FREDresponse} from '../data model classes/fredresponse'
 import {HttpClient} from '@angular/common/http';
 
 

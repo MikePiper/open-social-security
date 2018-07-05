@@ -1,8 +1,8 @@
 import {TestBed, inject} from '@angular/core/testing'
 import {SolutionSetService} from './solutionset.service'
 import {BenefitService} from './benefit.service'
-import {SolutionSet} from './solutionset'
-import {Person} from './person';
+import {SolutionSet} from './data model classes/solutionset'
+import {Person} from './data model classes/person';
 
 
 describe('SolutionSetService', () => {

@@ -2,8 +2,8 @@ import {Injectable} from '@angular/core';
 import {BenefitService} from './benefit.service'
 import {EarningsTestService} from './earningstest.service'
 import {SolutionSetService} from './solutionset.service'
-import {SolutionSet} from './solutionset'
-import {Person} from './person'
+import {SolutionSet} from './data model classes/solutionset'
+import {Person} from './data model classes/person'
 
 
 @Injectable()

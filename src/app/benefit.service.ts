@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {Person} from './person';
+import {Person} from './data model classes/person';
 
 
 @Injectable()
@@ -9,19 +9,20 @@ export class BenefitService {
 
   calculateRetirementBenefit(person:Person, benefitDate: Date)
   {
+
     let retirementBenefit: number = 0
     let monthsWaited = benefitDate.getMonth() - person.FRA.getMonth() + 12 * (benefitDate.getFullYear() - person.FRA.getFullYear())
 
-      if (monthsWaited < -36)
-      {retirementBenefit = person.PIA - (person.PIA / 100 * 5 / 9 * 36) + (person.PIA / 100 * 5 / 12 * (monthsWaited+36))}
-      if (monthsWaited < 0 && monthsWaited >= -36)
-      {retirementBenefit = person.PIA + (person.PIA / 100 * 5 / 9 * monthsWaited)}
-      if (monthsWaited == 0)
-      {retirementBenefit = person.PIA}
-      if (monthsWaited > 0 )
-      {retirementBenefit = person.PIA + (person.PIA / 100 * 2 / 3 * monthsWaited)}
+    if (monthsWaited < -36)
+    {retirementBenefit = person.PIA - (person.PIA / 100 * 5 / 9 * 36) + (person.PIA / 100 * 5 / 12 * (monthsWaited+36))}
+    if (monthsWaited < 0 && monthsWaited >= -36)
+    {retirementBenefit = person.PIA + (person.PIA / 100 * 5 / 9 * monthsWaited)}
+    if (monthsWaited == 0)
+    {retirementBenefit = person.PIA}
+    if (monthsWaited > 0 )
+    {retirementBenefit = person.PIA + (person.PIA / 100 * 2 / 3 * monthsWaited)}
 
-      return Number(retirementBenefit)
+    return Number(retirementBenefit)
   }
 
   calculateSpousalBenefit(person:Person, otherPerson:Person, retirementBenefit: number, spousalStartDate: Date)

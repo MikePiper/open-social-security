@@ -1,4 +1,4 @@
-  export class claimingSolution {
+  export class ClaimingSolution {
     maritalStatus: string
     benefitType: string //retirementAlone, retirementReplacingSpousal, spousalAlone, spousalWithRetirement, survivor
     person: string //spouseA or spouseB

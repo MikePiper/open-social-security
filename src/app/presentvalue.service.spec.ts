@@ -5,7 +5,7 @@ import {EarningsTestService} from './earningstest.service'
 import {SolutionSetService} from './solutionset.service'
 import {MortalityService} from './mortality.service'
 import {BirthdayService} from './birthday.service';
-import {Person} from './person';
+import {Person} from './data model classes/person';
 
 
 describe('PresentValueService', () => {

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import {BenefitService} from './benefit.service'
-import {SolutionSet} from './solutionset'
-import {claimingSolution} from './claimingsolution';
-import {Person} from './person';
+import {SolutionSet} from './data model classes/solutionset'
+import {ClaimingSolution} from './data model classes/claimingsolution';
+import {Person} from './data model classes/person';
 
 
 @Injectable({
@@ -24,7 +24,7 @@ export class SolutionSetService {
           "solutionPV":savedPV,
           "solutionsArray": []
         }
-        let retirementSolution = new claimingSolution(maritalStatus, "retirementAlone", "spouseA", savedClaimingDate, savedRetirementBenefit, savedClaimingAgeYears, savedClaimingAgeMonths)
+        let retirementSolution = new ClaimingSolution(maritalStatus, "retirementAlone", "spouseA", savedClaimingDate, savedRetirementBenefit, savedClaimingAgeYears, savedClaimingAgeMonths)
         solutionSet.solutionsArray.push(retirementSolution)
         return solutionSet
   }
@@ -77,27 +77,27 @@ export class SolutionSetService {
         }
         //Determine claimingSolution objects
         if (spouseAsavedRetirementDate > spouseAsavedSpousalDate) {
-          var spouseAretirementSolution = new claimingSolution(maritalStatus, "retirementReplacingSpousal", "spouseA", spouseAsavedRetirementDate, spouseAsavedRetirementBenefit, spouseAsavedRetirementAgeYears, spouseAsavedRetirementAgeMonths)
+          var spouseAretirementSolution = new ClaimingSolution(maritalStatus, "retirementReplacingSpousal", "spouseA", spouseAsavedRetirementDate, spouseAsavedRetirementBenefit, spouseAsavedRetirementAgeYears, spouseAsavedRetirementAgeMonths)
         } else {
-          var spouseAretirementSolution = new claimingSolution(maritalStatus, "retirementAlone", "spouseA", spouseAsavedRetirementDate, spouseAsavedRetirementBenefit, spouseAsavedRetirementAgeYears, spouseAsavedRetirementAgeMonths)
+          var spouseAretirementSolution = new ClaimingSolution(maritalStatus, "retirementAlone", "spouseA", spouseAsavedRetirementDate, spouseAsavedRetirementBenefit, spouseAsavedRetirementAgeYears, spouseAsavedRetirementAgeMonths)
         }
         if (spouseBsavedRetirementDate > spouseBsavedSpousalDate) {
-          var spouseBretirementSolution = new claimingSolution(maritalStatus, "retirementReplacingSpousal", "spouseB", spouseBsavedRetirementDate, spouseBsavedRetirementBenefit, spouseBsavedRetirementAgeYears, spouseBsavedRetirementAgeMonths)
+          var spouseBretirementSolution = new ClaimingSolution(maritalStatus, "retirementReplacingSpousal", "spouseB", spouseBsavedRetirementDate, spouseBsavedRetirementBenefit, spouseBsavedRetirementAgeYears, spouseBsavedRetirementAgeMonths)
         } else {
-          var spouseBretirementSolution = new claimingSolution(maritalStatus, "retirementAlone", "spouseB", spouseBsavedRetirementDate, spouseBsavedRetirementBenefit, spouseBsavedRetirementAgeYears, spouseBsavedRetirementAgeMonths)
+          var spouseBretirementSolution = new ClaimingSolution(maritalStatus, "retirementAlone", "spouseB", spouseBsavedRetirementDate, spouseBsavedRetirementBenefit, spouseBsavedRetirementAgeYears, spouseBsavedRetirementAgeMonths)
         }
         if (spouseAsavedSpousalDate < spouseAsavedRetirementDate) {
-          var spouseAspousalSolution = new claimingSolution(maritalStatus, "spousalAlone", "spouseA", spouseAsavedSpousalDate, spouseAsavedSpousalBenefit, spouseAsavedSpousalAgeYears, spouseAsavedSpousalAgeMonths)
+          var spouseAspousalSolution = new ClaimingSolution(maritalStatus, "spousalAlone", "spouseA", spouseAsavedSpousalDate, spouseAsavedSpousalBenefit, spouseAsavedSpousalAgeYears, spouseAsavedSpousalAgeMonths)
         } else {
-          var spouseAspousalSolution = new claimingSolution(maritalStatus, "spousalWithRetirement", "spouseA", spouseAsavedSpousalDate, spouseAsavedSpousalBenefit, spouseAsavedSpousalAgeYears, spouseAsavedSpousalAgeMonths)
+          var spouseAspousalSolution = new ClaimingSolution(maritalStatus, "spousalWithRetirement", "spouseA", spouseAsavedSpousalDate, spouseAsavedSpousalBenefit, spouseAsavedSpousalAgeYears, spouseAsavedSpousalAgeMonths)
         }
         if (spouseBsavedSpousalDate < spouseBsavedRetirementDate) {
-          var spouseBspousalSolution = new claimingSolution(maritalStatus, "spousalAlone", "spouseB", spouseBsavedSpousalDate, spouseBsavedSpousalBenefit, spouseBsavedSpousalAgeYears, spouseBsavedSpousalAgeMonths)
+          var spouseBspousalSolution = new ClaimingSolution(maritalStatus, "spousalAlone", "spouseB", spouseBsavedSpousalDate, spouseBsavedSpousalBenefit, spouseBsavedSpousalAgeYears, spouseBsavedSpousalAgeMonths)
         } else {
-          var spouseBspousalSolution = new claimingSolution(maritalStatus, "spousalWithRetirement", "spouseB", spouseBsavedSpousalDate, spouseBsavedSpousalBenefit, spouseBsavedSpousalAgeYears, spouseBsavedSpousalAgeMonths)
+          var spouseBspousalSolution = new ClaimingSolution(maritalStatus, "spousalWithRetirement", "spouseB", spouseBsavedSpousalDate, spouseBsavedSpousalBenefit, spouseBsavedSpousalAgeYears, spouseBsavedSpousalAgeMonths)
         }
-        var spouseAsurvivorSolution = new claimingSolution(maritalStatus, "survivor", "spouseA", new Date(9999,0,1), spouseAsavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
-        var spouseBsurvivorSolution = new claimingSolution(maritalStatus, "survivor", "spouseB", new Date(9999,0,1), spouseBsavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+        var spouseAsurvivorSolution = new ClaimingSolution(maritalStatus, "survivor", "spouseA", new Date(9999,0,1), spouseAsavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+        var spouseBsurvivorSolution = new ClaimingSolution(maritalStatus, "survivor", "spouseB", new Date(9999,0,1), spouseBsavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
 
 
         //Push claimingSolution objects to solutionSet.solutionsArray (But don't push them if the benefit amount is zero.)
@@ -159,41 +159,41 @@ export class SolutionSetService {
 
         if (maritalStatus == "divorced" || spouseBhasFiled === true){//i.e., if "flexibleSpouse" is spouseA
             if (flexibleSpouseSavedRetirementDate > flexibleSpouseSavedSpousalDate) {
-              var flexibleSpouseRetirementSolution = new claimingSolution(maritalStatus, "retirementReplacingSpousal", "spouseA", flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
+              var flexibleSpouseRetirementSolution = new ClaimingSolution(maritalStatus, "retirementReplacingSpousal", "spouseA", flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
             } else {
-              var flexibleSpouseRetirementSolution = new claimingSolution(maritalStatus, "retirementAlone", "spouseA", flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
+              var flexibleSpouseRetirementSolution = new ClaimingSolution(maritalStatus, "retirementAlone", "spouseA", flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
             }
             if (flexibleSpouseSavedSpousalDate < flexibleSpouseSavedRetirementDate) {
-              var flexibleSpouseSpousalSolution = new claimingSolution(maritalStatus, "spousalAlone", "spouseA", flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
+              var flexibleSpouseSpousalSolution = new ClaimingSolution(maritalStatus, "spousalAlone", "spouseA", flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
             } else {
-              var flexibleSpouseSpousalSolution = new claimingSolution(maritalStatus, "spousalWithRetirement", "spouseA", flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
+              var flexibleSpouseSpousalSolution = new ClaimingSolution(maritalStatus, "spousalWithRetirement", "spouseA", flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
             }
-            var flexibleSpouseSurvivorSolution = new claimingSolution(maritalStatus, "survivor", "spouseA", new Date(9999,0,1), flexibleSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+            var flexibleSpouseSurvivorSolution = new ClaimingSolution(maritalStatus, "survivor", "spouseA", new Date(9999,0,1), flexibleSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
            
             if (maritalStatus == "married"){//if this is not a divorce scenario, set claimingSolution objects for fixed spouse's spousal and survivor benefit (doesn't have one for retirement, because already filed)
              //fixedSpouseSpousalSolution: new claiming solution as spouseB ("with retirement" because already filed for retirement)
-            var fixedSpouseSpousalSolution = new claimingSolution(maritalStatus, "spousalWithRetirement", "spouseB", fixedSpouseSavedSpousalDate, fixedSpouseSavedSpousalBenefit, fixedSpouseSavedSpousalAgeYears, fixedSpouseSavedSpousalAgeMonths)
+            var fixedSpouseSpousalSolution = new ClaimingSolution(maritalStatus, "spousalWithRetirement", "spouseB", fixedSpouseSavedSpousalDate, fixedSpouseSavedSpousalBenefit, fixedSpouseSavedSpousalAgeYears, fixedSpouseSavedSpousalAgeMonths)
             //fixedSpouseSurvivorSolution is a new claiming solution as spouseB
-            var fixedSpouseSurvivorSolution = new claimingSolution(maritalStatus, "survivor", "spouseB", new Date(9999,0,1), fixedSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+            var fixedSpouseSurvivorSolution = new ClaimingSolution(maritalStatus, "survivor", "spouseB", new Date(9999,0,1), fixedSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
             }
             
           } else if (spouseAhasFiled === true) {//i.e., if "flexibleSpouse" is spouseB
             if (flexibleSpouseSavedRetirementDate > flexibleSpouseSavedSpousalDate) {
-              var flexibleSpouseRetirementSolution = new claimingSolution(maritalStatus, "retirementReplacingSpousal", "spouseB", flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
+              var flexibleSpouseRetirementSolution = new ClaimingSolution(maritalStatus, "retirementReplacingSpousal", "spouseB", flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
             } else {
-              var flexibleSpouseRetirementSolution = new claimingSolution(maritalStatus, "retirementAlone", "spouseB", flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
+              var flexibleSpouseRetirementSolution = new ClaimingSolution(maritalStatus, "retirementAlone", "spouseB", flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
             }
             if (flexibleSpouseSavedSpousalDate < flexibleSpouseSavedRetirementDate) {
-              var flexibleSpouseSpousalSolution = new claimingSolution(maritalStatus, "spousalAlone", "spouseB", flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
+              var flexibleSpouseSpousalSolution = new ClaimingSolution(maritalStatus, "spousalAlone", "spouseB", flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
             } else {
-              var flexibleSpouseSpousalSolution = new claimingSolution(maritalStatus, "spousalWithRetirement", "spouseB", flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
+              var flexibleSpouseSpousalSolution = new ClaimingSolution(maritalStatus, "spousalWithRetirement", "spouseB", flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
             }
-            var flexibleSpouseSurvivorSolution = new claimingSolution(maritalStatus, "survivor", "spouseB", new Date(9999,0,1), flexibleSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+            var flexibleSpouseSurvivorSolution = new ClaimingSolution(maritalStatus, "survivor", "spouseB", new Date(9999,0,1), flexibleSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
             if (maritalStatus == "married"){//if this is not a divorce scenario, set claimingSolution objects for fixed spouse's spousal and survivor benefit (doesn't have one for retirement, because already filed)
              //fixedSpouseSpousalSolution: new claiming solution as spouseA ("with retirement" because already filed for retirement)
-            var fixedSpouseSpousalSolution = new claimingSolution(maritalStatus, "spousalWithRetirement", "spouseA", fixedSpouseSavedSpousalDate, fixedSpouseSavedSpousalBenefit, fixedSpouseSavedSpousalAgeYears, fixedSpouseSavedSpousalAgeMonths)
+            var fixedSpouseSpousalSolution = new ClaimingSolution(maritalStatus, "spousalWithRetirement", "spouseA", fixedSpouseSavedSpousalDate, fixedSpouseSavedSpousalBenefit, fixedSpouseSavedSpousalAgeYears, fixedSpouseSavedSpousalAgeMonths)
             //fixedSpouseSurvivorSolution is a new claiming solution as spouseA
-            var fixedSpouseSurvivorSolution = new claimingSolution(maritalStatus, "survivor", "spouseA", new Date(9999,0,1), fixedSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+            var fixedSpouseSurvivorSolution = new ClaimingSolution(maritalStatus, "survivor", "spouseA", new Date(9999,0,1), fixedSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
             }
           }
         //push claimingSolution objects to array

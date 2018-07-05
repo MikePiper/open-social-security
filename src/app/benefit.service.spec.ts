@@ -1,7 +1,7 @@
 import {TestBed, inject} from '@angular/core/testing'
 import {BenefitService} from './benefit.service'
 import {BirthdayService} from './birthday.service';
-import {Person} from './person';
+import {Person} from './data model classes/person';
 
 
 describe('BenefitService', () => {
