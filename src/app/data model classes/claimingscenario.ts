@@ -1,6 +1,7 @@
 export class ClaimingScenario {
-//could be all the stuff below. Or could be just the four initial claiming dates (no benefit amounts, no ARF-adjusted dates)
+//could be all the stuff below. Or could omit benefit amounts and ARF-adjusted dates
 
+    discountRate: number
 
     //PersonA
         personAhasFiled: boolean = false

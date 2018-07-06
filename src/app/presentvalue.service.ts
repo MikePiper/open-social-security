@@ -17,7 +17,7 @@ export class PresentValueService {
 
   today: Date = new Date()
 
-  calculateSinglePersonPV(person:Person, inputBenefitDate: Date, discountRate: number)
+  calculateSinglePersonPV(person:Person, inputBenefitDate: Date, scenario:ClaimingScenario)
   {
     let retirementBenefit: number = this.benefitService.calculateRetirementBenefit(person, inputBenefitDate)
     let retirementBenefitAfterARF: number = 0
@@ -127,8 +127,8 @@ export class PresentValueService {
           let annualPV = annualRetirementBenefit * probabilityAlive
 
           //Discount that benefit to age 62
-          annualPV = annualPV / (1 + discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
-          annualPV = annualPV / Math.pow((1 + discountRate/100),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
+          annualPV = annualPV / (1 + scenario.discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
+          annualPV = annualPV / Math.pow((1 + scenario.discountRate/100),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
 
           /*
           //Logging for debugging, if maximize function has already been run. (This way we avoid logging a zillion things when maximizing for the first time)
@@ -159,7 +159,7 @@ export class PresentValueService {
   }
 
   calculateCouplePV(maritalStatus:string, personA:Person, personB:Person,
-    spouseAretirementBenefitDate: Date, spouseBretirementBenefitDate: Date, spouseAspousalBenefitDate: Date, spouseBspousalBenefitDate: Date, discountRate:number){
+    spouseAretirementBenefitDate: Date, spouseBretirementBenefitDate: Date, spouseAspousalBenefitDate: Date, spouseBspousalBenefitDate: Date, scenario:ClaimingScenario){
     
     //Monthly benefit variables pre-ARF
     let spouseAretirementBenefit: number = 0
@@ -590,7 +590,7 @@ export class PresentValueService {
               olderAge = spouseAage
             } else {olderAge = spouseBage}
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
-            annualPV = annualPV / (1 + discountRate/100/2) / Math.pow((1 + discountRate/100),(olderAge - 62))
+            annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
  
      /*
       //Logging for debugging purposes
@@ -633,7 +633,7 @@ export class PresentValueService {
 
 
 
-  maximizeSinglePersonPV(maritalStatus: string, person:Person, discountRate: number){
+  maximizeSinglePersonPV(maritalStatus: string, person:Person, scenario:ClaimingScenario){
     //find initial testClaimingDate for age 62
     let testClaimingDate = new Date(person.SSbirthDate.getFullYear()+62, 1, 1)
     if (person.actualBirthDate.getDate() <= 2){
@@ -650,7 +650,7 @@ export class PresentValueService {
     }
 
     //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
-    let savedPV: number = this.calculateSinglePersonPV(person, testClaimingDate, discountRate)
+    let savedPV: number = this.calculateSinglePersonPV(person, testClaimingDate, scenario)
     let savedClaimingDate = new Date(testClaimingDate)
 
     //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
@@ -658,7 +658,7 @@ export class PresentValueService {
     while (testClaimingDate <= endingTestDate){
       //Add 1 month to claiming age and run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
       testClaimingDate.setMonth(testClaimingDate.getMonth() + 1)
-      let currentTestPV = this.calculateSinglePersonPV(person, testClaimingDate, discountRate)
+      let currentTestPV = this.calculateSinglePersonPV(person, testClaimingDate, scenario)
       if (currentTestPV >= savedPV)
         {savedClaimingDate.setMonth(testClaimingDate.getMonth())
           savedClaimingDate.setFullYear(testClaimingDate.getFullYear())
@@ -675,7 +675,7 @@ export class PresentValueService {
   }
 
 
-  maximizeCouplePV(maritalStatus:string, personA:Person, personB:Person, discountRate: number){
+  maximizeCouplePV(maritalStatus:string, personA:Person, personB:Person, scenario:ClaimingScenario){
 
     let deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
@@ -791,7 +791,7 @@ export class PresentValueService {
 
         while (spouseBretirementDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(maritalStatus, personA, personB, spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, Number(discountRate))
+            let currentTestPV: number = this.calculateCouplePV(maritalStatus, personA, personB, spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate,scenario)
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTestPV >= savedPV) {
               savedPV = currentTestPV
@@ -891,7 +891,7 @@ export class PresentValueService {
 
   //This function is for when one spouse has already filed. Also is the function for a divorcee, because we take the ex-spouse's filing date as a given (i.e., as an input)
   maximizeCoupleOneHasFiledPV(maritalStatus:string, scenario:ClaimingScenario,
-    fixedSpouseRetirementBenefitDate:Date, flexibleSpouse:Person, fixedSpouse:Person, discountRate: number){
+    fixedSpouseRetirementBenefitDate:Date, flexibleSpouse:Person, fixedSpouse:Person){
 
       let deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
@@ -943,7 +943,7 @@ export class PresentValueService {
 
       while (flexibleSpouseRetirementDate <= endTestDate) {
         //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
-        let currentTestPV: number = this.calculateCouplePV(maritalStatus, flexibleSpouse, fixedSpouse, flexibleSpouseRetirementDate, fixedSpouseRetirementBenefitDate, flexibleSpouseSpousalDate, fixedSpouseSpousalDate, Number(discountRate))
+        let currentTestPV: number = this.calculateCouplePV(maritalStatus, flexibleSpouse, fixedSpouse, flexibleSpouseRetirementDate, fixedSpouseRetirementBenefitDate, flexibleSpouseSpousalDate, fixedSpouseSpousalDate, scenario)
 
         //If PV is greater than or equal to saved PV, save new PV and save new testDates
         if (currentTestPV >= savedPV) {
