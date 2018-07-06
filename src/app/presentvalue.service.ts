@@ -242,6 +242,20 @@ export class PresentValueService {
     spouseAage = ( currentCalculationDate.getMonth() - personA.SSbirthDate.getMonth() + 12 * (currentCalculationDate.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
     spouseBage = ( currentCalculationDate.getMonth() - personB.SSbirthDate.getMonth() + 12 * (currentCalculationDate.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
 
+
+    //Calculate monthly benefit amounts, pre-ARF
+    spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(personA, spouseAretirementBenefitDate)
+    spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(personB, spouseBretirementBenefitDate)
+    spouseAspousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, 0, spouseAspousalBenefitDate)
+    spouseAspousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, spouseAretirementBenefit, spouseAspousalBenefitDate)
+    spouseBspousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, 0, spouseBspousalBenefitDate)
+    spouseBspousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, spouseBretirementBenefit, spouseBspousalBenefitDate)
+    spouseAsurvivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate)
+    spouseAsurvivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(personA, spouseAretirementBenefit, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate)
+    spouseBsurvivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate)
+    spouseBsurvivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(personB, spouseBretirementBenefit, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate)
+
+
     //Calculate PV via loop until both spouses are at least age 115 (by which point "remaining lives" is zero)
     while (spouseAage < 115 || spouseBage < 115){
 
@@ -288,19 +302,6 @@ export class PresentValueService {
           var monthsOfSpouseBsurvivorWithRetirement: number = monthsOfSpouseBretirement
           var monthsOfSpouseBsurvivorWithoutRetirement: number = monthsOfSpouseBsurvivor - monthsOfSpouseBretirement
         }
-
-        //Calculate monthly benefit amounts, pre-ARF
-        spouseAretirementBenefit = this.benefitService.calculateRetirementBenefit(personA, spouseAretirementBenefitDate)
-        spouseBretirementBenefit = this.benefitService.calculateRetirementBenefit(personB, spouseBretirementBenefitDate)
-        spouseAspousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, 0, spouseAspousalBenefitDate)
-        spouseAspousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, spouseAretirementBenefit, spouseAspousalBenefitDate)
-        spouseBspousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, 0, spouseBspousalBenefitDate)
-        spouseBspousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, spouseBretirementBenefit, spouseBspousalBenefitDate)
-        spouseAsurvivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate)
-        spouseAsurvivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(personA, spouseAretirementBenefit, personA.survivorFRA, personB, spouseBretirementBenefitDate, spouseBretirementBenefitDate)
-        spouseBsurvivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate)
-        spouseBsurvivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(personB, spouseBretirementBenefit, personB.survivorFRA, personA, spouseAretirementBenefitDate, spouseAretirementBenefitDate)
-
 
          //Earnings test
         if (isNaN(personA.quitWorkDate.getTime())) {

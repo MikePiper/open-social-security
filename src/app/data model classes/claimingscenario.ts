@@ -53,11 +53,21 @@ export class ClaimingScenario {
 }
 
 //Possible fields for "year" object or some such
-    //age: number
-    //ageRounded: number
-    //ageLastBirthday: number
+    //personAage: number
+    //personAageRounded: number
+    //personAageLastBirthday: number
+    //monthsOfSpouseAretirement
+    //monthsOfSpouseAspousal
+        //monthsOfSpouseAspousalWithRetirement
+        //monthsOfSpouseAspousalWithoutRetirement
+    //monthsOfSpouseAsurvivor
+        //monthsOfSpouseAsurvivorWithRetirement
+        //monthsOfSpouseAsurvivorWithoutRetirement
+
+
     //denominatorAge: number Is this a variable in a class??
     //probabilityAlive: number Is this a variable in a class??
+
     //withholdingAmount: number Is this a variable in a class??
     //monthsWithheld: number = 0 Is this a variable in a class??
     //graceYear: boolean = false Is this a variable in a class??
@@ -65,3 +75,4 @@ export class ClaimingScenario {
     //annualRetirementBenefit: number Variable for calculationYear?
     //annualSpousalBenefit: number Variable for calculationYear?
     //annualSurvivorBenefit: number Variable for calculationYear?
+
