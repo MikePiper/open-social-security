@@ -158,7 +158,7 @@ export class PresentValueService {
         return retirementPV
   }
 
-  calculateCouplePV(maritalStatus:string, personA:Person, personB:Person,
+  calculateCouplePV(personA:Person, personB:Person,
     spouseAretirementBenefitDate: Date, spouseBretirementBenefitDate: Date, spouseAspousalBenefitDate: Date, spouseBspousalBenefitDate: Date, scenario:ClaimingScenario){
     
     //Monthly benefit variables pre-ARF
@@ -220,7 +220,7 @@ export class PresentValueService {
 
 
     //If married, set initialCalcDate to date on which first spouse reaches age 62
-    if (maritalStatus == "married"){
+    if (scenario.maritalStatus == "married"){
       if (personA.SSbirthDate < personB.SSbirthDate)
         {
         initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, personA.SSbirthDate.getMonth(), 1)
@@ -230,7 +230,7 @@ export class PresentValueService {
         }
     }
     //If divorced, we want initialCalcDate to equal SpouseA's age62 date.
-    if (maritalStatus == "divorced") {
+    if (scenario.maritalStatus == "divorced") {
       initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, personA.SSbirthDate.getMonth(), 1)
     }
 
@@ -322,7 +322,7 @@ export class PresentValueService {
             withholdingDueToSpouseBearnings = this.earningsTestService.calculateWithholding(currentCalculationDate, personB.quitWorkDate, personB.FRA, personB.monthlyEarnings)
 
             //If divorced, withholding due to spouseB's earnings is zero
-            if (maritalStatus == "divorced"){
+            if (scenario.maritalStatus == "divorced"){
               withholdingDueToSpouseBearnings = 0
             }
               
@@ -348,7 +348,7 @@ export class PresentValueService {
                       monthsOfSpouseAretirement = monthsOfSpouseAretirement - 1
                       monthsSpouseAretirementWithheld  = monthsSpouseAretirementWithheld  + 1
                     }
-                    if (maritalStatus == "married"){//Only make spouse B's benefit as a spouse available for withholding if they're currently married (as opposed to divorced). If divorced, spouseB is automatically "not working," so we don't have any withholding due to their earnings to worry about.
+                    if (scenario.maritalStatus == "married"){//Only make spouse B's benefit as a spouse available for withholding if they're currently married (as opposed to divorced). If divorced, spouseB is automatically "not working," so we don't have any withholding due to their earnings to worry about.
                       if (earningsTestMonth >= spouseBspousalBenefitDate && earningsTestMonth >= spouseBretirementBenefitDate //i.e., if this is a "spouseBspousalBenefitWithRetirementBenefit" month
                         && (spouseBgraceYear === false || earningsTestMonth < personB.quitWorkDate) //Make sure it isn't a nonservice month in grace year
                       ) {
@@ -546,7 +546,7 @@ export class PresentValueService {
           spouseBannualRetirementBenefit = spouseBannualRetirementBenefit + spouseBoverWithholding
 
           //If user is divorced, we don't actually want to include the ex-spouse's benefit amounts in our PV sum
-          if (maritalStatus == "divorced") {
+          if (scenario.maritalStatus == "divorced") {
             spouseBannualRetirementBenefit = 0
             spouseBannualSpousalBenefit = 0
             spouseBannualSurvivorBenefit = 0
@@ -633,7 +633,7 @@ export class PresentValueService {
 
 
 
-  maximizeSinglePersonPV(maritalStatus: string, person:Person, scenario:ClaimingScenario){
+  maximizeSinglePersonPV(person:Person, scenario:ClaimingScenario){
     //find initial testClaimingDate for age 62
     let testClaimingDate = new Date(person.SSbirthDate.getFullYear()+62, 1, 1)
     if (person.actualBirthDate.getDate() <= 2){
@@ -669,13 +669,13 @@ export class PresentValueService {
     console.log("savedClaimingDate: " + savedClaimingDate)
 
     //Generate solution set (for sake of output) from saved values
-    let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(maritalStatus, person.SSbirthDate, person, Number(savedPV), savedClaimingDate)
+    let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(scenario.maritalStatus, person.SSbirthDate, person, Number(savedPV), savedClaimingDate)
     this.maximizedOrNot = true
     return solutionSet
   }
 
 
-  maximizeCouplePV(maritalStatus:string, personA:Person, personB:Person, scenario:ClaimingScenario){
+  maximizeCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario){
 
     let deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
@@ -791,7 +791,7 @@ export class PresentValueService {
 
         while (spouseBretirementDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(maritalStatus, personA, personB, spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate,scenario)
+            let currentTestPV: number = this.calculateCouplePV(personA, personB, spouseAretirementDate, spouseBretirementDate, spouseAspousalDate, spouseBspousalDate, scenario)
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTestPV >= savedPV) {
               savedPV = currentTestPV
@@ -883,14 +883,14 @@ export class PresentValueService {
       console.log("spouseBspousalDate: " + spouseBsavedSpousalDate)
 
       //Generate solution set (for sake of output) from saved values
-      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(maritalStatus, personA, personB, spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, Number(savedPV))
+      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario.maritalStatus, personA, personB, spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, Number(savedPV))
       
       this.maximizedOrNot = true
       return solutionSet
   }
 
   //This function is for when one spouse has already filed. Also is the function for a divorcee, because we take the ex-spouse's filing date as a given (i.e., as an input)
-  maximizeCoupleOneHasFiledPV(maritalStatus:string, scenario:ClaimingScenario,
+  maximizeCoupleOneHasFiledPV(scenario:ClaimingScenario,
     fixedSpouseRetirementBenefitDate:Date, flexibleSpouse:Person, fixedSpouse:Person){
 
       let deemedFilingCutoff: Date = new Date(1954, 0, 1)
@@ -943,7 +943,7 @@ export class PresentValueService {
 
       while (flexibleSpouseRetirementDate <= endTestDate) {
         //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
-        let currentTestPV: number = this.calculateCouplePV(maritalStatus, flexibleSpouse, fixedSpouse, flexibleSpouseRetirementDate, fixedSpouseRetirementBenefitDate, flexibleSpouseSpousalDate, fixedSpouseSpousalDate, scenario)
+        let currentTestPV: number = this.calculateCouplePV(flexibleSpouse, fixedSpouse, flexibleSpouseRetirementDate, fixedSpouseRetirementBenefitDate, flexibleSpouseSpousalDate, fixedSpouseSpousalDate, scenario)
 
         //If PV is greater than or equal to saved PV, save new PV and save new testDates
         if (currentTestPV >= savedPV) {
@@ -985,7 +985,7 @@ export class PresentValueService {
         console.log("saved flexibleSpouseRetirementDate: " + flexibleSpouseSavedRetirementDate)
         console.log("saved flexibleSpouseSpousalDate: " + flexibleSpouseSavedSpousalDate)
     
-        let solutionSet:SolutionSet = this.solutionSetService.generateCoupleOneHasFiledSolutionSet(maritalStatus, flexibleSpouse, fixedSpouse, scenario,
+        let solutionSet:SolutionSet = this.solutionSetService.generateCoupleOneHasFiledSolutionSet(flexibleSpouse, fixedSpouse, scenario,
         flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, Number(savedPV))
 
 

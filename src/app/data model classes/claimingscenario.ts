@@ -2,6 +2,7 @@ export class ClaimingScenario {
 //could be all the stuff below. Or could omit benefit amounts and ARF-adjusted dates
 
     discountRate: number
+    maritalStatus: string = "single"
 
     //PersonA
         personAhasFiled: boolean = false

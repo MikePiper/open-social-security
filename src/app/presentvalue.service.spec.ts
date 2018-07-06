@@ -60,7 +60,7 @@ describe('PresentValueService', () => {
     let personA:Person = new Person()
     let personB:Person = new Person()
     let scenario:ClaimingScenario = new ClaimingScenario()
-    let maritalStatus:string = "married"
+    scenario.maritalStatus = "married"
     let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
@@ -86,7 +86,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.calculateCouplePV(maritalStatus, personA, personB,
+    expect(service.calculateCouplePV(personA, personB,
     spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate, scenario))
       .toBeCloseTo(578594, 0)
   }))
@@ -95,7 +95,7 @@ describe('PresentValueService', () => {
     let personA:Person = new Person()
     let personB:Person = new Person()
     let scenario:ClaimingScenario = new ClaimingScenario()
-    let maritalStatus:string = "married"
+    scenario.maritalStatus = "married"
     let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
@@ -121,7 +121,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 900
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.calculateCouplePV(maritalStatus, personA, personB,
+    expect(service.calculateCouplePV(personA, personB,
     spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate, scenario))
       .toBeCloseTo(531263, 0)
   }))
@@ -132,7 +132,7 @@ describe('PresentValueService', () => {
     let personA:Person = new Person()
     let personB:Person = new Person()
     let scenario:ClaimingScenario = new ClaimingScenario()
-    let maritalStatus:string = "divorced"
+    scenario.maritalStatus = "divorced"
     let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
@@ -158,7 +158,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 300
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.calculateCouplePV(maritalStatus, personA, personB,
+    expect(service.calculateCouplePV(personA, personB,
     spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate, scenario))
       .toBeCloseTo(161095, 0)
   }))
@@ -168,7 +168,7 @@ describe('PresentValueService', () => {
   it('should tell a single person to file ASAP with very high discount rate', inject([PresentValueService], (service: PresentValueService) => {
     let person:Person = new Person()
     let scenario:ClaimingScenario = new ClaimingScenario
-    let maritalStatus:string = "single"
+    scenario.maritalStatus = "single"
     person.actualBirthDate = new Date(1960, 3, 15) //Person born April 15 1960
     person.SSbirthDate = new Date(1960, 3, 1)
     person.FRA = new Date (2027, 3, 1) //FRA April 2027 (age 67)
@@ -179,7 +179,7 @@ describe('PresentValueService', () => {
     scenario.discountRate = 9 //9% discount rate
     let mortalityService:MortalityService = new MortalityService()
     person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-    expect(service.maximizeSinglePersonPV(maritalStatus, person, scenario).solutionsArray[0].date)
+    expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
       .toEqual(new Date(2022, 4, 1))
   }))
 
@@ -187,7 +187,7 @@ describe('PresentValueService', () => {
     let personA:Person = new Person()
     let personB:Person = new Person()
     let scenario:ClaimingScenario = new ClaimingScenario()
-    let maritalStatus:string = "married"
+    scenario.maritalStatus = "married"
     let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
@@ -211,7 +211,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.maximizeCouplePV(maritalStatus, personA, personB, scenario).solutionsArray[1].date)
+    expect(service.maximizeCouplePV(personA, personB, scenario).solutionsArray[1].date)
     .toEqual(new Date(2034, 9, 1))
     //We're looking at item [1] in the array. This array should have 3 items in it: retirement benefit dates for each spouse, and a survivor date for spouse A (lower earner).
     //No spousal dates because neither spouse gets a spousal benefit. Since it's sorted in date order, first retirement date will be low earner, second is higher earner, which we want. Third is survivor.
@@ -221,7 +221,7 @@ describe('PresentValueService', () => {
     let personA:Person = new Person()
     let personB:Person = new Person()
     let scenario:ClaimingScenario = new ClaimingScenario()
-    let maritalStatus:string = "married"
+    scenario.maritalStatus = "married"
     let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0) //Using male nonsmoker2 mortality table
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) //Using female nonsmoker1 mortality table
@@ -245,7 +245,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.maximizeCouplePV(maritalStatus, personA, personB, scenario).solutionsArray[1].date)
+    expect(service.maximizeCouplePV(personA, personB, scenario).solutionsArray[1].date)
     .toEqual(new Date(2019, 8, 1))
     //We're looking at item [1] in the array. This array should have 4 items in it, in this order:
       //low PIA retirement claiming date
@@ -260,7 +260,7 @@ describe('PresentValueService', () => {
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.personAhasFiled = false
     scenario.personBhasFiled = false
-    let maritalStatus:string = "divorced"
+    scenario.maritalStatus = "divorced"
     let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
@@ -285,7 +285,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.maximizeCoupleOneHasFiledPV(maritalStatus, scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
+    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2026, 10, 1))
     //We're looking at item [0] in the array. This array should have 3 items in it: retirement benefit date and spousal benefit date for spouseA, and a survivor date for spouse A (lower earner).
     //Since it's sorted in date order, we want first date (or second date -- they should be the same)
