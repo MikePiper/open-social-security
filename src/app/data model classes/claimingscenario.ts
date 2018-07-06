@@ -52,26 +52,6 @@ export class ClaimingScenario {
         */
 }
 
-//Possible fields for "year" object or some such
-    //personAage: number
-    //personAageRounded: number
-    //personAageLastBirthday: number
-    //monthsOfSpouseAretirement
-    //monthsOfSpouseAspousal
-        //monthsOfSpouseAspousalWithRetirement
-        //monthsOfSpouseAspousalWithoutRetirement
-    //monthsOfSpouseAsurvivor
-        //monthsOfSpouseAsurvivorWithRetirement
-        //monthsOfSpouseAsurvivorWithoutRetirement
-    //personAprobabilityAlive: number
-    //personAannualRetirementBenefit: number
-    //personAannualSpousalBenefit: number
-    //personAannualSurvivorBenefit: number
 
-    
-    //withholdingAmount: number
-    //monthsWithheld: number = 0
-    //graceYear: boolean = false
-    //hasHadGraceYear: boolean = false
 
 

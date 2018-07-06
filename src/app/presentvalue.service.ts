@@ -6,6 +6,7 @@ import {SolutionSetService} from './solutionset.service'
 import {SolutionSet} from './data model classes/solutionset'
 import {Person} from './data model classes/person'
 import {ClaimingScenario} from './data model classes/claimingscenario'
+import {CalculationYear} from './data model classes/calculationyear'
 
 
 @Injectable()
@@ -32,16 +33,17 @@ export class PresentValueService {
     let hasHadGraceYear: boolean = false
 
     //Find Jan 1 of the year they plan to start benefit
-    let currentCalculationDate = new Date(inputBenefitDate.getFullYear(), 0, 1)
+    let initialCalcDate:Date = new Date(inputBenefitDate.getFullYear(), 0, 1)
+    let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
 
     //calculate age as of that date
-    let age: number = ( 12 * (currentCalculationDate.getFullYear() - person.SSbirthDate.getFullYear()) + (currentCalculationDate.getMonth()) - person.SSbirthDate.getMonth()  )/12
+    let age: number = ( 12 * (calcYear.date.getFullYear() - person.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - person.SSbirthDate.getMonth()  )/12
 
     //Calculate PV via loop until they hit age 115 (by which point "remaining lives" is zero)
       while (age < 115) {
 
       //Count number of months in year that are before/after inputBenefitDate
-      let monthsOfRetirement = this.benefitService.countBenefitMonths(inputBenefitDate, currentCalculationDate)
+      let monthsOfRetirement = this.benefitService.countBenefitMonths(inputBenefitDate, calcYear.date)
 
 
           //Earnings test
@@ -51,15 +53,15 @@ export class PresentValueService {
           if (person.quitWorkDate > this.today){//If quitWorkDate is an invalid date (because there was no input) or is in the past for some reason, this whole business below gets skipped  
               //Determine if it's a grace year. If quitWorkDate has already happened (or happens this year) and retirement benefit has started (or starts this year) it's a grace year
                 //Assumption: in the year they quit work, following months are non-service months.
-              graceYear = this.earningsTestService.isGraceYear(hasHadGraceYear, person.quitWorkDate, currentCalculationDate, inputBenefitDate)
+              graceYear = this.earningsTestService.isGraceYear(hasHadGraceYear, person.quitWorkDate, calcYear.date, inputBenefitDate)
               if (graceYear === true) {hasHadGraceYear = true}
                
               //Calculate necessary withholding based on earnings
-              withholdingAmount = this.earningsTestService.calculateWithholding(currentCalculationDate, person.quitWorkDate, person.FRA, person.monthlyEarnings)
+              withholdingAmount = this.earningsTestService.calculateWithholding(calcYear.date, person.quitWorkDate, person.FRA, person.monthlyEarnings)
 
               //Have to loop monthly for earnings test
-              let earningsTestMonth:Date = new Date(currentCalculationDate) //set earningsTestMonth to beginning of year
-              let earningsTestEndDate:Date = new Date(currentCalculationDate.getFullYear(), 11, 1) //set earningsTestEndDate to Dec of currentCalculationYear
+              let earningsTestMonth:Date = new Date(calcYear.date) //set earningsTestMonth to beginning of year
+              let earningsTestEndDate:Date = new Date(calcYear.date.getFullYear(), 11, 1) //set earningsTestEndDate to Dec of currentCalculationYear
               let availableForWithholding:number
               while (withholdingAmount > 0 && earningsTestMonth <= earningsTestEndDate) {
                 availableForWithholding = 0 //reset availableForWithholding for new month
@@ -95,9 +97,9 @@ export class PresentValueService {
             }
 
           //Calculate annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
-          if (currentCalculationDate.getFullYear() < person.FRA.getFullYear()) {
+          if (calcYear.date.getFullYear() < person.FRA.getFullYear()) {
             annualRetirementBenefit = monthsOfRetirement * retirementBenefit + overWithholding
-          } else if (currentCalculationDate.getFullYear() == person.FRA.getFullYear()){
+          } else if (calcYear.date.getFullYear() == person.FRA.getFullYear()){
               //total monthsOfRetirement is monthsOfRetirement. Some will be retirementBenefitAfterARF. Rest will be retirementBenefit.  Then subtract withholdingAmount
               //ARF should be applied for (12 - FRA.getMonth) months (e.g., all 12 if FRA is January). But limited to monthsOfRetirement.
               let ARFmonths = 12 - person.FRA.getMonth()
@@ -143,7 +145,8 @@ export class PresentValueService {
           //Add discounted benefit to ongoing count of retirementPV, add 1 year to age and calculationYear, and start loop over
           retirementPV = retirementPV + annualPV
           age = age + 1
-          currentCalculationDate.setFullYear(currentCalculationDate.getFullYear()+1)
+          let newCalcDate:Date = new Date(calcYear.date.getFullYear()+1, 0, 1)
+          calcYear = new CalculationYear(newCalcDate)
       }
         return retirementPV
   }
@@ -205,28 +208,28 @@ export class PresentValueService {
     let spouseBhasHadGraceYear: boolean = false
 
 
-    //If married, set initialCalcDate to date on which first spouse reaches age 62
+    //If married, set initialCalcDate to Jan 1 of year in which first spouse reaches age 62
     if (scenario.maritalStatus == "married"){
       if (personA.SSbirthDate < personB.SSbirthDate)
         {
-        initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, personA.SSbirthDate.getMonth(), 1)
+        initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, 0, 1)
         }
       else {//This is fine as a simple "else" statement. If the two SSbirth dates are equal, doing it as of either date is fine.
-      initialCalcDate = new Date(personB.SSbirthDate.getFullYear()+62, personB.SSbirthDate.getMonth(), 1)
+      initialCalcDate = new Date(personB.SSbirthDate.getFullYear()+62, 0, 1)
         }
     }
-    //If divorced, we want initialCalcDate to equal SpouseA's age62 date.
+    //If divorced, we want initialCalcDate to be Jan 1 of SpouseA's age62 year.
     if (scenario.maritalStatus == "divorced") {
-      initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, personA.SSbirthDate.getMonth(), 1)
+      initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, 0, 1)
     }
 
 
     //Find Jan 1 of the year containing initialCalcDate
-    let currentCalculationDate: Date = new Date(initialCalcDate.getFullYear(), 0, 1)
+    let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
 
     //Find age of each spouse as of that Jan 1
-    spouseAage = ( currentCalculationDate.getMonth() - personA.SSbirthDate.getMonth() + 12 * (currentCalculationDate.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
-    spouseBage = ( currentCalculationDate.getMonth() - personB.SSbirthDate.getMonth() + 12 * (currentCalculationDate.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
+    spouseAage = ( calcYear.date.getMonth() - personA.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
+    spouseBage = ( calcYear.date.getMonth() - personB.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
 
 
     //Calculate monthly benefit amounts, pre-ARF
@@ -246,11 +249,11 @@ export class PresentValueService {
     while (spouseAage < 115 || spouseBage < 115){
 
         //Calculate number of months of retirement benefit for each spouse
-        let monthsOfSpouseAretirement = this.benefitService.countBenefitMonths(spouseAretirementBenefitDate, currentCalculationDate)
-        let monthsOfSpouseBretirement = this.benefitService.countBenefitMonths(spouseBretirementBenefitDate, currentCalculationDate)
+        let monthsOfSpouseAretirement = this.benefitService.countBenefitMonths(spouseAretirementBenefitDate, calcYear.date)
+        let monthsOfSpouseBretirement = this.benefitService.countBenefitMonths(spouseBretirementBenefitDate, calcYear.date)
 
         //Calculate number of months of spouseA spousalBenefit w/ retirementBenefit and number of months of spouseA spousalBenefit w/o retirementBenefit
-        let monthsOfSpouseAspousal: number = this.benefitService.countBenefitMonths(spouseAspousalBenefitDate, currentCalculationDate)
+        let monthsOfSpouseAspousal: number = this.benefitService.countBenefitMonths(spouseAspousalBenefitDate, calcYear.date)
         if (monthsOfSpouseAretirement >= monthsOfSpouseAspousal) {
           var monthsOfSpouseAspousalWithRetirement: number = monthsOfSpouseAspousal
           var monthsOfSpouseAspousalWithoutRetirement: number = 0
@@ -260,7 +263,7 @@ export class PresentValueService {
         }
 
         //Calculate number of months of spouseB spousalBenefit w/ retirementBenefit and number of months of spouseB spousalBenefit w/o retirementBenefit
-        let monthsOfSpouseBspousal: number = this.benefitService.countBenefitMonths(spouseBspousalBenefitDate, currentCalculationDate)
+        let monthsOfSpouseBspousal: number = this.benefitService.countBenefitMonths(spouseBspousalBenefitDate, calcYear.date)
         if (monthsOfSpouseBretirement >= monthsOfSpouseBspousal) {
           var monthsOfSpouseBspousalWithRetirement: number = monthsOfSpouseBspousal
           var monthsOfSpouseBspousalWithoutRetirement: number = 0
@@ -270,7 +273,7 @@ export class PresentValueService {
         }
 
         //Calculate number of months of spouseA survivorBenefit w/ retirementBenefit and number of months of spouseA survivorBenefit w/o retirementBenefit
-        let monthsOfSpouseAsurvivor: number = this.benefitService.countBenefitMonths(personA.survivorFRA, currentCalculationDate)
+        let monthsOfSpouseAsurvivor: number = this.benefitService.countBenefitMonths(personA.survivorFRA, calcYear.date)
         if (monthsOfSpouseAretirement >= monthsOfSpouseAsurvivor) {
           var monthsOfSpouseAsurvivorWithRetirement: number = monthsOfSpouseAsurvivor
           var monthsOfSpouseAsurvivorWithoutRetirement: number = 0
@@ -280,7 +283,7 @@ export class PresentValueService {
         }
 
         //Calculate number of months of spouseB survivorBenefit w/ retirementBenefit and number of months of spouseB survivorBenefit w/o retirementBenefit
-        let monthsOfSpouseBsurvivor: number = this.benefitService.countBenefitMonths(personB.survivorFRA, currentCalculationDate)
+        let monthsOfSpouseBsurvivor: number = this.benefitService.countBenefitMonths(personB.survivorFRA, calcYear.date)
         if (monthsOfSpouseBretirement >= monthsOfSpouseBsurvivor) {
           var monthsOfSpouseBsurvivorWithRetirement: number = monthsOfSpouseBsurvivor
           var monthsOfSpouseBsurvivorWithoutRetirement: number = 0
@@ -299,14 +302,14 @@ export class PresentValueService {
         if (personA.quitWorkDate > this.today || personB.quitWorkDate > this.today){//If quitWorkDates are invalid dates (because there was no input) or in the past for some reason, this whole business below gets skipped
           //Determine if it's a grace year for either spouse. If quitWorkDate has already happened (or happens this year) and at least one type of benefit has started (or starts this year)
             //Assumption: in the year they quit work, following months are non-service months.
-          spouseAgraceYear = this.earningsTestService.isGraceYear(spouseAhasHadGraceYear, personA.quitWorkDate, currentCalculationDate, spouseAretirementBenefitDate, spouseAspousalBenefitDate, personA.survivorFRA)
+          spouseAgraceYear = this.earningsTestService.isGraceYear(spouseAhasHadGraceYear, personA.quitWorkDate, calcYear.date, spouseAretirementBenefitDate, spouseAspousalBenefitDate, personA.survivorFRA)
           if (spouseAgraceYear === true) {spouseAhasHadGraceYear = true}  
-          spouseBgraceYear = this.earningsTestService.isGraceYear(spouseBhasHadGraceYear, personB.quitWorkDate, currentCalculationDate, spouseBretirementBenefitDate, spouseBspousalBenefitDate, personB.survivorFRA)
+          spouseBgraceYear = this.earningsTestService.isGraceYear(spouseBhasHadGraceYear, personB.quitWorkDate, calcYear.date, spouseBretirementBenefitDate, spouseBspousalBenefitDate, personB.survivorFRA)
           if (spouseBgraceYear === true) {spouseBhasHadGraceYear = true}  
 
             //Calculate necessary withholding based on each spouse's earnings
-            withholdingDueToSpouseAearnings = this.earningsTestService.calculateWithholding(currentCalculationDate, personA.quitWorkDate, personA.FRA, personA.monthlyEarnings)
-            withholdingDueToSpouseBearnings = this.earningsTestService.calculateWithholding(currentCalculationDate, personB.quitWorkDate, personB.FRA, personB.monthlyEarnings)
+            withholdingDueToSpouseAearnings = this.earningsTestService.calculateWithholding(calcYear.date, personA.quitWorkDate, personA.FRA, personA.monthlyEarnings)
+            withholdingDueToSpouseBearnings = this.earningsTestService.calculateWithholding(calcYear.date, personB.quitWorkDate, personB.FRA, personB.monthlyEarnings)
 
             //If divorced, withholding due to spouseB's earnings is zero
             if (scenario.maritalStatus == "divorced"){
@@ -315,8 +318,8 @@ export class PresentValueService {
               
 
               //Have to loop monthly for earnings test
-              let earningsTestMonth:Date = new Date(currentCalculationDate) //set earningsTestMonth to beginning of year
-              let earningsTestEndDate:Date = new Date(currentCalculationDate.getFullYear(), 11, 1) //set earningsTestEndDate to Dec of currentCalculationYear
+              let earningsTestMonth:Date = new Date(calcYear.date) //set earningsTestMonth to beginning of year
+              let earningsTestEndDate:Date = new Date(calcYear.date.getFullYear(), 11, 1) //set earningsTestEndDate to Dec of currentCalculationYear
               let availableForWithholding:number
                   
               //Key point with all of the below is that A's earnings first reduce A's retirement benefit and B's spousal benefit. *Then* B's earnings reduce B's spousal benefit. See CFR 404.434
@@ -359,7 +362,7 @@ export class PresentValueService {
                 }
                   
                 //Counting B's excess earnings against B's retirement and A's benefit as spouse
-                earningsTestMonth = new Date(currentCalculationDate) //reset earningsTestMonth to beginning of year
+                earningsTestMonth = new Date(calcYear.date) //reset earningsTestMonth to beginning of year
                 while (withholdingDueToSpouseBearnings > 0 && earningsTestMonth <= earningsTestEndDate) {
                   availableForWithholding = 0 //reset availableForWithholding for new month
                   //Check what benefits there *are* this month from which we can withhold:
@@ -393,7 +396,7 @@ export class PresentValueService {
                   
                 //If A still has excess earnings, count those against A's benefit as a spouse. (Don't have to check for withholding against benefit as survivor, because we assume no survivor application until survivorFRA.)
                 if (withholdingDueToSpouseAearnings > 0) {
-                  earningsTestMonth = new Date(currentCalculationDate) //reset earningsTestMonth to beginning of year
+                  earningsTestMonth = new Date(calcYear.date) //reset earningsTestMonth to beginning of year
                   while (withholdingDueToSpouseAearnings > 0 && earningsTestMonth <= earningsTestEndDate) {
                     availableForWithholding = 0
                     //Check if there is a spouseAspousal benefit this month (Always "spousalBenefitWithRetirement" because without retirement requires a restricted app. And spouseA is by definition younger than FRA here, otherwise there are no excess earnings.)
@@ -412,7 +415,7 @@ export class PresentValueService {
                   
                 //If B still has excess earnings, count those against B's benefit as a spouse. (Don't have to check for withholding against benefit as survivor, because we assume no survivor application until survivorFRA.)
                 if (withholdingDueToSpouseBearnings > 0) {
-                  earningsTestMonth = new Date(currentCalculationDate) //reset earningsTestMonth to beginning of year
+                  earningsTestMonth = new Date(calcYear.date) //reset earningsTestMonth to beginning of year
                   while (withholdingDueToSpouseBearnings > 0 && earningsTestMonth <= earningsTestEndDate) {
                     availableForWithholding = 0
                     //Check if there is a spouseBspousal benefit this month (Always "spousalBenefitWithRetirement" because without retirement requires a restricted app. And spouseB is by definition younger than FRA here, otherwise there are no excess earnings.)
@@ -481,10 +484,10 @@ export class PresentValueService {
 
         //Calculate annual benefits, accounting for Adjustment Reduction Factor in years beginning at FRA
           //Spouse A retirement and spousal
-          if (currentCalculationDate.getFullYear() < personA.FRA.getFullYear()) {
+          if (calcYear.date.getFullYear() < personA.FRA.getFullYear()) {
             spouseAannualRetirementBenefit = monthsOfSpouseAretirement * spouseAretirementBenefit
             spouseAannualSpousalBenefit = (monthsOfSpouseAspousalWithoutRetirement * spouseAspousalBenefitWithoutRetirement) + (monthsOfSpouseAspousalWithRetirement * spouseAspousalBenefitWithRetirement)
-          } else if (currentCalculationDate.getFullYear() == personA.FRA.getFullYear()){
+          } else if (calcYear.date.getFullYear() == personA.FRA.getFullYear()){
               //Calculate number of ARF months (e.g., 10 if FRA is March)
               let ARFmonths = 12 - personA.FRA.getMonth()
               if (ARFmonths > monthsOfSpouseAretirement) {
@@ -503,10 +506,10 @@ export class PresentValueService {
             }
 
           //Spouse B retirement and spousal
-          if (currentCalculationDate.getFullYear() < personB.FRA.getFullYear()) {
+          if (calcYear.date.getFullYear() < personB.FRA.getFullYear()) {
             spouseBannualRetirementBenefit = monthsOfSpouseBretirement * spouseBretirementBenefit
             spouseBannualSpousalBenefit = (monthsOfSpouseBspousalWithoutRetirement * spouseBspousalBenefitWithoutRetirement) + (monthsOfSpouseBspousalWithRetirement * spouseBspousalBenefitWithRetirement)
-          } else if (currentCalculationDate.getFullYear() == personB.FRA.getFullYear()){
+          } else if (calcYear.date.getFullYear() == personB.FRA.getFullYear()){
               //Calculate number of ARF months (e.g., 10 if FRA is March)
               let ARFmonths = 12 - personB.FRA.getMonth()
               if (ARFmonths > monthsOfSpouseBretirement) {
@@ -591,7 +594,9 @@ export class PresentValueService {
         couplePV = couplePV + annualPV
         spouseAage = spouseAage + 1
         spouseBage = spouseBage + 1
-        currentCalculationDate.setFullYear(currentCalculationDate.getFullYear()+1)
+        //calcYear.date.setFullYear(calcYear.date.getFullYear()+1)
+        let newCalcDate:Date = new Date(calcYear.date.getFullYear()+1, 0, 1)
+        calcYear = new CalculationYear(newCalcDate)
     }
 
     return couplePV
