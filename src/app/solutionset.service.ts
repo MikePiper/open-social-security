@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core'
 import {BenefitService} from './benefit.service'
 import {SolutionSet} from './data model classes/solutionset'
-import {ClaimingSolution} from './data model classes/claimingsolution';
-import {Person} from './data model classes/person';
+import {ClaimingSolution} from './data model classes/claimingsolution'
+import {Person} from './data model classes/person'
+import {ClaimingScenario} from './data model classes/claimingscenario'
 
 
 @Injectable({
@@ -117,7 +118,7 @@ export class SolutionSetService {
         return solutionSet
   }
 
-  generateCoupleOneHasFiledSolutionSet(maritalStatus:string, flexibleSpouse:Person, fixedSpouse:Person, spouseAhasFiled:boolean, spouseBhasFiled:boolean,
+  generateCoupleOneHasFiledSolutionSet(maritalStatus:string, flexibleSpouse:Person, fixedSpouse:Person, scenario:ClaimingScenario,
     flexibleSpouseSavedRetirementDate:Date, flexibleSpouseSavedSpousalDate:Date, fixedSpouseRetirementBenefitDate:Date, fixedSpouseSavedSpousalDate:Date, savedPV:number){
         let fixedSpouseRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(fixedSpouse, fixedSpouseRetirementBenefitDate)
         //flexible spouse retirement age/benefitAmount
@@ -156,7 +157,7 @@ export class SolutionSetService {
           solutionsArray: []
         }
 
-        if (maritalStatus == "divorced" || spouseBhasFiled === true){//i.e., if "flexibleSpouse" is spouseA
+        if (maritalStatus == "divorced" || scenario.personBhasFiled === true){//i.e., if "flexibleSpouse" is spouseA
             if (flexibleSpouseSavedRetirementDate > flexibleSpouseSavedSpousalDate) {
               var flexibleSpouseRetirementSolution = new ClaimingSolution(maritalStatus, "retirementReplacingSpousal", "spouseA", flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
             } else {
@@ -176,7 +177,7 @@ export class SolutionSetService {
             var fixedSpouseSurvivorSolution = new ClaimingSolution(maritalStatus, "survivor", "spouseB", new Date(9999,0,1), fixedSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
             }
             
-          } else if (spouseAhasFiled === true) {//i.e., if "flexibleSpouse" is spouseB
+          } else if (scenario.personAhasFiled === true) {//i.e., if "flexibleSpouse" is spouseB
             if (flexibleSpouseSavedRetirementDate > flexibleSpouseSavedSpousalDate) {
               var flexibleSpouseRetirementSolution = new ClaimingSolution(maritalStatus, "retirementReplacingSpousal", "spouseB", flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
             } else {

@@ -1,6 +1,12 @@
 export class ClaimingScenario {
 //could be all the stuff below. Or could be just the four initial claiming dates (no benefit amounts, no ARF-adjusted dates)
+
+
     //PersonA
+        personAhasFiled: boolean = false
+            //hasFiled has to be here, rather than on person class. Since the fixed/flexible function does not know which spouse is which, if "hasFiled" comes through on a person object,
+            //it will never know. It needs "personAhasfiled" to come through on scenario object so it can figure out which spouse is which, later on, for purpose of creating output.
+        /*
         personAretirementBenefitDate: Date
         personAretirementBenefit: number = 0
         personAspousalBenefitDate: Date
@@ -18,8 +24,12 @@ export class ClaimingScenario {
         personAsurvivorBenefitWithRetirementAfterARF: number = 0
 
         personAdeclineSpousal: boolean = false
+        */
 
     //PersonB
+        personBhasFiled: boolean = false
+
+        /*
         personBretirementBenefitDate: Date
         personBretirementBenefit: number = 0
         personBspousalBenefitDate: Date
@@ -37,6 +47,7 @@ export class ClaimingScenario {
         personBsurvivorBenefitWithRetirementAfterARF: number = 0
 
         personBdeclineSpousal: boolean = false
+        */
 }
 
 //Possible fields for "year" object or some such

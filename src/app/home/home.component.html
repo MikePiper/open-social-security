@@ -85,13 +85,13 @@
         <!--Begin Spouse A Already-Filed Inputs-->
         <div *ngIf="maritalStatus == 'married'">
           <label>Have you already filed for retirement benefits?</label>
-          <input type="radio" id="spouseAfiledYes" [(ngModel)]="spouseAhasFiled" name="spouseAhasFiled" [value]="true" (change)="resetFixedRetirementDateInputs()">
-          <label for="spouseAfiledYes">Yes</label>
-          <input type="radio" id="spouseAfiledNo" [(ngModel)]="spouseAhasFiled" name="spouseAhasFiled" [value]="false" (change)="resetFixedRetirementDateInputs()">
-          <label for="spouseAfiledNo">No</label>
+          <input type="radio" id="personAfiledYes" [(ngModel)]="scenario.personAhasFiled" name="scenario.personAhasFiled" [value]="true" (change)="resetFixedRetirementDateInputs()">
+          <label for="personAfiledYes">Yes</label>
+          <input type="radio" id="personAfiledNo" [(ngModel)]="scenario.personAhasFiled" name="scenario.personAhasFiled" [value]="false" (change)="resetFixedRetirementDateInputs()">
+          <label for="personAfiledNo">No</label>
         </div>
-        <div *ngIf="spouseAhasFiled === true" class="form-inline">
-            <label *ngIf="spouseAhasFiled === true">Month in which you filed for your retirement benefit:</label>
+        <div *ngIf="scenario.personAhasFiled === true" class="form-inline">
+            <label *ngIf="scenario.personAhasFiled === true">Month in which you filed for your retirement benefit:</label>
             <select class="form-control" [(ngModel)]="spouseAfixedRetirementBenefitMonth" name="spouseAfixedRetirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
@@ -188,15 +188,15 @@
         <!--Ex-spouse Retirement Date Inputs (Also, SpouseB already-filed inputs-->
           <div *ngIf="maritalStatus == 'married'">
             <label>Has your spouse already filed for retirement benefits?</label>
-            <input type="radio" id="spouseBfiledYes" [(ngModel)]="spouseBhasFiled" name="spouseBhasFiled" [value]="true" (change)="resetFixedRetirementDateInputs()">
-            <label for="spouseBfiledYes">Yes</label>
-            <input type="radio" id="spouseBfiledNo" [(ngModel)]="spouseBhasFiled" name="spouseBhasFiled" [value]="false" (change)="resetFixedRetirementDateInputs()">
-            <label for="spouseBfiledNo">No</label>
+            <input type="radio" id="personBfiledYes" [(ngModel)]="scenario.personBhasFiled" name="scenario.personBhasFiled" [value]="true" (change)="resetFixedRetirementDateInputs()">
+            <label for="personBfiledYes">Yes</label>
+            <input type="radio" id="personBfiledNo" [(ngModel)]="scenario.personBhasFiled" name="scenario.personBhasFiled" [value]="false" (change)="resetFixedRetirementDateInputs()">
+            <label for="personBfiledNo">No</label>
           </div>
       
-          <div *ngIf="maritalStatus == 'divorced' || spouseBhasFiled === true" class="form-inline">
+          <div *ngIf="maritalStatus == 'divorced' || scenario.personBhasFiled === true" class="form-inline">
             <label *ngIf="maritalStatus == 'divorced'">Month in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
-            <label *ngIf="spouseBhasFiled === true">Month in which your spouse filed for his/her retirement benefit:</label>
+            <label *ngIf="scenario.personBhasFiled === true">Month in which your spouse filed for his/her retirement benefit:</label>
             <select class="form-control" [(ngModel)]="spouseBfixedRetirementBenefitMonth" name="spouseBfixedRetirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
@@ -268,7 +268,7 @@
   <!--Custom Date(s) Form -->
   <form #customDateForm="ngForm" (ngSubmit)="customDates()">
   <h2>Test an alternative claiming strategy:</h2>
-        <div class="form-inline" *ngIf="spouseAhasFiled === false">
+        <div class="form-inline" *ngIf="scenario.personAhasFiled === false">
             <label>Your month/year to claim retirement benefit:</label>
             <select class="form-control" [(ngModel)]="customSpouseAretirementBenefitMonth" name="customSpouseAretirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
@@ -293,7 +293,7 @@
           <label>Check this box to test a scenario in which you do not file for a spousal benefit:</label>
           <input id="spouseAdeclineSpousal" [(ngModel)]="spouseAdeclineSpousal" name="spouseAdeclineSpousal" value="true" type="checkbox">
         </span>
-        <div *ngIf="maritalStatus == 'married' && spouseBhasFiled === false" class="form-inline">
+        <div *ngIf="maritalStatus == 'married' && scenario.personBhasFiled === false" class="form-inline">
             <label>Your spouse's month/year to claim retirement benefit:</label>
             <select class="form-control" [(ngModel)]="customSpouseBretirementBenefitMonth" name="customSpouseBretirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>

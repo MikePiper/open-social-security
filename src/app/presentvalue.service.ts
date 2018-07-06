@@ -1,9 +1,10 @@
-import {Injectable} from '@angular/core';
+import {Injectable} from '@angular/core'
 import {BenefitService} from './benefit.service'
 import {EarningsTestService} from './earningstest.service'
 import {SolutionSetService} from './solutionset.service'
 import {SolutionSet} from './data model classes/solutionset'
 import {Person} from './data model classes/person'
+import {ClaimingScenario} from './data model classes/claimingscenario'
 
 
 @Injectable()
@@ -889,7 +890,7 @@ export class PresentValueService {
   }
 
   //This function is for when one spouse has already filed. Also is the function for a divorcee, because we take the ex-spouse's filing date as a given (i.e., as an input)
-  maximizeCoupleOneHasFiledPV(maritalStatus:string, spouseAhasFiled:boolean, spouseBhasFiled:boolean,
+  maximizeCoupleOneHasFiledPV(maritalStatus:string, scenario:ClaimingScenario,
     fixedSpouseRetirementBenefitDate:Date, flexibleSpouse:Person, fixedSpouse:Person, discountRate: number){
 
       let deemedFilingCutoff: Date = new Date(1954, 0, 1)
@@ -984,9 +985,8 @@ export class PresentValueService {
         console.log("saved flexibleSpouseRetirementDate: " + flexibleSpouseSavedRetirementDate)
         console.log("saved flexibleSpouseSpousalDate: " + flexibleSpouseSavedSpousalDate)
     
-        let solutionSet:SolutionSet = this.solutionSetService.generateCoupleOneHasFiledSolutionSet(maritalStatus, flexibleSpouse, fixedSpouse, spouseAhasFiled, spouseBhasFiled,
-        flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate,
-        fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, Number(savedPV))
+        let solutionSet:SolutionSet = this.solutionSetService.generateCoupleOneHasFiledSolutionSet(maritalStatus, flexibleSpouse, fixedSpouse, scenario,
+        flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, Number(savedPV))
 
 
         this.maximizedOrNot = true

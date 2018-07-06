@@ -1,11 +1,12 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core'
 import {BirthdayService} from '../birthday.service'
 import {PresentValueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
 import {Person} from '../data model classes/person'
 import {SolutionSet} from '../data model classes/solutionset'
 import {FREDresponse} from '../data model classes/fredresponse'
-import {HttpClient} from '@angular/common/http';
+import {HttpClient} from '@angular/common/http'
+import {ClaimingScenario} from '../data model classes/claimingscenario'
 
 
 @Component({
@@ -27,6 +28,7 @@ export class HomeComponent implements OnInit {
 
   personA:Person = new Person()
   personB:Person = new Person()
+  scenario:ClaimingScenario = new ClaimingScenario()
   today:Date = new Date()
   deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
@@ -86,8 +88,7 @@ export class HomeComponent implements OnInit {
   spouseBassumedDeathAge: number = 0
   discountRate: number
   advanced: boolean = false
-  spouseAhasFiled: boolean = false
-  spouseBhasFiled: boolean = false
+
     //earnings test inputs
     spouseAworking: boolean = false
     spouseAquitWorkYear: number
@@ -140,24 +141,24 @@ export class HomeComponent implements OnInit {
       this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(this.maritalStatus, this.personA, Number(this.discountRate))
       }
     if(this.maritalStatus == "married") {
-      if (this.spouseAhasFiled === false && this.spouseBhasFiled === false) {//i.e., if neither spouse has filed
+      if (this.scenario.personAhasFiled === false && this.scenario.personBhasFiled === false) {//i.e., if neither spouse has filed
         this.solutionSet = this.presentvalueService.maximizeCouplePV(this.maritalStatus, this.personA, this.personB, Number(this.discountRate))
-      } else if (this.spouseAhasFiled === true && this.spouseBhasFiled === false) {//i.e., if spouseA has filed and B has not
+      } else if (this.scenario.personAhasFiled === true && this.scenario.personBhasFiled === false) {//i.e., if spouseA has filed and B has not
         this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.personA, this.spouseAfixedRetirementBenefitDate)
         if (!this.spouseAfixedRetirementDateError){
-          this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.maritalStatus, this.spouseAhasFiled, this.spouseBhasFiled, this.spouseAfixedRetirementBenefitDate, this.personB, this.personA, Number(this.discountRate))
+          this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.maritalStatus, this.scenario, this.spouseAfixedRetirementBenefitDate, this.personB, this.personA, Number(this.discountRate))
         }
-      } else if (this.spouseBhasFiled === true && this.spouseAhasFiled === false) {//i.e., if spouseB has filed and A has not
+      } else if (this.scenario.personBhasFiled === true && this.scenario.personAhasFiled === false) {//i.e., if spouseB has filed and A has not
         this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.personB, this.spouseBfixedRetirementBenefitDate)
         if (!this.spouseBfixedRetirementDateError){
-          this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.maritalStatus, this.spouseAhasFiled, this.spouseBhasFiled, this.spouseBfixedRetirementBenefitDate, this.personA, this.personB, Number(this.discountRate))
+          this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.maritalStatus, this.scenario, this.spouseBfixedRetirementBenefitDate, this.personA, this.personB, Number(this.discountRate))
         }
       }
     }
     if(this.maritalStatus == "divorced") {
       this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.personB, this.spouseBfixedRetirementBenefitDate)
         if (!this.spouseBfixedRetirementDateError){
-          this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.maritalStatus, this.spouseAhasFiled, this.spouseBhasFiled, this.spouseBfixedRetirementBenefitDate, this.personA, this.personB, Number(this.discountRate))
+          this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.maritalStatus, this.scenario, this.spouseBfixedRetirementBenefitDate, this.personA, this.personB, Number(this.discountRate))
         }
     }
     this.normalCursor()
@@ -181,11 +182,11 @@ export class HomeComponent implements OnInit {
 
     this.customSpouseAretirementBenefitDate = new Date(this.customSpouseAretirementBenefitYear, this.customSpouseAretirementBenefitMonth-1, 1)
         //If spouse A has already filed, there will be no input regarding their retirement date in custom dates form, so go get "fixed" date from above
-        if (this.spouseAhasFiled === true) {this.customSpouseAretirementBenefitDate = new Date(this.spouseAfixedRetirementBenefitDate)}
+        if (this.scenario.personAhasFiled === true) {this.customSpouseAretirementBenefitDate = new Date(this.spouseAfixedRetirementBenefitDate)}
     this.customSpouseAspousalBenefitDate = new Date(this.customSpouseAspousalBenefitYear, this.customSpouseAspousalBenefitMonth-1, 1)
     this.customSpouseBretirementBenefitDate = new Date(this.customSpouseBretirementBenefitYear, this.customSpouseBretirementBenefitMonth-1, 1)
         //If spouse B has already filed, there will be no input regarding their retirement date in custom dates form, so go get "fixed" date from above
-        if (this.spouseBhasFiled === true) {this.customSpouseBretirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitDate)}
+        if (this.scenario.personBhasFiled === true) {this.customSpouseBretirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitDate)}
     this.customSpouseBspousalBenefitDate = new Date(this.customSpouseBspousalBenefitYear, this.customSpouseBspousalBenefitMonth-1, 1)
 
 
@@ -376,12 +377,12 @@ export class HomeComponent implements OnInit {
   }
 
 resetFixedRetirementDateInputs(){
-  if (this.spouseAhasFiled === false) {
+  if (this.scenario.personAhasFiled === false) {
     this.spouseAfixedRetirementBenefitMonth = null
     this.spouseAfixedRetirementBenefitYear = null
     this.spouseAfixedRetirementBenefitDate = null
   }
-  if (this.spouseBhasFiled === false) {
+  if (this.scenario.personBhasFiled === false) {
     this.spouseBfixedRetirementBenefitMonth = null
     this.spouseBfixedRetirementBenefitYear = null
     this.spouseBfixedRetirementBenefitDate = null

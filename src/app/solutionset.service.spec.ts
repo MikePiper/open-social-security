@@ -2,7 +2,8 @@ import {TestBed, inject} from '@angular/core/testing'
 import {SolutionSetService} from './solutionset.service'
 import {BenefitService} from './benefit.service'
 import {SolutionSet} from './data model classes/solutionset'
-import {Person} from './data model classes/person';
+import {Person} from './data model classes/person'
+import {ClaimingScenario} from './data model classes/claimingscenario'
 
 
 describe('SolutionSetService', () => {
@@ -74,9 +75,10 @@ describe('SolutionSetService', () => {
   it('SolutionSet object should have appropriate date saved as earliest date', inject([SolutionSetService], (service: SolutionSetService) => {
     let flexibleSpouse:Person = new Person()
     let fixedSpouse:Person = new Person()
+    let scenario:ClaimingScenario = new ClaimingScenario
     let maritalStatus:string = "divorced"
-    let spouseAhasFiled:boolean = false
-    let spouseBhasFiled:boolean = true
+    scenario.personAhasFiled = false
+    scenario.personBhasFiled = true
     flexibleSpouse.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
     flexibleSpouse.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
     fixedSpouse.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
@@ -90,7 +92,7 @@ describe('SolutionSetService', () => {
     let savedPV: number = 380000 //completely making this up
     flexibleSpouse.governmentPension = 0
     fixedSpouse.governmentPension = 0
-    expect(service.generateCoupleOneHasFiledSolutionSet(maritalStatus, flexibleSpouse, fixedSpouse, spouseAhasFiled, spouseBhasFiled,
+    expect(service.generateCoupleOneHasFiledSolutionSet(maritalStatus, flexibleSpouse, fixedSpouse, scenario,
       flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, savedPV).solutionsArray[0].date)
       .toEqual(flexibleSpouseSavedSpousalDate)
   }))

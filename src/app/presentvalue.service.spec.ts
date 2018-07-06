@@ -4,8 +4,9 @@ import {BenefitService} from './benefit.service'
 import {EarningsTestService} from './earningstest.service'
 import {SolutionSetService} from './solutionset.service'
 import {MortalityService} from './mortality.service'
-import {BirthdayService} from './birthday.service';
-import {Person} from './data model classes/person';
+import {BirthdayService} from './birthday.service'
+import {Person} from './data model classes/person'
+import {ClaimingScenario} from './data model classes/claimingscenario'
 
 
 describe('PresentValueService', () => {
@@ -248,8 +249,9 @@ describe('PresentValueService', () => {
   it ('should tell a divorced user with significantly lower PIA to file ASAP', inject([PresentValueService], (service: PresentValueService) => {
     let personA:Person = new Person()
     let personB:Person = new Person()
-    let spouseAhasFiled: boolean = false
-    let spouseBhasFiled: boolean = false
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.personAhasFiled = false
+    scenario.personBhasFiled = false
     let maritalStatus:string = "divorced"
     let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -275,8 +277,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     let discountRate:number = 1
-    expect(service.maximizeCoupleOneHasFiledPV(maritalStatus, spouseAhasFiled, spouseBhasFiled, spouseBretirementBenefitDate,
-    personA, personB, discountRate).solutionsArray[0].date)
+    expect(service.maximizeCoupleOneHasFiledPV(maritalStatus, scenario, spouseBretirementBenefitDate, personA, personB, discountRate).solutionsArray[0].date)
     .toEqual(new Date(2026, 10, 1))
     //We're looking at item [0] in the array. This array should have 3 items in it: retirement benefit date and spousal benefit date for spouseA, and a survivor date for spouse A (lower earner).
     //Since it's sorted in date order, we want first date (or second date -- they should be the same)
