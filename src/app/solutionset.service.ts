@@ -63,13 +63,15 @@ export class SolutionSetService {
         if (spouseAsavedRetirementBenefit >= spouseBsavedRetirementBenefit) {
           var spouseAsavedSurvivorBenefitOutput: number = 0
         } else {
-          var spouseAsavedSurvivorBenefitOutput: number = spouseBsavedRetirementBenefit
+          var spouseAsavedSurvivorBenefitOutput: number =
+          spouseAsavedRetirementBenefit + this.benefitService.calculateSurvivorBenefit(personA, spouseAsavedRetirementBenefit, personA.survivorFRA, personB, spouseBsavedRetirementDate, spouseBsavedRetirementDate)
         }
         //spouseB survivor stuff
         if (spouseBsavedRetirementBenefit >= spouseAsavedRetirementBenefit) {
           var spouseBsavedSurvivorBenefitOutput: number = 0
         } else {
-          var spouseBsavedSurvivorBenefitOutput: number = spouseAsavedRetirementBenefit
+          var spouseBsavedSurvivorBenefitOutput: number =
+          spouseBsavedRetirementBenefit + this.benefitService.calculateSurvivorBenefit(personB, spouseBsavedRetirementBenefit, personB.survivorFRA, personA, spouseAsavedRetirementDate, spouseAsavedRetirementDate)
         }
 
         let solutionSet: SolutionSet = {
@@ -106,8 +108,8 @@ export class SolutionSetService {
         if (spouseBsavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(spouseBretirementSolution)}
         if (spouseAsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(spouseAspousalSolution)}
         if (spouseBsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(spouseBspousalSolution)}
-        if (spouseAsavedSurvivorBenefitOutput > 0) {solutionSet.solutionsArray.push(spouseAsurvivorSolution)}
-        if (spouseBsavedSurvivorBenefitOutput > 0) {solutionSet.solutionsArray.push(spouseBsurvivorSolution)}
+        if (spouseAsavedSurvivorBenefitOutput > spouseAsavedRetirementBenefit) {solutionSet.solutionsArray.push(spouseAsurvivorSolution)} //Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
+        if (spouseBsavedSurvivorBenefitOutput > spouseBsavedRetirementBenefit) {solutionSet.solutionsArray.push(spouseBsurvivorSolution)}
     
         //Sort array by date
         solutionSet.solutionsArray.sort(function(a,b){
