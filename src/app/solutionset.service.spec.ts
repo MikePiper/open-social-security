@@ -77,9 +77,9 @@ describe('SolutionSetService', () => {
     let maritalStatus:string = "divorced"
     let spouseAhasFiled:boolean = false
     let spouseBhasFiled:boolean = true
-    let flexibleSpouseSSbirthDate: Date = new Date(1960, 3, 1) //April 1, 1960
+    flexibleSpouse.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
     flexibleSpouse.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
-    let fixedSpouseSSbirthDate: Date = new Date(1960, 3, 1) //April 1, 1960
+    fixedSpouse.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
     fixedSpouse.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
     flexibleSpouse.PIA = 1200
     fixedSpouse.PIA = 1900
@@ -91,7 +91,6 @@ describe('SolutionSetService', () => {
     flexibleSpouse.governmentPension = 0
     fixedSpouse.governmentPension = 0
     expect(service.generateCoupleOneHasFiledSolutionSet(maritalStatus, flexibleSpouse, fixedSpouse, spouseAhasFiled, spouseBhasFiled,
-      flexibleSpouseSSbirthDate, fixedSpouseSSbirthDate,
       flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, savedPV).solutionsArray[0].date)
       .toEqual(flexibleSpouseSavedSpousalDate)
   }))

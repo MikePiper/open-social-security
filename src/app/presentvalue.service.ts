@@ -985,7 +985,7 @@ export class PresentValueService {
         console.log("saved flexibleSpouseSpousalDate: " + flexibleSpouseSavedSpousalDate)
     
         let solutionSet:SolutionSet = this.solutionSetService.generateCoupleOneHasFiledSolutionSet(maritalStatus, flexibleSpouse, fixedSpouse, spouseAhasFiled, spouseBhasFiled,
-        flexibleSpouse.SSbirthDate, fixedSpouse.SSbirthDate, flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate,
+        flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate,
         fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, Number(savedPV))
 
 

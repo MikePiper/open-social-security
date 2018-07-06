@@ -118,12 +118,11 @@ export class SolutionSetService {
   }
 
   generateCoupleOneHasFiledSolutionSet(maritalStatus:string, flexibleSpouse:Person, fixedSpouse:Person, spouseAhasFiled:boolean, spouseBhasFiled:boolean,
-    flexibleSpouseSSbirthDate:Date, fixedSpouseSSbirthDate:Date,
     flexibleSpouseSavedRetirementDate:Date, flexibleSpouseSavedSpousalDate:Date, fixedSpouseRetirementBenefitDate:Date, fixedSpouseSavedSpousalDate:Date, savedPV:number){
         let fixedSpouseRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(fixedSpouse, fixedSpouseRetirementBenefitDate)
         //flexible spouse retirement age/benefitAmount
         let flexibleSpouseSavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(flexibleSpouse, flexibleSpouseSavedRetirementDate)
-        let flexibleSpouseSavedRetirementAge: number = flexibleSpouseSavedRetirementDate.getFullYear() - flexibleSpouseSSbirthDate.getFullYear() + (flexibleSpouseSavedRetirementDate.getMonth() - flexibleSpouseSSbirthDate.getMonth())/12
+        let flexibleSpouseSavedRetirementAge: number = flexibleSpouseSavedRetirementDate.getFullYear() - flexibleSpouse.SSbirthDate.getFullYear() + (flexibleSpouseSavedRetirementDate.getMonth() - flexibleSpouse.SSbirthDate.getMonth())/12
         let flexibleSpouseSavedRetirementAgeYears: number = Math.floor(flexibleSpouseSavedRetirementAge)
         let flexibleSpouseSavedRetirementAgeMonths: number = Math.round((flexibleSpouseSavedRetirementAge%1)*12)
         //flexible spouse spousal age/benefitAmount
@@ -131,7 +130,7 @@ export class SolutionSetService {
         if (flexibleSpouseSavedSpousalBenefit == 0 && flexibleSpouseSavedSpousalDate < flexibleSpouseSavedRetirementDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
           flexibleSpouseSavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(flexibleSpouse, fixedSpouse, 0, flexibleSpouseSavedSpousalDate)
         }
-        let flexibleSpouseSavedSpousalAge: number = flexibleSpouseSavedSpousalDate.getFullYear() - flexibleSpouseSSbirthDate.getFullYear() + (flexibleSpouseSavedSpousalDate.getMonth() - flexibleSpouseSSbirthDate.getMonth())/12
+        let flexibleSpouseSavedSpousalAge: number = flexibleSpouseSavedSpousalDate.getFullYear() - flexibleSpouse.SSbirthDate.getFullYear() + (flexibleSpouseSavedSpousalDate.getMonth() - flexibleSpouse.SSbirthDate.getMonth())/12
         let flexibleSpouseSavedSpousalAgeYears: number = Math.floor(flexibleSpouseSavedSpousalAge)
         let flexibleSpouseSavedSpousalAgeMonths: number = Math.round((flexibleSpouseSavedSpousalAge%1)*12)
         //flexible spouse survivor
@@ -142,7 +141,7 @@ export class SolutionSetService {
         }
         //fixed spouse spousal age/benefitAmount (no need to consider restricted app scenario, because this person has already filed for retirement benefit)
         let fixedSpouseSavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(fixedSpouse, flexibleSpouse, fixedSpouseRetirementBenefit, fixedSpouseSavedSpousalDate)
-        let fixedSpouseSavedSpousalAge: number = fixedSpouseSavedSpousalDate.getFullYear() - fixedSpouseSSbirthDate.getFullYear() + (fixedSpouseSavedSpousalDate.getMonth() - fixedSpouseSSbirthDate.getMonth())/12
+        let fixedSpouseSavedSpousalAge: number = fixedSpouseSavedSpousalDate.getFullYear() - fixedSpouse.SSbirthDate.getFullYear() + (fixedSpouseSavedSpousalDate.getMonth() - fixedSpouse.SSbirthDate.getMonth())/12
         let fixedSpouseSavedSpousalAgeYears: number = Math.floor(fixedSpouseSavedSpousalAge)
         let fixedSpouseSavedSpousalAgeMonths: number = Math.round((fixedSpouseSavedSpousalAge%1)*12)
         //fixed spouse survivor benefitAmount
