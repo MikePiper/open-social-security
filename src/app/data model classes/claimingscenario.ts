@@ -1,4 +1,5 @@
 export class ClaimingScenario {
+//could be all the stuff below. Or could be just the four initial claiming dates (no benefit amounts, no ARF-adjusted dates)
     //PersonA
         personAretirementBenefitDate: Date
         personAretirementBenefit: number = 0
