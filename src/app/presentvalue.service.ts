@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core'
 import {BenefitService} from './benefit.service'
+import {MortalityService} from './mortality.service'
 import {EarningsTestService} from './earningstest.service'
 import {SolutionSetService} from './solutionset.service'
 import {SolutionSet} from './data model classes/solutionset'
@@ -10,7 +11,7 @@ import {ClaimingScenario} from './data model classes/claimingscenario'
 @Injectable()
 export class PresentValueService {
 
-  constructor(private benefitService: BenefitService, private earningsTestService: EarningsTestService, private solutionSetService: SolutionSetService) { }
+  constructor(private benefitService: BenefitService, private mortalityService:MortalityService, private earningsTestService: EarningsTestService, private solutionSetService: SolutionSetService) { }
   
   //Has maximize calc been run?
   maximizedOrNot: boolean = false
@@ -24,8 +25,6 @@ export class PresentValueService {
     let adjustedBenefitDate: Date
     let annualRetirementBenefit: number
     let retirementPV: number = 0
-    let ageLastBirthday: number
-    let denominatorAge: number
     let probabilityAlive: number
     let withholdingAmount: number
     let monthsWithheld: number = 0
@@ -111,17 +110,8 @@ export class PresentValueService {
             }
 
           //Calculate probability of being alive at end of age in question
-          //If user is older than 62 when filling out form, denominator is lives remaining at age when filling out form. Otherwise it's lives remaining at age 62
-          if (person.initialAgeRounded > 62) {
-            denominatorAge = person.initialAgeRounded
-          }
-          else {
-            denominatorAge = 62
-          }
-          ageLastBirthday = Math.floor(age)
-          probabilityAlive = //need probability of being alive at end of "currentCalculationDate" year
-            person.mortalityTable[ageLastBirthday + 1] / person.mortalityTable[denominatorAge] * (1 - (age%1)) //eg if user is 72 and 4 months at beginning of year, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
-          + person.mortalityTable[ageLastBirthday + 2] / person.mortalityTable[denominatorAge] * (age%1)
+          probabilityAlive = this.mortalityService.calculateProbabilityAlive(person, age)
+
           
           //Calculate probability-weighted benefit
           let annualPV = annualRetirementBenefit * probabilityAlive
@@ -198,15 +188,11 @@ export class PresentValueService {
 
     //Other assorted variables
     let spouseAage: number
-    let spouseAageLastBirthday: number
     let probabilityAalive: number
     let spouseBage: number
-    let spouseBageLastBirthday: number
     let probabilityBalive: number
     let couplePV: number = 0
     let initialCalcDate: Date
-    let spouseAdenominatorAge: number
-    let spouseBdenominatorAge: number
     let withholdingDueToSpouseAearnings: number
     let withholdingDueToSpouseBearnings: number
     let monthsSpouseAretirementWithheld: number = 0
@@ -554,29 +540,9 @@ export class PresentValueService {
           }
 
 
-          //Calculate probability of spouseA being alive at end of age in question
-          //If spouseA is older than 62 when filling out form, denominator is lives remaining at age when filling out form. Otherwise it's lives remaining at age 62
-          if (personA.initialAgeRounded > 62) {
-            spouseAdenominatorAge = personA.initialAgeRounded
-          }
-          else { 
-            spouseAdenominatorAge = 62
-          }
-          spouseAageLastBirthday = Math.floor(spouseAage)
-          probabilityAalive = //need probability of being alive at end of "age"
-            personA.mortalityTable[spouseAageLastBirthday + 1] / personA.mortalityTable[spouseAdenominatorAge] * (1 - (spouseAage%1)) //eg if user is 72 and 4 months, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
-          + personA.mortalityTable[spouseAageLastBirthday + 2] / personA.mortalityTable[spouseAdenominatorAge] * (spouseAage%1)
-          //Do same math to calculate probability of spouseB being alive at given age
-          if (personB.initialAgeRounded > 62) {
-            spouseBdenominatorAge = personB.initialAgeRounded
-          }
-          else { 
-            spouseBdenominatorAge = 62
-          }
-          spouseBageLastBirthday = Math.floor(spouseBage)
-          probabilityBalive = //need probability of being alive at end of "age"
-            personB.mortalityTable[spouseBageLastBirthday + 1] / personB.mortalityTable[spouseBdenominatorAge] * (1 - (spouseBage%1))
-          + personB.mortalityTable[spouseBageLastBirthday + 2] / personB.mortalityTable[spouseBdenominatorAge] * (spouseBage%1)
+      //Calculate each person's probability of being alive at end of age in question
+        probabilityAalive = this.mortalityService.calculateProbabilityAlive(personA, spouseAage)
+        probabilityBalive = this.mortalityService.calculateProbabilityAlive(personB, spouseBage)
 
       //Find probability-weighted annual benefit
         let annualPV = 

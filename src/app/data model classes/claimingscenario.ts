@@ -63,16 +63,15 @@ export class ClaimingScenario {
     //monthsOfSpouseAsurvivor
         //monthsOfSpouseAsurvivorWithRetirement
         //monthsOfSpouseAsurvivorWithoutRetirement
+    //personAprobabilityAlive: number
+    //personAannualRetirementBenefit: number
+    //personAannualSpousalBenefit: number
+    //personAannualSurvivorBenefit: number
 
-
-    //denominatorAge: number Is this a variable in a class??
-    //probabilityAlive: number Is this a variable in a class??
-
-    //withholdingAmount: number Is this a variable in a class??
-    //monthsWithheld: number = 0 Is this a variable in a class??
-    //graceYear: boolean = false Is this a variable in a class??
+    
+    //withholdingAmount: number
+    //monthsWithheld: number = 0
+    //graceYear: boolean = false
     //hasHadGraceYear: boolean = false
-    //annualRetirementBenefit: number Variable for calculationYear?
-    //annualSpousalBenefit: number Variable for calculationYear?
-    //annualSurvivorBenefit: number Variable for calculationYear?
+
 

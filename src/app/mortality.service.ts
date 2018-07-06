@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core'
+import {Person} from './data model classes/person'
 
 @Injectable({
   providedIn: 'root'
@@ -6,6 +7,23 @@ import { Injectable } from '@angular/core';
 export class MortalityService {
 
   constructor() { }
+
+  calculateProbabilityAlive(person:Person, age:number){//"age" here is age as of beginning of year in question. person.initialAgeRounded is rounded age as of date filling out form
+    //Calculate probability of being alive at end of age in question
+    //If user is older than 62 when filling out form, denominator is lives remaining at age when filling out form. Otherwise it's lives remaining at age 62
+    if (person.initialAgeRounded > 62) {
+      var denominatorAge = person.initialAgeRounded
+    }
+    else {
+      var denominatorAge = 62
+    }
+    let ageLastBirthday = Math.floor(age)
+    let probabilityAlive = //need probability of being alive at end of "currentCalculationDate" year
+      person.mortalityTable[ageLastBirthday + 1] / person.mortalityTable[denominatorAge] * (1 - (age%1)) //eg if user is 72 and 4 months at beginning of year, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
+    + person.mortalityTable[ageLastBirthday + 2] / person.mortalityTable[denominatorAge] * (age%1)
+
+    return Number(probabilityAlive)
+  }
 
   determineMortalityTable (gender:string, mortalityInput:string, assumedDeathAge:number) {
     let mortalityTable: number[] = []

@@ -1,5 +1,6 @@
-import { TestBed, inject } from '@angular/core/testing'
-import { MortalityService } from './mortality.service'
+import {TestBed, inject} from '@angular/core/testing'
+import {MortalityService} from './mortality.service'
+import {Person} from './data model classes/person'
 
 
 describe('MortalityService', () => {
@@ -35,5 +36,15 @@ describe('MortalityService', () => {
     expect(table[84]).toEqual(0)
   }))
 
+
+  //check that calculateProbabilityAlive() does math appropriately
+  it('should accurately calculate probability alive', inject([MortalityService], (service: MortalityService) => {
+    let person:Person = new Person()
+    person.initialAgeRounded = 60 //younger than 62 when filling out form, so denominator is age 62 lives
+    person.mortalityTable = service.determineMortalityTable("female", "SSA", 0)
+    let age = 80
+    expect(service.calculateProbabilityAlive(person, age))
+        .toBeCloseTo(0.6791, 4) //Lives at 62 is 90,017. Lives at 81 (i.e., end of age 80) is 61,131. 61131/90017 = 0.6791
+  }))
 
 })
