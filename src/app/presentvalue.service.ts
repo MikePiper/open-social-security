@@ -878,9 +878,7 @@ export class PresentValueService {
         personAspousalDate.setMonth(personA.actualBirthDate.getMonth()+1)
       }
       //If flexibleSpouse is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
-      let personAageToday: number = this.today.getFullYear() - personA.SSbirthDate.getFullYear() + (this.today.getMonth() - personA.SSbirthDate.getMonth()) /12
-      //TODO: could be just personA.initialAge, yeah?
-      if (personAageToday > 62){
+      if (personA.initialAge > 62){
         personAretirementDate.setMonth(this.today.getMonth())
         personAretirementDate.setFullYear(this.today.getFullYear())
         personAspousalDate.setMonth(this.today.getMonth())
@@ -982,9 +980,7 @@ maximizeCouplePVpersonAisFixed(scenario:ClaimingScenario, personAfixedRetirement
     personBspousalDate.setMonth(personA.actualBirthDate.getMonth()+1)
   }
   //If flexibleSpouse is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
-  let personBageToday: number = this.today.getFullYear() - personB.SSbirthDate.getFullYear() + (this.today.getMonth() - personB.SSbirthDate.getMonth()) /12
-  //TODO: could be just personA.initialAge, yeah?
-  if (personBageToday > 62){
+  if (personB.initialAge > 62){
     personBretirementDate.setMonth(this.today.getMonth())
     personBretirementDate.setFullYear(this.today.getFullYear())
     personBspousalDate.setMonth(this.today.getMonth())
