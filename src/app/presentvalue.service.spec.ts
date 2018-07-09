@@ -77,8 +77,8 @@ describe('PresentValueService', () => {
     personB.PIA = 1900
     personA.retirementBenefitDate = new Date (2032, 8, 1) //At age 68
     personB.retirementBenefitDate = new Date (2029, 8, 1) //At age 66 and 2 months
-    let spouseAspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
-    let spouseBspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
+    personA.spousalBenefitDate = new Date (2032, 8, 1) //Later of two retirement benefit dates
+    personB.spousalBenefitDate = new Date (2032, 8, 1) //Later of two retirement benefit dates
     personA.quitWorkDate = new Date(2018,3,1) //already quit working
     personB.quitWorkDate = new Date(2018,3,1) //already quit working
     personA.monthlyEarnings = 0
@@ -86,7 +86,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.calculateCouplePV(personA, personB, spouseAspousalBenefitDate, spouseBspousalBenefitDate, scenario))
+    expect(service.calculateCouplePV(personA, personB, scenario))
       .toBeCloseTo(578594, 0)
   }))
 
@@ -111,8 +111,8 @@ describe('PresentValueService', () => {
     personB.PIA = 1900
     personA.retirementBenefitDate = new Date (2032, 8, 1) //At age 68 (Sept 2032)
     personB.retirementBenefitDate = new Date (2029, 8, 1) //At age 66 and 2 months (Sept 2029)
-    let spouseAspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
-    let spouseBspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
+    personA.spousalBenefitDate = new Date (2032, 8, 1) //Later of two retirement benefit dates
+    personB.spousalBenefitDate = new Date (2032, 8, 1) //Later of two retirement benefit dates
     personA.quitWorkDate = new Date(2028,3,1) //planning to quit work at age 64 (April 2028)
     personB.quitWorkDate = new Date(2030,3,1) //planning to quit work at at 67 (April 2030)
     personA.monthlyEarnings = 5000
@@ -120,7 +120,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.calculateCouplePV(personA, personB, spouseAspousalBenefitDate, spouseBspousalBenefitDate, scenario))
+    expect(service.calculateCouplePV(personA, personB, scenario))
       .toBeCloseTo(580576, 0)
   }))
 
@@ -145,8 +145,8 @@ describe('PresentValueService', () => {
     personB.PIA = 1900
     personA.retirementBenefitDate = new Date (2032, 8, 1) //At age 68
     personB.retirementBenefitDate = new Date (2029, 8, 1) //At age 66 and 2 months
-    let spouseAspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
-    let spouseBspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
+    personA.spousalBenefitDate = new Date (2032, 8, 1) //Later of two retirement benefit dates
+    personB.spousalBenefitDate = new Date (2032, 8, 1) //Later of two retirement benefit dates
     personA.quitWorkDate = new Date(2018,3,1) //already quit working
     personB.quitWorkDate = new Date(2018,3,1) //already quit working
     personA.monthlyEarnings = 0
@@ -154,7 +154,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 900
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.calculateCouplePV(personA, personB, spouseAspousalBenefitDate, spouseBspousalBenefitDate, scenario))
+    expect(service.calculateCouplePV(personA, personB, scenario))
       .toBeCloseTo(531263, 0)
   }))
 
@@ -181,8 +181,8 @@ describe('PresentValueService', () => {
     personB.PIA = 1900
     personA.retirementBenefitDate = new Date (2032, 8, 1) //At age 68
     personB.retirementBenefitDate = new Date (2017, 4, 1) //ASAP at 62 and 1 month
-    let spouseAspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
-    let spouseBspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
+    personA.spousalBenefitDate = new Date (2032, 8, 1) //Later of two retirement benefit dates
+    personB.spousalBenefitDate = new Date (2032, 8, 1) //Later of two retirement benefit dates
     personA.quitWorkDate = new Date(2018,3,1) //already quit working
     personB.quitWorkDate = new Date(2018,3,1) //already quit working
     personA.monthlyEarnings = 0
@@ -190,7 +190,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 300
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.calculateCouplePV(personA, personB, spouseAspousalBenefitDate, spouseBspousalBenefitDate, scenario))
+    expect(service.calculateCouplePV(personA, personB, scenario))
       .toBeCloseTo(161095, 0)
   }))
 

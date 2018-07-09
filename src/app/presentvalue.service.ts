@@ -116,8 +116,7 @@ export class PresentValueService {
         return retirementPV
   }
 
-  calculateCouplePV(personA:Person, personB:Person,
-    spouseAspousalBenefitDate: Date, spouseBspousalBenefitDate: Date, scenario:ClaimingScenario){
+  calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario){
     
     //Adjusted claiming date variables. (Don't need adjusted survivor benefit dates, because we're assuming no early filing for survivor benefits anyway.)
     let spouseAadjustedRetirementBenefitDate: Date
@@ -171,10 +170,10 @@ export class PresentValueService {
     //Calculate monthly benefit amounts, pre-ARF
     personA.retirementBenefit = this.benefitService.calculateRetirementBenefit(personA, personA.retirementBenefitDate)
     personB.retirementBenefit = this.benefitService.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
-    personA.spousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, 0, spouseAspousalBenefitDate)
-    personA.spousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefit, spouseAspousalBenefitDate)
-    personB.spousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, 0, spouseBspousalBenefitDate)
-    personB.spousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefit, spouseBspousalBenefitDate)
+    personA.spousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, 0, personA.spousalBenefitDate)
+    personA.spousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefit, personA.spousalBenefitDate)
+    personB.spousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, 0, personB.spousalBenefitDate)
+    personB.spousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefit, personB.spousalBenefitDate)
     personA.survivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
     personA.survivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(personA, personA.retirementBenefit, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
     personB.survivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
@@ -189,7 +188,7 @@ export class PresentValueService {
         calcYear.monthsOfPersonBretirement = this.benefitService.countBenefitMonths(personB.retirementBenefitDate, calcYear.date)
 
         //Calculate number of months of spouseA spousalBenefit w/ retirementBenefit and number of months of spouseA spousalBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonAspousal = this.benefitService.countBenefitMonths(spouseAspousalBenefitDate, calcYear.date)
+        calcYear.monthsOfPersonAspousal = this.benefitService.countBenefitMonths(personA.spousalBenefitDate, calcYear.date)
         if (calcYear.monthsOfPersonAretirement >= calcYear.monthsOfPersonAspousal) {
           calcYear.monthsOfPersonAspousalWithRetirement = calcYear.monthsOfPersonAspousal
           calcYear.monthsOfPersonAspousalWithoutRetirement = 0
@@ -199,7 +198,7 @@ export class PresentValueService {
         }
 
         //Calculate number of months of spouseB spousalBenefit w/ retirementBenefit and number of months of spouseB spousalBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonBspousal = this.benefitService.countBenefitMonths(spouseBspousalBenefitDate, calcYear.date)
+        calcYear.monthsOfPersonBspousal = this.benefitService.countBenefitMonths(personB.spousalBenefitDate, calcYear.date)
         if (calcYear.monthsOfPersonBretirement >= calcYear.monthsOfPersonBspousal) {
           calcYear.monthsOfPersonBspousalWithRetirement = calcYear.monthsOfPersonBspousal
           calcYear.monthsOfPersonBspousalWithoutRetirement = 0
@@ -238,9 +237,9 @@ export class PresentValueService {
         if (personA.quitWorkDate > this.today || personB.quitWorkDate > this.today){//If quitWorkDates are invalid dates (because there was no input) or in the past for some reason, this whole business below gets skipped
           //Determine if it's a grace year for either spouse. If quitWorkDate has already happened (or happens this year) and at least one type of benefit has started (or starts this year)
             //Assumption: in the year they quit work, following months are non-service months.
-          spouseAgraceYear = this.earningsTestService.isGraceYear(spouseAhasHadGraceYear, personA.quitWorkDate, calcYear.date, personA.retirementBenefitDate, spouseAspousalBenefitDate, personA.survivorFRA)
+          spouseAgraceYear = this.earningsTestService.isGraceYear(spouseAhasHadGraceYear, personA.quitWorkDate, calcYear.date, personA.retirementBenefitDate, personA.spousalBenefitDate, personA.survivorFRA)
           if (spouseAgraceYear === true) {spouseAhasHadGraceYear = true}  
-          spouseBgraceYear = this.earningsTestService.isGraceYear(spouseBhasHadGraceYear, personB.quitWorkDate, calcYear.date, personB.retirementBenefitDate, spouseBspousalBenefitDate, personB.survivorFRA)
+          spouseBgraceYear = this.earningsTestService.isGraceYear(spouseBhasHadGraceYear, personB.quitWorkDate, calcYear.date, personB.retirementBenefitDate, personB.spousalBenefitDate, personB.survivorFRA)
           if (spouseBgraceYear === true) {spouseBhasHadGraceYear = true}  
 
             //Calculate necessary withholding based on each spouse's earnings
@@ -275,14 +274,14 @@ export class PresentValueService {
                       monthsSpouseAretirementWithheld  = monthsSpouseAretirementWithheld  + 1
                     }
                     if (scenario.maritalStatus == "married"){//Only make spouse B's benefit as a spouse available for withholding if they're currently married (as opposed to divorced). If divorced, spouseB is automatically "not working," so we don't have any withholding due to their earnings to worry about.
-                      if (earningsTestMonth >= spouseBspousalBenefitDate && earningsTestMonth >= personB.retirementBenefitDate //i.e., if this is a "spouseBspousalBenefitWithRetirementBenefit" month
+                      if (earningsTestMonth >= personB.spousalBenefitDate && earningsTestMonth >= personB.retirementBenefitDate //i.e., if this is a "spouseBspousalBenefitWithRetirementBenefit" month
                         && (spouseBgraceYear === false || earningsTestMonth < personB.quitWorkDate) //Make sure it isn't a nonservice month in grace year
                       ) {
                       availableForWithholding = availableForWithholding + personB.spousalBenefitWithRetirement
                       calcYear.monthsOfPersonBspousalWithRetirement = calcYear.monthsOfPersonBspousalWithRetirement - 1
                       monthsSpouseBspousalWithheld = monthsSpouseBspousalWithheld + 1
                       }
-                      if (earningsTestMonth >= spouseBspousalBenefitDate && earningsTestMonth < personB.retirementBenefitDate //i.e., if this is a "spouseBspousalBenefitWithoutRetirementBenefit" month
+                      if (earningsTestMonth >= personB.spousalBenefitDate && earningsTestMonth < personB.retirementBenefitDate //i.e., if this is a "spouseBspousalBenefitWithoutRetirementBenefit" month
                         && (spouseBgraceYear === false || earningsTestMonth < personB.quitWorkDate) //Make sure it isn't a nonservice month in grace year
                       ){
                       availableForWithholding = availableForWithholding + personB.spousalBenefitWithoutRetirement
@@ -310,14 +309,14 @@ export class PresentValueService {
                       calcYear.monthsOfPersonBretirement = calcYear.monthsOfPersonBretirement - 1
                       monthsSpouseBretirementWithheld  = monthsSpouseBretirementWithheld  + 1
                     }
-                    if (earningsTestMonth >= spouseAspousalBenefitDate && earningsTestMonth >= personA.retirementBenefitDate //i.e., if this is a "spouseAspousalBenefitWithRetirementBenefit" month
+                    if (earningsTestMonth >= personA.spousalBenefitDate && earningsTestMonth >= personA.retirementBenefitDate //i.e., if this is a "spouseAspousalBenefitWithRetirementBenefit" month
                       && (spouseAgraceYear === false || earningsTestMonth < personA.quitWorkDate) //Make sure it's not a nonservice month in a grace year
                     ) {
                     availableForWithholding = availableForWithholding + personA.spousalBenefitWithRetirement
                     calcYear.monthsOfPersonAspousalWithRetirement = calcYear.monthsOfPersonAspousalWithRetirement - 1
                     monthsSpouseAspousalWithheld = monthsSpouseAspousalWithheld + 1
                     }
-                    if (earningsTestMonth >= spouseAspousalBenefitDate && earningsTestMonth < personA.retirementBenefitDate //i.e., if this is a "spouseAspousalBenefitWithoutRetirementBenefit" month
+                    if (earningsTestMonth >= personA.spousalBenefitDate && earningsTestMonth < personA.retirementBenefitDate //i.e., if this is a "spouseAspousalBenefitWithoutRetirementBenefit" month
                       && (spouseAgraceYear === false || earningsTestMonth < personA.quitWorkDate) //Make sure it's not a nonservice month in a grace year
                     ){
                     availableForWithholding = availableForWithholding + personA.spousalBenefitWithoutRetirement
@@ -336,7 +335,7 @@ export class PresentValueService {
                   while (withholdingDueToSpouseAearnings > 0 && earningsTestMonth <= earningsTestEndDate) {
                     availableForWithholding = 0
                     //Check if there is a spouseAspousal benefit this month (Always "spousalBenefitWithRetirement" because without retirement requires a restricted app. And spouseA is by definition younger than FRA here, otherwise there are no excess earnings.)
-                    if (earningsTestMonth >= spouseAspousalBenefitDate && earningsTestMonth >= personA.retirementBenefitDate
+                    if (earningsTestMonth >= personA.spousalBenefitDate && earningsTestMonth >= personA.retirementBenefitDate
                       && (spouseAgraceYear === false || earningsTestMonth < personA.quitWorkDate) //Make sure it's not a nonservice month in a grace year
                       && (earningsTestMonth < personA.FRA) //Make sure current month is prior to FRA
                     ) {
@@ -355,7 +354,7 @@ export class PresentValueService {
                   while (withholdingDueToSpouseBearnings > 0 && earningsTestMonth <= earningsTestEndDate) {
                     availableForWithholding = 0
                     //Check if there is a spouseBspousal benefit this month (Always "spousalBenefitWithRetirement" because without retirement requires a restricted app. And spouseB is by definition younger than FRA here, otherwise there are no excess earnings.)
-                    if (earningsTestMonth >= spouseBspousalBenefitDate && earningsTestMonth >= personB.retirementBenefitDate
+                    if (earningsTestMonth >= personB.spousalBenefitDate && earningsTestMonth >= personB.retirementBenefitDate
                       && (spouseBgraceYear === false || personB.quitWorkDate > earningsTestMonth) //Make sure it's not a nonservice month in a grace year
                       && (earningsTestMonth < personB.FRA) //Make sure current month is prior to FRA
                     ) {
@@ -372,16 +371,16 @@ export class PresentValueService {
             //Find post-ARF ("AdjustmentReductionFactor") monthly benefit amounts, for use at/after FRA
               //Find adjusted dates
               spouseAadjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate.getFullYear(), personA.retirementBenefitDate.getMonth()+monthsSpouseAretirementWithheld, 1)
-              spouseAadjustedSpousalBenefitDate = new Date(spouseAspousalBenefitDate.getFullYear(), spouseAspousalBenefitDate.getMonth()+monthsSpouseAspousalWithheld , 1)
+              spouseAadjustedSpousalBenefitDate = new Date(personA.spousalBenefitDate.getFullYear(), personA.spousalBenefitDate.getMonth()+monthsSpouseAspousalWithheld , 1)
               spouseBadjustedRetirementBenefitDate = new Date(personB.retirementBenefitDate.getFullYear(), personB.retirementBenefitDate.getMonth()+monthsSpouseBretirementWithheld, 1)
-              spouseBadjustedSpousalBenefitDate = new Date(spouseBspousalBenefitDate.getFullYear(), spouseBspousalBenefitDate.getMonth()+monthsSpouseBspousalWithheld , 1)
+              spouseBadjustedSpousalBenefitDate = new Date(personB.spousalBenefitDate.getFullYear(), personB.spousalBenefitDate.getMonth()+monthsSpouseBspousalWithheld , 1)
               //Find adjusted retirement benefits
               personA.retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(personA, spouseAadjustedRetirementBenefitDate)
               personB.retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(personB, spouseBadjustedRetirementBenefitDate)
               //Find adjusted spousal benefits
               personA.spousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefitAfterARF, spouseAadjustedSpousalBenefitDate)
               personA.spousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, 0, spouseAadjustedSpousalBenefitDate)
-              personB.spousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefitAfterARF, spouseBspousalBenefitDate)
+              personB.spousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefitAfterARF, personB.spousalBenefitDate)
               personB.spousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, 0, spouseBadjustedSpousalBenefitDate)
               //Find adjusted survivor benefits
               personA.survivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personA, personA.retirementBenefitAfterARF, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
@@ -512,13 +511,13 @@ export class PresentValueService {
 
     //find initial test dates for spouseA (first month for which spouseA is considered 62 for entire month)
     personA.retirementBenefitDate = new Date(personA.SSbirthDate.getFullYear()+62, 1, 1)
-    let spouseAspousalDate = new Date(personA.SSbirthDate.getFullYear()+62, 1, 1)
+    personA.spousalBenefitDate = new Date(personA.SSbirthDate.getFullYear()+62, 1, 1)
     if (personA.actualBirthDate.getDate() <= 2){
       personA.retirementBenefitDate.setMonth(personA.actualBirthDate.getMonth())
-      spouseAspousalDate.setMonth(personA.actualBirthDate.getMonth())
+      personA.spousalBenefitDate.setMonth(personA.actualBirthDate.getMonth())
     } else {
       personA.retirementBenefitDate.setMonth(personA.actualBirthDate.getMonth()+1)
-      spouseAspousalDate.setMonth(personA.actualBirthDate.getMonth()+1)
+      personA.spousalBenefitDate.setMonth(personA.actualBirthDate.getMonth()+1)
     }
     //If spouseA is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
     let today = new Date()
@@ -526,38 +525,38 @@ export class PresentValueService {
     if (spouseAageToday > 62){
       personA.retirementBenefitDate.setMonth(today.getMonth())
       personA.retirementBenefitDate.setFullYear(today.getFullYear())
-      spouseAspousalDate.setMonth(today.getMonth())
-      spouseAspousalDate.setFullYear(today.getFullYear())
+      personA.spousalBenefitDate.setMonth(today.getMonth())
+      personA.spousalBenefitDate.setFullYear(today.getFullYear())
     }
     //Do all of the same, but for spouseB.
     personB.retirementBenefitDate = new Date(personB.SSbirthDate.getFullYear()+62, 1, 1)
-    let spouseBspousalDate = new Date(personB.SSbirthDate.getFullYear()+62, 1, 1)
+    personB.spousalBenefitDate = new Date(personB.SSbirthDate.getFullYear()+62, 1, 1)
     if (personB.actualBirthDate.getDate() <= 2){
       personB.retirementBenefitDate.setMonth(personB.actualBirthDate.getMonth())
-      spouseBspousalDate.setMonth(personB.actualBirthDate.getMonth())
+      personB.spousalBenefitDate.setMonth(personB.actualBirthDate.getMonth())
     } else {
       personB.retirementBenefitDate.setMonth(personB.actualBirthDate.getMonth()+1)
-      spouseBspousalDate.setMonth(personB.actualBirthDate.getMonth()+1)
+      personB.spousalBenefitDate.setMonth(personB.actualBirthDate.getMonth()+1)
     }
     let spouseBageToday: number = today.getFullYear() - personB.SSbirthDate.getFullYear() + (today.getMonth() - personB.SSbirthDate.getMonth()) /12
     if (spouseBageToday > 62){
       personB.retirementBenefitDate.setMonth(today.getMonth())
       personB.retirementBenefitDate.setFullYear(today.getFullYear())
-      spouseBspousalDate.setMonth(today.getMonth())
-      spouseBspousalDate.setFullYear(today.getFullYear())
+      personB.spousalBenefitDate.setMonth(today.getMonth())
+      personB.spousalBenefitDate.setFullYear(today.getFullYear())
     }
     //Check to see if spouseA's current spousalDate is prior to spouseB's earliest retirementDate. If so, adjust.
-    if (spouseAspousalDate < personB.retirementBenefitDate){
-      spouseAspousalDate.setFullYear(personB.retirementBenefitDate.getFullYear())
-      spouseAspousalDate.setMonth(personB.retirementBenefitDate.getMonth())
+    if (personA.spousalBenefitDate < personB.retirementBenefitDate){
+      personA.spousalBenefitDate.setFullYear(personB.retirementBenefitDate.getFullYear())
+      personA.spousalBenefitDate.setMonth(personB.retirementBenefitDate.getMonth())
     }
 
     //Initialize savedPV as zero. Set spouseAsavedDate and spouseBsavedDate equal to their current testDates.
       let savedPV: number = 0
       let spouseAsavedRetirementDate = new Date(personA.retirementBenefitDate)
       let spouseBsavedRetirementDate = new Date(personB.retirementBenefitDate)
-      let spouseAsavedSpousalDate = new Date(spouseAspousalDate)
-      let spouseBsavedSpousalDate = new Date(spouseBspousalDate)
+      let spouseAsavedSpousalDate = new Date(personA.spousalBenefitDate)
+      let spouseBsavedSpousalDate = new Date(personB.spousalBenefitDate)
 
     //Set endingTestDate for each spouse equal to the month they turn 70
     let spouseAendTestDate = new Date(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth(), 1)
@@ -568,61 +567,61 @@ export class PresentValueService {
         if (spouseBageToday > 62){
           personB.retirementBenefitDate.setMonth(today.getMonth())
           personB.retirementBenefitDate.setFullYear(today.getFullYear())
-          spouseBspousalDate.setMonth(today.getMonth())
-          spouseBspousalDate.setFullYear(today.getFullYear())
+          personB.spousalBenefitDate.setMonth(today.getMonth())
+          personB.spousalBenefitDate.setFullYear(today.getFullYear())
         } else {
             personB.retirementBenefitDate.setFullYear(personB.SSbirthDate.getFullYear()+62)
-            spouseBspousalDate.setFullYear(personB.SSbirthDate.getFullYear()+62)
+            personB.spousalBenefitDate.setFullYear(personB.SSbirthDate.getFullYear()+62)
             if (personB.actualBirthDate.getDate() <= 2){
               personB.retirementBenefitDate.setMonth(personB.actualBirthDate.getMonth())
-              spouseBspousalDate.setMonth(personB.actualBirthDate.getMonth())
+              personB.spousalBenefitDate.setMonth(personB.actualBirthDate.getMonth())
             } else {
               personB.retirementBenefitDate.setMonth(personB.actualBirthDate.getMonth()+1)
-              spouseBspousalDate.setMonth(personB.actualBirthDate.getMonth()+1)
+              personB.spousalBenefitDate.setMonth(personB.actualBirthDate.getMonth()+1)
             }
         }
-        if (spouseBspousalDate < personA.retirementBenefitDate) {
-          spouseBspousalDate.setMonth(personA.retirementBenefitDate.getMonth())
-          spouseBspousalDate.setFullYear(personA.retirementBenefitDate.getFullYear())
+        if (personB.spousalBenefitDate < personA.retirementBenefitDate) {
+          personB.spousalBenefitDate.setMonth(personA.retirementBenefitDate.getMonth())
+          personB.spousalBenefitDate.setFullYear(personA.retirementBenefitDate.getFullYear())
         }
 
           //After spouse B's retirement testdate has been reset, reset spouseA's spousal date as necessary
             //If spouseA has new deemed filing rules, set spouseA spousalDate to later of spouseA retirementDate or spouseB retirementDate
             if (personA.actualBirthDate > deemedFilingCutoff) {
               if (personA.retirementBenefitDate > personB.retirementBenefitDate) {
-                spouseAspousalDate.setMonth(personA.retirementBenefitDate.getMonth())
-                spouseAspousalDate.setFullYear(personA.retirementBenefitDate.getFullYear())
+                personA.spousalBenefitDate.setMonth(personA.retirementBenefitDate.getMonth())
+                personA.spousalBenefitDate.setFullYear(personA.retirementBenefitDate.getFullYear())
               } else {
-                spouseAspousalDate.setMonth(personB.retirementBenefitDate.getMonth())
-                spouseAspousalDate.setFullYear(personB.retirementBenefitDate.getFullYear())
+                personA.spousalBenefitDate.setMonth(personB.retirementBenefitDate.getMonth())
+                personA.spousalBenefitDate.setFullYear(personB.retirementBenefitDate.getFullYear())
               }
             }
             else {//i.e., if spouseA has old deemed filing rules
               if (personA.retirementBenefitDate < personA.FRA) {
                 //Set spouseA spousal testdate to later of spouseA retirementDate or spouseB retirementDate
                 if (personA.retirementBenefitDate > personB.retirementBenefitDate) {
-                  spouseAspousalDate.setMonth(personA.retirementBenefitDate.getMonth())
-                  spouseAspousalDate.setFullYear(personA.retirementBenefitDate.getFullYear())
+                  personA.spousalBenefitDate.setMonth(personA.retirementBenefitDate.getMonth())
+                  personA.spousalBenefitDate.setFullYear(personA.retirementBenefitDate.getFullYear())
                 } else {
-                  spouseAspousalDate.setMonth(personB.retirementBenefitDate.getMonth())
-                  spouseAspousalDate.setFullYear(personB.retirementBenefitDate.getFullYear())
+                  personA.spousalBenefitDate.setMonth(personB.retirementBenefitDate.getMonth())
+                  personA.spousalBenefitDate.setFullYear(personB.retirementBenefitDate.getFullYear())
                 }
               }
               else {//i.e., if spouseAretirementDate currently after spouseAFRA
                 //Set spouseA spousalDate to earliest possible restricted application date (later of FRA or spouse B's retirementDate)
                 if (personA.FRA > personB.retirementBenefitDate) {
-                  spouseAspousalDate.setMonth(personA.FRA.getMonth())
-                  spouseAspousalDate.setFullYear(personA.FRA.getFullYear())
+                  personA.spousalBenefitDate.setMonth(personA.FRA.getMonth())
+                  personA.spousalBenefitDate.setFullYear(personA.FRA.getFullYear())
                 } else {
-                  spouseAspousalDate.setMonth(personB.retirementBenefitDate.getMonth())
-                  spouseAspousalDate.setFullYear(personB.retirementBenefitDate.getFullYear())
+                  personA.spousalBenefitDate.setMonth(personB.retirementBenefitDate.getMonth())
+                  personA.spousalBenefitDate.setFullYear(personB.retirementBenefitDate.getFullYear())
                 }
               }
             }
 
         while (personB.retirementBenefitDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(personA, personB, spouseAspousalDate, spouseBspousalDate, scenario)
+            let currentTestPV: number = this.calculateCouplePV(personA, personB, scenario)
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTestPV >= savedPV) {
               savedPV = currentTestPV
@@ -630,18 +629,18 @@ export class PresentValueService {
               spouseAsavedRetirementDate.setFullYear(personA.retirementBenefitDate.getFullYear())
               spouseBsavedRetirementDate.setMonth(personB.retirementBenefitDate.getMonth())
               spouseBsavedRetirementDate.setFullYear(personB.retirementBenefitDate.getFullYear())
-              spouseAsavedSpousalDate.setMonth(spouseAspousalDate.getMonth())
-              spouseAsavedSpousalDate.setFullYear(spouseAspousalDate.getFullYear())
-              spouseBsavedSpousalDate.setMonth(spouseBspousalDate.getMonth())
-              spouseBsavedSpousalDate.setFullYear(spouseBspousalDate.getFullYear())
+              spouseAsavedSpousalDate.setMonth(personA.spousalBenefitDate.getMonth())
+              spouseAsavedSpousalDate.setFullYear(personA.spousalBenefitDate.getFullYear())
+              spouseBsavedSpousalDate.setMonth(personB.spousalBenefitDate.getMonth())
+              spouseBsavedSpousalDate.setFullYear(personB.spousalBenefitDate.getFullYear())
               }
 
           //Find next possible claiming combination for spouseB
             //if spouseB has new deemed filing rules, increment both dates by 1. (But don't increment spousalDate if it's currently set later than retirementDate.)
               //No need to check here if spousal is too early, because at start of this loop it was set to earliest possible.
             if (personB.actualBirthDate > deemedFilingCutoff) {
-              if (spouseBspousalDate <= personB.retirementBenefitDate) {
-                spouseBspousalDate.setMonth(spouseBspousalDate.getMonth()+1)
+              if (personB.spousalBenefitDate <= personB.retirementBenefitDate) {
+                personB.spousalBenefitDate.setMonth(personB.spousalBenefitDate.getMonth()+1)
               }
               personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
             }
@@ -649,8 +648,8 @@ export class PresentValueService {
             else {//i.e., if spouseB has old deemed filing rules
               //if spouseBretirementDate < FRA, increment both test dates by 1. (Don't increment spousalDate though if it is currently set later than retirementDate.)
               if (personB.retirementBenefitDate < personB.FRA) {
-                if (spouseBspousalDate <= personB.retirementBenefitDate) {
-                  spouseBspousalDate.setMonth(spouseBspousalDate.getMonth()+1)
+                if (personB.spousalBenefitDate <= personB.retirementBenefitDate) {
+                  personB.spousalBenefitDate.setMonth(personB.spousalBenefitDate.getMonth()+1)
                 }
                 personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
                 //No need to check here if spousal is too early, because at start of this loop it was set to earliest possible.
@@ -659,11 +658,11 @@ export class PresentValueService {
                 //Increment retirement testdate by 1 and set spousal date to earliest possible restricted application date (later of FRA or other spouse's retirementtestdate)
                 personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
                 if (personA.retirementBenefitDate > personB.FRA) {
-                  spouseBspousalDate.setMonth(personA.retirementBenefitDate.getMonth())
-                  spouseBspousalDate.setFullYear(personA.retirementBenefitDate.getFullYear())
+                  personB.spousalBenefitDate.setMonth(personA.retirementBenefitDate.getMonth())
+                  personB.spousalBenefitDate.setFullYear(personA.retirementBenefitDate.getFullYear())
                 } else {
-                  spouseBspousalDate.setMonth(personB.FRA.getMonth())
-                  spouseBspousalDate.setFullYear(personB.FRA.getFullYear())
+                  personB.spousalBenefitDate.setMonth(personB.FRA.getMonth())
+                  personB.spousalBenefitDate.setFullYear(personB.FRA.getFullYear())
                 }
               }
 
@@ -672,32 +671,32 @@ export class PresentValueService {
             //If spouseA has new deemed filing rules, set spouseA spousalDate to later of spouseA retirementDate or spouseB retirementDate
               if (personA.actualBirthDate > deemedFilingCutoff) {
                 if (personA.retirementBenefitDate > personB.retirementBenefitDate) {
-                  spouseAspousalDate.setMonth(personA.retirementBenefitDate.getMonth())
-                  spouseAspousalDate.setFullYear(personA.retirementBenefitDate.getFullYear())
+                  personA.spousalBenefitDate.setMonth(personA.retirementBenefitDate.getMonth())
+                  personA.spousalBenefitDate.setFullYear(personA.retirementBenefitDate.getFullYear())
                 } else {
-                  spouseAspousalDate.setMonth(personB.retirementBenefitDate.getMonth())
-                  spouseAspousalDate.setFullYear(personB.retirementBenefitDate.getFullYear())
+                  personA.spousalBenefitDate.setMonth(personB.retirementBenefitDate.getMonth())
+                  personA.spousalBenefitDate.setFullYear(personB.retirementBenefitDate.getFullYear())
                 }
               }
               else {//i.e., if spouseA has old deemed filing rules
                 if (personA.retirementBenefitDate < personA.FRA) {
                   //Set spouseA spousal testdate to later of spouseA retirementDate or spouseB retirementDate
                   if (personA.retirementBenefitDate > personB.retirementBenefitDate) {
-                    spouseAspousalDate.setMonth(personA.retirementBenefitDate.getMonth())
-                    spouseAspousalDate.setFullYear(personA.retirementBenefitDate.getFullYear())
+                    personA.spousalBenefitDate.setMonth(personA.retirementBenefitDate.getMonth())
+                    personA.spousalBenefitDate.setFullYear(personA.retirementBenefitDate.getFullYear())
                   } else {
-                    spouseAspousalDate.setMonth(personB.retirementBenefitDate.getMonth())
-                    spouseAspousalDate.setFullYear(personB.retirementBenefitDate.getFullYear())
+                    personA.spousalBenefitDate.setMonth(personB.retirementBenefitDate.getMonth())
+                    personA.spousalBenefitDate.setFullYear(personB.retirementBenefitDate.getFullYear())
                   }
                 }
                 else {//i.e., if spouseAretirementDate currently after spouseAFRA
                   //Set spouseA spousalDate to earliest possible restricted application date (later of FRA or spouse B's retirementDate)
                   if (personA.FRA > personB.retirementBenefitDate) {
-                    spouseAspousalDate.setMonth(personA.FRA.getMonth())
-                    spouseAspousalDate.setFullYear(personA.FRA.getFullYear())
+                    personA.spousalBenefitDate.setMonth(personA.FRA.getMonth())
+                    personA.spousalBenefitDate.setFullYear(personA.FRA.getFullYear())
                   } else {
-                    spouseAspousalDate.setMonth(personB.retirementBenefitDate.getMonth())
-                    spouseAspousalDate.setFullYear(personB.retirementBenefitDate.getFullYear())
+                    personA.spousalBenefitDate.setMonth(personB.retirementBenefitDate.getMonth())
+                    personA.spousalBenefitDate.setFullYear(personB.retirementBenefitDate.getFullYear())
                   }
                 }
               }
@@ -728,20 +727,20 @@ export class PresentValueService {
 
       //find initial test dates for flexibleSpouse (first month for which flexibleSpouse is considered 62 for entire month)
       personA.retirementBenefitDate = new Date(personA.SSbirthDate.getFullYear()+62, 1, 1)
-      let personAspousalDate = new Date(personA.SSbirthDate.getFullYear()+62, 1, 1)
+      personA.spousalBenefitDate = new Date(personA.SSbirthDate.getFullYear()+62, 1, 1)
       if (personA.actualBirthDate.getDate() <= 2){
         personA.retirementBenefitDate.setMonth(personA.actualBirthDate.getMonth())
-        personAspousalDate.setMonth(personA.actualBirthDate.getMonth())
+        personA.spousalBenefitDate.setMonth(personA.actualBirthDate.getMonth())
       } else {
         personA.retirementBenefitDate.setMonth(personA.actualBirthDate.getMonth()+1)
-        personAspousalDate.setMonth(personA.actualBirthDate.getMonth()+1)
+        personA.spousalBenefitDate.setMonth(personA.actualBirthDate.getMonth()+1)
       }
       //If flexibleSpouse is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
       if (personA.initialAge > 62){
         personA.retirementBenefitDate.setMonth(this.today.getMonth())
         personA.retirementBenefitDate.setFullYear(this.today.getFullYear())
-        personAspousalDate.setMonth(this.today.getMonth())
-        personAspousalDate.setFullYear(this.today.getFullYear())
+        personA.spousalBenefitDate.setMonth(this.today.getMonth())
+        personA.spousalBenefitDate.setFullYear(this.today.getFullYear())
       }
 
       //Don't let flexibleSpouseSpousalDate be earlier than first month for which fixedSpouse is 62 for whole month.
@@ -752,15 +751,15 @@ export class PresentValueService {
       } else {
         personB62Date.setMonth(personB.actualBirthDate.getMonth()+1)
       }
-      if (personAspousalDate < personB62Date) {
-        personAspousalDate.setFullYear(personB62Date.getFullYear())
-        personAspousalDate.setMonth(personB62Date.getMonth())
+      if (personA.spousalBenefitDate < personB62Date) {
+        personA.spousalBenefitDate.setFullYear(personB62Date.getFullYear())
+        personA.spousalBenefitDate.setMonth(personB62Date.getMonth())
       }
 
       //Initialize savedPV as zero. Set saved dates equal to their current testDates.
       let savedPV: number = 0
       let personAsavedRetirementDate = new Date(personA.retirementBenefitDate)
-      let personAsavedSpousalDate = new Date(personAspousalDate)
+      let personAsavedSpousalDate = new Date(personA.spousalBenefitDate)
 
       //Set endTestDate equal to the month flexibleSpouse turns 70
       let endTestDate = new Date(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth(), 1)
@@ -768,44 +767,44 @@ export class PresentValueService {
       //In theory: set fixed spouse's spousalDate equal to later of their own retirement benefit date or flexible spouse's retirement benefit date
           //In actuality: set it equal to flexible spouse's retirement benefit date, because that's always the later of the two (since fixed has already filed) 
           //For divorcee this date won't matter at all, since annual PV is ultimately set to zero for spouse b's spousal benefit, but PV calc will require it.
-      let personBspousalDate: Date = new Date(personA.retirementBenefitDate)
-      let personBsavedSpousalDate: Date = new Date(personBspousalDate)            
+      personB.spousalBenefitDate = new Date(personA.retirementBenefitDate)
+      let personBsavedSpousalDate: Date = new Date(personB.spousalBenefitDate)            
 
       while (personA.retirementBenefitDate <= endTestDate) {
         //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
-        let currentTestPV: number = this.calculateCouplePV(personA, personB, personAspousalDate, personBspousalDate, scenario)
+        let currentTestPV: number = this.calculateCouplePV(personA, personB, scenario)
 
         //If PV is greater than or equal to saved PV, save new PV and save new testDates
         if (currentTestPV >= savedPV) {
           savedPV = currentTestPV
           personAsavedRetirementDate.setMonth(personA.retirementBenefitDate.getMonth())
           personAsavedRetirementDate.setFullYear(personA.retirementBenefitDate.getFullYear())
-          personAsavedSpousalDate.setMonth(personAspousalDate.getMonth())
-          personAsavedSpousalDate.setFullYear(personAspousalDate.getFullYear())
-          personBsavedSpousalDate.setMonth(personBspousalDate.getMonth())
-          personBsavedSpousalDate.setFullYear(personBspousalDate.getFullYear())
+          personAsavedSpousalDate.setMonth(personA.spousalBenefitDate.getMonth())
+          personAsavedSpousalDate.setFullYear(personA.spousalBenefitDate.getFullYear())
+          personBsavedSpousalDate.setMonth(personB.spousalBenefitDate.getMonth())
+          personBsavedSpousalDate.setFullYear(personB.spousalBenefitDate.getFullYear())
           }
         
         //Increment flexibleSpouse's dates (and fixedSpouse's spousal date, since it is just set to be same as flexible spouse's retirement date)
           //if new deemed filing rules, increment flexibleSpouse's retirement and spousal by 1 month
           if (personA.actualBirthDate > deemedFilingCutoff) {
             personA.retirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+1)
-            personBspousalDate.setMonth(personBspousalDate.getMonth()+1)
-            if (personAspousalDate <= personA.retirementBenefitDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
-              personAspousalDate.setMonth(personAspousalDate.getMonth()+1)
+            personB.spousalBenefitDate.setMonth(personB.spousalBenefitDate.getMonth()+1)
+            if (personA.spousalBenefitDate <= personA.retirementBenefitDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
+              personA.spousalBenefitDate.setMonth(personA.spousalBenefitDate.getMonth()+1)
             }
           } else { //i.e., if old deemed filling rules apply
             //If current retirement test date younger than FRA, increment flexibleSpouse's retirement and spousal by 1 month
             if (personA.retirementBenefitDate < personA.FRA) {
               personA.retirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+1)
-              personBspousalDate.setMonth(personBspousalDate.getMonth()+1)
-              if (personAspousalDate <= personA.retirementBenefitDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
-              personAspousalDate.setMonth(personAspousalDate.getMonth()+1)
+              personB.spousalBenefitDate.setMonth(personB.spousalBenefitDate.getMonth()+1)
+              if (personA.spousalBenefitDate <= personA.retirementBenefitDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
+              personA.spousalBenefitDate.setMonth(personA.spousalBenefitDate.getMonth()+1)
               }
             }
             else {//If current retirement test date beyond FRA, increment flexibleSpouse's retirement by 1 month and keep flexibleSpouse's spousal where it is (at FRA, unless they're older than FRA when filling form)
               personA.retirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+1)
-              personBspousalDate.setMonth(personBspousalDate.getMonth()+1)
+              personB.spousalBenefitDate.setMonth(personB.spousalBenefitDate.getMonth()+1)
             }
           }
 
@@ -830,20 +829,20 @@ maximizeCouplePVpersonAisFixed(scenario:ClaimingScenario, personAfixedRetirement
 
   //find initial test dates for flexibleSpouse (first month for which flexibleSpouse is considered 62 for entire month)
   personB.retirementBenefitDate = new Date(personB.SSbirthDate.getFullYear()+62, 1, 1)
-  let personBspousalDate = new Date(personB.SSbirthDate.getFullYear()+62, 1, 1)
+  personB.spousalBenefitDate = new Date(personB.SSbirthDate.getFullYear()+62, 1, 1)
   if (personB.actualBirthDate.getDate() <= 2){
     personB.retirementBenefitDate.setMonth(personB.actualBirthDate.getMonth())
-    personBspousalDate.setMonth(personB.actualBirthDate.getMonth())
+    personB.spousalBenefitDate.setMonth(personB.actualBirthDate.getMonth())
   } else {
     personB.retirementBenefitDate.setMonth(personB.actualBirthDate.getMonth()+1)
-    personBspousalDate.setMonth(personA.actualBirthDate.getMonth()+1)
+    personB.spousalBenefitDate.setMonth(personA.actualBirthDate.getMonth()+1)
   }
   //If flexibleSpouse is currently over age 62 when filling out form, adjust their initial test dates to today's month/year instead of their age 62 month/year.
   if (personB.initialAge > 62){
     personB.retirementBenefitDate.setMonth(this.today.getMonth())
     personB.retirementBenefitDate.setFullYear(this.today.getFullYear())
-    personBspousalDate.setMonth(this.today.getMonth())
-    personBspousalDate.setFullYear(this.today.getFullYear())
+    personB.spousalBenefitDate.setMonth(this.today.getMonth())
+    personB.spousalBenefitDate.setFullYear(this.today.getFullYear())
   }
 
   //Don't let flexibleSpouseSpousalDate be earlier than first month for which fixedSpouse is 62 for whole month.
@@ -854,59 +853,59 @@ maximizeCouplePVpersonAisFixed(scenario:ClaimingScenario, personAfixedRetirement
   } else {
     personA62Date.setMonth(personA.actualBirthDate.getMonth()+1)
   }
-  if (personBspousalDate < personA62Date) {
-    personBspousalDate.setFullYear(personA62Date.getFullYear())
-    personBspousalDate.setMonth(personA62Date.getMonth())
+  if (personB.spousalBenefitDate < personA62Date) {
+    personB.spousalBenefitDate.setFullYear(personA62Date.getFullYear())
+    personB.spousalBenefitDate.setMonth(personA62Date.getMonth())
   }
 
   //Initialize savedPV as zero. Set saved dates equal to their current testDates.
   let savedPV: number = 0
   let personBsavedRetirementDate = new Date(personB.retirementBenefitDate)
-  let personBsavedSpousalDate = new Date(personBspousalDate)
+  let personBsavedSpousalDate = new Date(personB.spousalBenefitDate)
 
   //Set endTestDate equal to the month flexibleSpouse turns 70
   let endTestDate = new Date(personB.SSbirthDate.getFullYear()+70, personB.SSbirthDate.getMonth(), 1)
 
   //In theory: set fixed spouse's spousalDate equal to later of their own retirement benefit date or flexible spouse's retirement benefit date
       //In actuality: set it equal to flexible spouse's retirement benefit date, because that's always the later of the two (since fixed has already filed) 
-  let personAspousalDate: Date = new Date(personB.retirementBenefitDate)
-  let personAsavedSpousalDate: Date = new Date(personAspousalDate)            
+  personA.spousalBenefitDate = new Date(personB.retirementBenefitDate)
+  let personAsavedSpousalDate: Date = new Date(personA.spousalBenefitDate)            
 
   while (personB.retirementBenefitDate <= endTestDate) {
     //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
-    let currentTestPV: number = this.calculateCouplePV(personB, personA, personBspousalDate, personAspousalDate, scenario)
+    let currentTestPV: number = this.calculateCouplePV(personB, personA, scenario)
 
     //If PV is greater than or equal to saved PV, save new PV and save new testDates
     if (currentTestPV >= savedPV) {
       savedPV = currentTestPV
       personBsavedRetirementDate.setMonth(personB.retirementBenefitDate.getMonth())
       personBsavedRetirementDate.setFullYear(personB.retirementBenefitDate.getFullYear())
-      personBsavedSpousalDate.setMonth(personBspousalDate.getMonth())
-      personBsavedSpousalDate.setFullYear(personBspousalDate.getFullYear())
-      personAsavedSpousalDate.setMonth(personAspousalDate.getMonth())
-      personAsavedSpousalDate.setFullYear(personAspousalDate.getFullYear())
+      personBsavedSpousalDate.setMonth(personB.spousalBenefitDate.getMonth())
+      personBsavedSpousalDate.setFullYear(personB.spousalBenefitDate.getFullYear())
+      personAsavedSpousalDate.setMonth(personA.spousalBenefitDate.getMonth())
+      personAsavedSpousalDate.setFullYear(personA.spousalBenefitDate.getFullYear())
       }
     
     //Increment flexibleSpouse's dates (and fixedSpouse's spousal date, since it is just set to be same as flexible spouse's retirement date)
       //if new deemed filing rules, increment flexibleSpouse's retirement and spousal by 1 month
       if (personB.actualBirthDate > deemedFilingCutoff) {
         personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
-        personAspousalDate.setMonth(personAspousalDate.getMonth()+1)
-        if (personBspousalDate <= personB.retirementBenefitDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
-          personBspousalDate.setMonth(personBspousalDate.getMonth()+1)
+        personA.spousalBenefitDate.setMonth(personA.spousalBenefitDate.getMonth()+1)
+        if (personB.spousalBenefitDate <= personB.retirementBenefitDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
+          personB.spousalBenefitDate.setMonth(personB.spousalBenefitDate.getMonth()+1)
         }
       } else { //i.e., if old deemed filling rules apply
         //If current retirement test date younger than FRA, increment flexibleSpouse's retirement and spousal by 1 month
         if (personB.retirementBenefitDate < personB.FRA) {
           personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
-          personAspousalDate.setMonth(personAspousalDate.getMonth()+1)
-          if (personBspousalDate <= personB.retirementBenefitDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
-          personBspousalDate.setMonth(personBspousalDate.getMonth()+1)
+          personA.spousalBenefitDate.setMonth(personA.spousalBenefitDate.getMonth()+1)
+          if (personB.spousalBenefitDate <= personB.retirementBenefitDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
+          personB.spousalBenefitDate.setMonth(personB.spousalBenefitDate.getMonth()+1)
           }
         }
         else {//If current retirement test date beyond FRA, increment flexibleSpouse's retirement by 1 month and keep flexibleSpouse's spousal where it is (at FRA, unless they're older than FRA when filling form)
           personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
-          personAspousalDate.setMonth(personAspousalDate.getMonth()+1)
+          personA.spousalBenefitDate.setMonth(personA.spousalBenefitDate.getMonth()+1)
         }
       }
 

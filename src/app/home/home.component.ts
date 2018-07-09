@@ -100,12 +100,10 @@ export class HomeComponent implements OnInit {
   customSpouseAretirementBenefitYear: number
   customSpouseAspousalBenefitMonth: number
   customSpouseAspousalBenefitYear: number
-  customSpouseAspousalBenefitDate: Date
   customSpouseBretirementBenefitMonth: number
   customSpouseBretirementBenefitYear: number
   customSpouseBspousalBenefitMonth: number
   customSpouseBspousalBenefitYear: number
-  customSpouseBspousalBenefitDate: Date
   spouseAdeclineSpousal: boolean = false
   spouseBdeclineSpousal: boolean = false
 
@@ -170,27 +168,27 @@ export class HomeComponent implements OnInit {
 
     //Reset input benefit dates, then get from user input
     this.personA.retirementBenefitDate = null
-    this.customSpouseAspousalBenefitDate = null
+    this.personA.spousalBenefitDate = null
     this.personB.retirementBenefitDate = null
-    this.customSpouseBspousalBenefitDate = null
+    this.personB.spousalBenefitDate = null
     this.spouseAfixedRetirementBenefitDate = new Date(this.spouseAfixedRetirementBenefitYear, this.spouseAfixedRetirementBenefitMonth-1, 1)
     this.spouseBfixedRetirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitYear, this.spouseBfixedRetirementBenefitMonth-1, 1)
 
     this.personA.retirementBenefitDate = new Date(this.customSpouseAretirementBenefitYear, this.customSpouseAretirementBenefitMonth-1, 1)
         //If spouse A has already filed, there will be no input regarding their retirement date in custom dates form, so go get "fixed" date from above
         if (this.scenario.personAhasFiled === true) {this.personA.retirementBenefitDate = new Date(this.spouseAfixedRetirementBenefitDate)}
-    this.customSpouseAspousalBenefitDate = new Date(this.customSpouseAspousalBenefitYear, this.customSpouseAspousalBenefitMonth-1, 1)
+    this.personA.spousalBenefitDate = new Date(this.customSpouseAspousalBenefitYear, this.customSpouseAspousalBenefitMonth-1, 1)
     this.personB.retirementBenefitDate = new Date(this.customSpouseBretirementBenefitYear, this.customSpouseBretirementBenefitMonth-1, 1)
-        //If spouse B has already filed, there will be no input regarding their retirement date in custom dates form, so go get "fixed" date from above
-        if (this.scenario.personBhasFiled === true) {this.personB.retirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitDate)}
-    this.customSpouseBspousalBenefitDate = new Date(this.customSpouseBspousalBenefitYear, this.customSpouseBspousalBenefitMonth-1, 1)
+        //If spouse B has already filed (or if divorce scenario), there will be no input regarding their retirement date in custom dates form, so go get "fixed" date from above
+        if (this.scenario.personBhasFiled === true || this.scenario.maritalStatus === "divorced") {this.personB.retirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitDate)}
+    this.personB.spousalBenefitDate = new Date(this.customSpouseBspousalBenefitYear, this.customSpouseBspousalBenefitMonth-1, 1)
 
 
     //Check for errors in input dates
     this.customSpouseAretirementDateError = this.checkValidRetirementInputs(this.personA, this.personA.retirementBenefitDate)
     this.customSpouseBretirementDateError = this.checkValidRetirementInputs(this.personB, this.personB.retirementBenefitDate)
-    this.customSpouseAspousalDateError = this.checkValidSpousalInputs(this.personA, this.personB, this.personA.retirementBenefitDate, this.customSpouseAspousalBenefitDate, this.personB.retirementBenefitDate)
-    if (this.scenario.maritalStatus == "married") {this.customSpouseBspousalDateError = this.checkValidSpousalInputs(this.personB, this.personA, this.personB.retirementBenefitDate, this.customSpouseBspousalBenefitDate, this.personA.retirementBenefitDate)}
+    this.customSpouseAspousalDateError = this.checkValidSpousalInputs(this.personA, this.personB, this.personA.retirementBenefitDate, this.personA.spousalBenefitDate, this.personB.retirementBenefitDate)
+    if (this.scenario.maritalStatus == "married") {this.customSpouseBspousalDateError = this.checkValidSpousalInputs(this.personB, this.personA, this.personB.retirementBenefitDate, this.personB.spousalBenefitDate, this.personA.retirementBenefitDate)}
     this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.personB, this.spouseBfixedRetirementBenefitDate)
 
 
@@ -199,14 +197,14 @@ export class HomeComponent implements OnInit {
       //If married, spouseA spousal date is later of retirement dates
       if (this.scenario.maritalStatus == "married") {
         if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
-          this.customSpouseAspousalBenefitDate = new Date(this.personA.retirementBenefitDate)
+          this.personA.spousalBenefitDate = new Date(this.personA.retirementBenefitDate)
         } else {
-          this.customSpouseAspousalBenefitDate = new Date(this.personB.retirementBenefitDate)
+          this.personA.spousalBenefitDate = new Date(this.personB.retirementBenefitDate)
           }
       }
       //If divorced, spouseA spousal date is spouseA retirementdate
       if (this.scenario.maritalStatus == "divorced"){
-        this.customSpouseAspousalBenefitDate = new Date(this.personA.retirementBenefitDate)
+        this.personA.spousalBenefitDate = new Date(this.personA.retirementBenefitDate)
       }
       //eliminate spouseAspousalDateError, because user didn't even input anything
       this.customSpouseAspousalDateError = undefined
@@ -215,9 +213,9 @@ export class HomeComponent implements OnInit {
     if ( (this.personB.PIA > 0.5 * this.personA.PIA && this.personB.actualBirthDate > this.deemedFilingCutoff) || this.spouseBdeclineSpousal === true ) {
       //spouseB spousal date is later of retirement dates
       if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
-        this.customSpouseBspousalBenefitDate = new Date(this.personA.retirementBenefitDate)
+        this.personB.spousalBenefitDate = new Date(this.personA.retirementBenefitDate)
       } else {
-        this.customSpouseBspousalBenefitDate = new Date(this.personB.retirementBenefitDate)
+        this.personB.spousalBenefitDate = new Date(this.personB.retirementBenefitDate)
         }
       //eliminate spouseAspousalDateError, because user didn't even input anything
       this.customSpouseBspousalDateError = undefined
@@ -228,10 +226,10 @@ export class HomeComponent implements OnInit {
       this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.scenario)
       }
     if(this.scenario.maritalStatus == "married" && !this.customSpouseAretirementDateError && !this.customSpouseBretirementDateError && !this.customSpouseAspousalDateError && !this.customSpouseBspousalDateError) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customSpouseAspousalBenefitDate, this.customSpouseBspousalBenefitDate, this.scenario)
+      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario)
       }
     if(this.scenario.maritalStatus == "divorced" && !this.spouseBfixedRetirementDateError && !this.customSpouseAretirementDateError && !this.customSpouseAspousalDateError) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customSpouseAspousalBenefitDate, this.spouseBfixedRetirementBenefitDate, this.scenario)
+      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario)
     }
     this.differenceInPV = this.solutionSet.solutionPV - this.customPV
   }
