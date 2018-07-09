@@ -7,7 +7,7 @@ export class ClaimingScenario {
 
     //PersonA
         personAhasFiled: boolean = false
-            //hasFiled has to be here, rather than on person class. Since the fixed/flexible function in SolutionSetService does not know which Person object is which, if "hasFiled" comes through on a person object,
+            //hasFiled must be here, rather than in Person class. Since the fixed/flexible function in SolutionSetService does not know which Person object is which, if "hasFiled" comes through on a person object,
             //it will never know. It needs "personAhasfiled" to come through on scenario object so it can figure out which spouse is which for purpose of creating output.
         /*
         personAretirementBenefitDate: Date

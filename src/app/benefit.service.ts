@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {Person} from './data model classes/person';
+import { CalculationYear } from './data model classes/calculationyear';
 
 
 @Injectable()
@@ -143,5 +144,16 @@ export class BenefitService {
     }
     return Number(monthsOfBenefit)
   }
+  
+
+  calculateAnnualBenefitAmountSingle(calcYear:CalculationYear){
+    return calcYear
+  }
+
+
+  calculateAnnualBenefitAmountsCouple(calcYear:CalculationYear){
+    return calcYear
+  }
+
   
 }

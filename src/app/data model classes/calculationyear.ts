@@ -4,31 +4,34 @@ export class CalculationYear {
 
 
     //PersonA
-        //monthsOfPersonAretirement
-        //monthsOfPersonAspousal
-            //monthsOfPersonAspousalWithRetirement
-            //monthsOfPersonAspousalWithoutRetirement
-        //monthsOfPersonAsurvivor
-            //monthsOfPersonAsurvivorWithRetirement
-            //monthsOfPersonAsurvivorWithoutRetirement
-        //personAprobabilityAlive: number
-        //personAannualRetirementBenefit: number
-        //personAannualSpousalBenefit: number
-        //personAannualSurvivorBenefit: number
+        monthsOfPersonAretirement: number
+        monthsOfPersonAspousal: number
+            monthsOfPersonAspousalWithRetirement: number
+            monthsOfPersonAspousalWithoutRetirement: number
+        monthsOfPersonAsurvivor: number
+            monthsOfPersonAsurvivorWithRetirement: number
+            monthsOfPersonAsurvivorWithoutRetirement: number
 
+        personAannualRetirementBenefit: number = 0
+        personAannualSpousalBenefit: number = 0
+        personAannualSurvivorBenefit: number = 0
+
+        personAoverWithholding: number = 0
 
     //PersonB
-        //monthsOfPersonBretirement
-        //monthsOfPersonBspousal
-            //monthsOfPersonBspousalWithRetirement
-            //monthsOfPersonBspousalWithoutRetirement
-        //monthsOfPersonBsurvivor
-            //monthsOfPersonBsurvivorWithRetirement
-            //monthsOfPersonBsurvivorWithoutRetirement
-        //personBprobabilityAlive: number
-        //personBannualRetirementBenefit: number
-        //personBannualSpousalBenefit: number
-        //personBannualSurvivorBenefit: number
+        monthsOfPersonBretirement: number
+        monthsOfPersonBspousal: number
+            monthsOfPersonBspousalWithRetirement: number
+            monthsOfPersonBspousalWithoutRetirement: number
+        monthsOfPersonBsurvivor: number
+            monthsOfPersonBsurvivorWithRetirement: number
+            monthsOfPersonBsurvivorWithoutRetirement: number
+
+        personBannualRetirementBenefit: number = 0
+        personBannualSpousalBenefit: number = 0
+        personBannualSurvivorBenefit: number = 0
+
+        personBoverWithholding: number = 0
 
 
     //withholdingAmount: number
