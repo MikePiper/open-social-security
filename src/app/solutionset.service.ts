@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import {Injectable} from '@angular/core'
 import {BenefitService} from './benefit.service'
 import {SolutionSet} from './data model classes/solutionset'
 import {ClaimingSolution} from './data model classes/claimingsolution'

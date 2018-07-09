@@ -1,10 +1,9 @@
 export class CalculationYear {
+    //This class is only for things that get reset each year (e.g., months of a benefit, rather than a person's age)
     date: Date //( Jan 1 of year in question)
 
+
     //PersonA
-        //personAage: number
-        //personAageRounded: number
-        //personAageLastBirthday: number
         //monthsOfPersonAretirement
         //monthsOfPersonAspousal
             //monthsOfPersonAspousalWithRetirement
@@ -19,9 +18,6 @@ export class CalculationYear {
 
 
     //PersonB
-        //personBage: number
-        //personBageRounded: number
-        //personBageLastBirthday: number
         //monthsOfPersonBretirement
         //monthsOfPersonBspousal
             //monthsOfPersonBspousalWithRetirement
@@ -36,9 +32,9 @@ export class CalculationYear {
 
 
     //withholdingAmount: number
-    //monthsWithheld: number = 0 (Not sure this fits here. It's not for one year but rather an ongoing sum of monthsWithheld.)
+    //monthsWithheld: number = 0 (This doesn't fit here. It's not for one year but rather an ongoing sum of monthsWithheld.)
     //graceYear: boolean = false
-    //hasHadGraceYear: boolean = false (Not sure this fits here either.)
+    //hasHadGraceYear: boolean = false (This doesn't fit here either.)
 
     constructor(date:Date) {
         this.date = date

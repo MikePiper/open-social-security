@@ -1,13 +1,14 @@
 export class ClaimingScenario {
 //could be all the stuff below. Or could omit benefit amounts and ARF-adjusted dates
+//Or maybe this is just variables/fields that don't fit under Person object or under CalculationYear object
 
     discountRate: number
     maritalStatus: string = "single"
 
     //PersonA
         personAhasFiled: boolean = false
-            //hasFiled has to be here, rather than on person class. Since the fixed/flexible function does not know which spouse is which, if "hasFiled" comes through on a person object,
-            //it will never know. It needs "personAhasfiled" to come through on scenario object so it can figure out which spouse is which, later on, for purpose of creating output.
+            //hasFiled has to be here, rather than on person class. Since the fixed/flexible function in SolutionSetService does not know which Person object is which, if "hasFiled" comes through on a person object,
+            //it will never know. It needs "personAhasfiled" to come through on scenario object so it can figure out which spouse is which for purpose of creating output.
         /*
         personAretirementBenefitDate: Date
         personAretirementBenefit: number = 0
