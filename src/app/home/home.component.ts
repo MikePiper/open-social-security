@@ -144,19 +144,19 @@ export class HomeComponent implements OnInit {
       } else if (this.scenario.personAhasFiled === true && this.scenario.personBhasFiled === false) {//i.e., if spouseA has filed and B has not
         this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.personA, this.spouseAfixedRetirementBenefitDate)
         if (!this.spouseAfixedRetirementDateError){
-          this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.scenario, this.spouseAfixedRetirementBenefitDate, this.personB, this.personA)
+          this.solutionSet = this.presentvalueService.maximizeCouplePVpersonAisFixed(this.scenario, this.spouseAfixedRetirementBenefitDate, this.personA, this.personB)
         }
       } else if (this.scenario.personBhasFiled === true && this.scenario.personAhasFiled === false) {//i.e., if spouseB has filed and A has not
         this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.personB, this.spouseBfixedRetirementBenefitDate)
         if (!this.spouseBfixedRetirementDateError){
-          this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.scenario, this.spouseBfixedRetirementBenefitDate, this.personA, this.personB)
+          this.solutionSet = this.presentvalueService.maximizeCouplePVpersonBisFixed(this.scenario, this.spouseBfixedRetirementBenefitDate, this.personA, this.personB)
         }
       }
     }
     if(this.scenario.maritalStatus == "divorced") {
       this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.personB, this.spouseBfixedRetirementBenefitDate)
         if (!this.spouseBfixedRetirementDateError){
-          this.solutionSet = this.presentvalueService.maximizeCoupleOneHasFiledPV(this.scenario, this.spouseBfixedRetirementBenefitDate, this.personA, this.personB)
+          this.solutionSet = this.presentvalueService.maximizeCouplePVpersonBisFixed(this.scenario, this.spouseBfixedRetirementBenefitDate, this.personA, this.personB)
         }
     }
     this.normalCursor()

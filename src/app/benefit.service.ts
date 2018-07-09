@@ -7,12 +7,11 @@ export class BenefitService {
 
   constructor() { }
 
-  calculateRetirementBenefit(person:Person, benefitDate: Date)
-  {
+  storedRetirementCalculations = {}
 
+  calculateRetirementBenefit(person:Person, benefitDate: Date) {
     let retirementBenefit: number = 0
     let monthsWaited = benefitDate.getMonth() - person.FRA.getMonth() + 12 * (benefitDate.getFullYear() - person.FRA.getFullYear())
-
     if (monthsWaited < -36)
     {retirementBenefit = person.PIA - (person.PIA / 100 * 5 / 9 * 36) + (person.PIA / 100 * 5 / 12 * (monthsWaited+36))}
     if (monthsWaited < 0 && monthsWaited >= -36)
@@ -21,6 +20,7 @@ export class BenefitService {
     {retirementBenefit = person.PIA}
     if (monthsWaited > 0 )
     {retirementBenefit = person.PIA + (person.PIA / 100 * 2 / 3 * monthsWaited)}
+  
 
     return Number(retirementBenefit)
   }
