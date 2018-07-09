@@ -19,6 +19,22 @@ export class Person {
     quitWorkDate: Date
     monthlyEarnings: number = 0
 
+    retirementBenefit: number = 0
+    spousalBenefitWithoutRetirement: number = 0
+    spousalBenefitWithRetirement: number = 0
+    survivorBenefitWithoutRetirement: number = 0
+    survivorBenefitWithRetirement: number = 0
+
+    retirementBenefitAfterARF: number = 0
+    spousalBenefitWithoutRetirementAfterARF: number = 0
+    spousalBenefitWithRetirementAfterARF: number = 0
+    survivorBenefitWithoutRetirementAfterARF: number = 0
+    survivorBenefitWithRetirementAfterARF: number = 0
+
+    //retirementBenefitDate: Date
+    //spousalBenefitDate: Date
+    //adjustedRetirementBenefitDate: Date
+    //adjustedSpousalBenefitDate: Date
 
     constructor(){
 

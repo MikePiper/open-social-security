@@ -91,6 +91,41 @@ describe('PresentValueService', () => {
       .toBeCloseTo(578594, 0)
   }))
 
+  it('should return appropriate PV for married couple, still working', inject([PresentValueService], (service: PresentValueService) => { 
+    let personA:Person = new Person()
+    let personB:Person = new Person()
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.maritalStatus = "married"
+    let mortalityService:MortalityService = new MortalityService()
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+    personA.SSbirthDate = new Date(1964, 8, 1) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
+    personB.SSbirthDate = new Date(1963, 6, 1) //Spouse B born in July 1963
+    personA.initialAgeRounded = 61
+    personB.initialAgeRounded = 61
+    let birthdayService:BirthdayService = new BirthdayService()
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    personA.PIA = 700
+    personB.PIA = 1900
+    let spouseAretirementBenefitDate: Date = new Date (2032, 8, 1) //At age 68 (Sept 2032)
+    let spouseBretirementBenefitDate: Date = new Date (2029, 8, 1) //At age 66 and 2 months (Sept 2029)
+    let spouseAspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
+    let spouseBspousalBenefitDate: Date = new Date (2032, 8, 1) //Later of two retirement benefit dates
+    personA.quitWorkDate = new Date(2028,3,1) //planning to quit work at age 64 (April 2028)
+    personB.quitWorkDate = new Date(2030,3,1) //planning to quit work at at 67 (April 2030)
+    personA.monthlyEarnings = 5000
+    personB.monthlyEarnings = 9000
+    personA.governmentPension = 0
+    personB.governmentPension = 0
+    scenario.discountRate = 1
+    expect(service.calculateCouplePV(personA, personB,
+    spouseAretirementBenefitDate, spouseBretirementBenefitDate, spouseAspousalBenefitDate, spouseBspousalBenefitDate, scenario))
+      .toBeCloseTo(580576, 0)
+  }))
+
   it ('should return appropriate PV for married couple, including GPO', inject([PresentValueService], (service: PresentValueService) => {
     let personA:Person = new Person()
     let personB:Person = new Person()

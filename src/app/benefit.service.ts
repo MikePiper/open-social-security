@@ -146,14 +146,84 @@ export class BenefitService {
   }
   
 
-  calculateAnnualBenefitAmountSingle(calcYear:CalculationYear){
-    return calcYear
-  }
+  //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
+  calculateAnnualBenefitAmountSingle(person:Person, calcYear:CalculationYear){
+      if (calcYear.date.getFullYear() < person.FRA.getFullYear()) {
+        calcYear.personAannualRetirementBenefit = calcYear.monthsOfPersonAretirement * person.retirementBenefit
+      } else if (calcYear.date.getFullYear() == person.FRA.getFullYear()){
+          //total monthsOfRetirement is monthsOfRetirement. Some will be retirementBenefitAfterARF. Rest will be retirementBenefit.  Then subtract withholdingAmount
+          //ARF should be applied for (12 - FRA.getMonth) months (e.g., all 12 if FRA is January). But limited to monthsOfRetirement.
+          let ARFmonths = 12 - person.FRA.getMonth()
+          if (ARFmonths > calcYear.monthsOfPersonAretirement) {
+            ARFmonths = calcYear.monthsOfPersonAretirement
+          }
+          calcYear.personAannualRetirementBenefit = ARFmonths * person.retirementBenefitAfterARF + (calcYear.monthsOfPersonAretirement - ARFmonths) * person.retirementBenefit
+        } else {//i.e., if whole year is past FRA
+        calcYear.personAannualRetirementBenefit = calcYear.monthsOfPersonAretirement * person.retirementBenefitAfterARF
+        }
+      //Add back overwithholding
+      calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit + calcYear.personAoverWithholding
 
-
-  calculateAnnualBenefitAmountsCouple(calcYear:CalculationYear){
     return calcYear
   }
 
   
+  //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
+  calculateAnnualBenefitAmountsCouple(personA:Person, personB:Person, calcYear:CalculationYear){
+      //Spouse A retirement and spousal
+      if (calcYear.date.getFullYear() < personA.FRA.getFullYear()) {
+        calcYear.personAannualRetirementBenefit = calcYear.monthsOfPersonAretirement * personA.retirementBenefit
+        calcYear.personAannualSpousalBenefit = (calcYear.monthsOfPersonAspousalWithoutRetirement * personA.spousalBenefitWithoutRetirement) + (calcYear.monthsOfPersonAspousalWithRetirement * personA.spousalBenefitWithRetirement)
+      } else if (calcYear.date.getFullYear() == personA.FRA.getFullYear()){
+          //Calculate number of ARF months (e.g., 10 if FRA is March)
+          let ARFmonths = 12 - personA.FRA.getMonth()
+          if (ARFmonths > calcYear.monthsOfPersonAretirement) {
+            ARFmonths = calcYear.monthsOfPersonAretirement //Limit ARFmonths to number of months of retirement benefit
+          }
+          calcYear.personAannualRetirementBenefit = ARFmonths * personA.retirementBenefitAfterARF + (calcYear.monthsOfPersonAretirement - ARFmonths) * personA.retirementBenefit
+          //Figure out how many months there are of "pre-ARF with retirement benefit" "post-ARF with retirement benefit" and "post-ARF without retirement benefit" ("Without" months require restricted app. So none are pre-ARF)
+          ARFmonths = 12 - personA.FRA.getMonth() //reset ARFmonths
+          calcYear.personAannualSpousalBenefit =
+            personA.spousalBenefitWithoutRetirementAfterARF * calcYear.monthsOfPersonAspousalWithoutRetirement //Without retirement is always after ARF
+          + personA.spousalBenefitWithRetirementAfterARF * (ARFmonths - calcYear.monthsOfPersonAspousalWithoutRetirement) //post-ARF "with retirement" months is ARF months minus the "without retirement months"
+          + personA.spousalBenefitWithRetirement * (calcYear.monthsOfPersonAspousalWithRetirement - (ARFmonths - calcYear.monthsOfPersonAspousalWithoutRetirement)) //pre-ARF "with retirement" months is total "with retirement" months minus the post-ARF "with" months (calculated in line above)
+        } else {//i.e., if whole year is past FRA
+          calcYear.personAannualRetirementBenefit = calcYear.monthsOfPersonAretirement * personA.retirementBenefitAfterARF
+          calcYear.personAannualSpousalBenefit = (calcYear.monthsOfPersonAspousalWithoutRetirement * personA.spousalBenefitWithoutRetirementAfterARF) + (calcYear.monthsOfPersonAspousalWithRetirement * personA.spousalBenefitWithRetirementAfterARF)
+        }
+
+      //Spouse B retirement and spousal
+      if (calcYear.date.getFullYear() < personB.FRA.getFullYear()) {
+        calcYear.personBannualRetirementBenefit = calcYear.monthsOfPersonBretirement * personB.retirementBenefit
+        calcYear.personBannualSpousalBenefit = (calcYear.monthsOfPersonBspousalWithoutRetirement * personB.spousalBenefitWithoutRetirement) + (calcYear.monthsOfPersonBspousalWithRetirement * personB.spousalBenefitWithRetirement)
+      } else if (calcYear.date.getFullYear() == personB.FRA.getFullYear()){
+          //Calculate number of ARF months (e.g., 10 if FRA is March)
+          let ARFmonths = 12 - personB.FRA.getMonth()
+          if (ARFmonths > calcYear.monthsOfPersonBretirement) {
+            ARFmonths = calcYear.monthsOfPersonBretirement //Limit ARFmonths to number of months of retirement benefit
+          }
+          calcYear.personBannualRetirementBenefit = ARFmonths * personB.retirementBenefitAfterARF + (calcYear.monthsOfPersonBretirement - ARFmonths) * personB.retirementBenefit
+          //Figure out how many months there are of "pre-ARF with retirement benefit" "post-ARF with retirement benefit" and "post-ARF without retirement benefit" ("Without" months require restricted app. So none are pre-ARF)
+          ARFmonths = 12 - personA.FRA.getMonth() //reset ARFmonths
+          calcYear.personBannualSpousalBenefit =
+            personB.spousalBenefitWithoutRetirementAfterARF * calcYear.monthsOfPersonBspousalWithoutRetirement //Without retirement is always after ARF
+          + personB.spousalBenefitWithRetirementAfterARF * (ARFmonths - calcYear.monthsOfPersonBspousalWithoutRetirement) //post-ARF "with retirement" months is ARF months minus the "without retirement months"
+          + personB.spousalBenefitWithRetirement * (calcYear.monthsOfPersonBspousalWithRetirement - (ARFmonths - calcYear.monthsOfPersonBspousalWithoutRetirement)) //pre-ARF "with retirement" months is total "with retirement" months minus the post-ARF "with" months (calculated in line above)
+        } else {//i.e., if whole year is past FRA
+          calcYear.personBannualRetirementBenefit = calcYear.monthsOfPersonBretirement * personB.retirementBenefitAfterARF
+          calcYear.personBannualSpousalBenefit = (calcYear.monthsOfPersonBspousalWithoutRetirement * personB.spousalBenefitWithoutRetirementAfterARF) + (calcYear.monthsOfPersonBspousalWithRetirement * personB.spousalBenefitWithRetirementAfterARF)
+        }
+
+        //Survivor benefits are always with ARF since we assume it doesn't even get claimed until FRA
+        calcYear.personAannualSurvivorBenefit = (calcYear.monthsOfPersonAsurvivorWithoutRetirement * personA.survivorBenefitWithoutRetirementAfterARF) + (calcYear.monthsOfPersonAsurvivorWithRetirement * personA.survivorBenefitWithRetirementAfterARF) 
+        calcYear.personBannualSurvivorBenefit = (calcYear.monthsOfPersonBsurvivorWithoutRetirement * personB.survivorBenefitWithoutRetirementAfterARF) + (calcYear.monthsOfPersonBsurvivorWithRetirement * personB.survivorBenefitWithRetirementAfterARF)
+
+      //Add back overwithholding
+      calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit + calcYear.personAoverWithholding
+      calcYear.personBannualRetirementBenefit = calcYear.personBannualRetirementBenefit + calcYear.personBoverWithholding
+
+    return calcYear
+  }
+
+
 }

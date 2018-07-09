@@ -25,14 +25,6 @@ describe('BenefitService', () => {
         .toEqual(700)
   }))
 
-  it('should calculate retirement benefit 48 months early as 75% of PIA', inject([BenefitService], (service: BenefitService) => {
-    let person:Person = new Person()
-    person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
-    person.PIA = 1000
-    let benefitDate = new Date (2026, 7 , 1)
-    expect(service.calculateRetirementBenefit(person, benefitDate))
-        .toEqual(750)
-  }))
 
   it('should calculate retirement benefit 24 months early as 86.67% of PIA', inject([BenefitService], (service: BenefitService) => {
     let person:Person = new Person()
@@ -43,14 +35,6 @@ describe('BenefitService', () => {
         .toBeCloseTo(866.67, 1)
   }))
 
-  it('should calculate retirement benefit at FRA as PIA', inject([BenefitService], (service: BenefitService) => {
-    let person:Person = new Person()
-    person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
-    person.PIA = 1000
-    let benefitDate = new Date (2030, 7 , 1)
-    expect(service.calculateRetirementBenefit(person, benefitDate))
-        .toEqual(1000)
-  }))
 
   it('should calculate retirement benefit 12 months after FRA as 108% of PIA', inject([BenefitService], (service: BenefitService) => {
     let person:Person = new Person()
