@@ -34,7 +34,8 @@ export class CalculationYear {
         personBoverWithholding: number = 0
 
 
-    //withholdingAmount: number
+    //withholdingDueToPersonAearnings: number
+    //withholdingDueToPersonBearnings: number
     //monthsWithheld: number = 0 (This doesn't fit here. It's not for one year but rather an ongoing sum of monthsWithheld.)
     //graceYear: boolean = false
     //hasHadGraceYear: boolean = false (This doesn't fit here either.)
