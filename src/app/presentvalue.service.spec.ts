@@ -110,7 +110,7 @@ describe('PresentValueService', () => {
     personA.PIA = 700
     personB.PIA = 1900
     personA.retirementBenefitDate = new Date (2032, 8, 1) //At age 68 (Sept 2032)
-    personB.retirementBenefitDate = new Date (2029, 8, 1) //At age 66 and 2 months (Sept 2029)
+    personB.retirementBenefitDate = new Date (2027, 8, 1) //At age 64 and 2 months (Sept 2029) -- Earnings test IS relevant
     personA.spousalBenefitDate = new Date (2032, 8, 1) //Later of two retirement benefit dates
     personB.spousalBenefitDate = new Date (2032, 8, 1) //Later of two retirement benefit dates
     personA.quitWorkDate = new Date(2028,3,1) //planning to quit work at age 64 (April 2028)
@@ -121,7 +121,7 @@ describe('PresentValueService', () => {
     personB.governmentPension = 0
     scenario.discountRate = 1
     expect(service.calculateCouplePV(personA, personB, scenario))
-      .toBeCloseTo(580576, 0)
+      .toBeCloseTo(570824, 0)
   }))
 
   it ('should return appropriate PV for married couple, including GPO', inject([PresentValueService], (service: PresentValueService) => {

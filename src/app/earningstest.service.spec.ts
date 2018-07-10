@@ -1,11 +1,12 @@
 import { TestBed, inject } from '@angular/core/testing';
 
-import { EarningsTestService } from './earningstest.service';
+import {EarningsTestService} from './earningstest.service'
+import {BenefitService} from './benefit.service'
 
 describe('EarningstestService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [EarningsTestService]
+      providers: [EarningsTestService, BenefitService]
     });
   });
 
