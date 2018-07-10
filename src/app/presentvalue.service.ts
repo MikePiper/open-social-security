@@ -27,7 +27,7 @@ export class PresentValueService {
     let withholdingAmount: number
     let monthsWithheld: number = 0
     let graceYear: boolean = false
-    let hasHadGraceYear: boolean = false
+    person.hasHadGraceYear = false //reset hasHadGraceYear for new PV calc
 
     //Find Jan 1 of the year they plan to start benefit
     let initialCalcDate:Date = new Date(person.retirementBenefitDate.getFullYear(), 0, 1)
@@ -50,8 +50,8 @@ export class PresentValueService {
           if (person.quitWorkDate > this.today){//If quitWorkDate is an invalid date (because there was no input) or is in the past for some reason, this whole business below gets skipped  
               //Determine if it's a grace year. If quitWorkDate has already happened (or happens this year) and retirement benefit has started (or starts this year) it's a grace year
                 //Assumption: in the year they quit work, following months are non-service months.
-              graceYear = this.earningsTestService.isGraceYear(hasHadGraceYear, person.quitWorkDate, calcYear.date, person.retirementBenefitDate)
-              if (graceYear === true) {hasHadGraceYear = true}
+              graceYear = this.earningsTestService.isGraceYear(person.hasHadGraceYear, person.quitWorkDate, calcYear.date, person.retirementBenefitDate)
+              if (graceYear === true) {person.hasHadGraceYear = true}
                
               //Calculate necessary withholding based on earnings
               withholdingAmount = this.earningsTestService.calculateWithholding(calcYear.date, person.quitWorkDate, person.FRA, person.monthlyEarnings)
@@ -84,7 +84,8 @@ export class PresentValueService {
           //Ignore earnings test if user wasn't working
           else {
             withholdingAmount = 0
-            person.retirementBenefitAfterARF = person.retirementBenefit}
+            person.retirementBenefitAfterARF = person.retirementBenefit
+          }
 
           //withholdingAmount is negative at this point if we overwithheld. Have to add that negative amounts back to annual benefit amounts
             //We add it back to annual retirement benefit in a moment.
@@ -131,9 +132,11 @@ export class PresentValueService {
     let monthsSpouseBretirementWithheld: number = 0
     let monthsSpouseBspousalWithheld: number = 0
     let spouseAgraceYear: boolean = false
-    let spouseAhasHadGraceYear: boolean = false
     let spouseBgraceYear: boolean = false
-    let spouseBhasHadGraceYear: boolean = false
+
+    //reset hasHadGraceYear values to false for new PV calc
+    personA.hasHadGraceYear = false
+    personB.hasHadGraceYear = false
 
 
     //If married, set initialCalcDate to Jan 1 of year in which first spouse reaches age 62
@@ -230,10 +233,10 @@ export class PresentValueService {
         if (personA.quitWorkDate > this.today || personB.quitWorkDate > this.today){//If quitWorkDates are invalid dates (because there was no input) or in the past for some reason, this whole business below gets skipped
           //Determine if it's a grace year for either spouse. If quitWorkDate has already happened (or happens this year) and at least one type of benefit has started (or starts this year)
             //Assumption: in the year they quit work, following months are non-service months.
-          spouseAgraceYear = this.earningsTestService.isGraceYear(spouseAhasHadGraceYear, personA.quitWorkDate, calcYear.date, personA.retirementBenefitDate, personA.spousalBenefitDate, personA.survivorFRA)
-          if (spouseAgraceYear === true) {spouseAhasHadGraceYear = true}  
-          spouseBgraceYear = this.earningsTestService.isGraceYear(spouseBhasHadGraceYear, personB.quitWorkDate, calcYear.date, personB.retirementBenefitDate, personB.spousalBenefitDate, personB.survivorFRA)
-          if (spouseBgraceYear === true) {spouseBhasHadGraceYear = true}  
+          spouseAgraceYear = this.earningsTestService.isGraceYear(personA.hasHadGraceYear, personA.quitWorkDate, calcYear.date, personA.retirementBenefitDate, personA.spousalBenefitDate, personA.survivorFRA)
+          if (spouseAgraceYear === true) {personA.hasHadGraceYear = true}  
+          spouseBgraceYear = this.earningsTestService.isGraceYear(personB.hasHadGraceYear, personB.quitWorkDate, calcYear.date, personB.retirementBenefitDate, personB.spousalBenefitDate, personB.survivorFRA)
+          if (spouseBgraceYear === true) {personB.hasHadGraceYear = true}  
 
             //Calculate necessary withholding based on each spouse's earnings
             withholdingDueToSpouseAearnings = this.earningsTestService.calculateWithholding(calcYear.date, personA.quitWorkDate, personA.FRA, personA.monthlyEarnings)

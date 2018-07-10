@@ -18,6 +18,7 @@ export class Person {
 
     quitWorkDate: Date
     monthlyEarnings: number = 0
+    hasHadGraceYear:boolean = false
 
     retirementBenefit: number = 0
     spousalBenefitWithoutRetirement: number = 0
