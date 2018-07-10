@@ -33,6 +33,7 @@ export class Person {
     survivorBenefitWithRetirementAfterARF: number = 0
 
     retirementBenefitDate: Date
+        DRCsViaSuspension: number = 0
     spousalBenefitDate: Date
     adjustedRetirementBenefitDate: Date
     adjustedSpousalBenefitDate: Date

@@ -21,8 +21,9 @@ export class BenefitService {
     {retirementBenefit = person.PIA}
     if (monthsWaited > 0 )
     {retirementBenefit = person.PIA + (person.PIA / 100 * 2 / 3 * monthsWaited)}
-  
-
+    
+    retirementBenefit = retirementBenefit + person.PIA * (2/3/100) * person.DRCsViaSuspension
+    
     return Number(retirementBenefit)
   }
 
