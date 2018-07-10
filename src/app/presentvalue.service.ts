@@ -24,10 +24,8 @@ export class PresentValueService {
     person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
     let retirementPV: number = 0
     let probabilityAlive: number
-    let withholdingAmount: number
-    let monthsWithheld: number = 0
-    let graceYear: boolean = false
     person.hasHadGraceYear = false //reset hasHadGraceYear for new PV calc
+    person.adjustedRetirementBenefitDate = new Date(person.retirementBenefitDate) //reset for new PV calc
 
     //Find Jan 1 of the year they plan to start benefit
     let initialCalcDate:Date = new Date(person.retirementBenefitDate.getFullYear(), 0, 1)
@@ -39,81 +37,34 @@ export class PresentValueService {
     //Calculate PV via loop until they hit age 115 (by which point "remaining lives" is zero)
       while (age < 115) {
 
-      //Count number of months in year that are before/after inputBenefitDate
-      calcYear.monthsOfPersonAretirement = this.benefitService.countBenefitMonths(person.retirementBenefitDate, calcYear.date)
+        //Count number of months in year that are before/after inputBenefitDate
+        calcYear.monthsOfPersonAretirement = this.benefitService.countBenefitMonths(person.retirementBenefitDate, calcYear.date)
 
+        //Earnings test
+        let earningsTestResult:any[] = this.earningsTestService.earningsTestSingle(calcYear, person)
+        calcYear = earningsTestResult[0]
+        person = earningsTestResult[1]
 
-          //Earnings test
-          if (isNaN(person.quitWorkDate.getTime())) {
-            person.quitWorkDate = new Date(1,0,1)
-          }
-          if (person.quitWorkDate > this.today){//If quitWorkDate is an invalid date (because there was no input) or is in the past for some reason, this whole business below gets skipped  
-              //Determine if it's a grace year. If quitWorkDate has already happened (or happens this year) and retirement benefit has started (or starts this year) it's a grace year
-                //Assumption: in the year they quit work, following months are non-service months.
-              graceYear = this.earningsTestService.isGraceYear(person.hasHadGraceYear, person.quitWorkDate, calcYear.date, person.retirementBenefitDate)
-              if (graceYear === true) {person.hasHadGraceYear = true}
-               
-              //Calculate necessary withholding based on earnings
-              withholdingAmount = this.earningsTestService.calculateWithholding(calcYear.date, person.quitWorkDate, person.FRA, person.monthlyEarnings)
+        //Calculate annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
+        calcYear = this.benefitService.calculateAnnualBenefitAmountSingle(person, calcYear)
 
-              //Have to loop monthly for earnings test
-              let earningsTestMonth:Date = new Date(calcYear.date) //set earningsTestMonth to beginning of year
-              let earningsTestEndDate:Date = new Date(calcYear.date.getFullYear(), 11, 1) //set earningsTestEndDate to Dec of currentCalculationYear
-              let availableForWithholding:number
-              while (withholdingAmount > 0 && earningsTestMonth <= earningsTestEndDate) {
-                availableForWithholding = 0 //reset availableForWithholding for new month
-                //Checks to see if there is a retirement benefit this month from which we can withhold:
-                  if (earningsTestMonth >= person.retirementBenefitDate  //check that they've started retirement benefit
-                    && (graceYear === false || earningsTestMonth < person.quitWorkDate ) //make sure it isn't a nonservice month in grace year
-                    && (earningsTestMonth < person.FRA) //make sure current month is prior to FRA
-                  ) {
-                    availableForWithholding = availableForWithholding + person.retirementBenefit
-                    calcYear.monthsOfPersonAretirement = calcYear.monthsOfPersonAretirement - 1
-                    monthsWithheld  = monthsWithheld + 1
-                  }
-                //Subtracting 1 from monthsOfRetirement will often result in overwithholding (as it does in real life) for a partial month. Gets added back later.
-                //Reduce necessary withholding by the amount we withhold this month:
-                withholdingAmount = withholdingAmount - availableForWithholding //(this kicks us out of loop, potentially)
-                earningsTestMonth.setMonth(earningsTestMonth.getMonth()+1) //add 1 to earningsTestMonth (kicks us out of loop at end of year)
-              }
-            //Find new retirementBenefit, after recalculation ("AdjustmentReductionFactor") at FRA
-            person.adjustedRetirementBenefitDate = new Date(person.retirementBenefitDate.getFullYear(), person.retirementBenefitDate.getMonth()+monthsWithheld, 1)
-            person.retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(person, person.adjustedRetirementBenefitDate)
+        //Calculate probability of being alive at end of age in question
+        probabilityAlive = this.mortalityService.calculateProbabilityAlive(person, age)
 
-            }
-          //Ignore earnings test if user wasn't working
-          else {
-            withholdingAmount = 0
-            person.retirementBenefitAfterARF = person.retirementBenefit
-          }
+        //Calculate probability-weighted benefit
+        let annualPV = calcYear.personAannualRetirementBenefit * probabilityAlive
 
-          //withholdingAmount is negative at this point if we overwithheld. Have to add that negative amounts back to annual benefit amounts
-            //We add it back to annual retirement benefit in a moment.
-            calcYear.personAoverWithholding = 0
-            if (withholdingAmount < 0) {
-              calcYear.personAoverWithholding = calcYear.personAoverWithholding - withholdingAmount
-            }
-          
-          //Calculate annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
-          calcYear = this.benefitService.calculateAnnualBenefitAmountSingle(person, calcYear)
+        //Discount that benefit to age 62
+        annualPV = annualPV / (1 + scenario.discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
+        annualPV = annualPV / Math.pow((1 + scenario.discountRate/100),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
 
-          //Calculate probability of being alive at end of age in question
-          probabilityAlive = this.mortalityService.calculateProbabilityAlive(person, age)
-
-          //Calculate probability-weighted benefit
-          let annualPV = calcYear.personAannualRetirementBenefit * probabilityAlive
-
-          //Discount that benefit to age 62
-          annualPV = annualPV / (1 + scenario.discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
-          annualPV = annualPV / Math.pow((1 + scenario.discountRate/100),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
-
-          //Add discounted benefit to ongoing count of retirementPV, add 1 year to age and calculationYear, and start loop over
-          retirementPV = retirementPV + annualPV
-          age = age + 1
-          let newCalcDate:Date = new Date(calcYear.date.getFullYear()+1, 0, 1)
-          calcYear = new CalculationYear(newCalcDate)
+        //Add discounted benefit to ongoing count of retirementPV, add 1 year to age and calculationYear, and start loop over
+        retirementPV = retirementPV + annualPV
+        age = age + 1
+        let newCalcDate:Date = new Date(calcYear.date.getFullYear()+1, 0, 1)
+        calcYear = new CalculationYear(newCalcDate)
       }
-        return retirementPV
+    return retirementPV
   }
 
   calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario){
@@ -134,9 +85,13 @@ export class PresentValueService {
     let spouseAgraceYear: boolean = false
     let spouseBgraceYear: boolean = false
 
-    //reset hasHadGraceYear values to false for new PV calc
+    //reset values for new PV calc
     personA.hasHadGraceYear = false
     personB.hasHadGraceYear = false
+    //personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate)
+    //personA.adjustedSpousalBenefitDate = new Date(personA.retirementBenefitDate)
+    //personB.adjustedRetirementBenefitDate = new Date(personB.retirementBenefitDate)
+    //personB.adjustedSpousalBenefitDate = new Date(personB.retirementBenefitDate)
 
 
     //If married, set initialCalcDate to Jan 1 of year in which first spouse reaches age 62

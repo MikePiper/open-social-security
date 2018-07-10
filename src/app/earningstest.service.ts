@@ -66,7 +66,7 @@ export class EarningsTestService {
 
   earningsTestSingle(calcYear:CalculationYear, person:Person){
     let withholdingAmount: number = 0
-    let monthsWithheld: number = 0 //THIS IS THE PROBLEM. CAN'T HAVE MONTHSWITHHELD RESET TO ZERO EACH TIME THIS FUNCTION RUNS, BECAUSE IT RUNS EACH YEAR
+    let monthsWithheld: number = 0
 
     if (isNaN(person.quitWorkDate.getTime())) {
       person.quitWorkDate = new Date(1,0,1)
@@ -101,7 +101,7 @@ export class EarningsTestService {
           earningsTestMonth.setMonth(earningsTestMonth.getMonth()+1) //add 1 to earningsTestMonth (kicks us out of loop at end of year)
         }
       //Find new retirementBenefit, after recalculation ("AdjustmentReductionFactor") at FRA
-      person.adjustedRetirementBenefitDate = new Date(person.retirementBenefitDate.getFullYear(), person.retirementBenefitDate.getMonth()+monthsWithheld, 1)
+      person.adjustedRetirementBenefitDate.setMonth(person.adjustedRetirementBenefitDate.getMonth()+monthsWithheld)
       person.retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(person, person.adjustedRetirementBenefitDate)
 
       }

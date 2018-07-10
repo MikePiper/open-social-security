@@ -10,8 +10,6 @@ export class ClaimingScenario {
             //it will never know. It needs "personAhasfiled" to come through on scenario object so it can figure out which spouse is which for purpose of creating output.
 
         //personAdeclineSpousal: boolean = false
-        monthsPersonAretirementWithheld: number = 0
-        monthsPersonAspousalWithheld: number = 0
 
 
     //PersonB
@@ -19,9 +17,7 @@ export class ClaimingScenario {
 
 
         //personBdeclineSpousal: boolean = false
-        
-        monthsPersonBretirementWithheld: number = 0
-        monthsPersonBspousalWithheld: number = 0
+
 }
 
 
