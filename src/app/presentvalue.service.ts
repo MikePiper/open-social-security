@@ -22,7 +22,6 @@ export class PresentValueService {
   calculateSinglePersonPV(person:Person, scenario:ClaimingScenario)
   {
     person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
-    let adjustedBenefitDate: Date
     let retirementPV: number = 0
     let probabilityAlive: number
     let withholdingAmount: number
@@ -78,8 +77,8 @@ export class PresentValueService {
                 earningsTestMonth.setMonth(earningsTestMonth.getMonth()+1) //add 1 to earningsTestMonth (kicks us out of loop at end of year)
               }
             //Find new retirementBenefit, after recalculation ("AdjustmentReductionFactor") at FRA
-            adjustedBenefitDate = new Date(person.retirementBenefitDate.getFullYear(), person.retirementBenefitDate.getMonth()+monthsWithheld, 1)
-            person.retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(person, adjustedBenefitDate)
+            person.adjustedRetirementBenefitDate = new Date(person.retirementBenefitDate.getFullYear(), person.retirementBenefitDate.getMonth()+monthsWithheld, 1)
+            person.retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(person, person.adjustedRetirementBenefitDate)
 
             }
           //Ignore earnings test if user wasn't working
@@ -118,13 +117,7 @@ export class PresentValueService {
 
   calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario){
     
-    //Adjusted claiming date variables. (Don't need adjusted survivor benefit dates, because we're assuming no early filing for survivor benefits anyway.)
-    let spouseAadjustedRetirementBenefitDate: Date
-    let spouseAadjustedSpousalBenefitDate: Date
-    let spouseBadjustedRetirementBenefitDate: Date
-    let spouseBadjustedSpousalBenefitDate: Date
-
-    //Other assorted variables
+    //Assorted variables
     let spouseAage: number
     let probabilityAalive: number
     let spouseBage: number
@@ -370,18 +363,18 @@ export class PresentValueService {
 
             //Find post-ARF ("AdjustmentReductionFactor") monthly benefit amounts, for use at/after FRA
               //Find adjusted dates
-              spouseAadjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate.getFullYear(), personA.retirementBenefitDate.getMonth()+monthsSpouseAretirementWithheld, 1)
-              spouseAadjustedSpousalBenefitDate = new Date(personA.spousalBenefitDate.getFullYear(), personA.spousalBenefitDate.getMonth()+monthsSpouseAspousalWithheld , 1)
-              spouseBadjustedRetirementBenefitDate = new Date(personB.retirementBenefitDate.getFullYear(), personB.retirementBenefitDate.getMonth()+monthsSpouseBretirementWithheld, 1)
-              spouseBadjustedSpousalBenefitDate = new Date(personB.spousalBenefitDate.getFullYear(), personB.spousalBenefitDate.getMonth()+monthsSpouseBspousalWithheld , 1)
+              personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate.getFullYear(), personA.retirementBenefitDate.getMonth()+monthsSpouseAretirementWithheld, 1)
+              personA.adjustedSpousalBenefitDate = new Date(personA.spousalBenefitDate.getFullYear(), personA.spousalBenefitDate.getMonth()+monthsSpouseAspousalWithheld , 1)
+              personB.adjustedRetirementBenefitDate = new Date(personB.retirementBenefitDate.getFullYear(), personB.retirementBenefitDate.getMonth()+monthsSpouseBretirementWithheld, 1)
+              personB.adjustedSpousalBenefitDate = new Date(personB.spousalBenefitDate.getFullYear(), personB.spousalBenefitDate.getMonth()+monthsSpouseBspousalWithheld , 1)
               //Find adjusted retirement benefits
-              personA.retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(personA, spouseAadjustedRetirementBenefitDate)
-              personB.retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(personB, spouseBadjustedRetirementBenefitDate)
+              personA.retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(personA, personA.adjustedRetirementBenefitDate)
+              personB.retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(personB, personB.adjustedRetirementBenefitDate)
               //Find adjusted spousal benefits
-              personA.spousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefitAfterARF, spouseAadjustedSpousalBenefitDate)
-              personA.spousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, 0, spouseAadjustedSpousalBenefitDate)
+              personA.spousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefitAfterARF, personA.adjustedSpousalBenefitDate)
+              personA.spousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, 0, personA.adjustedSpousalBenefitDate)
               personB.spousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefitAfterARF, personB.spousalBenefitDate)
-              personB.spousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, 0, spouseBadjustedSpousalBenefitDate)
+              personB.spousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, 0, personB.adjustedSpousalBenefitDate)
               //Find adjusted survivor benefits
               personA.survivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personA, personA.retirementBenefitAfterARF, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
               personA.survivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)

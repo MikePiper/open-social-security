@@ -33,8 +33,8 @@ export class Person {
 
     retirementBenefitDate: Date
     spousalBenefitDate: Date
-    //adjustedRetirementBenefitDate: Date
-    //adjustedSpousalBenefitDate: Date
+    adjustedRetirementBenefitDate: Date
+    adjustedSpousalBenefitDate: Date
 
     constructor(){
 

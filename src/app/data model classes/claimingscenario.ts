@@ -1,6 +1,6 @@
 export class ClaimingScenario {
 //could be all the stuff below. Or could omit benefit amounts and ARF-adjusted dates
-//Or maybe this is just variables/fields that don't fit under Person object or under CalculationYear object
+//Or maybe this is just variables/fields that don't fit under Person object or under CalculationYear object (i.e., things that don't get reset each year, but which don't belong to a Person object)
 
     discountRate: number
     maritalStatus: string = "single"
