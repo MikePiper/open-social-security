@@ -140,7 +140,8 @@ export class SolutionSetService {
         if (flexibleSpouseSavedRetirementBenefit >= fixedSpouseRetirementBenefit) {
           var flexibleSpouseSavedSurvivorBenefitOutput: number = 0
         } else {
-          var flexibleSpouseSavedSurvivorBenefitOutput: number = fixedSpouseRetirementBenefit
+          var flexibleSpouseSavedSurvivorBenefitOutput: number =
+          flexibleSpouseSavedRetirementBenefit + this.benefitService.calculateSurvivorBenefit(flexibleSpouse, flexibleSpouseSavedRetirementBenefit, flexibleSpouse.survivorFRA, fixedSpouse, fixedSpouseRetirementBenefitDate, fixedSpouseRetirementBenefitDate)
         }
         //fixed spouse spousal age/benefitAmount (no need to consider restricted app scenario, because this person has already filed for retirement benefit)
         let fixedSpouseSavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(fixedSpouse, flexibleSpouse, fixedSpouseRetirementBenefit, fixedSpouseSavedSpousalDate)
@@ -151,7 +152,8 @@ export class SolutionSetService {
         if (fixedSpouseRetirementBenefit >= flexibleSpouseSavedRetirementBenefit) {
           var fixedSpouseSavedSurvivorBenefitOutput: number = 0
         } else {
-          var fixedSpouseSavedSurvivorBenefitOutput: number = flexibleSpouseSavedRetirementBenefit
+          var fixedSpouseSavedSurvivorBenefitOutput: number =
+          fixedSpouseRetirementBenefit + this.benefitService.calculateSurvivorBenefit(fixedSpouse, fixedSpouseRetirementBenefit, fixedSpouse.survivorFRA, flexibleSpouse, flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementDate)
         }
 
         let solutionSet: SolutionSet = {
@@ -201,10 +203,10 @@ export class SolutionSetService {
         //push claimingSolution objects to array
         if (flexibleSpouseSavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(flexibleSpouseRetirementSolution)}
         if (flexibleSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(flexibleSpouseSpousalSolution)}
-        if (flexibleSpouseSavedSurvivorBenefitOutput > 0) {solutionSet.solutionsArray.push(flexibleSpouseSurvivorSolution)}
+        if (flexibleSpouseSavedSurvivorBenefitOutput > flexibleSpouseSavedRetirementBenefit) {solutionSet.solutionsArray.push(flexibleSpouseSurvivorSolution)}//Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
         if (scenario.maritalStatus == "married"){
           if (fixedSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(fixedSpouseSpousalSolution)}
-          if (fixedSpouseSavedSurvivorBenefitOutput > 0) {solutionSet.solutionsArray.push(fixedSpouseSurvivorSolution)}
+          if (fixedSpouseSavedSurvivorBenefitOutput > fixedSpouseRetirementBenefit) {solutionSet.solutionsArray.push(fixedSpouseSurvivorSolution)}//Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
         }
 
 
