@@ -26,6 +26,7 @@ export class PresentValueService {
     let probabilityAlive: number
     person.hasHadGraceYear = false //reset hasHadGraceYear for new PV calc
     person.adjustedRetirementBenefitDate = new Date(person.retirementBenefitDate) //reset for new PV calc
+    let earningsTestResult:any[] 
 
     //Find Jan 1 of the year they plan to start benefit
     let initialCalcDate:Date = new Date(person.retirementBenefitDate.getFullYear(), 0, 1)
@@ -41,9 +42,12 @@ export class PresentValueService {
         calcYear = this.benefitService.countAllBenefitMonthsSingle(calcYear, person)
 
         //Earnings test
-        let earningsTestResult:any[] = this.earningsTestService.earningsTestSingle(calcYear, person)
-        calcYear = earningsTestResult[0]
-        person = earningsTestResult[1]
+        if (earningsTestResult === undefined || calcYear.date.getFullYear() <= person.FRA.getFullYear()){//Only have to run earnings test if it's before FRA or if it has never been run (has to be run once for after-ARF values to be calc'd)
+          earningsTestResult = this.earningsTestService.earningsTestSingle(calcYear, person)
+          calcYear = earningsTestResult[0]
+          person = earningsTestResult[1]
+        }
+        
 
         //Calculate annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
         calcYear = this.benefitService.calculateAnnualBenefitAmountSingle(person, calcYear)
@@ -76,6 +80,7 @@ export class PresentValueService {
     let probabilityBalive: number
     let couplePV: number = 0
     let initialCalcDate: Date
+    let earningsTestResult:any[]
 
     //reset values for new PV calc
     personA.hasHadGraceYear = false
@@ -129,11 +134,15 @@ export class PresentValueService {
         //count number of months in this year for which each type of benefit will be received
         calcYear = this.benefitService.countAllBenefitMonthsCouple(calcYear, scenario, personA, personB)
 
-        //Earnings test
-        let earningsTestResult:any[] = this.earningsTestService.earningsTestCouple(calcYear, scenario, personA, personB)
-        calcYear = earningsTestResult[0]
-        personA = earningsTestResult[1]
-        personB = earningsTestResult[2]
+        //Earnings test        
+        if (earningsTestResult === undefined || calcYear.date.getFullYear() <= personA.FRA.getFullYear() || calcYear.date.getFullYear() <= personB.FRA.getFullYear()){//Only have to run earnings test if it's before FRA or if it has never been run (has to be run once for after-ARF values to be calc'd)
+          earningsTestResult = this.earningsTestService.earningsTestCouple(calcYear, scenario, personA, personB)
+          calcYear = earningsTestResult[0]
+          personA = earningsTestResult[1]
+          personB = earningsTestResult[2]
+        }
+        
+
 
         //Calculate annual benefits, accounting for Adjustment Reduction Factor in years beginning at FRA
         calcYear = this.benefitService.calculateAnnualBenefitAmountsCouple(personA, personB, calcYear)

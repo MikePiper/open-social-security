@@ -34,7 +34,7 @@ export class Person {
 
     retirementBenefitDate: Date
         DRCsViaSuspension: number = 0
-        beginSuspensionDate: Date = new Date(1900, 0, 1) //this is basically just going to be "FRA but no earlier than today"   Benefit IS suspended for this month
+        beginSuspensionDate: Date = new Date(1900, 0, 1) //When testing in "one is fixed" maximize functions, this is basically just going to be "FRA but no earlier than today"   Benefit IS suspended for this month
         endSuspensionDate: Date = new Date(1900, 0, 1) //this is a variable that will be iterated      Benefit is NOT suspended for this month
     spousalBenefitDate: Date
     adjustedRetirementBenefitDate: Date
