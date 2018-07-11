@@ -132,7 +132,7 @@ export class BenefitService {
     return Number(survivorBenefit)
   }
 
-  countBenefitMonths(benefitFilingDate:Date, currentCalculationDate:Date){
+  countMonthsOfaBenefit(benefitFilingDate:Date, currentCalculationDate:Date){
     let monthsBeforeBenefit: number = benefitFilingDate.getMonth() - currentCalculationDate.getMonth() + 12*(benefitFilingDate.getFullYear() - currentCalculationDate.getFullYear())
     let monthsOfBenefit: number
     if (monthsBeforeBenefit >= 12) {
@@ -144,6 +144,65 @@ export class BenefitService {
       monthsOfBenefit = 12
     }
     return Number(monthsOfBenefit)
+  }
+
+  countAllBenefitMonthsSingle(calcYear:CalculationYear, person:Person){
+    //TODO: account for voluntary suspension
+
+    //Count number of months in year that are before/after inputBenefitDate
+    calcYear.monthsOfPersonAretirement = this.countMonthsOfaBenefit(person.retirementBenefitDate, calcYear.date)
+
+    return calcYear
+  }
+
+  countAllBenefitMonthsCouple(calcYear:CalculationYear, personA:Person, personB:Person){
+    //TODO: account for voluntary suspension
+
+        //Calculate number of months of retirement benefit for each spouse
+        calcYear.monthsOfPersonAretirement = this.countMonthsOfaBenefit(personA.retirementBenefitDate, calcYear.date)
+        calcYear.monthsOfPersonBretirement = this.countMonthsOfaBenefit(personB.retirementBenefitDate, calcYear.date)
+
+        //Calculate number of months of spouseA spousalBenefit w/ retirementBenefit and number of months of spouseA spousalBenefit w/o retirementBenefit
+        calcYear.monthsOfPersonAspousal = this.countMonthsOfaBenefit(personA.spousalBenefitDate, calcYear.date)
+        if (calcYear.monthsOfPersonAretirement >= calcYear.monthsOfPersonAspousal) {
+          calcYear.monthsOfPersonAspousalWithRetirement = calcYear.monthsOfPersonAspousal
+          calcYear.monthsOfPersonAspousalWithoutRetirement = 0
+        } else {
+          calcYear.monthsOfPersonAspousalWithRetirement = calcYear.monthsOfPersonAretirement
+          calcYear.monthsOfPersonAspousalWithoutRetirement = calcYear.monthsOfPersonAspousal - calcYear.monthsOfPersonAretirement
+        }
+
+        //Calculate number of months of spouseB spousalBenefit w/ retirementBenefit and number of months of spouseB spousalBenefit w/o retirementBenefit
+        calcYear.monthsOfPersonBspousal = this.countMonthsOfaBenefit(personB.spousalBenefitDate, calcYear.date)
+        if (calcYear.monthsOfPersonBretirement >= calcYear.monthsOfPersonBspousal) {
+          calcYear.monthsOfPersonBspousalWithRetirement = calcYear.monthsOfPersonBspousal
+          calcYear.monthsOfPersonBspousalWithoutRetirement = 0
+        } else {
+          calcYear.monthsOfPersonBspousalWithRetirement = calcYear.monthsOfPersonBretirement
+          calcYear.monthsOfPersonBspousalWithoutRetirement = calcYear.monthsOfPersonBspousal - calcYear.monthsOfPersonBretirement
+        }
+
+        //Calculate number of months of spouseA survivorBenefit w/ retirementBenefit and number of months of spouseA survivorBenefit w/o retirementBenefit
+        calcYear.monthsOfPersonAsurvivor = this.countMonthsOfaBenefit(personA.survivorFRA, calcYear.date)
+        if (calcYear.monthsOfPersonAretirement >= calcYear.monthsOfPersonAsurvivor) {
+          calcYear.monthsOfPersonAsurvivorWithRetirement = calcYear.monthsOfPersonAsurvivor
+          calcYear.monthsOfPersonAsurvivorWithoutRetirement = 0
+        } else {
+          calcYear.monthsOfPersonAsurvivorWithRetirement = calcYear.monthsOfPersonAretirement
+          calcYear.monthsOfPersonAsurvivorWithoutRetirement = calcYear.monthsOfPersonAsurvivor - calcYear.monthsOfPersonAretirement
+        }
+
+        //Calculate number of months of spouseB survivorBenefit w/ retirementBenefit and number of months of spouseB survivorBenefit w/o retirementBenefit
+        calcYear.monthsOfPersonBsurvivor = this.countMonthsOfaBenefit(personB.survivorFRA, calcYear.date)
+        if (calcYear.monthsOfPersonBretirement >= calcYear.monthsOfPersonBsurvivor) {
+          calcYear.monthsOfPersonBsurvivorWithRetirement = calcYear.monthsOfPersonBsurvivor
+          calcYear.monthsOfPersonBsurvivorWithoutRetirement = 0
+        } else {
+          calcYear.monthsOfPersonBsurvivorWithRetirement = calcYear.monthsOfPersonBretirement
+          calcYear.monthsOfPersonBsurvivorWithoutRetirement = calcYear.monthsOfPersonBsurvivor - calcYear.monthsOfPersonBretirement
+        }
+        
+    return calcYear
   }
   
 

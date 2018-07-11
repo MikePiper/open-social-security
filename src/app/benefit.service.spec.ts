@@ -218,7 +218,7 @@ describe('BenefitService', () => {
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
     let currentCalculationDate:Date = new Date(2018, 0, 1) //Current calc year is 2018
 
-    expect(service.countBenefitMonths(benefitFilingDate, currentCalculationDate)) //user inputs 3/25/1956
+    expect(service.countMonthsOfaBenefit(benefitFilingDate, currentCalculationDate)) //user inputs 3/25/1956
         .toEqual(5)
   }))
 
@@ -226,7 +226,7 @@ describe('BenefitService', () => {
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
     let currentCalculationDate:Date = new Date(2017, 0, 1) //Current calc year is 2018
 
-    expect(service.countBenefitMonths(benefitFilingDate, currentCalculationDate)) //user inputs 3/25/1956
+    expect(service.countMonthsOfaBenefit(benefitFilingDate, currentCalculationDate)) //user inputs 3/25/1956
         .toEqual(0)
   }))
 
@@ -234,7 +234,7 @@ describe('BenefitService', () => {
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
     let currentCalculationDate:Date = new Date(2019, 0, 1) //Current calc year is 2018
 
-    expect(service.countBenefitMonths(benefitFilingDate, currentCalculationDate)) //user inputs 3/25/1956
+    expect(service.countMonthsOfaBenefit(benefitFilingDate, currentCalculationDate)) //user inputs 3/25/1956
         .toEqual(12)
   }))
 

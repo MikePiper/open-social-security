@@ -38,7 +38,7 @@ export class PresentValueService {
       while (age < 115) {
 
         //Count number of months in year that are before/after inputBenefitDate
-        calcYear.monthsOfPersonAretirement = this.benefitService.countBenefitMonths(person.retirementBenefitDate, calcYear.date)
+        calcYear = this.benefitService.countAllBenefitMonthsSingle(calcYear, person)
 
         //Earnings test
         let earningsTestResult:any[] = this.earningsTestService.earningsTestSingle(calcYear, person)
@@ -126,51 +126,9 @@ export class PresentValueService {
     //Calculate PV via loop until both spouses are at least age 115 (by which point "remaining lives" is zero)
     while (spouseAage < 115 || spouseBage < 115){
 
-        //Calculate number of months of retirement benefit for each spouse
-        calcYear.monthsOfPersonAretirement = this.benefitService.countBenefitMonths(personA.retirementBenefitDate, calcYear.date)
-        calcYear.monthsOfPersonBretirement = this.benefitService.countBenefitMonths(personB.retirementBenefitDate, calcYear.date)
+        //count number of months in this year for which each type of benefit will be received
+        calcYear = this.benefitService.countAllBenefitMonthsCouple(calcYear, personA, personB)
 
-        //Calculate number of months of spouseA spousalBenefit w/ retirementBenefit and number of months of spouseA spousalBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonAspousal = this.benefitService.countBenefitMonths(personA.spousalBenefitDate, calcYear.date)
-        if (calcYear.monthsOfPersonAretirement >= calcYear.monthsOfPersonAspousal) {
-          calcYear.monthsOfPersonAspousalWithRetirement = calcYear.monthsOfPersonAspousal
-          calcYear.monthsOfPersonAspousalWithoutRetirement = 0
-        } else {
-          calcYear.monthsOfPersonAspousalWithRetirement = calcYear.monthsOfPersonAretirement
-          calcYear.monthsOfPersonAspousalWithoutRetirement = calcYear.monthsOfPersonAspousal - calcYear.monthsOfPersonAretirement
-        }
-
-        //Calculate number of months of spouseB spousalBenefit w/ retirementBenefit and number of months of spouseB spousalBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonBspousal = this.benefitService.countBenefitMonths(personB.spousalBenefitDate, calcYear.date)
-        if (calcYear.monthsOfPersonBretirement >= calcYear.monthsOfPersonBspousal) {
-          calcYear.monthsOfPersonBspousalWithRetirement = calcYear.monthsOfPersonBspousal
-          calcYear.monthsOfPersonBspousalWithoutRetirement = 0
-        } else {
-          calcYear.monthsOfPersonBspousalWithRetirement = calcYear.monthsOfPersonBretirement
-          calcYear.monthsOfPersonBspousalWithoutRetirement = calcYear.monthsOfPersonBspousal - calcYear.monthsOfPersonBretirement
-        }
-
-        //Calculate number of months of spouseA survivorBenefit w/ retirementBenefit and number of months of spouseA survivorBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonAsurvivor = this.benefitService.countBenefitMonths(personA.survivorFRA, calcYear.date)
-        if (calcYear.monthsOfPersonAretirement >= calcYear.monthsOfPersonAsurvivor) {
-          calcYear.monthsOfPersonAsurvivorWithRetirement = calcYear.monthsOfPersonAsurvivor
-          calcYear.monthsOfPersonAsurvivorWithoutRetirement = 0
-        } else {
-          calcYear.monthsOfPersonAsurvivorWithRetirement = calcYear.monthsOfPersonAretirement
-          calcYear.monthsOfPersonAsurvivorWithoutRetirement = calcYear.monthsOfPersonAsurvivor - calcYear.monthsOfPersonAretirement
-        }
-
-        //Calculate number of months of spouseB survivorBenefit w/ retirementBenefit and number of months of spouseB survivorBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonBsurvivor = this.benefitService.countBenefitMonths(personB.survivorFRA, calcYear.date)
-        if (calcYear.monthsOfPersonBretirement >= calcYear.monthsOfPersonBsurvivor) {
-          calcYear.monthsOfPersonBsurvivorWithRetirement = calcYear.monthsOfPersonBsurvivor
-          calcYear.monthsOfPersonBsurvivorWithoutRetirement = 0
-        } else {
-          calcYear.monthsOfPersonBsurvivorWithRetirement = calcYear.monthsOfPersonBretirement
-          calcYear.monthsOfPersonBsurvivorWithoutRetirement = calcYear.monthsOfPersonBsurvivor - calcYear.monthsOfPersonBretirement
-        }
-
-        
         //Earnings test
         let earningsTestResult:any[] = this.earningsTestService.earningsTestCouple(calcYear, scenario, personA, personB)
         calcYear = earningsTestResult[0]

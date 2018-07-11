@@ -184,7 +184,7 @@ describe('EarningstestService', () => {
     personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate) //set initial value for adjusted retirementBenefitDate
     let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    calcYear.monthsOfPersonAretirement = benefitService.countBenefitMonths(personA.retirementBenefitDate, calcYear.date)//calculate monthsOfPersonAretirement before application of earnings test
+    calcYear.monthsOfPersonAretirement = benefitService.countMonthsOfaBenefit(personA.retirementBenefitDate, calcYear.date)//calculate monthsOfPersonAretirement before application of earnings test
     expect(service.earningsTestSingle(calcYear, personA)[0].monthsOfPersonAretirement)
         .toEqual(0)
   }))
@@ -204,7 +204,7 @@ describe('EarningstestService', () => {
     personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate) //set initial value for adjusted retirementBenefitDate
     let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    calcYear.monthsOfPersonAretirement = benefitService.countBenefitMonths(personA.retirementBenefitDate, calcYear.date) //calculate monthsOfPersonAretirement before application of earnings test
+    calcYear.monthsOfPersonAretirement = benefitService.countMonthsOfaBenefit(personA.retirementBenefitDate, calcYear.date) //calculate monthsOfPersonAretirement before application of earnings test
     let earningsTestResults = service.earningsTestSingle(calcYear, personA)
     expect(earningsTestResults[0].monthsOfPersonAretirement)
         .toEqual(2)
@@ -226,7 +226,7 @@ describe('EarningstestService', () => {
     personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate) //set initial value for adjusted retirementBenefitDate
     let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    calcYear.monthsOfPersonAretirement = benefitService.countBenefitMonths(personA.retirementBenefitDate, calcYear.date) //calculate monthsOfPersonAretirement before application of earnings test
+    calcYear.monthsOfPersonAretirement = benefitService.countMonthsOfaBenefit(personA.retirementBenefitDate, calcYear.date) //calculate monthsOfPersonAretirement before application of earnings test
     let earningsTestResults = service.earningsTestSingle(calcYear, personA)
     //annual earnings is 18000. (18000 - 17040)/2 = 480 annual withholding. $750 monthly benefit means 1 months withheld, 2 months received
     expect(earningsTestResults[0].personAoverWithholding)
@@ -248,7 +248,7 @@ describe('EarningstestService', () => {
     personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate) //set initial value for adjusted retirementBenefitDate
     let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    calcYear.monthsOfPersonAretirement = benefitService.countBenefitMonths(personA.retirementBenefitDate, calcYear.date) //calculate monthsOfPersonAretirement before application of earnings test
+    calcYear.monthsOfPersonAretirement = benefitService.countMonthsOfaBenefit(personA.retirementBenefitDate, calcYear.date) //calculate monthsOfPersonAretirement before application of earnings test
     let earningsTestResults = service.earningsTestSingle(calcYear, personA)
     //annual earnings is 18000. (18000 - 17040)/2 = 480 annual withholding. $750 monthly benefit means 1 months withheld, 2 months received
     let expectedOutcome:Date = new Date(2018, 10, 1)
@@ -293,10 +293,10 @@ describe('EarningstestService', () => {
     let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
     //calculate months of various benefits before application of earnings test
-    calcYear.monthsOfPersonAretirement = benefitService.countBenefitMonths(personA.retirementBenefitDate, calcYear.date)
-    calcYear.monthsOfPersonBretirement = benefitService.countBenefitMonths(personB.retirementBenefitDate, calcYear.date) 
-    calcYear.monthsOfPersonAspousalWithRetirement = benefitService.countBenefitMonths(personA.spousalBenefitDate, calcYear.date)
-    calcYear.monthsOfPersonBspousalWithRetirement = benefitService.countBenefitMonths(personB.spousalBenefitDate, calcYear.date)
+    calcYear.monthsOfPersonAretirement = benefitService.countMonthsOfaBenefit(personA.retirementBenefitDate, calcYear.date)
+    calcYear.monthsOfPersonBretirement = benefitService.countMonthsOfaBenefit(personB.retirementBenefitDate, calcYear.date) 
+    calcYear.monthsOfPersonAspousalWithRetirement = benefitService.countMonthsOfaBenefit(personA.spousalBenefitDate, calcYear.date)
+    calcYear.monthsOfPersonBspousalWithRetirement = benefitService.countMonthsOfaBenefit(personB.spousalBenefitDate, calcYear.date)
     calcYear.monthsOfPersonAspousalWithoutRetirement = 0 //not a restricted app scenario
     calcYear.monthsOfPersonBspousalWithoutRetirement = 0 //not a restricted app scenario
     let scenario:ClaimingScenario = new ClaimingScenario()

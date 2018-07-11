@@ -34,6 +34,8 @@ export class Person {
 
     retirementBenefitDate: Date
         DRCsViaSuspension: number = 0
+        beginSuspensionDate: Date //this is basically just going to be "FRA but no earlier than today"
+        endSuspensionDate: Date //this is a variable that will be iterated
     spousalBenefitDate: Date
     adjustedRetirementBenefitDate: Date
     adjustedSpousalBenefitDate: Date
