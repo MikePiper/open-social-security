@@ -127,7 +127,7 @@ export class PresentValueService {
     while (spouseAage < 115 || spouseBage < 115){
 
         //count number of months in this year for which each type of benefit will be received
-        calcYear = this.benefitService.countAllBenefitMonthsCouple(calcYear, personA, personB)
+        calcYear = this.benefitService.countAllBenefitMonthsCouple(calcYear, scenario, personA, personB)
 
         //Earnings test
         let earningsTestResult:any[] = this.earningsTestService.earningsTestCouple(calcYear, scenario, personA, personB)

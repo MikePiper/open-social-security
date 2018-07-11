@@ -1,7 +1,8 @@
 import {TestBed, inject} from '@angular/core/testing'
 import {BenefitService} from './benefit.service'
-import {BirthdayService} from './birthday.service';
-import {Person} from './data model classes/person';
+import {BirthdayService} from './birthday.service'
+import {Person} from './data model classes/person'
+import {CalculationYear} from './data model classes/calculationyear'
 
 
 describe('BenefitService', () => {
@@ -213,30 +214,79 @@ describe('BenefitService', () => {
     }))
 
 
-  //Testing countBenefitMonths
-  it('should determine correct number of months in filing year', inject([BenefitService], (service: BenefitService) => { 
+  //Testing countMonthsOfaBenefitOtherThanMarriedSpousal()
+  it('should determine correct number of benefitMonths in filing year', inject([BenefitService], (service: BenefitService) => { 
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
-    let currentCalculationDate:Date = new Date(2018, 0, 1) //Current calc year is 2018
+    let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
+    let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
+    let person:Person = new Person()
 
-    expect(service.countMonthsOfaBenefit(benefitFilingDate, currentCalculationDate)) //user inputs 3/25/1956
+    expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
         .toEqual(5)
   }))
 
-  it('should determine correct number of months in year prior to filing year', inject([BenefitService], (service: BenefitService) => { 
+  it('should determine correct number of benefitMonths in year prior to filing year', inject([BenefitService], (service: BenefitService) => { 
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
-    let currentCalculationDate:Date = new Date(2017, 0, 1) //Current calc year is 2018
-
-    expect(service.countMonthsOfaBenefit(benefitFilingDate, currentCalculationDate)) //user inputs 3/25/1956
+    let beginningCalcDate = new Date(2017, 0, 1) //Jan 1, 2017
+    let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
+    let person:Person = new Person()
+    expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
         .toEqual(0)
   }))
 
-  it('should determine correct number of months in year after filing year', inject([BenefitService], (service: BenefitService) => { 
+  it('should determine correct number of benefitMonths in year after filing year', inject([BenefitService], (service: BenefitService) => { 
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
-    let currentCalculationDate:Date = new Date(2019, 0, 1) //Current calc year is 2018
-
-    expect(service.countMonthsOfaBenefit(benefitFilingDate, currentCalculationDate)) //user inputs 3/25/1956
+    let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019
+    let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
+    let person:Person = new Person()
+    expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
         .toEqual(12)
   }))
 
+  it('should determine correct number of benefitMonths in year after filing when benefit is suspended for some months', inject([BenefitService], (service: BenefitService) => { 
+    let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
+    let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019
+    let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
+    let person:Person = new Person()
+    person.beginSuspensionDate = new Date (2019, 6, 1) //suspending beginning in July
+    person.endSuspensionDate = new Date (2022, 7, 1) //suspended through remainder of year
+    expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
+        .toEqual(6)
+  }))
 
+  it('should determine correct number of benefitMonths in year after filing when benefit is suspended for entire year', inject([BenefitService], (service: BenefitService) => { 
+    let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
+    let beginningCalcDate = new Date(2020, 0, 1) //Jan 1, 2020
+    let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
+    let person:Person = new Person()
+    person.beginSuspensionDate = new Date (2019, 6, 1) //suspending beginning in July 2019
+    person.endSuspensionDate = new Date (2022, 7, 1) //suspended until Aug 2022
+    expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
+        .toEqual(0)
+  }))
+
+  //also need tests for countMonthsOfaMarriedSpousalBenefit
+  it('should determine correct number of marriedSpousalBenefitMonths for person A when person B is suspended part of year', inject([BenefitService], (service: BenefitService) => { 
+    let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
+    let beginningCalcDate = new Date(2020, 0, 1) //Jan 1, 2020
+    let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
+    let personA:Person = new Person()
+    let personB:Person = new Person()
+    personB.beginSuspensionDate = new Date (2019, 6, 1) //suspending beginning in July 2019
+    personB.endSuspensionDate = new Date (2020, 7, 1) //Aug 2020 is first month of unsuspension
+    expect(service.countMonthsOfaMarriedSpousalBenefit(benefitFilingDate, calcYear, personA, personB))
+        .toEqual(5) //Should get benefits in Aug, Sept, Oct, Nov, Dec
+  }))
+
+  it('should determine correct number of marriedSpousalBenefitMonths for person A when person A is suspended part of year', inject([BenefitService], (service: BenefitService) => { 
+    let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
+    let beginningCalcDate = new Date(2020, 0, 1) //Jan 1, 2020
+    let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
+    let personA:Person = new Person()
+    let personB:Person = new Person()
+    personA.beginSuspensionDate = new Date (2020, 4, 1) //suspending beginning in May 2020
+    personA.endSuspensionDate = new Date (2022, 7, 1) //Aug 2022 is first month of unsuspension
+    expect(service.countMonthsOfaMarriedSpousalBenefit(benefitFilingDate, calcYear, personA, personB))
+        .toEqual(4) //Should get benefits in Jan, Feb, March, April
+  }))
 })

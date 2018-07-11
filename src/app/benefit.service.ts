@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {Person} from './data model classes/person';
 import { CalculationYear } from './data model classes/calculationyear';
+import { ClaimingScenario } from './data model classes/claimingscenario';
 
 
 @Injectable()
@@ -132,38 +133,105 @@ export class BenefitService {
     return Number(survivorBenefit)
   }
 
-  countMonthsOfaBenefit(benefitFilingDate:Date, currentCalculationDate:Date){
-    let monthsBeforeBenefit: number = benefitFilingDate.getMonth() - currentCalculationDate.getMonth() + 12*(benefitFilingDate.getFullYear() - currentCalculationDate.getFullYear())
-    let monthsOfBenefit: number
-    if (monthsBeforeBenefit >= 12) {
+
+  //for counting benefit months when you only have to check if that person is currently suspended (e..g, A's retirement benefit only requires checking if A is suspended)
+  countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate:Date, calcYear:CalculationYear, person:Person) {
+    let monthsOfBenefit: number = 0
+    if (benefitFilingDate.getFullYear() < calcYear.date.getFullYear()){//filed in previous year
+      monthsOfBenefit = 12
+    } 
+    else if (benefitFilingDate.getFullYear() == calcYear.date.getFullYear()){//filing this year
+      monthsOfBenefit = 12 - benefitFilingDate.getMonth() //e.g. if filing in June, benefitFilingDate.getMonth is 5, so we want 7 months of benefit
+    }
+    else {//filing in future year
       monthsOfBenefit = 0
     }
-    else if (monthsBeforeBenefit > 0) {
-      monthsOfBenefit = 12 - monthsBeforeBenefit
-    } else {
-      monthsOfBenefit = 12
+
+    //adjust for voluntary suspension
+    if (person.beginSuspensionDate.getFullYear() > calcYear.date.getFullYear() || person.endSuspensionDate.getFullYear() < calcYear.date.getFullYear()){
+      //benefit not suspended at all. Math above doesn't need adjustment. (Only reason this "if" is here is to avoid having to do the math below in most years.)
+    }
+    else if (person.beginSuspensionDate < calcYear.date && person.endSuspensionDate.getFullYear() > calcYear.date.getFullYear()) {//Benefit is suspended for entire year
+      monthsOfBenefit = 0
+    }
+    else if (person.beginSuspensionDate.getFullYear() == calcYear.date.getFullYear() || person.endSuspensionDate.getFullYear() == calcYear.date.getFullYear()) {//Benefit suspended for part of year.
+      monthsOfBenefit = 0 //start new benefit count
+      let testMonth:Date = new Date(calcYear.date)
+      let endTestMonth:Date = new Date(calcYear.date.getFullYear()+1, 0, 1)
+      //Loop monthly to check: is this month a benefit month and if so is it also a suspension month?
+      while (testMonth < endTestMonth){
+        if (benefitFilingDate <= testMonth) {//If testMonth is a benefit month...
+          if (person.beginSuspensionDate > testMonth || person.endSuspensionDate <= testMonth) {//...and it's not a suspension month...
+            monthsOfBenefit = monthsOfBenefit + 1
+          }
+        }
+        testMonth.setMonth(testMonth.getMonth()+1)
+      }
     }
     return Number(monthsOfBenefit)
   }
 
+  //this function is different from above, because always have to check if either person is currently suspended
+  countMonthsOfaMarriedSpousalBenefit(benefitFilingDate:Date, calcYear:CalculationYear, personA:Person, personB:Person){
+    let monthsOfBenefit: number = 0
+    if (benefitFilingDate.getFullYear() < calcYear.date.getFullYear()){//filed in previous year
+      monthsOfBenefit = 12
+    } 
+    else if (benefitFilingDate.getFullYear() == calcYear.date.getFullYear()){//filing this year
+      monthsOfBenefit = 12 - benefitFilingDate.getMonth() //e.g. if filing in June, benefitFilingDate.getMonth is 5, so we want 7 months of benefit
+    }
+    else {//filing in future year
+      monthsOfBenefit = 0
+    }
+        //adjust for voluntary suspension
+        if (
+          (personA.beginSuspensionDate.getFullYear() > calcYear.date.getFullYear() || personA.endSuspensionDate.getFullYear() < calcYear.date.getFullYear())
+        &&(personB.beginSuspensionDate.getFullYear() > calcYear.date.getFullYear() || personB.endSuspensionDate.getFullYear() < calcYear.date.getFullYear())
+        ){
+          //Neither person is suspended this year at all. Math above doesn't need adjustment. (Only reason this "if" is here is to avoid having to do the math below in most years.)
+        }
+        else if (
+          (personA.beginSuspensionDate < calcYear.date && personA.endSuspensionDate.getFullYear() > calcYear.date.getFullYear())
+         || (personB.beginSuspensionDate < calcYear.date && personB.endSuspensionDate.getFullYear() > calcYear.date.getFullYear())
+        ) {//One person is suspended all year, which means spousal benefit is suspended all year.
+          monthsOfBenefit = 0
+        }
+        else if (
+            (personA.beginSuspensionDate.getFullYear() == calcYear.date.getFullYear() || personA.endSuspensionDate.getFullYear() == calcYear.date.getFullYear())
+          ||(personB.beginSuspensionDate.getFullYear() == calcYear.date.getFullYear() || personB.endSuspensionDate.getFullYear() == calcYear.date.getFullYear())
+        ) {//At least one person is suspended for part of year, which means spousal benefit will be suspended for part of year.
+          monthsOfBenefit = 0 //start new benefit count
+          let testMonth:Date = new Date(calcYear.date)
+          let endTestMonth:Date = new Date(calcYear.date.getFullYear()+1, 0, 1)
+          //Loop monthly to check: is this month a benefit month and if so is it also a suspension month?
+          while (testMonth < endTestMonth){
+            if (benefitFilingDate <= testMonth) {//If testMonth is a benefit month...
+              if (personA.beginSuspensionDate > testMonth || personA.endSuspensionDate <= testMonth) {//...and it's not a suspension month for personA...
+                if (personB.beginSuspensionDate > testMonth || personB.endSuspensionDate <= testMonth) {//..and it's not a suspension month for personB...
+                  monthsOfBenefit = monthsOfBenefit + 1
+                }
+              }
+            }
+            testMonth.setMonth(testMonth.getMonth()+1)
+          }
+        }
+        return Number(monthsOfBenefit)
+  }
+
+
   countAllBenefitMonthsSingle(calcYear:CalculationYear, person:Person){
-    //TODO: account for voluntary suspension
-
-    //Count number of months in year that are before/after inputBenefitDate
-    calcYear.monthsOfPersonAretirement = this.countMonthsOfaBenefit(person.retirementBenefitDate, calcYear.date)
-
+    calcYear.monthsOfPersonAretirement = this.countMonthsOfaBenefitOtherThanMarriedSpousal(person.retirementBenefitDate, calcYear, person)
     return calcYear
   }
 
-  countAllBenefitMonthsCouple(calcYear:CalculationYear, personA:Person, personB:Person){
-    //TODO: account for voluntary suspension
-
+  countAllBenefitMonthsCouple(calcYear:CalculationYear, scenario:ClaimingScenario, personA:Person, personB:Person){
         //Calculate number of months of retirement benefit for each spouse
-        calcYear.monthsOfPersonAretirement = this.countMonthsOfaBenefit(personA.retirementBenefitDate, calcYear.date)
-        calcYear.monthsOfPersonBretirement = this.countMonthsOfaBenefit(personB.retirementBenefitDate, calcYear.date)
+        calcYear.monthsOfPersonAretirement = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personA.retirementBenefitDate, calcYear, personA)
+        calcYear.monthsOfPersonBretirement = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personB.retirementBenefitDate, calcYear, personB)
 
         //Calculate number of months of spouseA spousalBenefit w/ retirementBenefit and number of months of spouseA spousalBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonAspousal = this.countMonthsOfaBenefit(personA.spousalBenefitDate, calcYear.date)
+        if (scenario.maritalStatus == "married") {calcYear.monthsOfPersonAspousal = this.countMonthsOfaMarriedSpousalBenefit(personA.spousalBenefitDate, calcYear, personA, personB)}
+        if (scenario.maritalStatus == "divorced") {calcYear.monthsOfPersonAspousal = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personA.spousalBenefitDate, calcYear, personA)}
         if (calcYear.monthsOfPersonAretirement >= calcYear.monthsOfPersonAspousal) {
           calcYear.monthsOfPersonAspousalWithRetirement = calcYear.monthsOfPersonAspousal
           calcYear.monthsOfPersonAspousalWithoutRetirement = 0
@@ -173,7 +241,8 @@ export class BenefitService {
         }
 
         //Calculate number of months of spouseB spousalBenefit w/ retirementBenefit and number of months of spouseB spousalBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonBspousal = this.countMonthsOfaBenefit(personB.spousalBenefitDate, calcYear.date)
+        if (scenario.maritalStatus == "married") {calcYear.monthsOfPersonBspousal = this.countMonthsOfaMarriedSpousalBenefit(personB.spousalBenefitDate, calcYear, personB, personA)}
+        if (scenario.maritalStatus == "divorced"){calcYear.monthsOfPersonBspousal = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personB.spousalBenefitDate, calcYear, personB)}
         if (calcYear.monthsOfPersonBretirement >= calcYear.monthsOfPersonBspousal) {
           calcYear.monthsOfPersonBspousalWithRetirement = calcYear.monthsOfPersonBspousal
           calcYear.monthsOfPersonBspousalWithoutRetirement = 0
@@ -183,7 +252,7 @@ export class BenefitService {
         }
 
         //Calculate number of months of spouseA survivorBenefit w/ retirementBenefit and number of months of spouseA survivorBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonAsurvivor = this.countMonthsOfaBenefit(personA.survivorFRA, calcYear.date)
+        calcYear.monthsOfPersonAsurvivor = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personA.survivorFRA, calcYear, personA)
         if (calcYear.monthsOfPersonAretirement >= calcYear.monthsOfPersonAsurvivor) {
           calcYear.monthsOfPersonAsurvivorWithRetirement = calcYear.monthsOfPersonAsurvivor
           calcYear.monthsOfPersonAsurvivorWithoutRetirement = 0
@@ -193,7 +262,7 @@ export class BenefitService {
         }
 
         //Calculate number of months of spouseB survivorBenefit w/ retirementBenefit and number of months of spouseB survivorBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonBsurvivor = this.countMonthsOfaBenefit(personB.survivorFRA, calcYear.date)
+        calcYear.monthsOfPersonBsurvivor = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personB.survivorFRA, calcYear, personB)
         if (calcYear.monthsOfPersonBretirement >= calcYear.monthsOfPersonBsurvivor) {
           calcYear.monthsOfPersonBsurvivorWithRetirement = calcYear.monthsOfPersonBsurvivor
           calcYear.monthsOfPersonBsurvivorWithoutRetirement = 0
