@@ -18,7 +18,7 @@ describe('BenefitService', () => {
 
   //Testing calculateRetirementBenefit
   it('should calculate retirement benefit 60 months early as 70% of PIA', inject([BenefitService], (service: BenefitService) => {
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
     person.PIA = 1000
     let benefitDate = new Date (2025, 7 , 1) //Benefit date 5 years prior to FRA
@@ -28,7 +28,7 @@ describe('BenefitService', () => {
 
 
   it('should calculate retirement benefit 24 months early as 86.67% of PIA', inject([BenefitService], (service: BenefitService) => {
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
     person.PIA = 1000
     let benefitDate = new Date (2028, 7 , 1)
@@ -38,7 +38,7 @@ describe('BenefitService', () => {
 
 
   it('should calculate retirement benefit 12 months after FRA as 108% of PIA', inject([BenefitService], (service: BenefitService) => {
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
     person.PIA = 1000
     let benefitDate = new Date (2031, 7 , 1)
@@ -47,7 +47,7 @@ describe('BenefitService', () => {
   }))
 
   it('should calculate retirement benefit 48 months after FRA as 132% of PIA', inject([BenefitService], (service: BenefitService) => {
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
     person.PIA = 1000
     let benefitDate = new Date (2034, 7 , 1)
@@ -57,7 +57,7 @@ describe('BenefitService', () => {
 
 
   it('should calculate retirement benefit properly using DRCs from suspension', inject([BenefitService], (service: BenefitService) => {
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2030
     person.PIA = 1000
     let benefitDate = new Date (2027, 7 , 1) //36 months early
@@ -70,8 +70,8 @@ describe('BenefitService', () => {
 
   //Testing calculateSpousalBenefit
   it('should calculate spousal benefit as zero when own PIA is too high', inject([BenefitService], (service: BenefitService) => {
-    let person:Person = new Person()
-    let otherPerson:Person = new Person()
+    let person:Person = new Person("A")
+    let otherPerson:Person = new Person("B")
     person.PIA = 1000
     otherPerson.PIA = 1500
     person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
@@ -83,8 +83,8 @@ describe('BenefitService', () => {
   }))
 
     it('should calculate spousal benefit appropriately prior to FRA', inject([BenefitService], (service: BenefitService) => {
-      let person:Person = new Person()
-      let otherPerson:Person = new Person()
+      let person:Person = new Person("A")
+      let otherPerson:Person = new Person("B")
       person.PIA = 500
       otherPerson.PIA = 1500
       person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
@@ -96,8 +96,8 @@ describe('BenefitService', () => {
     }))
 
     it('should calculate spousal benefit appropriately prior to FRA, when reduced by GPO', inject([BenefitService], (service: BenefitService) => {
-      let person:Person = new Person()
-      let otherPerson:Person = new Person()
+      let person:Person = new Person("A")
+      let otherPerson:Person = new Person("B")
       person.PIA = 500
       otherPerson.PIA = 1500
       person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
@@ -109,8 +109,8 @@ describe('BenefitService', () => {
     }))
 
     it('should calculate spousal benefit appropriately prior to FRA, when reduced to zero by GPO', inject([BenefitService], (service: BenefitService) => {
-      let person:Person = new Person()
-      let otherPerson:Person = new Person()
+      let person:Person = new Person("A")
+      let otherPerson:Person = new Person("B")
       person.PIA = 500
       otherPerson.PIA = 1500
       person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
@@ -122,8 +122,8 @@ describe('BenefitService', () => {
     }))
 
     it('should calculate spousal benefit appropriately after FRA', inject([BenefitService], (service: BenefitService) => {
-      let person:Person = new Person()
-      let otherPerson:Person = new Person()
+      let person:Person = new Person("A")
+      let otherPerson:Person = new Person("B")
       person.PIA = 800
       otherPerson.PIA = 2000
       person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2020
@@ -138,8 +138,8 @@ describe('BenefitService', () => {
 
   //Testing calculateSurvivorBenefit
     it('should calculate survivor benefit appropriately after FRA, with own smaller retirement benefit. Deceased filed at age 70, died at 71', inject([BenefitService], (service: BenefitService) => {
-      let deceasedPerson:Person = new Person()
-      let survivingPerson:Person = new Person()
+      let deceasedPerson:Person = new Person("A")
+      let survivingPerson:Person = new Person("B")
       survivingPerson.SSbirthDate = new Date (1963, 7, 1) //SSbirthday Aug 1, 1963
       let birthdayService:BirthdayService = new BirthdayService()
       survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //FRA Aug 1, 2030
@@ -155,8 +155,8 @@ describe('BenefitService', () => {
     }))
 
     it('should calculate survivor benefit appropriately as zero with own larger retirement benefit. Deceased filed at age 70, died at 71', inject([BenefitService], (service: BenefitService) => {
-      let deceasedPerson:Person = new Person()
-      let survivingPerson:Person = new Person()
+      let deceasedPerson:Person = new Person("A")
+      let survivingPerson:Person = new Person("B")
       survivingPerson.SSbirthDate = new Date (1963, 7, 1) //SSbirthday Aug 1, 1963
       let birthdayService:BirthdayService = new BirthdayService()
       survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //FRA Aug 1, 2030
@@ -172,8 +172,8 @@ describe('BenefitService', () => {
     }))
 
     it('should calculate survivor benefit appropriately before FRA, with own smaller retirement benefit. Deceased filed at age 70, died at 71', inject([BenefitService], (service: BenefitService) => {
-      let deceasedPerson:Person = new Person()
-      let survivingPerson:Person = new Person()
+      let deceasedPerson:Person = new Person("A")
+      let survivingPerson:Person = new Person("B")
       survivingPerson.SSbirthDate = new Date (1963, 7, 1) //SSbirthday Aug 1, 1963
       let birthdayService:BirthdayService = new BirthdayService()
       survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //survivorFRA Aug 1, 2030
@@ -190,8 +190,8 @@ describe('BenefitService', () => {
     }))
 
     it('should calculate survivor benefit appropriately before FRA, with own smaller retirement benefit. Deceased filed at age 64, died after 70 (RIBLIM calculation)', inject([BenefitService], (service: BenefitService) => {
-      let deceasedPerson:Person = new Person()
-      let survivingPerson:Person = new Person()
+      let deceasedPerson:Person = new Person("A")
+      let survivingPerson:Person = new Person("B")
       survivingPerson.SSbirthDate = new Date (1963, 7, 1) //SSbirthday Aug 1, 1963
       let birthdayService:BirthdayService = new BirthdayService()
       survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //FRA Aug 1, 2030
@@ -219,7 +219,7 @@ describe('BenefitService', () => {
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
     let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    let person:Person = new Person()
+    let person:Person = new Person("A")
 
     expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
         .toEqual(5)
@@ -229,7 +229,7 @@ describe('BenefitService', () => {
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
     let beginningCalcDate = new Date(2017, 0, 1) //Jan 1, 2017
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
         .toEqual(0)
   }))
@@ -238,7 +238,7 @@ describe('BenefitService', () => {
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
     let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
         .toEqual(12)
   }))
@@ -247,7 +247,7 @@ describe('BenefitService', () => {
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
     let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     person.beginSuspensionDate = new Date (2019, 6, 1) //suspending beginning in July
     person.endSuspensionDate = new Date (2022, 7, 1) //suspended through remainder of year
     expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
@@ -258,7 +258,7 @@ describe('BenefitService', () => {
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
     let beginningCalcDate = new Date(2020, 0, 1) //Jan 1, 2020
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     person.beginSuspensionDate = new Date (2019, 6, 1) //suspending beginning in July 2019
     person.endSuspensionDate = new Date (2022, 7, 1) //suspended until Aug 2022
     expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
@@ -270,8 +270,8 @@ describe('BenefitService', () => {
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
     let beginningCalcDate = new Date(2020, 0, 1) //Jan 1, 2020
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     personB.beginSuspensionDate = new Date (2019, 6, 1) //suspending beginning in July 2019
     personB.endSuspensionDate = new Date (2020, 7, 1) //Aug 2020 is first month of unsuspension
     expect(service.countMonthsOfaMarriedSpousalBenefit(benefitFilingDate, calcYear, personA, personB))
@@ -282,8 +282,8 @@ describe('BenefitService', () => {
     let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
     let beginningCalcDate = new Date(2020, 0, 1) //Jan 1, 2020
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     personA.beginSuspensionDate = new Date (2020, 4, 1) //suspending beginning in May 2020
     personA.endSuspensionDate = new Date (2022, 7, 1) //Aug 2022 is first month of unsuspension
     expect(service.countMonthsOfaMarriedSpousalBenefit(benefitFilingDate, calcYear, personA, personB))

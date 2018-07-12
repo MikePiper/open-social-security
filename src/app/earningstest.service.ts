@@ -92,7 +92,7 @@ export class EarningsTestService {
               && (graceYear === false || earningsTestMonth < person.quitWorkDate ) //make sure it isn't a nonservice month in grace year
               && (earningsTestMonth < person.FRA) //make sure current month is prior to FRA
             ) {
-              availableForWithholding = availableForWithholding + person.retirementBenefit
+              availableForWithholding = availableForWithholding + person.initialRetirementBenefit
               calcYear.monthsOfPersonAretirement = calcYear.monthsOfPersonAretirement - 1
               monthsWithheld  = monthsWithheld + 1
             }
@@ -109,7 +109,7 @@ export class EarningsTestService {
     //Ignore earnings test if user wasn't working
     else {
       withholdingAmount = 0
-      person.retirementBenefitAfterARF = person.retirementBenefit
+      person.retirementBenefitAfterARF = person.initialRetirementBenefit
     }
 
     //withholdingAmount is negative at this point if we overwithheld. Have to add that negative amounts back to annual benefit amounts
@@ -173,7 +173,7 @@ export class EarningsTestService {
                     && (spouseAgraceYear === false || earningsTestMonth < personA.quitWorkDate) //Make sure it's not a nonservice month in a grace year
                     && (earningsTestMonth < personA.FRA) //Make sure current month is prior to FRA
                   ) {  
-                    availableForWithholding = availableForWithholding + personA.retirementBenefit
+                    availableForWithholding = availableForWithholding + personA.initialRetirementBenefit
                     calcYear.monthsOfPersonAretirement = calcYear.monthsOfPersonAretirement - 1
                     monthsSpouseAretirementWithheld  = monthsSpouseAretirementWithheld  + 1
                   }
@@ -209,7 +209,7 @@ export class EarningsTestService {
                     && (spouseBgraceYear === false || earningsTestMonth < personB.quitWorkDate) //Make sure it's not a nonservice month in a grace year
                     && (earningsTestMonth < personB.FRA) //Make sure current month is prior to FRA
                   ) {
-                    availableForWithholding = availableForWithholding + personB.retirementBenefit
+                    availableForWithholding = availableForWithholding + personB.initialRetirementBenefit
                     calcYear.monthsOfPersonBretirement = calcYear.monthsOfPersonBretirement - 1
                     monthsSpouseBretirementWithheld  = monthsSpouseBretirementWithheld  + 1
                   }
@@ -297,8 +297,8 @@ export class EarningsTestService {
         else {
           withholdingDueToSpouseAearnings = 0
           withholdingDueToSpouseBearnings = 0
-          personA.retirementBenefitAfterARF = personA.retirementBenefit
-          personB.retirementBenefitAfterARF = personB.retirementBenefit
+          personA.retirementBenefitAfterARF = personA.initialRetirementBenefit
+          personB.retirementBenefitAfterARF = personB.initialRetirementBenefit
           personA.spousalBenefitWithoutRetirementAfterARF = personA.spousalBenefitWithoutRetirement
           personA.spousalBenefitWithRetirementAfterARF = personA.spousalBenefitWithRetirement
           personB.spousalBenefitWithoutRetirementAfterARF = personB.spousalBenefitWithoutRetirement

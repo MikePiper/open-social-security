@@ -26,8 +26,8 @@ export class HomeComponent implements OnInit {
     )
   }
 
-  personA:Person = new Person()
-  personB:Person = new Person()
+  personA:Person = new Person("A")
+  personB:Person = new Person("B")
   scenario:ClaimingScenario = new ClaimingScenario()
   today:Date = new Date()
   deemedFilingCutoff: Date = new Date(1954, 0, 1)

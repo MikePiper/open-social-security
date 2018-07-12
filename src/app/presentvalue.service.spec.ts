@@ -22,7 +22,7 @@ describe('PresentValueService', () => {
 
   //Test calculateSinglePersonPV()
   it('should return appropriate PV for single person, no complicating factors', inject([PresentValueService], (service: PresentValueService) => {
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     let scenario:ClaimingScenario = new ClaimingScenario
     person.SSbirthDate = new Date(1960, 3, 1) //Person born April 1960
     person.FRA = new Date (2027, 3, 1) //FRA April 2027 (age 67)
@@ -39,7 +39,7 @@ describe('PresentValueService', () => {
   }))
 
   it('should return appropriate PV for single person, but with "still working" inputs and a different mortality table', inject([PresentValueService], (service: PresentValueService) => { 
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     let scenario:ClaimingScenario = new ClaimingScenario
     person.SSbirthDate = new Date(1960, 3, 1) //Person born April 1960
     person.FRA = new Date (2027, 3, 1) //FRA April 2027 (age 67)
@@ -57,8 +57,8 @@ describe('PresentValueService', () => {
   
   //Test calculateCouplePV
   it('should return appropriate PV for married couple, basic inputs', inject([PresentValueService], (service: PresentValueService) => { 
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "married"
     let mortalityService:MortalityService = new MortalityService()
@@ -91,8 +91,8 @@ describe('PresentValueService', () => {
   }))
 
   it('should return appropriate PV for married couple, still working', inject([PresentValueService], (service: PresentValueService) => { 
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "married"
     let mortalityService:MortalityService = new MortalityService()
@@ -125,8 +125,8 @@ describe('PresentValueService', () => {
   }))
 
   it ('should return appropriate PV for married couple, including GPO', inject([PresentValueService], (service: PresentValueService) => {
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "married"
     let mortalityService:MortalityService = new MortalityService()
@@ -161,8 +161,8 @@ describe('PresentValueService', () => {
 
   it ('should return appropriate PV for basic divorce scenario', inject([PresentValueService], (service: PresentValueService) => {
     //Can't really write a test for "one has filed" scenario for a still-married couple, because the PV will be different every time, as the person in question gets older (and remaing years decreases)
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "divorced"
     let mortalityService:MortalityService = new MortalityService()
@@ -197,7 +197,7 @@ describe('PresentValueService', () => {
 
   //Test maximize functions
   it('should tell a single person to file ASAP with very high discount rate', inject([PresentValueService], (service: PresentValueService) => {
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     let scenario:ClaimingScenario = new ClaimingScenario
     scenario.maritalStatus = "single"
     person.actualBirthDate = new Date(1960, 3, 15) //Person born April 15 1960
@@ -215,8 +215,8 @@ describe('PresentValueService', () => {
   }))
 
   it ('should tell a high-PIA spouse to wait until 70, with low discount rate and long lifespans', inject([PresentValueService], (service: PresentValueService) => {
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "married"
     let mortalityService:MortalityService = new MortalityService()
@@ -249,8 +249,8 @@ describe('PresentValueService', () => {
   }))
 
   it ('should tell a high-PIA spouse to file a restricted app when possible', inject([PresentValueService], (service: PresentValueService) => {
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "married"
     let mortalityService:MortalityService = new MortalityService()
@@ -288,8 +288,8 @@ describe('PresentValueService', () => {
 
   //tests for maximizeCouplePVpersonBisFixed (divorced)
   it ('should tell a divorced user with significantly lower PIA to file ASAP', inject([PresentValueService], (service: PresentValueService) => {
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.personAhasFiled = false
     scenario.personBhasFiled = false
@@ -325,8 +325,8 @@ describe('PresentValueService', () => {
   }))
   
   it ('should tell a divorced user with higher PIA and an ex who filed early (so essentially a single person) to file at 70 given long life expectancy and low discount rate', inject([PresentValueService], (service: PresentValueService) => {
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.personAhasFiled = false
     scenario.personBhasFiled = false
@@ -362,8 +362,8 @@ describe('PresentValueService', () => {
 
   //tests for maximizeCouplePVpersonBisFixed (married)
   it ('should tell personA to wait until 70, even with slightly lower PIA, if personB filed early at 62, given low discount rate and long life expectancies', inject([PresentValueService], (service: PresentValueService) => {
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.personAhasFiled = false
     scenario.personBhasFiled = true
@@ -398,8 +398,8 @@ describe('PresentValueService', () => {
   }))
 
   it ('should tell personA to file ASAP, even if personB filed early at 62, if personA has much lower PIA', inject([PresentValueService], (service: PresentValueService) => {
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.personAhasFiled = false
     scenario.personBhasFiled = true
@@ -436,8 +436,8 @@ describe('PresentValueService', () => {
 
   //tests for maximizeCouplePVpersonBisFixed (married)
   it ('should tell personB to wait until 70, even with slightly lower PIA, if personA filed early at 62, given low discount rate and long life expectancies', inject([PresentValueService], (service: PresentValueService) => {
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.personAhasFiled = false
     scenario.personBhasFiled = true
@@ -472,8 +472,8 @@ describe('PresentValueService', () => {
   }))
 
   it ('should tell personB to file ASAP, even if personA filed early at 62, if personB has much lower PIA', inject([PresentValueService], (service: PresentValueService) => {
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.personAhasFiled = false
     scenario.personBhasFiled = true

@@ -276,22 +276,75 @@ export class BenefitService {
   
 
   //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
-  calculateAnnualBenefitAmountSingle(person:Person, calcYear:CalculationYear){
-      if (calcYear.date.getFullYear() < person.FRA.getFullYear()) {
-        calcYear.personAannualRetirementBenefit = calcYear.monthsOfPersonAretirement * person.retirementBenefit
-      } else if (calcYear.date.getFullYear() == person.FRA.getFullYear()){
-          //total monthsOfRetirement is monthsOfRetirement. Some will be retirementBenefitAfterARF. Rest will be retirementBenefit.  Then subtract withholdingAmount
-          //ARF should be applied for (12 - FRA.getMonth) months (e.g., all 12 if FRA is January). But limited to monthsOfRetirement.
-          let ARFmonths = 12 - person.FRA.getMonth()
-          if (ARFmonths > calcYear.monthsOfPersonAretirement) {
-            ARFmonths = calcYear.monthsOfPersonAretirement
-          }
-          calcYear.personAannualRetirementBenefit = ARFmonths * person.retirementBenefitAfterARF + (calcYear.monthsOfPersonAretirement - ARFmonths) * person.retirementBenefit
-        } else {//i.e., if whole year is past FRA
-        calcYear.personAannualRetirementBenefit = calcYear.monthsOfPersonAretirement * person.retirementBenefitAfterARF
+  //We have 3 "retirementBenefit" amounts. Have to decide how many months of each there are, out of the total "months of retirement" figure
+      //preARFmonths + ARFmonths + DRCmonths = "monthsOfPersonAretirement"
+  calculateAnnualRetirementBenefit(person:Person, calcYear:CalculationYear){
+    if (person.id == 'A') {
+      var retirementMonths:number = calcYear.monthsOfPersonAretirement
+    }
+    else {
+      var retirementMonths:number = calcYear.monthsOfPersonBretirement
+    }
+    let ARFmonths: number
+    let preARFmonths: number
+    let DRCmonths: number
+    let annualRetirementBenefit:number
+    if (person.DRCsViaSuspension == 0) {
+        if (calcYear.date.getFullYear() > person.FRA.getFullYear()) {//if whole year is after FRA, all months are ARF months 
+          annualRetirementBenefit = retirementMonths * person.retirementBenefitAfterARF
         }
-      //Add back overwithholding
+        else if (calcYear.date.getFullYear() < person.FRA.getFullYear()) {//if whole year is before FRA, all months are preARFmonths
+          annualRetirementBenefit = retirementMonths * person.initialRetirementBenefit
+        }
+        else if (calcYear.date.getFullYear() == person.FRA.getFullYear()){//if year includes FRA, ARF months = 12 - FRA.getmonth, limited to monthsofretirement. And preARFmonths = months of retirement - ARFmonths
+            ARFmonths = 12 - person.FRA.getMonth()
+            if (ARFmonths > retirementMonths) {ARFmonths = retirementMonths}
+            annualRetirementBenefit = ARFmonths * person.retirementBenefitAfterARF + (retirementMonths - ARFmonths) * person.initialRetirementBenefit
+        }
+    }
+    else {//i.e., if DRC > 0
+        if (calcYear.date > person.endSuspensionDate) {//if calcYear.date is after endSuspensionDate, all months are DRCmonths
+          annualRetirementBenefit = retirementMonths * person.retirementBenefitWithDRCsfromSuspension
+        }
+        else if (calcYear.date.getFullYear() < person.FRA.getFullYear()) {//if whole year is before FRA, all months are preARFmonths
+          annualRetirementBenefit = retirementMonths * person.initialRetirementBenefit
+        }
+        else if (calcYear.date.getFullYear() == person.FRA.getFullYear() && calcYear.date.getFullYear() < person.endSuspensionDate.getFullYear()) {//This is year of FRA, but suspension doesn't end until later year
+          //some months are preARF months; some are ARFmonths
+          ARFmonths = 12 - person.FRA.getMonth()
+          if (ARFmonths > retirementMonths) {ARFmonths = retirementMonths}
+          annualRetirementBenefit = ARFmonths * person.retirementBenefitAfterARF + (retirementMonths - ARFmonths) * person.initialRetirementBenefit
+        }
+        else if (calcYear.date.getFullYear() == person.FRA.getFullYear() && calcYear.date.getFullYear() == person.endSuspensionDate.getFullYear()){//This is year of FRA, and year in which suspension ends
+          //some months are preARF, some are ARF, some are DRC
+          DRCmonths = 12 - person.endSuspensionDate.getMonth()
+            if (DRCmonths > retirementMonths) {DRCmonths = retirementMonths}//limit DRCmonths to total months of retirement benefit
+          ARFmonths = person.endSuspensionDate.getMonth() - person.FRA.getMonth()
+            if (DRCmonths + ARFmonths > retirementMonths) {ARFmonths = retirementMonths - DRCmonths} //limit sum of ARFmonths and DRCmonths to monthsOfPersonAretirement
+          preARFmonths = retirementMonths - DRCmonths - ARFmonths
+          annualRetirementBenefit = preARFmonths * person.initialRetirementBenefit + ARFmonths * person.retirementBenefitAfterARF + DRCmonths * person.retirementBenefitWithDRCsfromSuspension
+        }
+        else if (calcYear.date.getFullYear() > person.FRA.getFullYear() && calcYear.date.getFullYear() < person.endSuspensionDate.getFullYear()){//FRA was in prior year, suspension ends in later year
+          //all months are ARF months
+          annualRetirementBenefit = retirementMonths * person.retirementBenefitAfterARF
+        }
+        else if (calcYear.date.getFullYear() > person.FRA.getFullYear() && calcYear.date.getFullYear() == person.endSuspensionDate.getFullYear()){//FRA was in prior year, suspension ends this year
+          //some months are ARF months; some are DRC months
+          DRCmonths = 12 - person.endSuspensionDate.getMonth()
+          if (DRCmonths > retirementMonths) {DRCmonths = retirementMonths}
+          annualRetirementBenefit = DRCmonths * person.retirementBenefitWithDRCsfromSuspension + (retirementMonths - DRCmonths) * person.retirementBenefitAfterARF
+        }
+    }
+
+    //Set appropriate field on calcYear and add back overwithholding
+    if (person.id == 'A') {
+      calcYear.personAannualRetirementBenefit = annualRetirementBenefit
       calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit + calcYear.personAoverWithholding
+    }
+    else {
+      calcYear.personBannualRetirementBenefit = annualRetirementBenefit
+      calcYear.personBannualRetirementBenefit = calcYear.personBannualRetirementBenefit + calcYear.personBoverWithholding
+    }
 
     return calcYear
   }
@@ -299,9 +352,14 @@ export class BenefitService {
   
   //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
   calculateAnnualBenefitAmountsCouple(personA:Person, personB:Person, calcYear:CalculationYear){
-      //Spouse A retirement and spousal
+      //Calculate annual retirement amounts
+      //calcYear = this.calculateAnnualRetirementBenefit(personA, calcYear)
+      //calcYear = this.calculateAnnualRetirementBenefit(personB, calcYear)
+
+
+      //Spouse A spousal
       if (calcYear.date.getFullYear() < personA.FRA.getFullYear()) {
-        calcYear.personAannualRetirementBenefit = calcYear.monthsOfPersonAretirement * personA.retirementBenefit
+        calcYear.personAannualRetirementBenefit = calcYear.monthsOfPersonAretirement * personA.initialRetirementBenefit
         calcYear.personAannualSpousalBenefit = (calcYear.monthsOfPersonAspousalWithoutRetirement * personA.spousalBenefitWithoutRetirement) + (calcYear.monthsOfPersonAspousalWithRetirement * personA.spousalBenefitWithRetirement)
       } else if (calcYear.date.getFullYear() == personA.FRA.getFullYear()){
           //Calculate number of ARF months (e.g., 10 if FRA is March)
@@ -309,7 +367,7 @@ export class BenefitService {
           if (ARFmonths > calcYear.monthsOfPersonAretirement) {
             ARFmonths = calcYear.monthsOfPersonAretirement //Limit ARFmonths to number of months of retirement benefit
           }
-          calcYear.personAannualRetirementBenefit = ARFmonths * personA.retirementBenefitAfterARF + (calcYear.monthsOfPersonAretirement - ARFmonths) * personA.retirementBenefit
+          calcYear.personAannualRetirementBenefit = ARFmonths * personA.retirementBenefitAfterARF + (calcYear.monthsOfPersonAretirement - ARFmonths) * personA.initialRetirementBenefit
           //Figure out how many months there are of "pre-ARF with retirement benefit" "post-ARF with retirement benefit" and "post-ARF without retirement benefit" ("Without" months require restricted app. So none are pre-ARF)
           ARFmonths = 12 - personA.FRA.getMonth() //reset ARFmonths
           calcYear.personAannualSpousalBenefit =
@@ -323,7 +381,7 @@ export class BenefitService {
 
       //Spouse B retirement and spousal
       if (calcYear.date.getFullYear() < personB.FRA.getFullYear()) {
-        calcYear.personBannualRetirementBenefit = calcYear.monthsOfPersonBretirement * personB.retirementBenefit
+        calcYear.personBannualRetirementBenefit = calcYear.monthsOfPersonBretirement * personB.initialRetirementBenefit
         calcYear.personBannualSpousalBenefit = (calcYear.monthsOfPersonBspousalWithoutRetirement * personB.spousalBenefitWithoutRetirement) + (calcYear.monthsOfPersonBspousalWithRetirement * personB.spousalBenefitWithRetirement)
       } else if (calcYear.date.getFullYear() == personB.FRA.getFullYear()){
           //Calculate number of ARF months (e.g., 10 if FRA is March)
@@ -331,7 +389,7 @@ export class BenefitService {
           if (ARFmonths > calcYear.monthsOfPersonBretirement) {
             ARFmonths = calcYear.monthsOfPersonBretirement //Limit ARFmonths to number of months of retirement benefit
           }
-          calcYear.personBannualRetirementBenefit = ARFmonths * personB.retirementBenefitAfterARF + (calcYear.monthsOfPersonBretirement - ARFmonths) * personB.retirementBenefit
+          calcYear.personBannualRetirementBenefit = ARFmonths * personB.retirementBenefitAfterARF + (calcYear.monthsOfPersonBretirement - ARFmonths) * personB.initialRetirementBenefit
           //Figure out how many months there are of "pre-ARF with retirement benefit" "post-ARF with retirement benefit" and "post-ARF without retirement benefit" ("Without" months require restricted app. So none are pre-ARF)
           ARFmonths = 12 - personA.FRA.getMonth() //reset ARFmonths
           calcYear.personBannualSpousalBenefit =

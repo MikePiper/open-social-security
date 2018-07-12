@@ -20,7 +20,7 @@ describe('SolutionSetService', () => {
 
 //Test generateSingleSolutionSet
   it('SolutionSet object should have PV that was passed in', inject([SolutionSetService], (service: SolutionSetService) => {
-    let person:Person = new Person() 
+    let person:Person = new Person("A") 
     let maritalStatus: string = "single"
     let SSbirthDate:Date = new Date(1960, 3, 1) //April 1, 1960
     person.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
@@ -32,7 +32,7 @@ describe('SolutionSetService', () => {
   }))
 
   it('SolutionSet object should have appropriate date saved', inject([SolutionSetService], (service: SolutionSetService) => {
-    let person:Person = new Person() 
+    let person:Person = new Person("A") 
     let maritalStatus: string = "single"
     let SSbirthDate:Date = new Date(1960, 3, 1) //April 1, 1960
     person.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
@@ -49,8 +49,8 @@ describe('SolutionSetService', () => {
 
   //test generateCoupleSolutionSet
   it('SolutionSet object should have appropriate date saved as earliest date', inject([SolutionSetService], (service: SolutionSetService) => {
-    let personA:Person = new Person()
-    let personB:Person = new Person()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
     let maritalStatus:string = "married"
     personA.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
     personB.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
@@ -73,8 +73,8 @@ describe('SolutionSetService', () => {
 
   //test generateCoupleOneHasFiledSolutionSet
   it('SolutionSet object should have appropriate date saved as earliest date', inject([SolutionSetService], (service: SolutionSetService) => {
-    let flexibleSpouse:Person = new Person()
-    let fixedSpouse:Person = new Person()
+    let flexibleSpouse:Person = new Person("A")
+    let fixedSpouse:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario
     scenario.maritalStatus = "divorced"
     scenario.personAhasFiled = false

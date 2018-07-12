@@ -1,4 +1,6 @@
 export class Person {
+    id:string
+
     actualBirthDate: Date
     PIA: number = 1000
 
@@ -20,13 +22,16 @@ export class Person {
     monthlyEarnings: number = 0
     hasHadGraceYear:boolean = false
 
-    retirementBenefit: number = 0
+    initialRetirementBenefit: number = 0
+    retirementBenefitAfterARF: number = 0
+    retirementBenefitWithDRCsfromSuspension: number = 0
+
     spousalBenefitWithoutRetirement: number = 0
     spousalBenefitWithRetirement: number = 0
     survivorBenefitWithoutRetirement: number = 0
     survivorBenefitWithRetirement: number = 0
 
-    retirementBenefitAfterARF: number = 0
+
     spousalBenefitWithoutRetirementAfterARF: number = 0
     spousalBenefitWithRetirementAfterARF: number = 0
     survivorBenefitWithoutRetirementAfterARF: number = 0
@@ -40,8 +45,8 @@ export class Person {
     adjustedRetirementBenefitDate: Date
     adjustedSpousalBenefitDate: Date
 
-    constructor(){
-
+    constructor(id:string){
+        this.id = id
     }
 
 }

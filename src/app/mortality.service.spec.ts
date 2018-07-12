@@ -39,7 +39,7 @@ describe('MortalityService', () => {
 
   //check that calculateProbabilityAlive() does math appropriately
   it('should accurately calculate probability alive', inject([MortalityService], (service: MortalityService) => {
-    let person:Person = new Person()
+    let person:Person = new Person("A")
     person.initialAgeRounded = 60 //younger than 62 when filling out form, so denominator is age 62 lives
     person.mortalityTable = service.determineMortalityTable("female", "SSA", 0)
     let age = 80
