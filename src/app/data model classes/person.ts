@@ -1,41 +1,41 @@
 export class Person {
+    //fixed fields
     id:string
-
     actualBirthDate: Date
     PIA: number = 1000
-
     SSbirthDate: Date
     FRA: Date
     survivorFRA: Date
-
     initialAge: number //as in, "age on the date they're filling out the form" whereas age/ageRounded/ageLastBirthday are all variables that get changed throughout process as we age the person from one year to the next
     initialAgeRounded: number
-    //age: number //as in, "age as of current calculation year"
+    mortalityTable: number[]
+    governmentPension: number = 0
+    quitWorkDate: Date
+    monthlyEarnings: number = 0
+
+
+
     //ageRounded: number
     //ageLastBirthday: number
 
-    mortalityTable: number[]
-
-    governmentPension: number = 0
-
-    quitWorkDate: Date
-    monthlyEarnings: number = 0
+    //Everything below has to get reset or recalculated for each PV calc
+    age: number //as in, "age as of current calculation year"
     hasHadGraceYear:boolean = false
 
     initialRetirementBenefit: number = 0
     retirementBenefitAfterARF: number = 0
     retirementBenefitWithDRCsfromSuspension: number = 0
 
-    spousalBenefitWithoutRetirement: number = 0
-    spousalBenefitWithRetirement: number = 0
-    survivorBenefitWithoutRetirement: number = 0
-    survivorBenefitWithRetirement: number = 0
-
-
-    spousalBenefitWithoutRetirementAfterARF: number = 0
+    spousalBenefitWithoutRetirement: number = 0 //By definition this is after-ARF.
+    spousalBenefitWithRetirementPreARF: number = 0
     spousalBenefitWithRetirementAfterARF: number = 0
-    survivorBenefitWithoutRetirementAfterARF: number = 0
+    spousalBenefitWithSuspensionDRCRetirement: number = 0
+
+    survivorBenefitWithoutRetirement: number = 0 //This is after ARF also, since we're assuming survivor benefits aren't claimed until FRA.
+    survivorBenefitWithRetirementPreARF: number = 0
     survivorBenefitWithRetirementAfterARF: number = 0
+    survivorBenefitWithSuspensionDRCRetirement: number = 0
+
 
     retirementBenefitDate: Date
         DRCsViaSuspension: number = 0

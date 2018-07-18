@@ -13,6 +13,9 @@ import { PresentValueService } from './presentvalue.service';
 import { ContactComponent } from './contact/contact.component';
 import { HttpClientModule } from '@angular/common/http';
 import { LegalComponent } from './legal/legal.component';
+import { EarningsTestService } from './earningstest.service';
+import { MortalityService } from './mortality.service';
+import { SolutionSetService } from './solutionset.service';
 
 
 @NgModule({
@@ -31,7 +34,7 @@ import { LegalComponent } from './legal/legal.component';
     CollapseModule.forRoot(),
     BsDropdownModule.forRoot()
   ],
-  providers: [BenefitService, BirthdayService, PresentValueService],
+  providers: [BenefitService, BirthdayService, PresentValueService, EarningsTestService, MortalityService, SolutionSetService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

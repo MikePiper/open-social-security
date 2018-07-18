@@ -3,6 +3,7 @@ import {BenefitService} from './benefit.service'
 import {BirthdayService} from './birthday.service'
 import {Person} from './data model classes/person'
 import {CalculationYear} from './data model classes/calculationyear'
+import {ClaimingScenario} from './data model classes/claimingscenario'
 
 
 describe('BenefitService', () => {
@@ -215,78 +216,158 @@ describe('BenefitService', () => {
 
 
   //Testing countMonthsOfaBenefitOtherThanMarriedSpousal()
-  it('should determine correct number of benefitMonths in filing year', inject([BenefitService], (service: BenefitService) => { 
-    let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
+  it('should determine correct number of retirement benefit months in filing year', inject([BenefitService], (service: BenefitService) => { 
+    let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
     let person:Person = new Person("A")
-
-    expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
+    person.retirementBenefitDate = new Date(2018, 7, 1) //August 1, 2018 filing date
+    person.SSbirthDate = new Date(1956, 2, 1) //March 1956 SSbirthdate
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    calcYear = service.CountSingleBenefitMonths(calcYear, person)
+    expect(calcYear.monthsOfPersonAretirementPreARF)
         .toEqual(5)
+    expect(calcYear.monthsOfPersonAretirementPostARF)
+        .toEqual(0)
+    expect(calcYear.monthsOfPersonAretirementWithSuspensionDRCs)
+        .toEqual(0)
   }))
 
   it('should determine correct number of benefitMonths in year prior to filing year', inject([BenefitService], (service: BenefitService) => { 
-    let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
+    let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2017, 0, 1) //Jan 1, 2017
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
     let person:Person = new Person("A")
-    expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
+    person.retirementBenefitDate = new Date(2018, 7, 1) //August 1, 2018 filing date
+    person.SSbirthDate = new Date(1956, 2, 1) //March 1956 SSbirthdate
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    calcYear = service.CountSingleBenefitMonths(calcYear, person)
+    expect(calcYear.monthsOfPersonAretirementPreARF)
+        .toEqual(0)
+    expect(calcYear.monthsOfPersonAretirementPostARF)
+        .toEqual(0)
+    expect(calcYear.monthsOfPersonAretirementWithSuspensionDRCs)
         .toEqual(0)
   }))
 
   it('should determine correct number of benefitMonths in year after filing year', inject([BenefitService], (service: BenefitService) => { 
-    let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
+    let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
     let person:Person = new Person("A")
-    expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
-        .toEqual(12)
+    person.retirementBenefitDate =  new Date(2018, 7, 1) //August 1, 2018 filing date
+    person.SSbirthDate = new Date(1953, 10, 1) //Nov 1953 SSbirthdate
+    person.FRA = birthdayService.findFRA(person.SSbirthDate) //Nov 2019 FRA
+    person.age = ( 12 * (calcYear.date.getFullYear() - person.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - person.SSbirthDate.getMonth()  )/12
+    calcYear = service.CountSingleBenefitMonths(calcYear, person)
+    expect(calcYear.monthsOfPersonAretirementPreARF)
+        .toEqual(10)
+    expect(calcYear.monthsOfPersonAretirementPostARF)
+        .toEqual(0)
+    expect(calcYear.monthsOfPersonAretirementWithSuspensionDRCs)
+        .toEqual(2)
+      //10 months before FRA. Then 2 months after suspension. (Didn't suspend, so all post-FRA months will be counted as after-suspension.)
   }))
 
   it('should determine correct number of benefitMonths in year after filing when benefit is suspended for some months', inject([BenefitService], (service: BenefitService) => { 
-    let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
+    let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
     let person:Person = new Person("A")
-    person.beginSuspensionDate = new Date (2019, 6, 1) //suspending beginning in July
+    person.SSbirthDate = new Date(1953, 4, 1) //May 1953 SSbirthdate
+    person.FRA = birthdayService.findFRA(person.SSbirthDate) //May 2019 FRA
+    person.retirementBenefitDate =  new Date(2018, 7, 1) //August 1, 2018 filing date
+    person.beginSuspensionDate = new Date (2019, 6, 1) //suspending beginning in July 2019
     person.endSuspensionDate = new Date (2022, 7, 1) //suspended through remainder of year
-    expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
-        .toEqual(6)
+    calcYear = service.CountSingleBenefitMonths(calcYear, person)
+    expect(calcYear.monthsOfPersonAretirementPreARF)
+        .toEqual(4)
+    expect(calcYear.monthsOfPersonAretirementPostARF)
+        .toEqual(2)
+    expect(calcYear.monthsOfPersonAretirementWithSuspensionDRCs)
+        .toEqual(0)
+    //6 months of benefits (Jan-June). Jan, Feb, March, April are pre-ARF. May and June are post-ARF
   }))
 
   it('should determine correct number of benefitMonths in year after filing when benefit is suspended for entire year', inject([BenefitService], (service: BenefitService) => { 
-    let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
+    let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2020, 0, 1) //Jan 1, 2020
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
     let person:Person = new Person("A")
+    person.SSbirthDate = new Date(1953, 4, 1) //May 1953 SSbirthdate
+    person.FRA = birthdayService.findFRA(person.SSbirthDate) //May 2019 FRA
+    person.retirementBenefitDate =  new Date(2018, 7, 1) //August 1, 2018 filing date
     person.beginSuspensionDate = new Date (2019, 6, 1) //suspending beginning in July 2019
     person.endSuspensionDate = new Date (2022, 7, 1) //suspended until Aug 2022
-    expect(service.countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate, calcYear, person))
+    calcYear = service.CountSingleBenefitMonths(calcYear, person)
+    expect(calcYear.monthsOfPersonAretirementPreARF)
+        .toEqual(0)
+    expect(calcYear.monthsOfPersonAretirementPostARF)
+        .toEqual(0)
+    expect(calcYear.monthsOfPersonAretirementWithSuspensionDRCs)
         .toEqual(0)
   }))
 
   //also need tests for countMonthsOfaMarriedSpousalBenefit
-  it('should determine correct number of marriedSpousalBenefitMonths for person A when person B is suspended part of year', inject([BenefitService], (service: BenefitService) => { 
-    let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
+  it('should determine correct number of marriedSpousalBenefitMonths for person A when person B is suspended part of year', inject([BenefitService], (service: BenefitService) => {
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.maritalStatus = "married"
+    scenario.personBhasFiled = true //So it knows this is a "personB might have suspension" scenario
+    let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2020, 0, 1) //Jan 1, 2020
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
     let personA:Person = new Person("A")
+    personA.SSbirthDate = new Date(1953, 4, 1) //personA May 1953 SSbirthdate
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //personA May 2019 FRA
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+    personA.retirementBenefitDate = new Date(2018, 7, 1) //August 1, 2018 retirementBenefit date
+    personA.spousalBenefitDate = new Date(2018, 7, 1) //August 1, 2018 spousalBenefit date
     let personB:Person = new Person("B")
+    personB.SSbirthDate = new Date(1953, 4, 1) //personB May 1953 SSbirthdate
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //personB May 2019 FRA
+    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    personB.retirementBenefitDate = new Date(2018, 7, 1) //August 1, 2018 retirementBenefit date (not relevant to calculation of the "expected" value, but it's necessary for CountCoupleBenefitMonths to run)
+    personB.spousalBenefitDate = new Date(2018, 7, 1) //August 1, 2018 spousalBenefit date (not relevant to calculation of the "expected" value, but it's necessary for CountCoupleBenefitMonths to run)
     personB.beginSuspensionDate = new Date (2019, 6, 1) //suspending beginning in July 2019
     personB.endSuspensionDate = new Date (2020, 7, 1) //Aug 2020 is first month of unsuspension
-    expect(service.countMonthsOfaMarriedSpousalBenefit(benefitFilingDate, calcYear, personA, personB))
-        .toEqual(5) //Should get benefits in Aug, Sept, Oct, Nov, Dec
+    calcYear = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    expect(calcYear.monthsOfPersonAspousalWithoutRetirement)
+        .toEqual(0)
+    expect(calcYear.monthsOfPersonAspousalWithRetirementPreARF)
+        .toEqual(0)
+    expect(calcYear.monthsOfPersonAspousalWithRetirementPostARF)
+        .toEqual(0)
+    expect(calcYear.monthsOfPersonAspousalWithRetirementwithSuspensionDRCs)
+        .toEqual(5)
+        //Should get benefits in Aug, Sept, Oct, Nov, Dec. And they are considered "after suspension" because 2020 is after FRA and because personA never suspended.
   }))
 
-  it('should determine correct number of marriedSpousalBenefitMonths for person A when person A is suspended part of year', inject([BenefitService], (service: BenefitService) => { 
-    let benefitFilingDate:Date =  new Date(2018, 7, 1) //August 1, 2018 filing date
+  it('should determine correct number of marriedSpousalBenefitMonths for person A when person A is suspended part of year', inject([BenefitService], (service: BenefitService) => {
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.maritalStatus = "married"
+    scenario.personAhasFiled = true //So it knows this is a "personB might have suspension" scenario
+    let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2020, 0, 1) //Jan 1, 2020
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
     let personA:Person = new Person("A")
+    personA.SSbirthDate = new Date(1953, 4, 1) //personA May 1953 SSbirthdate
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //personA May 2019 FRA
+    personA.retirementBenefitDate = new Date(2018, 7, 1) //August 1, 2018 retirementBenefit date
+    personA.spousalBenefitDate = new Date(2018, 7, 1) //August 1, 2018 spousalBenefit date
     let personB:Person = new Person("B")
+    personB.SSbirthDate = new Date(1953, 4, 1) //personB May 1953 SSbirthdate
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //personB May 2019 FRA
     personA.beginSuspensionDate = new Date (2020, 4, 1) //suspending beginning in May 2020
     personA.endSuspensionDate = new Date (2022, 7, 1) //Aug 2022 is first month of unsuspension
-    expect(service.countMonthsOfaMarriedSpousalBenefit(benefitFilingDate, calcYear, personA, personB))
-        .toEqual(4) //Should get benefits in Jan, Feb, March, April
+    calcYear = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    expect(calcYear.monthsOfPersonAspousalWithoutRetirement)
+        .toEqual(0)
+    expect(calcYear.monthsOfPersonAspousalWithRetirementPreARF)
+        .toEqual(0)
+    expect(calcYear.monthsOfPersonAspousalWithRetirementPostARF)
+        .toEqual(4)
+    expect(calcYear.monthsOfPersonAspousalWithRetirementwithSuspensionDRCs)
+        .toEqual(0)
+        //Should get benefits in Jan, Feb, March, April. They are post-ARF but before suspensionDRCs
   }))
 })

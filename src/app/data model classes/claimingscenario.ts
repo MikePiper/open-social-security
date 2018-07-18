@@ -3,6 +3,7 @@ export class ClaimingScenario {
 
     discountRate: number
     maritalStatus: string = "single"
+    initialCalcDate: Date
 
     //PersonA
         personAhasFiled: boolean = false

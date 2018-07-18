@@ -93,7 +93,7 @@ export class EarningsTestService {
               && (earningsTestMonth < person.FRA) //make sure current month is prior to FRA
             ) {
               availableForWithholding = availableForWithholding + person.initialRetirementBenefit
-              calcYear.monthsOfPersonAretirement = calcYear.monthsOfPersonAretirement - 1
+              calcYear.monthsOfPersonAretirementPreARF = calcYear.monthsOfPersonAretirementPreARF - 1
               monthsWithheld  = monthsWithheld + 1
             }
           //Subtracting 1 from monthsOfRetirement will often result in overwithholding (as it does in real life) for a partial month. Gets added back later.
@@ -174,16 +174,28 @@ export class EarningsTestService {
                     && (earningsTestMonth < personA.FRA) //Make sure current month is prior to FRA
                   ) {  
                     availableForWithholding = availableForWithholding + personA.initialRetirementBenefit
-                    calcYear.monthsOfPersonAretirement = calcYear.monthsOfPersonAretirement - 1
+                    calcYear.monthsOfPersonAretirementPreARF = calcYear.monthsOfPersonAretirementPreARF - 1
                     monthsSpouseAretirementWithheld  = monthsSpouseAretirementWithheld  + 1
                   }
                   if (scenario.maritalStatus == "married"){//Only make spouse B's benefit as a spouse available for withholding if they're currently married (as opposed to divorced). If divorced, spouseB is automatically "not working," so we don't have any withholding due to their earnings to worry about.
                     if (earningsTestMonth >= personB.spousalBenefitDate && earningsTestMonth >= personB.retirementBenefitDate //i.e., if this is a "spouseBspousalBenefitWithRetirementBenefit" month
                       && (spouseBgraceYear === false || earningsTestMonth < personB.quitWorkDate) //Make sure it isn't a nonservice month in grace year
-                    ) {
-                    availableForWithholding = availableForWithholding + personB.spousalBenefitWithRetirement
-                    calcYear.monthsOfPersonBspousalWithRetirement = calcYear.monthsOfPersonBspousalWithRetirement - 1
-                    monthsSpouseBspousalWithheld = monthsSpouseBspousalWithheld + 1
+                    ) {//If it's a "withRetirement" month for personB, figure out which type of "withRetirement" month it is (pre-ARF, post-ARF, etc)
+                      if (earningsTestMonth < personB.FRA){
+                        availableForWithholding = availableForWithholding + personB.spousalBenefitWithRetirementPreARF
+                        calcYear.monthsOfPersonBspousalWithRetirementPreARF = calcYear.monthsOfPersonBspousalWithRetirementPreARF - 1
+                        monthsSpouseBspousalWithheld = monthsSpouseBspousalWithheld + 1
+                      }
+                      else if (earningsTestMonth < personB.endSuspensionDate){
+                        availableForWithholding = availableForWithholding + personB.spousalBenefitWithRetirementAfterARF
+                        calcYear.monthsOfPersonBspousalWithRetirementPostARF = calcYear.monthsOfPersonBspousalWithRetirementPostARF - 1
+                        monthsSpouseBspousalWithheld = monthsSpouseBspousalWithheld + 1
+                      }
+                      else {
+                        availableForWithholding = availableForWithholding + personB.spousalBenefitWithSuspensionDRCRetirement
+                        calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs = calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs - 1
+                        monthsSpouseBspousalWithheld = monthsSpouseBspousalWithheld + 1
+                      }
                     }
                     if (earningsTestMonth >= personB.spousalBenefitDate && earningsTestMonth < personB.retirementBenefitDate //i.e., if this is a "spouseBspousalBenefitWithoutRetirementBenefit" month
                       && (spouseBgraceYear === false || earningsTestMonth < personB.quitWorkDate) //Make sure it isn't a nonservice month in grace year
@@ -210,15 +222,27 @@ export class EarningsTestService {
                     && (earningsTestMonth < personB.FRA) //Make sure current month is prior to FRA
                   ) {
                     availableForWithholding = availableForWithholding + personB.initialRetirementBenefit
-                    calcYear.monthsOfPersonBretirement = calcYear.monthsOfPersonBretirement - 1
+                    calcYear.monthsOfPersonBretirementPreARF = calcYear.monthsOfPersonBretirementPreARF - 1
                     monthsSpouseBretirementWithheld  = monthsSpouseBretirementWithheld  + 1
                   }
                   if (earningsTestMonth >= personA.spousalBenefitDate && earningsTestMonth >= personA.retirementBenefitDate //i.e., if this is a "spouseAspousalBenefitWithRetirementBenefit" month
                     && (spouseAgraceYear === false || earningsTestMonth < personA.quitWorkDate) //Make sure it's not a nonservice month in a grace year
-                  ) {
-                  availableForWithholding = availableForWithholding + personA.spousalBenefitWithRetirement
-                  calcYear.monthsOfPersonAspousalWithRetirement = calcYear.monthsOfPersonAspousalWithRetirement - 1
-                  monthsSpouseAspousalWithheld = monthsSpouseAspousalWithheld + 1
+                  ) {//If it's a "withRetirement" month for personA, figure out which type of "withRetirement" month it is (pre-ARF, post-ARF, etc)
+                      if (earningsTestMonth < personA.FRA){
+                        availableForWithholding = availableForWithholding + personA.spousalBenefitWithRetirementPreARF
+                        calcYear.monthsOfPersonAspousalWithRetirementPreARF = calcYear.monthsOfPersonAspousalWithRetirementPreARF - 1
+                        monthsSpouseAspousalWithheld = monthsSpouseAspousalWithheld + 1
+                      }
+                      else if (earningsTestMonth < personA.endSuspensionDate){
+                        availableForWithholding = availableForWithholding + personA.spousalBenefitWithRetirementAfterARF
+                        calcYear.monthsOfPersonAspousalWithRetirementPostARF = calcYear.monthsOfPersonAspousalWithRetirementPostARF - 1
+                        monthsSpouseAspousalWithheld = monthsSpouseAspousalWithheld + 1
+                      }
+                      else {
+                        availableForWithholding = availableForWithholding + personA.spousalBenefitWithSuspensionDRCRetirement
+                        calcYear.monthsOfPersonAspousalWithRetirementwithSuspensionDRCs = calcYear.monthsOfPersonAspousalWithRetirementwithSuspensionDRCs - 1
+                        monthsSpouseAspousalWithheld = monthsSpouseAspousalWithheld + 1
+                      }
                   }
                   if (earningsTestMonth >= personA.spousalBenefitDate && earningsTestMonth < personA.retirementBenefitDate //i.e., if this is a "spouseAspousalBenefitWithoutRetirementBenefit" month
                     && (spouseAgraceYear === false || earningsTestMonth < personA.quitWorkDate) //Make sure it's not a nonservice month in a grace year
@@ -243,8 +267,8 @@ export class EarningsTestService {
                     && (spouseAgraceYear === false || earningsTestMonth < personA.quitWorkDate) //Make sure it's not a nonservice month in a grace year
                     && (earningsTestMonth < personA.FRA) //Make sure current month is prior to FRA
                   ) {
-                  availableForWithholding = availableForWithholding + personA.spousalBenefitWithRetirement
-                  calcYear.monthsOfPersonAspousalWithRetirement = calcYear.monthsOfPersonAspousalWithRetirement - 1 //<-- This is going to result in overwithholding for the partial months.
+                  availableForWithholding = availableForWithholding + personA.spousalBenefitWithRetirementPreARF
+                  calcYear.monthsOfPersonAspousalWithRetirementPreARF = calcYear.monthsOfPersonAspousalWithRetirementPreARF - 1 //<-- This is going to result in overwithholding for the partial months.
                   monthsSpouseAspousalWithheld = monthsSpouseAspousalWithheld + 1
                   }
                   withholdingDueToSpouseAearnings = withholdingDueToSpouseAearnings - availableForWithholding //(this kicks us out of loop, potentially)
@@ -262,8 +286,8 @@ export class EarningsTestService {
                     && (spouseBgraceYear === false || personB.quitWorkDate > earningsTestMonth) //Make sure it's not a nonservice month in a grace year
                     && (earningsTestMonth < personB.FRA) //Make sure current month is prior to FRA
                   ) {
-                    availableForWithholding = availableForWithholding + personB.spousalBenefitWithRetirement
-                    calcYear.monthsOfPersonBspousalWithRetirement = calcYear.monthsOfPersonBspousalWithRetirement - 1 //<-- This is going to result in overwithholding for the partial months.
+                    availableForWithholding = availableForWithholding + personB.spousalBenefitWithRetirementPreARF
+                    calcYear.monthsOfPersonBspousalWithRetirementPreARF = calcYear.monthsOfPersonBspousalWithRetirementPreARF - 1 //<-- This is going to result in overwithholding for the partial months.
                     monthsSpouseBspousalWithheld = monthsSpouseBspousalWithheld + 1
                     }
                   withholdingDueToSpouseBearnings = withholdingDueToSpouseBearnings - availableForWithholding //(this kicks us out of loop, potentially)
@@ -283,14 +307,14 @@ export class EarningsTestService {
             personB.retirementBenefitAfterARF = this.benefitService.calculateRetirementBenefit(personB, personB.adjustedRetirementBenefitDate)
             //Find adjusted spousal benefits
             personA.spousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefitAfterARF, personA.adjustedSpousalBenefitDate)
-            personA.spousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personA, personB, 0, personA.adjustedSpousalBenefitDate)
+            personA.spousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, 0, personA.adjustedSpousalBenefitDate)
             personB.spousalBenefitWithRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefitAfterARF, personB.spousalBenefitDate)
-            personB.spousalBenefitWithoutRetirementAfterARF = this.benefitService.calculateSpousalBenefit(personB, personA, 0, personB.adjustedSpousalBenefitDate)
+            personB.spousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, 0, personB.adjustedSpousalBenefitDate)
             //Find adjusted survivor benefits
             personA.survivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personA, personA.retirementBenefitAfterARF, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
-            personA.survivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
+            personA.survivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
             personB.survivorBenefitWithRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personB, personB.retirementBenefitAfterARF, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
-            personB.survivorBenefitWithoutRetirementAfterARF = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
+            personB.survivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
         }
 
         //Ignore earnings test if users aren't working
@@ -299,14 +323,14 @@ export class EarningsTestService {
           withholdingDueToSpouseBearnings = 0
           personA.retirementBenefitAfterARF = personA.initialRetirementBenefit
           personB.retirementBenefitAfterARF = personB.initialRetirementBenefit
-          personA.spousalBenefitWithoutRetirementAfterARF = personA.spousalBenefitWithoutRetirement
-          personA.spousalBenefitWithRetirementAfterARF = personA.spousalBenefitWithRetirement
-          personB.spousalBenefitWithoutRetirementAfterARF = personB.spousalBenefitWithoutRetirement
-          personB.spousalBenefitWithRetirementAfterARF = personB.spousalBenefitWithRetirement
-          personA.survivorBenefitWithoutRetirementAfterARF = personA.survivorBenefitWithoutRetirement
-          personA.survivorBenefitWithRetirementAfterARF = personA.survivorBenefitWithRetirement
-          personB.survivorBenefitWithoutRetirementAfterARF = personB.survivorBenefitWithoutRetirement
-          personB.survivorBenefitWithRetirementAfterARF = personB.survivorBenefitWithRetirement
+          personA.spousalBenefitWithoutRetirement = personA.spousalBenefitWithoutRetirement
+          personA.spousalBenefitWithRetirementAfterARF = personA.spousalBenefitWithRetirementPreARF
+          personB.spousalBenefitWithoutRetirement = personB.spousalBenefitWithoutRetirement
+          personB.spousalBenefitWithRetirementAfterARF = personB.spousalBenefitWithRetirementPreARF
+          personA.survivorBenefitWithoutRetirement = personA.survivorBenefitWithoutRetirement
+          personA.survivorBenefitWithRetirementAfterARF = personA.survivorBenefitWithRetirementPreARF
+          personB.survivorBenefitWithoutRetirement = personB.survivorBenefitWithoutRetirement
+          personB.survivorBenefitWithRetirementAfterARF = personB.survivorBenefitWithRetirementPreARF
         }
 
         //WithholdingDueToSpouseAearnings and withholdingDueToSpouseBearnings are negative at this point if we overwithheld. Have to add those negative amounts back to annual benefit amounts

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {Person} from './data model classes/person';
 import { CalculationYear } from './data model classes/calculationyear';
 import { ClaimingScenario } from './data model classes/claimingscenario';
+import { TabHeadingDirective } from '../../node_modules/ngx-bootstrap';
 
 
 @Injectable()
@@ -103,9 +104,6 @@ export class BenefitService {
       //If deceased had filed before FRA, do completely new calculation, with survivor benefit based on deceasedPIA rather than deceased retirement benefit.
       if (deceasedClaimingDate < deceasedPerson.FRA && survivorSurvivorBenefitDate < survivingPerson.survivorFRA) {
         survivorBenefit = deceasedPerson.PIA - (deceasedPerson.PIA * 0.285 * (1 - percentageWaited))
-        console.log("survivorFRA: " + survivingPerson.survivorFRA)
-        console.log("percentageWaited: " + percentageWaited)
-        console.log("survivor benefit before limitation: " + survivorBenefit)
         //survivorBenefit then limited to greater of 82.5% of deceased's PIA or amount deceased was receiving on date of death
         if (0.825 * deceasedPerson.PIA < deceasedRetirementBenefit) {
           if (survivorBenefit > deceasedRetirementBenefit) {
@@ -118,7 +116,6 @@ export class BenefitService {
           }
       }
     }
-
       //subtract own retirement benefit
       survivorBenefit = survivorBenefit - survivorRetirementBenefit
 
@@ -133,284 +130,323 @@ export class BenefitService {
     return Number(survivorBenefit)
   }
 
+  //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
+  calculateAnnualRetirementBenefit(person:Person, calcYear:CalculationYear){
+    if (person.id == 'A') {
+      calcYear.personAannualRetirementBenefit =
+        calcYear.monthsOfPersonAretirementPreARF * person.initialRetirementBenefit
+      + calcYear.monthsOfPersonAretirementPostARF * person.retirementBenefitAfterARF
+      + calcYear.monthsOfPersonAretirementWithSuspensionDRCs * person.retirementBenefitWithDRCsfromSuspension
+      //add back overwithholding
+      calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit + calcYear.personAoverWithholding
+    }
+    else {
+      calcYear.personBannualRetirementBenefit =
+        calcYear.monthsOfPersonBretirementPreARF * person.initialRetirementBenefit
+      + calcYear.monthsOfPersonBretirementPostARF * person.retirementBenefitAfterARF
+      + calcYear.monthsOfPersonBretirementWithSuspensionDRCs * person.retirementBenefitWithDRCsfromSuspension
+      //add back overwithholding
+      calcYear.personBannualRetirementBenefit = calcYear.personBannualRetirementBenefit + calcYear.personBoverWithholding
+    }
+    return calcYear
+  }
 
-  //for counting benefit months when you only have to check if that person is currently suspended (e..g, A's retirement benefit only requires checking if A is suspended)
-  countMonthsOfaBenefitOtherThanMarriedSpousal(benefitFilingDate:Date, calcYear:CalculationYear, person:Person) {
-    let monthsOfBenefit: number = 0
-    if (benefitFilingDate.getFullYear() < calcYear.date.getFullYear()){//filed in previous year
-      monthsOfBenefit = 12
-    } 
-    else if (benefitFilingDate.getFullYear() == calcYear.date.getFullYear()){//filing this year
-      monthsOfBenefit = 12 - benefitFilingDate.getMonth() //e.g. if filing in June, benefitFilingDate.getMonth is 5, so we want 7 months of benefit
-    }
-    else {//filing in future year
-      monthsOfBenefit = 0
-    }
 
-    //adjust for voluntary suspension
-    if (person.beginSuspensionDate.getFullYear() > calcYear.date.getFullYear() || person.endSuspensionDate.getFullYear() < calcYear.date.getFullYear()){
-      //benefit not suspended at all. Math above doesn't need adjustment. (Only reason this "if" is here is to avoid having to do the math below in most years.)
+  //Calculates annual benefits (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
+  calculateAnnualBenefitAmountsCouple(personA:Person, personB:Person, calcYear:CalculationYear){
+
+      //Calculate annual retirement amounts
+      calcYear = this.calculateAnnualRetirementBenefit(personA, calcYear)
+      calcYear = this.calculateAnnualRetirementBenefit(personB, calcYear)
+
+      //Calculate annual spousal benefit amounts
+      calcYear.personAannualSpousalBenefit =
+          calcYear.monthsOfPersonAspousalWithoutRetirement * personA.spousalBenefitWithoutRetirement
+        + calcYear.monthsOfPersonAspousalWithRetirementPreARF * personA.spousalBenefitWithRetirementPreARF
+        + calcYear.monthsOfPersonAspousalWithRetirementPostARF * personA.spousalBenefitWithRetirementAfterARF
+        + calcYear.monthsOfPersonAspousalWithRetirementwithSuspensionDRCs * personA.spousalBenefitWithSuspensionDRCRetirement
+
+      calcYear.personBannualSpousalBenefit =
+          calcYear.monthsOfPersonBspousalWithoutRetirement * personB.spousalBenefitWithoutRetirement
+        + calcYear.monthsOfPersonBspousalWithRetirementPreARF * personB.spousalBenefitWithRetirementPreARF
+        + calcYear.monthsOfPersonBspousalWithRetirementPostARF * personB.spousalBenefitWithRetirementAfterARF
+        + calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs * personB.spousalBenefitWithSuspensionDRCRetirement
+
+      //Survivor benefits are always with ARF since we assume it doesn't even get claimed until FRA
+      calcYear.personAannualSurvivorBenefit =
+          calcYear.monthsOfPersonAsurvivorWithoutRetirement * personA.survivorBenefitWithoutRetirement
+        + calcYear.monthsOfPersonAsurvivorWithRetirementPostARF * personA.survivorBenefitWithRetirementAfterARF
+        + calcYear.monthsOfPersonAsurvivorWithRetirementwithSuspensionDRCs * personA.survivorBenefitWithSuspensionDRCRetirement
+      
+      calcYear.personBannualSurvivorBenefit =
+          calcYear.monthsOfPersonBsurvivorWithoutRetirement * personB.survivorBenefitWithoutRetirement
+        + calcYear.monthsOfPersonBsurvivorWithRetirementPostARF * personB.survivorBenefitWithRetirementAfterARF
+        + calcYear.monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs * personB.survivorBenefitWithSuspensionDRCRetirement
+      
+    return calcYear
+  }
+
+
+  CountSingleBenefitMonths(calcYear:CalculationYear, person:Person){
+    //This function loops through individual months in a year (unless Person is over age 70, in which case it looks at the whole year at once).
+    if (person.age >= 70){
+          calcYear.monthsOfPersonAretirementWithSuspensionDRCs = 12
     }
-    else if (person.beginSuspensionDate < calcYear.date && person.endSuspensionDate.getFullYear() > calcYear.date.getFullYear()) {//Benefit is suspended for entire year
-      monthsOfBenefit = 0
-    }
-    else if (person.beginSuspensionDate.getFullYear() == calcYear.date.getFullYear() || person.endSuspensionDate.getFullYear() == calcYear.date.getFullYear()) {//Benefit suspended for part of year.
-      monthsOfBenefit = 0 //start new benefit count
+    else {
       let testMonth:Date = new Date(calcYear.date)
-      let endTestMonth:Date = new Date(calcYear.date.getFullYear()+1, 0, 1)
-      //Loop monthly to check: is this month a benefit month and if so is it also a suspension month?
-      while (testMonth < endTestMonth){
-        if (benefitFilingDate <= testMonth) {//If testMonth is a benefit month...
-          if (person.beginSuspensionDate > testMonth || person.endSuspensionDate <= testMonth) {//...and it's not a suspension month...
-            monthsOfBenefit = monthsOfBenefit + 1
-          }
+      let endTestMonth:Date = new Date(calcYear.date.getFullYear(), 11, 1) //Dec of calcYear
+      while (testMonth <= endTestMonth){
+        if (testMonth >= person.retirementBenefitDate){ //if this is a retirement month...
+            if (person.beginSuspensionDate > testMonth || person.endSuspensionDate <= testMonth){//If suspension does NOT eliminate that benefit...
+              //Determine which type of retirementMonth it is and add 1 to appropriate count
+              if (testMonth < person.FRA){
+                calcYear.monthsOfPersonAretirementPreARF = calcYear.monthsOfPersonAretirementPreARF + 1
+              }
+              else if (testMonth < person.endSuspensionDate){
+                calcYear.monthsOfPersonAretirementPostARF = calcYear.monthsOfPersonAretirementPostARF + 1
+              }
+              else {
+                calcYear.monthsOfPersonAretirementWithSuspensionDRCs = calcYear.monthsOfPersonAretirementWithSuspensionDRCs + 1
+              }
+            }
+            else {//i.e., if suspension DOES eliminate the benefit for this month
+              person.DRCsViaSuspension = person.DRCsViaSuspension + 1
+            }
         }
         testMonth.setMonth(testMonth.getMonth()+1)
       }
     }
-    return Number(monthsOfBenefit)
+    return calcYear
   }
 
-  //this function is different from above, because always have to check if either person is currently suspended
-  countMonthsOfaMarriedSpousalBenefit(benefitFilingDate:Date, calcYear:CalculationYear, personA:Person, personB:Person){
-    let monthsOfBenefit: number = 0
-    if (benefitFilingDate.getFullYear() < calcYear.date.getFullYear()){//filed in previous year
-      monthsOfBenefit = 12
-    } 
-    else if (benefitFilingDate.getFullYear() == calcYear.date.getFullYear()){//filing this year
-      monthsOfBenefit = 12 - benefitFilingDate.getMonth() //e.g. if filing in June, benefitFilingDate.getMonth is 5, so we want 7 months of benefit
-    }
-    else {//filing in future year
-      monthsOfBenefit = 0
-    }
-        //adjust for voluntary suspension
-        if (
-          (personA.beginSuspensionDate.getFullYear() > calcYear.date.getFullYear() || personA.endSuspensionDate.getFullYear() < calcYear.date.getFullYear())
-        &&(personB.beginSuspensionDate.getFullYear() > calcYear.date.getFullYear() || personB.endSuspensionDate.getFullYear() < calcYear.date.getFullYear())
-        ){
-          //Neither person is suspended this year at all. Math above doesn't need adjustment. (Only reason this "if" is here is to avoid having to do the math below in most years.)
+  CountCoupleBenefitMonths(scenario:ClaimingScenario, calcYear:CalculationYear, personA:Person, personB:Person){
+    //This function loops through individual months in a year (unless:
+          //a) we're at the point where everybody is post-FRA, post-claiming, post-suspension, in which case it looks at the whole year at once), or
+          //b) it's a scenario in which suspending isn't considered, in which case it looks at whole year at once
+      //Not necessary to set all the month counts that are zero. Since it's a new CalculationYear every year, they are automatically set to zero.
+      if (calcYear.date >= personA.FRA && calcYear.date >= personA.retirementBenefitDate && calcYear.date >= personA.spousalBenefitDate && calcYear.date >= personA.endSuspensionDate &&
+          calcYear.date >= personB.FRA && calcYear.date >= personB.retirementBenefitDate && calcYear.date >= personB.spousalBenefitDate && calcYear.date >= personB.endSuspensionDate){
+            calcYear.monthsOfPersonAretirementWithSuspensionDRCs = 12
+            calcYear.monthsOfPersonAspousalWithRetirementwithSuspensionDRCs = 12
+            calcYear.monthsOfPersonAsurvivorWithRetirementwithSuspensionDRCs = 12
+            calcYear.monthsOfPersonBretirementWithSuspensionDRCs = 12
+            calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs = 12
+            calcYear.monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs = 12
         }
-        else if (
-          (personA.beginSuspensionDate < calcYear.date && personA.endSuspensionDate.getFullYear() > calcYear.date.getFullYear())
-         || (personB.beginSuspensionDate < calcYear.date && personB.endSuspensionDate.getFullYear() > calcYear.date.getFullYear())
-        ) {//One person is suspended all year, which means spousal benefit is suspended all year.
-          monthsOfBenefit = 0
-        }
-        else if (
-            (personA.beginSuspensionDate.getFullYear() == calcYear.date.getFullYear() || personA.endSuspensionDate.getFullYear() == calcYear.date.getFullYear())
-          ||(personB.beginSuspensionDate.getFullYear() == calcYear.date.getFullYear() || personB.endSuspensionDate.getFullYear() == calcYear.date.getFullYear())
-        ) {//At least one person is suspended for part of year, which means spousal benefit will be suspended for part of year.
-          monthsOfBenefit = 0 //start new benefit count
-          let testMonth:Date = new Date(calcYear.date)
-          let endTestMonth:Date = new Date(calcYear.date.getFullYear()+1, 0, 1)
-          //Loop monthly to check: is this month a benefit month and if so is it also a suspension month?
-          while (testMonth < endTestMonth){
-            if (benefitFilingDate <= testMonth) {//If testMonth is a benefit month...
-              if (personA.beginSuspensionDate > testMonth || personA.endSuspensionDate <= testMonth) {//...and it's not a suspension month for personA...
-                if (personB.beginSuspensionDate > testMonth || personB.endSuspensionDate <= testMonth) {//..and it's not a suspension month for personB...
-                  monthsOfBenefit = monthsOfBenefit + 1
+      else if (scenario.maritalStatus == "divorced" || (scenario.personAhasFiled === false && scenario.personBhasFiled === false) ){//there's no possibility of suspension, because it's a divorce scenario or a neither-has-filed scenario
+        //Do an annual loop that runs much faster:
+        let monthsOfBenefit: number
+        let ARFmonths:number
+        //personA retirement
+            monthsOfBenefit = this.countMonthsOfABenefit(personA.retirementBenefitDate, calcYear.date)
+            if (calcYear.date.getFullYear() < personA.FRA.getFullYear()){
+              calcYear.monthsOfPersonAretirementPreARF = monthsOfBenefit
+            }
+            else if (calcYear.date.getFullYear() > personA.FRA.getFullYear()) {
+              calcYear.monthsOfPersonAretirementPostARF = monthsOfBenefit
+            }
+            else {
+              calcYear.monthsOfPersonAretirementPostARF = 12 - personA.FRA.getMonth() //If FRA is May (4), we have 8 post-ARF months
+              if (calcYear.monthsOfPersonAretirementPostARF > monthsOfBenefit) {calcYear.monthsOfPersonAretirementPostARF = monthsOfBenefit}//limit PostARFmonths to monthsOfBenefit
+              calcYear.monthsOfPersonAretirementPreARF = monthsOfBenefit - calcYear.monthsOfPersonAretirementPostARF
+            }
+        //personB retirement
+            monthsOfBenefit = this.countMonthsOfABenefit(personB.retirementBenefitDate, calcYear.date)
+            if (calcYear.date.getFullYear() < personB.FRA.getFullYear()){
+              calcYear.monthsOfPersonBretirementPreARF = monthsOfBenefit
+            }
+            else if (calcYear.date.getFullYear() > personB.FRA.getFullYear()) {
+              calcYear.monthsOfPersonBretirementPostARF = monthsOfBenefit
+            }
+            else {
+              calcYear.monthsOfPersonBretirementPostARF = 12 - personB.FRA.getMonth() //If FRA is May (4), we have 8 post-ARF months
+              if (calcYear.monthsOfPersonBretirementPostARF > monthsOfBenefit) {calcYear.monthsOfPersonBretirementPostARF = monthsOfBenefit}//limit PostARFmonths to monthsOfBenefit
+              calcYear.monthsOfPersonBretirementPreARF = monthsOfBenefit - calcYear.monthsOfPersonBretirementPostARF
+            }
+        //personA spousal
+            monthsOfBenefit = this.countMonthsOfABenefit(personA.spousalBenefitDate, calcYear.date)
+            if (calcYear.date.getFullYear() < personA.FRA.getFullYear()) {ARFmonths = 0}
+            else if (calcYear.date.getFullYear() > personA.FRA.getFullYear()) {ARFmonths = 12}
+            else {ARFmonths = 12 - personA.FRA.getMonth()}
+            if (calcYear.monthsOfPersonAretirementPreARF + calcYear.monthsOfPersonAretirementPostARF >= monthsOfBenefit){//If there are at least as many retirement months as spousal months, all spousal months are "withRetirement." Otherwise, find out how many more spousal months there are than retirement months.
+              calcYear.monthsOfPersonAspousalWithoutRetirement = 0
+            }
+            else {
+              calcYear.monthsOfPersonAspousalWithoutRetirement = monthsOfBenefit - (calcYear.monthsOfPersonAretirementPreARF + calcYear.monthsOfPersonAretirementPostARF)
+            }
+            calcYear.monthsOfPersonAspousalWithRetirementPostARF = ARFmonths - calcYear.monthsOfPersonAspousalWithoutRetirement //withRetirementPostARF" months is ARF months minus the "withoutRetirement" months
+            if (calcYear.monthsOfPersonAspousalWithRetirementPostARF + calcYear.monthsOfPersonAspousalWithoutRetirement > monthsOfBenefit) {
+              calcYear.monthsOfPersonAspousalWithRetirementPostARF = monthsOfBenefit - calcYear.monthsOfPersonAspousalWithoutRetirement //limit sum of "spousalWithoutRetirement" and "withRetirementPostARF" months to total spousal months
+            }
+            calcYear.monthsOfPersonAspousalWithRetirementPreARF = monthsOfBenefit - calcYear.monthsOfPersonAspousalWithoutRetirement - calcYear.monthsOfPersonAspousalWithRetirementPostARF//i.e., spousal months that are neither of the other types of spousal months
+        //personB spousal
+            monthsOfBenefit = this.countMonthsOfABenefit(personB.spousalBenefitDate, calcYear.date)
+            if (calcYear.date.getFullYear() < personB.FRA.getFullYear()) {ARFmonths = 0}
+            else if (calcYear.date.getFullYear() > personB.FRA.getFullYear()) {ARFmonths = 12}
+            else {ARFmonths = 12 - personB.FRA.getMonth()}
+            if (calcYear.monthsOfPersonBretirementPreARF + calcYear.monthsOfPersonBretirementPostARF >= monthsOfBenefit){//If there are at least as many retirement months as spousal months, all spousal months are "withRetirement." Otherwise, find out how many more spousal months there are than retirement months.
+              calcYear.monthsOfPersonBspousalWithoutRetirement = 0
+            }
+            else {
+              calcYear.monthsOfPersonBspousalWithoutRetirement = monthsOfBenefit - (calcYear.monthsOfPersonBretirementPreARF + calcYear.monthsOfPersonBretirementPostARF)
+            }
+            calcYear.monthsOfPersonBspousalWithRetirementPostARF = ARFmonths - calcYear.monthsOfPersonBspousalWithoutRetirement //withRetirementPostARF" months is ARF months minus the "withoutRetirement" months
+            if (calcYear.monthsOfPersonBspousalWithRetirementPostARF + calcYear.monthsOfPersonBspousalWithoutRetirement > monthsOfBenefit) {
+              calcYear.monthsOfPersonBspousalWithRetirementPostARF = monthsOfBenefit - calcYear.monthsOfPersonBspousalWithoutRetirement //limit sum of "spousalWithoutRetirement" and "withRetirementPostARF" months to total spousal months
+            }
+            calcYear.monthsOfPersonBspousalWithRetirementPreARF = monthsOfBenefit - calcYear.monthsOfPersonBspousalWithoutRetirement - calcYear.monthsOfPersonBspousalWithRetirementPostARF//i.e., spousal months that are neither of the other types of spousal months
+        //personA survivor
+            monthsOfBenefit = this.countMonthsOfABenefit(personA.survivorFRA, calcYear.date)
+            if (calcYear.monthsOfPersonAretirementPreARF + calcYear.monthsOfPersonAretirementPostARF >= monthsOfBenefit){//If there are at least as many retirement months as survivor months, all survivor months are "withRetirement." Otherwise, find out how many more survivor months there are than retirement months.
+              calcYear.monthsOfPersonAsurvivorWithoutRetirement = 0
+            }
+            else {
+              calcYear.monthsOfPersonAsurvivorWithoutRetirement = monthsOfBenefit - (calcYear.monthsOfPersonAretirementPreARF + calcYear.monthsOfPersonAretirementPostARF)
+            }
+            calcYear.monthsOfPersonAsurvivorWithRetirementPostARF = monthsOfBenefit - calcYear.monthsOfPersonAsurvivorWithoutRetirement //If a survivor month isn't "withoutRetirement," it is withRetirementPostARF
+        //personB survivor
+            monthsOfBenefit = this.countMonthsOfABenefit(personB.survivorFRA, calcYear.date)
+            if (calcYear.monthsOfPersonBretirementPreARF + calcYear.monthsOfPersonBretirementPostARF >= monthsOfBenefit){//If there are at least as many retirement months as survivor months, all survivor months are "withRetirement." Otherwise, find out how many more survivor months there are than retirement months.
+              calcYear.monthsOfPersonBsurvivorWithoutRetirement = 0
+            }
+            else {
+              calcYear.monthsOfPersonBsurvivorWithoutRetirement = monthsOfBenefit - (calcYear.monthsOfPersonBretirementPreARF + calcYear.monthsOfPersonBretirementPostARF)
+            }
+            calcYear.monthsOfPersonBsurvivorWithRetirementPostARF = monthsOfBenefit - calcYear.monthsOfPersonBsurvivorWithoutRetirement //If a survivor month isn't "withoutRetirement," it is withRetirementPostARF
+      }
+      else {//have to loop monthly
+        let testMonth:Date = new Date(calcYear.date)
+        let endTestMonth:Date = new Date(calcYear.date.getFullYear(), 11, 1) //Dec of calcYear
+        let personAsuspended:boolean
+        let personBsuspended:boolean
+        while (testMonth <= endTestMonth){
+          if (personA.beginSuspensionDate > testMonth || personA.endSuspensionDate <= testMonth)   {personAsuspended = false}
+          else {personAsuspended = true}
+          if (personB.beginSuspensionDate > testMonth || personB.endSuspensionDate <= testMonth)   {personBsuspended = false}
+          else {personBsuspended = true}
+          //check if personA should get a retirement benefit (and if so, what type)
+          if (testMonth >= personA.retirementBenefitDate){ //if this is a retirement month...
+              if (personAsuspended === false){//If suspension does NOT eliminate that benefit...
+                //Determine which type of retirementMonth it is and add 1 to appropriate count
+                if (testMonth < personA.FRA){
+                  calcYear.monthsOfPersonAretirementPreARF = calcYear.monthsOfPersonAretirementPreARF + 1
+                }
+                else if (testMonth >= personA.endSuspensionDate){//if they never suspended, there's no difference between "PostARF" and "WithSuspensionDRCs." So we don't have to check whether they suspended or not.
+                  calcYear.monthsOfPersonAretirementWithSuspensionDRCs = calcYear.monthsOfPersonAretirementWithSuspensionDRCs + 1
+                }
+                else {
+                  calcYear.monthsOfPersonAretirementPostARF = calcYear.monthsOfPersonAretirementPostARF + 1
                 }
               }
+              else {//i.e., if suspension DOES eliminate the benefit for this month
+                personA.DRCsViaSuspension = personA.DRCsViaSuspension + 1
+              }
+          }
+          //check if personB should get a retirement benefit (and if so, what type)
+          if (testMonth >= personB.retirementBenefitDate){ //if this is a retirement month...
+            if (personBsuspended === false){//If suspension does NOT eliminate that benefit...
+              //Determine which type of retirementMonth it is and add 1 to appropriate count
+              if (testMonth < personB.FRA){
+                calcYear.monthsOfPersonBretirementPreARF = calcYear.monthsOfPersonBretirementPreARF + 1
+              }
+              else if (testMonth >= personB.endSuspensionDate){
+                calcYear.monthsOfPersonBretirementWithSuspensionDRCs = calcYear.monthsOfPersonBretirementWithSuspensionDRCs + 1
+              }
+              else {
+                calcYear.monthsOfPersonBretirementPostARF = calcYear.monthsOfPersonBretirementPostARF + 1
+              }
             }
-            testMonth.setMonth(testMonth.getMonth()+1)
+            else {//i.e., if suspension DOES eliminate the benefit for this month
+              personB.DRCsViaSuspension = personB.DRCsViaSuspension + 1
+            }
           }
-        }
-        return Number(monthsOfBenefit)
-  }
-
-
-  countAllBenefitMonthsSingle(calcYear:CalculationYear, person:Person){
-    calcYear.monthsOfPersonAretirement = this.countMonthsOfaBenefitOtherThanMarriedSpousal(person.retirementBenefitDate, calcYear, person)
-    return calcYear
-  }
-
-  countAllBenefitMonthsCouple(calcYear:CalculationYear, scenario:ClaimingScenario, personA:Person, personB:Person){
-        //Calculate number of months of retirement benefit for each spouse
-        calcYear.monthsOfPersonAretirement = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personA.retirementBenefitDate, calcYear, personA)
-        calcYear.monthsOfPersonBretirement = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personB.retirementBenefitDate, calcYear, personB)
-
-        //Calculate number of months of spouseA spousalBenefit w/ retirementBenefit and number of months of spouseA spousalBenefit w/o retirementBenefit
-        if (scenario.maritalStatus == "married") {calcYear.monthsOfPersonAspousal = this.countMonthsOfaMarriedSpousalBenefit(personA.spousalBenefitDate, calcYear, personA, personB)}
-        if (scenario.maritalStatus == "divorced") {calcYear.monthsOfPersonAspousal = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personA.spousalBenefitDate, calcYear, personA)}
-        if (calcYear.monthsOfPersonAretirement >= calcYear.monthsOfPersonAspousal) {
-          calcYear.monthsOfPersonAspousalWithRetirement = calcYear.monthsOfPersonAspousal
-          calcYear.monthsOfPersonAspousalWithoutRetirement = 0
-        } else {
-          calcYear.monthsOfPersonAspousalWithRetirement = calcYear.monthsOfPersonAretirement
-          calcYear.monthsOfPersonAspousalWithoutRetirement = calcYear.monthsOfPersonAspousal - calcYear.monthsOfPersonAretirement
-        }
-
-        //Calculate number of months of spouseB spousalBenefit w/ retirementBenefit and number of months of spouseB spousalBenefit w/o retirementBenefit
-        if (scenario.maritalStatus == "married") {calcYear.monthsOfPersonBspousal = this.countMonthsOfaMarriedSpousalBenefit(personB.spousalBenefitDate, calcYear, personB, personA)}
-        if (scenario.maritalStatus == "divorced"){calcYear.monthsOfPersonBspousal = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personB.spousalBenefitDate, calcYear, personB)}
-        if (calcYear.monthsOfPersonBretirement >= calcYear.monthsOfPersonBspousal) {
-          calcYear.monthsOfPersonBspousalWithRetirement = calcYear.monthsOfPersonBspousal
-          calcYear.monthsOfPersonBspousalWithoutRetirement = 0
-        } else {
-          calcYear.monthsOfPersonBspousalWithRetirement = calcYear.monthsOfPersonBretirement
-          calcYear.monthsOfPersonBspousalWithoutRetirement = calcYear.monthsOfPersonBspousal - calcYear.monthsOfPersonBretirement
-        }
-
-        //Calculate number of months of spouseA survivorBenefit w/ retirementBenefit and number of months of spouseA survivorBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonAsurvivor = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personA.survivorFRA, calcYear, personA)
-        if (calcYear.monthsOfPersonAretirement >= calcYear.monthsOfPersonAsurvivor) {
-          calcYear.monthsOfPersonAsurvivorWithRetirement = calcYear.monthsOfPersonAsurvivor
-          calcYear.monthsOfPersonAsurvivorWithoutRetirement = 0
-        } else {
-          calcYear.monthsOfPersonAsurvivorWithRetirement = calcYear.monthsOfPersonAretirement
-          calcYear.monthsOfPersonAsurvivorWithoutRetirement = calcYear.monthsOfPersonAsurvivor - calcYear.monthsOfPersonAretirement
-        }
-
-        //Calculate number of months of spouseB survivorBenefit w/ retirementBenefit and number of months of spouseB survivorBenefit w/o retirementBenefit
-        calcYear.monthsOfPersonBsurvivor = this.countMonthsOfaBenefitOtherThanMarriedSpousal(personB.survivorFRA, calcYear, personB)
-        if (calcYear.monthsOfPersonBretirement >= calcYear.monthsOfPersonBsurvivor) {
-          calcYear.monthsOfPersonBsurvivorWithRetirement = calcYear.monthsOfPersonBsurvivor
-          calcYear.monthsOfPersonBsurvivorWithoutRetirement = 0
-        } else {
-          calcYear.monthsOfPersonBsurvivorWithRetirement = calcYear.monthsOfPersonBretirement
-          calcYear.monthsOfPersonBsurvivorWithoutRetirement = calcYear.monthsOfPersonBsurvivor - calcYear.monthsOfPersonBretirement
-        }
-        
-    return calcYear
-  }
-  
-
-  //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
-  //We have 3 "retirementBenefit" amounts. Have to decide how many months of each there are, out of the total "months of retirement" figure
-      //preARFmonths + ARFmonths + DRCmonths = "monthsOfPersonAretirement"
-  calculateAnnualRetirementBenefit(person:Person, calcYear:CalculationYear){
-    if (person.id == 'A') {
-      var retirementMonths:number = calcYear.monthsOfPersonAretirement
-    }
-    else {
-      var retirementMonths:number = calcYear.monthsOfPersonBretirement
-    }
-    let ARFmonths: number
-    let preARFmonths: number
-    let DRCmonths: number
-    let annualRetirementBenefit:number
-    if (person.DRCsViaSuspension == 0) {
-        if (calcYear.date.getFullYear() > person.FRA.getFullYear()) {//if whole year is after FRA, all months are ARF months 
-          annualRetirementBenefit = retirementMonths * person.retirementBenefitAfterARF
-        }
-        else if (calcYear.date.getFullYear() < person.FRA.getFullYear()) {//if whole year is before FRA, all months are preARFmonths
-          annualRetirementBenefit = retirementMonths * person.initialRetirementBenefit
-        }
-        else if (calcYear.date.getFullYear() == person.FRA.getFullYear()){//if year includes FRA, ARF months = 12 - FRA.getmonth, limited to monthsofretirement. And preARFmonths = months of retirement - ARFmonths
-            ARFmonths = 12 - person.FRA.getMonth()
-            if (ARFmonths > retirementMonths) {ARFmonths = retirementMonths}
-            annualRetirementBenefit = ARFmonths * person.retirementBenefitAfterARF + (retirementMonths - ARFmonths) * person.initialRetirementBenefit
-        }
-    }
-    else {//i.e., if DRC > 0
-        if (calcYear.date > person.endSuspensionDate) {//if calcYear.date is after endSuspensionDate, all months are DRCmonths
-          annualRetirementBenefit = retirementMonths * person.retirementBenefitWithDRCsfromSuspension
-        }
-        else if (calcYear.date.getFullYear() < person.FRA.getFullYear()) {//if whole year is before FRA, all months are preARFmonths
-          annualRetirementBenefit = retirementMonths * person.initialRetirementBenefit
-        }
-        else if (calcYear.date.getFullYear() == person.FRA.getFullYear() && calcYear.date.getFullYear() < person.endSuspensionDate.getFullYear()) {//This is year of FRA, but suspension doesn't end until later year
-          //some months are preARF months; some are ARFmonths
-          ARFmonths = 12 - person.FRA.getMonth()
-          if (ARFmonths > retirementMonths) {ARFmonths = retirementMonths}
-          annualRetirementBenefit = ARFmonths * person.retirementBenefitAfterARF + (retirementMonths - ARFmonths) * person.initialRetirementBenefit
-        }
-        else if (calcYear.date.getFullYear() == person.FRA.getFullYear() && calcYear.date.getFullYear() == person.endSuspensionDate.getFullYear()){//This is year of FRA, and year in which suspension ends
-          //some months are preARF, some are ARF, some are DRC
-          DRCmonths = 12 - person.endSuspensionDate.getMonth()
-            if (DRCmonths > retirementMonths) {DRCmonths = retirementMonths}//limit DRCmonths to total months of retirement benefit
-          ARFmonths = person.endSuspensionDate.getMonth() - person.FRA.getMonth()
-            if (DRCmonths + ARFmonths > retirementMonths) {ARFmonths = retirementMonths - DRCmonths} //limit sum of ARFmonths and DRCmonths to monthsOfPersonAretirement
-          preARFmonths = retirementMonths - DRCmonths - ARFmonths
-          annualRetirementBenefit = preARFmonths * person.initialRetirementBenefit + ARFmonths * person.retirementBenefitAfterARF + DRCmonths * person.retirementBenefitWithDRCsfromSuspension
-        }
-        else if (calcYear.date.getFullYear() > person.FRA.getFullYear() && calcYear.date.getFullYear() < person.endSuspensionDate.getFullYear()){//FRA was in prior year, suspension ends in later year
-          //all months are ARF months
-          annualRetirementBenefit = retirementMonths * person.retirementBenefitAfterARF
-        }
-        else if (calcYear.date.getFullYear() > person.FRA.getFullYear() && calcYear.date.getFullYear() == person.endSuspensionDate.getFullYear()){//FRA was in prior year, suspension ends this year
-          //some months are ARF months; some are DRC months
-          DRCmonths = 12 - person.endSuspensionDate.getMonth()
-          if (DRCmonths > retirementMonths) {DRCmonths = retirementMonths}
-          annualRetirementBenefit = DRCmonths * person.retirementBenefitWithDRCsfromSuspension + (retirementMonths - DRCmonths) * person.retirementBenefitAfterARF
-        }
-    }
-
-    //Set appropriate field on calcYear and add back overwithholding
-    if (person.id == 'A') {
-      calcYear.personAannualRetirementBenefit = annualRetirementBenefit
-      calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit + calcYear.personAoverWithholding
-    }
-    else {
-      calcYear.personBannualRetirementBenefit = annualRetirementBenefit
-      calcYear.personBannualRetirementBenefit = calcYear.personBannualRetirementBenefit + calcYear.personBoverWithholding
-    }
-
-    return calcYear
-  }
-
-  
-  //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
-  calculateAnnualBenefitAmountsCouple(personA:Person, personB:Person, calcYear:CalculationYear){
-      //Calculate annual retirement amounts
-      //calcYear = this.calculateAnnualRetirementBenefit(personA, calcYear)
-      //calcYear = this.calculateAnnualRetirementBenefit(personB, calcYear)
-
-
-      //Spouse A spousal
-      if (calcYear.date.getFullYear() < personA.FRA.getFullYear()) {
-        calcYear.personAannualRetirementBenefit = calcYear.monthsOfPersonAretirement * personA.initialRetirementBenefit
-        calcYear.personAannualSpousalBenefit = (calcYear.monthsOfPersonAspousalWithoutRetirement * personA.spousalBenefitWithoutRetirement) + (calcYear.monthsOfPersonAspousalWithRetirement * personA.spousalBenefitWithRetirement)
-      } else if (calcYear.date.getFullYear() == personA.FRA.getFullYear()){
-          //Calculate number of ARF months (e.g., 10 if FRA is March)
-          let ARFmonths = 12 - personA.FRA.getMonth()
-          if (ARFmonths > calcYear.monthsOfPersonAretirement) {
-            ARFmonths = calcYear.monthsOfPersonAretirement //Limit ARFmonths to number of months of retirement benefit
+          //check if personA should get a spousal benefit (and if so, what type)
+          if (testMonth >= personA.spousalBenefitDate){ //if this is a spousal benefit month...
+            if (personAsuspended === false && (scenario.maritalStatus == "divorced" || personBsuspended === false)  )
+            {
+              //figure out what type of spousal benefit and add 1 to appropriate count
+                if (testMonth < personA.retirementBenefitDate) {
+                  calcYear.monthsOfPersonAspousalWithoutRetirement = calcYear.monthsOfPersonAspousalWithoutRetirement + 1
+                }
+                else if (testMonth < personA.FRA) {
+                  calcYear.monthsOfPersonAspousalWithRetirementPreARF = calcYear.monthsOfPersonAspousalWithRetirementPreARF + 1
+                }
+                else if (testMonth >= personA.endSuspensionDate) {//if they never suspended, there's no difference between "PostARF" and "WithSuspensionDRCs." So we don't have to check whether they suspended or not.
+                  calcYear.monthsOfPersonAspousalWithRetirementwithSuspensionDRCs = calcYear.monthsOfPersonAspousalWithRetirementwithSuspensionDRCs + 1
+                }
+                else {
+                  calcYear.monthsOfPersonAspousalWithRetirementPostARF = calcYear.monthsOfPersonAspousalWithRetirementPostARF + 1
+                }
+            }
           }
-          calcYear.personAannualRetirementBenefit = ARFmonths * personA.retirementBenefitAfterARF + (calcYear.monthsOfPersonAretirement - ARFmonths) * personA.initialRetirementBenefit
-          //Figure out how many months there are of "pre-ARF with retirement benefit" "post-ARF with retirement benefit" and "post-ARF without retirement benefit" ("Without" months require restricted app. So none are pre-ARF)
-          ARFmonths = 12 - personA.FRA.getMonth() //reset ARFmonths
-          calcYear.personAannualSpousalBenefit =
-            personA.spousalBenefitWithoutRetirementAfterARF * calcYear.monthsOfPersonAspousalWithoutRetirement //Without retirement is always after ARF
-          + personA.spousalBenefitWithRetirementAfterARF * (ARFmonths - calcYear.monthsOfPersonAspousalWithoutRetirement) //post-ARF "with retirement" months is ARF months minus the "without retirement months"
-          + personA.spousalBenefitWithRetirement * (calcYear.monthsOfPersonAspousalWithRetirement - (ARFmonths - calcYear.monthsOfPersonAspousalWithoutRetirement)) //pre-ARF "with retirement" months is total "with retirement" months minus the post-ARF "with" months (calculated in line above)
-        } else {//i.e., if whole year is past FRA
-          calcYear.personAannualRetirementBenefit = calcYear.monthsOfPersonAretirement * personA.retirementBenefitAfterARF
-          calcYear.personAannualSpousalBenefit = (calcYear.monthsOfPersonAspousalWithoutRetirement * personA.spousalBenefitWithoutRetirementAfterARF) + (calcYear.monthsOfPersonAspousalWithRetirement * personA.spousalBenefitWithRetirementAfterARF)
-        }
-
-      //Spouse B retirement and spousal
-      if (calcYear.date.getFullYear() < personB.FRA.getFullYear()) {
-        calcYear.personBannualRetirementBenefit = calcYear.monthsOfPersonBretirement * personB.initialRetirementBenefit
-        calcYear.personBannualSpousalBenefit = (calcYear.monthsOfPersonBspousalWithoutRetirement * personB.spousalBenefitWithoutRetirement) + (calcYear.monthsOfPersonBspousalWithRetirement * personB.spousalBenefitWithRetirement)
-      } else if (calcYear.date.getFullYear() == personB.FRA.getFullYear()){
-          //Calculate number of ARF months (e.g., 10 if FRA is March)
-          let ARFmonths = 12 - personB.FRA.getMonth()
-          if (ARFmonths > calcYear.monthsOfPersonBretirement) {
-            ARFmonths = calcYear.monthsOfPersonBretirement //Limit ARFmonths to number of months of retirement benefit
+          //check if personB should get a spousal benefit (and if so, what type)
+          if (testMonth >= personB.spousalBenefitDate){ //if this is a spousal benefit month...
+            if (personBsuspended === false && (scenario.maritalStatus == "divorced" || personAsuspended === false)  )
+            {
+              //figure out what type of spousal benefit and add 1 to appropriate count
+                if (testMonth < personB.retirementBenefitDate) {
+                  calcYear.monthsOfPersonBspousalWithoutRetirement = calcYear.monthsOfPersonBspousalWithoutRetirement + 1
+                }
+                else if (testMonth < personB.FRA) {
+                  calcYear.monthsOfPersonBspousalWithRetirementPreARF = calcYear.monthsOfPersonBspousalWithRetirementPreARF + 1
+                }
+                else if (testMonth >= personB.endSuspensionDate) {//if they never suspended, there's no difference between "PostARF" and "WithSuspensionDRCs." So we don't have to check whether they suspended or not.
+                  calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs = calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs + 1  
+                }
+                else {
+                  calcYear.monthsOfPersonBspousalWithRetirementPostARF = calcYear.monthsOfPersonBspousalWithRetirementPostARF + 1
+                }
+            }
           }
-          calcYear.personBannualRetirementBenefit = ARFmonths * personB.retirementBenefitAfterARF + (calcYear.monthsOfPersonBretirement - ARFmonths) * personB.initialRetirementBenefit
-          //Figure out how many months there are of "pre-ARF with retirement benefit" "post-ARF with retirement benefit" and "post-ARF without retirement benefit" ("Without" months require restricted app. So none are pre-ARF)
-          ARFmonths = 12 - personA.FRA.getMonth() //reset ARFmonths
-          calcYear.personBannualSpousalBenefit =
-            personB.spousalBenefitWithoutRetirementAfterARF * calcYear.monthsOfPersonBspousalWithoutRetirement //Without retirement is always after ARF
-          + personB.spousalBenefitWithRetirementAfterARF * (ARFmonths - calcYear.monthsOfPersonBspousalWithoutRetirement) //post-ARF "with retirement" months is ARF months minus the "without retirement months"
-          + personB.spousalBenefitWithRetirement * (calcYear.monthsOfPersonBspousalWithRetirement - (ARFmonths - calcYear.monthsOfPersonBspousalWithoutRetirement)) //pre-ARF "with retirement" months is total "with retirement" months minus the post-ARF "with" months (calculated in line above)
-        } else {//i.e., if whole year is past FRA
-          calcYear.personBannualRetirementBenefit = calcYear.monthsOfPersonBretirement * personB.retirementBenefitAfterARF
-          calcYear.personBannualSpousalBenefit = (calcYear.monthsOfPersonBspousalWithoutRetirement * personB.spousalBenefitWithoutRetirementAfterARF) + (calcYear.monthsOfPersonBspousalWithRetirement * personB.spousalBenefitWithRetirementAfterARF)
-        }
-
-        //Survivor benefits are always with ARF since we assume it doesn't even get claimed until FRA
-        calcYear.personAannualSurvivorBenefit = (calcYear.monthsOfPersonAsurvivorWithoutRetirement * personA.survivorBenefitWithoutRetirementAfterARF) + (calcYear.monthsOfPersonAsurvivorWithRetirement * personA.survivorBenefitWithRetirementAfterARF) 
-        calcYear.personBannualSurvivorBenefit = (calcYear.monthsOfPersonBsurvivorWithoutRetirement * personB.survivorBenefitWithoutRetirementAfterARF) + (calcYear.monthsOfPersonBsurvivorWithRetirement * personB.survivorBenefitWithRetirementAfterARF)
-
-      //Add back overwithholding
-      calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit + calcYear.personAoverWithholding
-      calcYear.personBannualRetirementBenefit = calcYear.personBannualRetirementBenefit + calcYear.personBoverWithholding
-
+          //Check if personA should get a survivor benefit (and if so, what type)
+          if (testMonth >= personA.survivorFRA){ //if this is a survivor benefit month...
+            if (personAsuspended === false) {
+              //figure out what type of survivor benefit and add 1 to appropriate count
+              if (testMonth < personA.retirementBenefitDate) {
+                calcYear.monthsOfPersonAsurvivorWithoutRetirement = calcYear.monthsOfPersonAsurvivorWithoutRetirement + 1
+              }
+              else if (testMonth >= personA.endSuspensionDate) {//if they never suspended, there's no difference between "PostARF" and "WithSuspensionDRCs." So we don't have to check whether they suspended or not.
+                calcYear.monthsOfPersonAsurvivorWithRetirementwithSuspensionDRCs = calcYear.monthsOfPersonAsurvivorWithRetirementwithSuspensionDRCs + 1
+              }
+              else {
+                calcYear.monthsOfPersonAsurvivorWithRetirementPostARF = calcYear.monthsOfPersonAsurvivorWithRetirementPostARF + 1
+              }
+            }
+          }
+          //Check if personB should get a survivor benefit (and if so, what type)
+          if (testMonth >= personB.survivorFRA){ //if this is a survivor benefit month...
+            if (personBsuspended === false) {
+              //figure out what type of survivor benefit and add 1 to appropriate count
+              if (testMonth < personB.retirementBenefitDate) {
+                calcYear.monthsOfPersonBsurvivorWithoutRetirement = calcYear.monthsOfPersonBsurvivorWithoutRetirement + 1
+              }
+              else if (testMonth >= personB.endSuspensionDate) {//if they never suspended, there's no difference between "PostARF" and "WithSuspensionDRCs." So we don't have to check whether they suspended or not.
+                calcYear.monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs = calcYear.monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs + 1
+              }
+              else {
+                calcYear.monthsOfPersonBsurvivorWithRetirementPostARF = calcYear.monthsOfPersonBsurvivorWithRetirementPostARF + 1
+              }
+            }
+          }
+          testMonth.setMonth(testMonth.getMonth()+1)
+      }
+    }
     return calcYear
   }
 
 
+  //This function just counts how many months of a retirement/spousal/survivor benefit there are in a given year. It can't determine pre-/post-ARF, pre-/post-suspension, etc.
+  countMonthsOfABenefit(benefitFilingDate:Date, currentCalculationDate:Date){
+    let monthsBeforeBenefit: number = benefitFilingDate.getMonth() - currentCalculationDate.getMonth() + 12*(benefitFilingDate.getFullYear() - currentCalculationDate.getFullYear())
+    let monthsOfBenefit: number
+    if (monthsBeforeBenefit >= 12) {
+      monthsOfBenefit = 0
+    }
+    else if (monthsBeforeBenefit > 0) {
+      monthsOfBenefit = 12 - monthsBeforeBenefit
+    } else {
+      monthsOfBenefit = 12
+    }
+    return Number(monthsOfBenefit)
+  }
 }

@@ -26,7 +26,7 @@ describe('HomeComponent', () => {
 
     //Check checkValidRetirementInputs()
     it('should give no error message when input date is good', inject([HomeComponent], (component: HomeComponent) => {
-      let person:Person = new Person()
+      let person:Person = new Person("A")
       person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
       person.SSbirthDate = new Date (1960, 11, 1)
       let retirementBenefitDate:Date = new Date(2023, 7, 1)
@@ -35,7 +35,7 @@ describe('HomeComponent', () => {
     }))
 
     it('should demand a date when user fails to input one', inject([HomeComponent], (component: HomeComponent) => {
-      let person:Person = new Person()
+      let person:Person = new Person("A")
       person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
       person.SSbirthDate = new Date (1960, 11, 1)
       let retirementBenefitDate:Date = new Date(undefined, 7, 1)
@@ -44,7 +44,7 @@ describe('HomeComponent', () => {
     }))
 
     it('should reject retirementBenefitDate that is too early', inject([HomeComponent], (component: HomeComponent) => {
-      let person:Person = new Person()
+      let person:Person = new Person("A")
       person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
       person.SSbirthDate = new Date (1960, 11, 1)
       let retirementBenefitDate:Date = new Date (2022, 11, 1) //62 years and 0 months (not possible for somebody born on not first or second of month)
@@ -53,7 +53,7 @@ describe('HomeComponent', () => {
     }))
 
     it('should reject retirementBenefitDate that is later than 70', inject([HomeComponent], (component: HomeComponent) => {
-      let person:Person = new Person()
+      let person:Person = new Person("A")
       person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
       person.SSbirthDate = new Date (1960, 11, 1)
       let retirementBenefitDate:Date = new Date (2031, 0, 1) //70 years and 1 month
@@ -65,8 +65,8 @@ describe('HomeComponent', () => {
     //Check checkValidSpousalInputs()
     it('should give no error message when input dates are good', inject([HomeComponent], (component: HomeComponent) => {
       component.scenario.maritalStatus = "married"
-      let person:Person = new Person()
-      let otherPerson:Person = new Person()
+      let person:Person = new Person("A")
+      let otherPerson:Person = new Person("B")
       person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
       person.SSbirthDate = new Date (1960, 11, 1)
       person.FRA = new Date (2027, 11, 1) //67 years
@@ -81,8 +81,8 @@ describe('HomeComponent', () => {
 
     it('should reject spousalBenefitDate that is prior to age 62', inject([HomeComponent], (component: HomeComponent) => {
       component.scenario.maritalStatus = "married"
-      let person:Person = new Person()
-      let otherPerson:Person = new Person()
+      let person:Person = new Person("A")
+      let otherPerson:Person = new Person("B")
       person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
       person.SSbirthDate = new Date (1960, 11, 1)
       person.FRA = new Date (2027, 11, 1) //67 years
@@ -97,8 +97,8 @@ describe('HomeComponent', () => {
 
     it('should reject spousalBenefitDate that is prior to other spouse retirementBenefitDate', inject([HomeComponent], (component: HomeComponent) => {
       component.scenario.maritalStatus = "married"
-      let person:Person = new Person()
-      let otherPerson:Person = new Person()
+      let person:Person = new Person("A")
+      let otherPerson:Person = new Person("B")
       person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
       person.SSbirthDate = new Date (1960, 11, 1)
       person.FRA = new Date (2027, 11, 1) //67 years
@@ -113,8 +113,8 @@ describe('HomeComponent', () => {
 
     it('should reject spousalBenefitDate that is later than later of the two retirementBenefitDates', inject([HomeComponent], (component: HomeComponent) => {
       component.scenario.maritalStatus = "married"
-      let person:Person = new Person()
-      let otherPerson:Person = new Person()
+      let person:Person = new Person("A")
+      let otherPerson:Person = new Person("B")
       person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
       person.SSbirthDate = new Date (1960, 11, 1)
       person.FRA = new Date (2027, 11, 1) //67 years
@@ -129,8 +129,8 @@ describe('HomeComponent', () => {
 
     it('should reject spousalBenefitDate that is later than later of the two retirementBenefitDates, for divorcee', inject([HomeComponent], (component: HomeComponent) => {
       component.scenario.maritalStatus = "divorced"
-      let person:Person = new Person()
-      let otherPerson:Person = new Person()
+      let person:Person = new Person("A")
+      let otherPerson:Person = new Person("B")
       person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
       person.SSbirthDate = new Date (1960, 11, 1)
       person.FRA = new Date (2027, 11, 1) //67 years
@@ -145,8 +145,8 @@ describe('HomeComponent', () => {
 
     it('should reject restricted app prior to FRA -- ie spousalBenefitDate prior to FRA for somebody born 1953 or prior ', inject([HomeComponent], (component: HomeComponent) => {
       component.scenario.maritalStatus = "married"
-      let person:Person = new Person()
-      let otherPerson:Person = new Person()
+      let person:Person = new Person("A")
+      let otherPerson:Person = new Person("B")
       person.actualBirthDate = new Date (1953, 4, 29) //May 29, 1953
       person.SSbirthDate = new Date (1953, 4, 1)
       person.FRA = new Date (2019, 4, 1) //66 years

@@ -25,23 +25,25 @@ export class PresentValueService {
     let retirementPV: number = 0
     let probabilityAlive: number
     let earningsTestResult:any[] 
-    person.hasHadGraceYear = false //reset hasHadGraceYear for new PV calc
-    person.adjustedRetirementBenefitDate = new Date(person.retirementBenefitDate) //reset for new PV calc
+    //reset values for new PV calc
+        person.hasHadGraceYear = false
+        person.adjustedRetirementBenefitDate = new Date(person.retirementBenefitDate)
+        person.retirementBenefitWithDRCsfromSuspension = 0
+        person.DRCsViaSuspension = 0
 
 
-    //Find Jan 1 of the year they plan to start benefit
-    let initialCalcDate:Date = new Date(person.retirementBenefitDate.getFullYear(), 0, 1)
-    let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
+    //Set initial calcYear (Jan 1 of the year they turn 62)
+    let calcYear:CalculationYear = new CalculationYear(scenario.initialCalcDate)
 
     //calculate age as of that date
-    let age: number = ( 12 * (calcYear.date.getFullYear() - person.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - person.SSbirthDate.getMonth()  )/12
+    person.age = ( 12 * (calcYear.date.getFullYear() - person.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - person.SSbirthDate.getMonth()  )/12
 
     //Calculate PV via loop until they hit age 115 (by which point "remaining lives" is zero)
-      while (age < 115) {
+      while (person.age < 115) {
 
-        //Count number of months in year that are before/after inputBenefitDate
-        calcYear = this.benefitService.countAllBenefitMonthsSingle(calcYear, person)
-
+        //Count number of months of each type of retirement benefit (i.e., initial benefit, benefit after ARF, benefit with DRC from suspension)
+          calcYear = this.benefitService.CountSingleBenefitMonths(calcYear, person)
+      
         //Earnings test
         if (earningsTestResult === undefined || calcYear.date.getFullYear() <= person.FRA.getFullYear()){//Only have to run earnings test if it's before FRA or if it has never been run (has to be run once for after-ARF values to be calc'd)
           earningsTestResult = this.earningsTestService.earningsTestSingle(calcYear, person)
@@ -49,8 +51,8 @@ export class PresentValueService {
           person = earningsTestResult[1]
         }
         
-        //Calculate retirementBenefit with DRCs from suspension. (Only have to do it once. Can't do it until final adjustedRetirementBenefitDate is known.)
-        if (person.retirementBenefitWithDRCsfromSuspension == 0 && calcYear.date.getFullYear() >= person.FRA.getFullYear()) {
+        //Calculate retirementBenefit with DRCs from suspension. (Only have to do it once. But can't do it until a) final adjustedRetirementBenefitDate is known from earnings test and b) number of DRCs is known.)
+        if (person.retirementBenefitWithDRCsfromSuspension == 0 && calcYear.date.getFullYear() >= person.FRA.getFullYear() && calcYear.date.getFullYear() >= person.endSuspensionDate.getFullYear()) {
           person.retirementBenefitWithDRCsfromSuspension = this.benefitService.calculateRetirementBenefit(person, person.adjustedRetirementBenefitDate)
         }
 
@@ -58,111 +60,110 @@ export class PresentValueService {
         calcYear = this.benefitService.calculateAnnualRetirementBenefit(person, calcYear)
 
         //Calculate probability of being alive at end of age in question
-        probabilityAlive = this.mortalityService.calculateProbabilityAlive(person, age)
+        probabilityAlive = this.mortalityService.calculateProbabilityAlive(person, person.age)
 
         //Calculate probability-weighted benefit
         let annualPV = calcYear.personAannualRetirementBenefit * probabilityAlive
 
         //Discount that benefit to age 62
         annualPV = annualPV / (1 + scenario.discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
-        annualPV = annualPV / Math.pow((1 + scenario.discountRate/100),(age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
+        annualPV = annualPV / Math.pow((1 + scenario.discountRate/100),(person.age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
 
         //Add discounted benefit to ongoing count of retirementPV, add 1 year to age and calculationYear, and start loop over
         retirementPV = retirementPV + annualPV
-        age = age + 1
+        person.age = person.age + 1
         let newCalcDate:Date = new Date(calcYear.date.getFullYear()+1, 0, 1)
         calcYear = new CalculationYear(newCalcDate)
       }
+
     return retirementPV
   }
 
   calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario){
     
     //Assorted variables
-    let spouseAage: number
     let probabilityAalive: number
-    let spouseBage: number
     let probabilityBalive: number
     let couplePV: number = 0
-    let initialCalcDate: Date
     let earningsTestResult:any[]
 
     //reset values for new PV calc
-    personA.hasHadGraceYear = false
-    personB.hasHadGraceYear = false
-    personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate)
-    personA.adjustedSpousalBenefitDate = new Date(personA.spousalBenefitDate)
-    personB.adjustedRetirementBenefitDate = new Date(personB.retirementBenefitDate)
-    personB.adjustedSpousalBenefitDate = new Date(personB.spousalBenefitDate)
+        personA.hasHadGraceYear = false
+        personB.hasHadGraceYear = false
+        personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate)
+        personA.adjustedSpousalBenefitDate = new Date(personA.spousalBenefitDate)
+        personB.adjustedRetirementBenefitDate = new Date(personB.retirementBenefitDate)
+        personB.adjustedSpousalBenefitDate = new Date(personB.spousalBenefitDate)
+        personA.retirementBenefitWithDRCsfromSuspension = 0
+        personA.spousalBenefitWithSuspensionDRCRetirement = 0
+        personA.survivorBenefitWithSuspensionDRCRetirement = 0
+        personA.DRCsViaSuspension = 0
+        personB.retirementBenefitWithDRCsfromSuspension = 0
+        personB.DRCsViaSuspension = 0
+        personB.spousalBenefitWithSuspensionDRCRetirement = 0
+        personB.survivorBenefitWithSuspensionDRCRetirement = 0
 
 
-    //If married, set initialCalcDate to Jan 1 of year in which first spouse reaches age 62
-    if (scenario.maritalStatus == "married"){
-      if (personA.SSbirthDate < personB.SSbirthDate)
-        {
-        initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, 0, 1)
-        }
-      else {//This is fine as a simple "else" statement. If the two SSbirth dates are equal, doing it as of either date is fine.
-      initialCalcDate = new Date(personB.SSbirthDate.getFullYear()+62, 0, 1)
-        }
-    }
-    //If divorced, we want initialCalcDate to be Jan 1 of SpouseA's age62 year.
-    if (scenario.maritalStatus == "divorced") {
-      initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, 0, 1)
-    }
-
-
-    //Find Jan 1 of the year containing initialCalcDate
-    let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
+    //Find Jan 1 of the year containing initialCalcDate (year in which first spouse reaches age 62, unless divorced in which case it's year in which user turns 62)
+    let calcYear:CalculationYear = new CalculationYear(scenario.initialCalcDate)
 
     //Find age of each spouse as of that Jan 1
-    spouseAage = ( calcYear.date.getMonth() - personA.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
-    spouseBage = ( calcYear.date.getMonth() - personB.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
+    personA.age = ( calcYear.date.getMonth() - personA.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
+    personB.age = ( calcYear.date.getMonth() - personB.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
 
 
     //Calculate monthly benefit amounts, pre-ARF
     personA.initialRetirementBenefit = this.benefitService.calculateRetirementBenefit(personA, personA.retirementBenefitDate)
     personB.initialRetirementBenefit = this.benefitService.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
     personA.spousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, 0, personA.spousalBenefitDate)
-    personA.spousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, personA.initialRetirementBenefit, personA.spousalBenefitDate)
+    personA.spousalBenefitWithRetirementPreARF = this.benefitService.calculateSpousalBenefit(personA, personB, personA.initialRetirementBenefit, personA.spousalBenefitDate)
     personB.spousalBenefitWithoutRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, 0, personB.spousalBenefitDate)
-    personB.spousalBenefitWithRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, personB.initialRetirementBenefit, personB.spousalBenefitDate)
+    personB.spousalBenefitWithRetirementPreARF = this.benefitService.calculateSpousalBenefit(personB, personA, personB.initialRetirementBenefit, personB.spousalBenefitDate)
     personA.survivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
-    personA.survivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(personA, personA.initialRetirementBenefit, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
+    personA.survivorBenefitWithRetirementPreARF = this.benefitService.calculateSurvivorBenefit(personA, personA.initialRetirementBenefit, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
     personB.survivorBenefitWithoutRetirement = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
-    personB.survivorBenefitWithRetirement = this.benefitService.calculateSurvivorBenefit(personB, personB.initialRetirementBenefit, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
+    personB.survivorBenefitWithRetirementPreARF = this.benefitService.calculateSurvivorBenefit(personB, personB.initialRetirementBenefit, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
 
 
     //Calculate PV via loop until both spouses are at least age 115 (by which point "remaining lives" is zero)
-    while (spouseAage < 115 || spouseBage < 115){
+    while (personA.age < 115 || personB.age < 115){
 
-        //count number of months in this year for which each type of benefit will be received
-        calcYear = this.benefitService.countAllBenefitMonthsCouple(calcYear, scenario, personA, personB)
+      //count number of months in this year for which each type of benefit will be received
+      calcYear = this.benefitService.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
 
-        //Earnings test        
-        if (earningsTestResult === undefined || calcYear.date.getFullYear() <= personA.FRA.getFullYear() || calcYear.date.getFullYear() <= personB.FRA.getFullYear()){//Only have to run earnings test if it's before FRA or if it has never been run (has to be run once for after-ARF values to be calc'd)
-          earningsTestResult = this.earningsTestService.earningsTestCouple(calcYear, scenario, personA, personB)
-          calcYear = earningsTestResult[0]
-          personA = earningsTestResult[1]
-          personB = earningsTestResult[2]
-        }
-        
+      //Earnings test        
+      if (earningsTestResult === undefined || calcYear.date.getFullYear() <= personA.FRA.getFullYear() || calcYear.date.getFullYear() <= personB.FRA.getFullYear()){//Only have to run earnings test if it's before FRA or if it has never been run (has to be run once for after-ARF values to be calc'd)
+        earningsTestResult = this.earningsTestService.earningsTestCouple(calcYear, scenario, personA, personB)
+        calcYear = earningsTestResult[0]
+        personA = earningsTestResult[1]
+        personB = earningsTestResult[2]
+      }
+      
+      //Calculate retirementBenefit with DRCs from suspension as well as new spousal/survivor benefits accounting for larger retirement benefit. (Only have to do this all once. Can't do it until a) final adjustedRetirementBenefitDate is known from earnings test and b) number of DRCs is known..)
+      if (personA.retirementBenefitWithDRCsfromSuspension == 0 && calcYear.date.getFullYear() >= personA.FRA.getFullYear() && calcYear.date.getFullYear() >= personA.endSuspensionDate.getFullYear()) {
+        personA.retirementBenefitWithDRCsfromSuspension = this.benefitService.calculateRetirementBenefit(personA, personA.adjustedRetirementBenefitDate)
+        personA.spousalBenefitWithSuspensionDRCRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefitWithDRCsfromSuspension, personA.spousalBenefitDate)
+        personA.survivorBenefitWithSuspensionDRCRetirement = this.benefitService.calculateSurvivorBenefit(personA, personA.retirementBenefitWithDRCsfromSuspension, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
+      }
+      if (personB.retirementBenefitWithDRCsfromSuspension == 0 && calcYear.date.getFullYear() >= personB.FRA.getFullYear() && calcYear.date.getFullYear() >= personB.endSuspensionDate.getFullYear()) {
+        personB.retirementBenefitWithDRCsfromSuspension = this.benefitService.calculateRetirementBenefit(personB, personB.adjustedRetirementBenefitDate)
+        personB.spousalBenefitWithSuspensionDRCRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefitWithDRCsfromSuspension, personB.spousalBenefitDate)
+        personB.survivorBenefitWithSuspensionDRCRetirement = this.benefitService.calculateSurvivorBenefit(personB, personB.retirementBenefitWithDRCsfromSuspension, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
+      }
 
+      //Calculate annual benefits, accounting for Adjustment Reduction Factor in years beginning at FRA
+      calcYear = this.benefitService.calculateAnnualBenefitAmountsCouple(personA, personB, calcYear)
 
-        //Calculate annual benefits, accounting for Adjustment Reduction Factor in years beginning at FRA
-        calcYear = this.benefitService.calculateAnnualBenefitAmountsCouple(personA, personB, calcYear)
-
-        //If user is divorced, we don't actually want to include the ex-spouse's benefit amounts in our PV sum
-        if (scenario.maritalStatus == "divorced") {
-          calcYear.personBannualRetirementBenefit = 0
-          calcYear.personBannualSpousalBenefit = 0
-          calcYear.personBannualSurvivorBenefit = 0
-        }
-
+      //If user is divorced, we don't actually want to include the ex-spouse's benefit amounts in our PV sum
+      if (scenario.maritalStatus == "divorced") {
+        calcYear.personBannualRetirementBenefit = 0
+        calcYear.personBannualSpousalBenefit = 0
+        calcYear.personBannualSurvivorBenefit = 0
+      }
 
       //Calculate each person's probability of being alive at end of age in question
-        probabilityAalive = this.mortalityService.calculateProbabilityAlive(personA, spouseAage)
-        probabilityBalive = this.mortalityService.calculateProbabilityAlive(personB, spouseBage)
+        probabilityAalive = this.mortalityService.calculateProbabilityAlive(personA, personA.age)
+        probabilityBalive = this.mortalityService.calculateProbabilityAlive(personB, personB.age)
 
       //Find probability-weighted annual benefit
         let annualPV = 
@@ -173,17 +174,17 @@ export class PresentValueService {
       //Discount that benefit
             //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
             let olderAge: number
-            if (spouseAage > spouseBage) {
-              olderAge = spouseAage
-            } else {olderAge = spouseBage}
+            if (personA.age > personB.age) {
+              olderAge = personA.age
+            } else {olderAge = personB.age}
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
 
       //Add discounted benefit to ongoing count of retirementPV, add 1 to each age, add 1 year to currentCalculationDate, and start loop over
         couplePV = couplePV + annualPV
-        spouseAage = spouseAage + 1
-        spouseBage = spouseBage + 1
+        personA.age = personA.age + 1
+        personB.age = personB.age + 1
         //calcYear.date.setFullYear(calcYear.date.getFullYear()+1)
         let newCalcDate:Date = new Date(calcYear.date.getFullYear()+1, 0, 1)
         calcYear = new CalculationYear(newCalcDate)

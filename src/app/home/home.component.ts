@@ -254,7 +254,26 @@ export class HomeComponent implements OnInit {
     this.spouseBfixedRetirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitYear, this.spouseBfixedRetirementBenefitMonth-1, 1)
     this.personA.mortalityTable = this.mortalityService.determineMortalityTable(this.spouseAgender, this.spouseAmortalityInput, this.spouseAassumedDeathAge)
     this.personB.mortalityTable = this.mortalityService.determineMortalityTable(this.spouseBgender, this.spouseBmortalityInput, this.spouseBassumedDeathAge)
-  }
+    //set initialCalcDate
+      //if single, it's year in which user turns 62
+      if (this.scenario.maritalStatus == "single") {
+        this.scenario.initialCalcDate = new Date(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
+      }
+      //If married, set initialCalcDate to Jan 1 of year in which first spouse reaches age 62
+        if (this.scenario.maritalStatus == "married"){
+          if (this.personA.SSbirthDate < this.personB.SSbirthDate)
+            {
+            this.scenario.initialCalcDate = new Date(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
+            }
+          else {//This is fine as a simple "else" statement. If the two SSbirth dates are equal, doing it as of either date is fine.
+          this.scenario.initialCalcDate = new Date(this.personB.SSbirthDate.getFullYear()+62, 0, 1)
+            }
+        }
+      //If divorced, we want initialCalcDate to be Jan 1 of personA's age62 year.
+      if (this.scenario.maritalStatus == "divorced") {
+        this.scenario.initialCalcDate = new Date(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
+      }
+    }
 
   checkValidRetirementInputs(person:Person, retirementBenefitDate:Date) {
     let error = undefined

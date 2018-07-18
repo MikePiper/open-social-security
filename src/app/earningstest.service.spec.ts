@@ -184,8 +184,8 @@ describe('EarningstestService', () => {
     personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate) //set initial value for adjusted retirementBenefitDate
     let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    calcYear.monthsOfPersonAretirement = benefitService.countMonthsOfaBenefitOtherThanMarriedSpousal(personA.retirementBenefitDate, calcYear, personA)//calculate monthsOfPersonAretirement before application of earnings test
-    expect(service.earningsTestSingle(calcYear, personA)[0].monthsOfPersonAretirement)
+    calcYear = benefitService.CountSingleBenefitMonths(calcYear, personA)//calculate monthsOfPersonAretirement before application of earnings test
+    expect(service.earningsTestSingle(calcYear, personA)[0].monthsOfPersonAretirementPreARF)
         .toEqual(0)
   }))
 
@@ -204,9 +204,9 @@ describe('EarningstestService', () => {
     personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate) //set initial value for adjusted retirementBenefitDate
     let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    calcYear.monthsOfPersonAretirement = benefitService.countMonthsOfaBenefitOtherThanMarriedSpousal(personA.retirementBenefitDate, calcYear, personA) //calculate monthsOfPersonAretirement before application of earnings test
+    calcYear = benefitService.CountSingleBenefitMonths(calcYear, personA) //calculate monthsOfPersonAretirement before application of earnings test
     let earningsTestResults = service.earningsTestSingle(calcYear, personA)
-    expect(earningsTestResults[0].monthsOfPersonAretirement)
+    expect(earningsTestResults[0].monthsOfPersonAretirementPreARF)
         .toEqual(2)
     //annual earnings is 18000. (18000 - 17040)/2 = 480 annual withholding. $750 monthly benefit means 1 months withheld, 2 months received
   }))
@@ -226,7 +226,7 @@ describe('EarningstestService', () => {
     personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate) //set initial value for adjusted retirementBenefitDate
     let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    calcYear.monthsOfPersonAretirement = benefitService.countMonthsOfaBenefitOtherThanMarriedSpousal(personA.retirementBenefitDate, calcYear, personA) //calculate monthsOfPersonAretirement before application of earnings test
+    calcYear = benefitService.CountSingleBenefitMonths(calcYear, personA) //calculate monthsOfPersonAretirement before application of earnings test
     let earningsTestResults = service.earningsTestSingle(calcYear, personA)
     //annual earnings is 18000. (18000 - 17040)/2 = 480 annual withholding. $750 monthly benefit means 1 months withheld, 2 months received
     expect(earningsTestResults[0].personAoverWithholding)
@@ -248,7 +248,7 @@ describe('EarningstestService', () => {
     personA.adjustedRetirementBenefitDate = new Date(personA.retirementBenefitDate) //set initial value for adjusted retirementBenefitDate
     let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    calcYear.monthsOfPersonAretirement = benefitService.countMonthsOfaBenefitOtherThanMarriedSpousal(personA.retirementBenefitDate, calcYear, personA) //calculate monthsOfPersonAretirement before application of earnings test
+    calcYear = benefitService.CountSingleBenefitMonths(calcYear, personA) //calculate monthsOfPersonAretirement before application of earnings test
     let earningsTestResults = service.earningsTestSingle(calcYear, personA)
     //annual earnings is 18000. (18000 - 17040)/2 = 480 annual withholding. $750 monthly benefit means 1 months withheld, 2 months received
     let expectedOutcome:Date = new Date(2018, 10, 1)
@@ -264,6 +264,7 @@ describe('EarningstestService', () => {
     personA.actualBirthDate = new Date(1956, 6, 10) //born July 10, 1956
     personA.SSbirthDate = birthdayService.findSSbirthdate(7, 10, 1956)
     personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
     personA.quitWorkDate = new Date (2028, 0, 1) //quitting work after FRA
     personA.monthlyEarnings = 1900
     personA.PIA = 1800
@@ -275,6 +276,7 @@ describe('EarningstestService', () => {
     personB.actualBirthDate = new Date(1956, 6, 10) //born July 10, 1956
     personB.SSbirthDate = birthdayService.findSSbirthdate(7, 10, 1956)
     personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
+    personB.survivorFRA = birthdayService.findFRA(personB.SSbirthDate)
     personB.quitWorkDate = new Date (2016, 0, 1) //Already quit working
     personB.monthlyEarnings = 0
     personB.PIA = 500
@@ -285,22 +287,17 @@ describe('EarningstestService', () => {
     personB.hasHadGraceYear = true //2018 would have been grace year, and we're looking at 2019
     //calculate benefit amounts
     personA.initialRetirementBenefit = benefitService.calculateRetirementBenefit(personA, personA.retirementBenefitDate)
-    personA.spousalBenefitWithRetirement = benefitService.calculateSpousalBenefit(personA, personB, personA.initialRetirementBenefit, personA.spousalBenefitDate)
+    personA.spousalBenefitWithRetirementPreARF = benefitService.calculateSpousalBenefit(personA, personB, personA.initialRetirementBenefit, personA.spousalBenefitDate)
     personA.spousalBenefitWithoutRetirement = benefitService.calculateSpousalBenefit(personA, personB, 0, personA.spousalBenefitDate)
     personB.initialRetirementBenefit = benefitService.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
-    personB.spousalBenefitWithRetirement = benefitService.calculateSpousalBenefit(personB, personA, personB.initialRetirementBenefit, personB.spousalBenefitDate)
+    personB.spousalBenefitWithRetirementPreARF = benefitService.calculateSpousalBenefit(personB, personA, personB.initialRetirementBenefit, personB.spousalBenefitDate)
     personB.spousalBenefitWithoutRetirement = benefitService.calculateSpousalBenefit(personB, personA, 0, personB.spousalBenefitDate)
     let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    //calculate months of various benefits before application of earnings test
-    calcYear.monthsOfPersonAretirement = benefitService.countMonthsOfaBenefitOtherThanMarriedSpousal(personA.retirementBenefitDate, calcYear, personA)
-    calcYear.monthsOfPersonBretirement = benefitService.countMonthsOfaBenefitOtherThanMarriedSpousal(personB.retirementBenefitDate, calcYear, personB) 
-    calcYear.monthsOfPersonAspousalWithRetirement = benefitService.countMonthsOfaMarriedSpousalBenefit(personA.spousalBenefitDate, calcYear, personA, personB)
-    calcYear.monthsOfPersonBspousalWithRetirement = benefitService.countMonthsOfaMarriedSpousalBenefit(personB.spousalBenefitDate, calcYear, personB, personA)
-    calcYear.monthsOfPersonAspousalWithoutRetirement = 0 //not a restricted app scenario
-    calcYear.monthsOfPersonBspousalWithoutRetirement = 0 //not a restricted app scenario
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "married"
+    //calculate months of various benefits before application of earnings test
+    calcYear = benefitService.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
     let earningsTestResults = service.earningsTestCouple(calcYear, scenario, personA, personB)
     /*calc by hand...
     personA's retirement benefit is $1440 (80% of PIA)
@@ -312,7 +309,7 @@ describe('EarningstestService', () => {
     2 months of retirement withheld from A and 2 months of spousal withheld from B, and some overwithholding
     personB should actually *get* one month of spousal benefit (and it will be with retirement benefit, because they filed for retirement in previous year)
     */
-    expect(earningsTestResults[0].monthsOfPersonBspousalWithRetirement)
+    expect(earningsTestResults[0].monthsOfPersonBspousalWithRetirementPreARF)
       .toEqual(1)
   }))
 
