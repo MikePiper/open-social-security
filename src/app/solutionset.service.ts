@@ -209,8 +209,6 @@ export class SolutionSetService {
           if (fixedSpouseSavedSurvivorBenefitOutput > fixedSpouseRetirementBenefit) {solutionSet.solutionsArray.push(fixedSpouseSurvivorSolution)}//Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
         }
 
-
-
         //Sort array by date
         solutionSet.solutionsArray.sort(function(a,b){
           // Turn your strings into dates, and then subtract them

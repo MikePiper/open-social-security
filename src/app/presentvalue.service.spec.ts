@@ -328,7 +328,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.maximizeCouplePVpersonBisFixed(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
+    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2026, 10, 1))
     //We're looking at item [0] in the array. This array should have 3 items in it: retirement benefit date and spousal benefit date for spouseA, and a survivor date for spouse A (lower earner).
     //Since it's sorted in date order, we want first date (or second date -- they should be the same)
@@ -366,7 +366,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 0
-    expect(service.maximizeCouplePVpersonBisFixed(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
+    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2025, 9, 1))
     //We're looking at item [0] in the array. This array should have 1 item in it: retirement benefit date for spouseA.
   }))
@@ -404,7 +404,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 0
-    expect(service.maximizeCouplePVpersonBisFixed(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
+    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2025, 9, 1))
     //We're looking at item [0] in the array. This array should have 2 items in it: retirement date for personA, survivor benefit for personB
   }))
@@ -441,7 +441,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.maximizeCouplePVpersonBisFixed(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
+    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2022, 10, 1))
     //We're looking at item [0] in the array. This array should have 3 items in it: retirement date for personA, spousaldate for personA (same as retirement date), survivor benefit for personA
   }))
@@ -480,7 +480,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 0
-    expect(service.maximizeCouplePVpersonAisFixed(scenario, spouseAretirementBenefitDate, personA, personB).solutionsArray[0].date)
+    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseAretirementBenefitDate, personB, personA).solutionsArray[0].date)
     .toEqual(new Date(2025, 9, 1))
     //We're looking at item [0] in the array. This array should have 2 items in it: retirement date for personB, survivor benefit for personA
   }))
@@ -517,7 +517,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.maximizeCouplePVpersonAisFixed(scenario, spouseAretirementBenefitDate, personA, personB).solutionsArray[0].date)
+    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseAretirementBenefitDate, personB, personA).solutionsArray[0].date)
     .toEqual(new Date(2022, 10, 1))
     //We're looking at item [0] in the array. This array should have 3 items in it: retirement date for personB, spousaldate for personB (same as retirement date), survivor benefit for personB
   }))
