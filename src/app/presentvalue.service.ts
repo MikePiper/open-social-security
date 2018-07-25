@@ -165,7 +165,7 @@ export class PresentValueService {
         probabilityAalive = this.mortalityService.calculateProbabilityAlive(personA, personA.age)
         probabilityBalive = this.mortalityService.calculateProbabilityAlive(personB, personB.age)
 
-      //Find probability-weighted annual benefit
+      //Find total probability-weighted annual benefit
         let annualPV = 
         (probabilityAalive * (1-probabilityBalive) * (calcYear.personAannualRetirementBenefit + calcYear.personAannualSurvivorBenefit)) //Scenario where A is alive, B is deceased
         + (probabilityBalive * (1-probabilityAalive) * (calcYear.personBannualRetirementBenefit + calcYear.personBannualSurvivorBenefit)) //Scenario where B is alive, A is deceased

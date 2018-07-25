@@ -5,7 +5,7 @@ import {BenefitService} from './benefit.service'
 import {Person} from './data model classes/person'
 import {CalculationYear} from './data model classes/calculationyear'
 import {BirthdayService} from './birthday.service'
-import { ClaimingScenario } from './data model classes/claimingscenario';
+import {ClaimingScenario} from './data model classes/claimingscenario'
 
 describe('EarningstestService', () => {
   beforeEach(() => {
