@@ -153,7 +153,7 @@ export class BenefitService {
 
 
   //Calculates annual benefits (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
-  calculateAnnualBenefitAmountsCouple(personA:Person, personB:Person, calcYear:CalculationYear){
+  calculateAnnualBenefitAmountsCouple(personA:Person, personB:Person, calcYear:CalculationYear, tableOutput:boolean){
 
       //Calculate annual retirement amounts
       calcYear = this.calculateAnnualRetirementBenefit(personA, calcYear)
@@ -183,6 +183,10 @@ export class BenefitService {
         + calcYear.monthsOfPersonBsurvivorWithRetirementPostARF * personB.survivorBenefitWithRetirementAfterARF
         + calcYear.monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs * personB.survivorBenefitWithSuspensionDRCRetirement
       
+      if (tableOutput === true) {
+        calcYear.tableOutputRow = [calcYear.date.getFullYear(), Math.round(calcYear.personAannualRetirementBenefit), Math.round(calcYear.personBannualRetirementBenefit),
+          Math.round(calcYear.personAannualSpousalBenefit), Math.round(calcYear.personBannualSpousalBenefit), Math.round(calcYear.personAannualSurvivorBenefit), Math.round(calcYear.personBannualSurvivorBenefit)]
+        }
     return calcYear
   }
 

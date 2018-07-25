@@ -16,6 +16,7 @@ import { LegalComponent } from './legal/legal.component';
 import { EarningsTestService } from './earningstest.service';
 import { MortalityService } from './mortality.service';
 import { SolutionSetService } from './solutionset.service';
+import { TableOutputComponent } from './tableoutput/tableoutput.component';
 
 
 @NgModule({
@@ -24,7 +25,8 @@ import { SolutionSetService } from './solutionset.service';
     HomeComponent,
     AboutComponent,
     ContactComponent,
-    LegalComponent
+    LegalComponent,
+    TableOutputComponent
   ],
   imports: [
     BrowserModule,

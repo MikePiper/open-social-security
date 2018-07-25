@@ -19,7 +19,7 @@ export class PresentValueService {
 
   today: Date = new Date()
 
-  calculateSinglePersonPV(person:Person, scenario:ClaimingScenario)
+  calculateSinglePersonPV(person:Person, scenario:ClaimingScenario, tableOutput:boolean)
   {
     person.initialRetirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
     let retirementPV: number = 0
@@ -30,7 +30,7 @@ export class PresentValueService {
         person.adjustedRetirementBenefitDate = new Date(person.retirementBenefitDate)
         person.retirementBenefitWithDRCsfromSuspension = 0
         person.DRCsViaSuspension = 0
-
+        scenario.tableOutput = []
 
     //Set initial calcYear (Jan 1 of the year they turn 62)
     let calcYear:CalculationYear = new CalculationYear(scenario.initialCalcDate)
@@ -58,6 +58,7 @@ export class PresentValueService {
 
         //Calculate annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
         calcYear = this.benefitService.calculateAnnualRetirementBenefit(person, calcYear)
+        if (tableOutput === true) {scenario.tableOutput.push([calcYear.date.getFullYear(), calcYear.personAannualRetirementBenefit])}
 
         //Calculate probability of being alive at end of age in question
         probabilityAlive = this.mortalityService.calculateProbabilityAlive(person, person.age)
@@ -79,7 +80,7 @@ export class PresentValueService {
     return retirementPV
   }
 
-  calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario){
+  calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario, tableOutput:boolean){
     
     //Assorted variables
     let probabilityAalive: number
@@ -102,6 +103,7 @@ export class PresentValueService {
         personB.DRCsViaSuspension = 0
         personB.spousalBenefitWithSuspensionDRCRetirement = 0
         personB.survivorBenefitWithSuspensionDRCRetirement = 0
+        scenario.tableOutput = []
 
 
     //Find Jan 1 of the year containing initialCalcDate (year in which first spouse reaches age 62, unless divorced in which case it's year in which user turns 62)
@@ -152,7 +154,8 @@ export class PresentValueService {
       }
 
       //Calculate annual benefits, accounting for Adjustment Reduction Factor in years beginning at FRA
-      calcYear = this.benefitService.calculateAnnualBenefitAmountsCouple(personA, personB, calcYear)
+      calcYear = this.benefitService.calculateAnnualBenefitAmountsCouple(personA, personB, calcYear, tableOutput)
+      if (tableOutput === true) {scenario.tableOutput.push(calcYear.tableOutputRow)}
 
       //If user is divorced, we don't actually want to include the ex-spouse's benefit amounts in our PV sum
       if (scenario.maritalStatus == "divorced") {
@@ -160,6 +163,7 @@ export class PresentValueService {
         calcYear.personBannualSpousalBenefit = 0
         calcYear.personBannualSurvivorBenefit = 0
       }
+
 
       //Calculate each person's probability of being alive at end of age in question
         probabilityAalive = this.mortalityService.calculateProbabilityAlive(personA, personA.age)
@@ -213,7 +217,7 @@ export class PresentValueService {
     }
 
     //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
-    let savedPV: number = this.calculateSinglePersonPV(person, scenario)
+    let savedPV: number = this.calculateSinglePersonPV(person, scenario, false)
     let savedClaimingDate = new Date(person.retirementBenefitDate)
 
     //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
@@ -221,7 +225,7 @@ export class PresentValueService {
     while (person.retirementBenefitDate <= endingTestDate){
       //Add 1 month to claiming age and run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
       person.retirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth() + 1)
-      let currentTestPV = this.calculateSinglePersonPV(person, scenario)
+      let currentTestPV = this.calculateSinglePersonPV(person, scenario, false)
       if (currentTestPV >= savedPV)
         {savedClaimingDate.setMonth(person.retirementBenefitDate.getMonth())
           savedClaimingDate.setFullYear(person.retirementBenefitDate.getFullYear())
@@ -354,7 +358,7 @@ export class PresentValueService {
 
         while (personB.retirementBenefitDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(personA, personB, scenario)
+            let currentTestPV: number = this.calculateCouplePV(personA, personB, scenario, false)
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTestPV >= savedPV) {
               savedPV = currentTestPV
@@ -508,10 +512,10 @@ maximizeCoupleOneHasFiledPV(scenario:ClaimingScenario, fixedSpouseRetirementBene
     while (flexibleSpouse.retirementBenefitDate <= endTestDate) {
       //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
       if (flexibleSpouse.id == "A"){
-        var currentTestPV: number = this.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario)
+        var currentTestPV: number = this.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario, false)
       }
       else {
-        var currentTestPV: number = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario)
+        var currentTestPV: number = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, false)
       }
 
       //If PV is greater than or equal to saved PV, save new PV and save new testDates

@@ -215,8 +215,8 @@ describe('BenefitService', () => {
     }))
 
 
-  //Testing countMonthsOfaBenefitOtherThanMarriedSpousal()
-  it('should determine correct number of retirement benefit months in filing year', inject([BenefitService], (service: BenefitService) => { 
+  //Testing CountSingleBenefitMonths()
+  it('should CountSingleBenefitMonths() appropriately in filing year', inject([BenefitService], (service: BenefitService) => { 
     let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2018, 0, 1) //Jan 1, 2018
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
@@ -233,7 +233,7 @@ describe('BenefitService', () => {
         .toEqual(0)
   }))
 
-  it('should determine correct number of benefitMonths in year prior to filing year', inject([BenefitService], (service: BenefitService) => { 
+  it('should CountSingleBenefitMonths() appropriately in year prior to filing year', inject([BenefitService], (service: BenefitService) => { 
     let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2017, 0, 1) //Jan 1, 2017
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
@@ -250,7 +250,7 @@ describe('BenefitService', () => {
         .toEqual(0)
   }))
 
-  it('should determine correct number of benefitMonths in year after filing year', inject([BenefitService], (service: BenefitService) => { 
+  it('should CountSingleBenefitMonths() appropriately in year after filing year', inject([BenefitService], (service: BenefitService) => { 
     let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
@@ -269,7 +269,7 @@ describe('BenefitService', () => {
       //10 months before FRA. Then 2 months after suspension. (Didn't suspend, so all post-FRA months will be counted as after-suspension.)
   }))
 
-  it('should determine correct number of benefitMonths in year after filing when benefit is suspended for some months', inject([BenefitService], (service: BenefitService) => { 
+  it('should CountSingleBenefitMonths() appropriately in year after filing when benefit is suspended for some months', inject([BenefitService], (service: BenefitService) => { 
     let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
@@ -289,7 +289,7 @@ describe('BenefitService', () => {
     //6 months of benefits (Jan-June). Jan, Feb, March, April are pre-ARF. May and June are post-ARF
   }))
 
-  it('should determine correct number of benefitMonths in year after filing when benefit is suspended for entire year', inject([BenefitService], (service: BenefitService) => { 
+  it('should CountSingleBenefitMonths() appropriately in year after filing when benefit is suspended for entire year', inject([BenefitService], (service: BenefitService) => { 
     let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new Date(2020, 0, 1) //Jan 1, 2020
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
@@ -308,8 +308,114 @@ describe('BenefitService', () => {
         .toEqual(0)
   }))
 
-  //also need tests for countMonthsOfaMarriedSpousalBenefit
-  it('should determine correct number of marriedSpousalBenefitMonths for person A when person B is suspended part of year', inject([BenefitService], (service: BenefitService) => {
+  //testing CountCoupleBenefitMonths()
+  it('should determine correct number of retirement and spousal benefit months (including appropriate types) for both spouses (no suspension scenario) in year in which A files and reaches FRA. B reaches FRA but has not filed', inject([BenefitService], (service: BenefitService) => {
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.maritalStatus = "married"
+    let birthdayService:BirthdayService = new BirthdayService()
+    let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019 (year in which both reach FRA)
+    let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
+    let personA:Person = new Person("A")
+    personA.SSbirthDate = new Date(1953, 4, 1) //personA May 1953 SSbirthdate
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //personA May 2019 FRA
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate) //May 2019 survivorFRA
+    personA.retirementBenefitDate = new Date(2019, 1, 1) //Feb 1, 2019 retirementBenefit date
+    personA.spousalBenefitDate = new Date(2021, 7, 1) //August 1, 2021 spousalBenefit date
+    let personB:Person = new Person("B")
+    personB.SSbirthDate = new Date(1953, 4, 1) //personB May 1953 SSbirthdate
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //personB May 2019 FRA
+    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate) //May 2019 survivorFRA
+    personB.retirementBenefitDate = new Date(2021, 7, 1) //August 1, 2021 retirementBenefit date
+    personB.spousalBenefitDate = new Date(2021, 7, 1) //August 1, 2021 spousalBenefit date
+    calcYear = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    expect(calcYear.monthsOfPersonAretirementPreARF)
+        .toEqual(3)//pre-ARF retirement benefit in Feb, March, April (3 months)
+    expect(calcYear.monthsOfPersonAretirementPostARF)
+        .toEqual(8)//post-ARF retirement benefit May-Dec (8 months)
+    expect(calcYear.monthsOfPersonAspousalWithoutRetirement)
+        .toEqual(0)//no spousal for A because B hasn't filed
+    expect(calcYear.monthsOfPersonAspousalWithRetirementPreARF)
+        .toEqual(0)//no spousal for A because B hasn't filed
+    expect(calcYear.monthsOfPersonAspousalWithRetirementPostARF)
+        .toEqual(0)//no spousal for A because B hasn't filed
+    expect(calcYear.monthsOfPersonAspousalWithRetirementwithSuspensionDRCs)
+        .toEqual(0)//no spousal for A because B hasn't filed
+    expect(calcYear.monthsOfPersonAsurvivorWithoutRetirement)
+        .toEqual(0)//filing for retirement before survivorFRA, so this is zero.
+    expect(calcYear.monthsOfPersonAsurvivorWithRetirementPostARF)
+        .toEqual(8)//hits survivorFRA in May, and has already filed for retirement. So 8 months of "survivorWithRetirementPostARF"
+    expect(calcYear.monthsOfPersonBretirementPreARF)
+        .toEqual(0)//B hasn't yet filed
+    expect(calcYear.monthsOfPersonBretirementPostARF)
+        .toEqual(0)//B hasn't yet filed
+    expect(calcYear.monthsOfPersonBspousalWithoutRetirement)
+        .toEqual(0)//B hasn't yet filed
+    expect(calcYear.monthsOfPersonBspousalWithRetirementPreARF)
+        .toEqual(0)//B hasn't yet filed
+    expect(calcYear.monthsOfPersonBspousalWithRetirementPostARF)
+        .toEqual(0)//B hasn't yet filed
+    expect(calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs)
+        .toEqual(0)//B hasn't yet filed
+    expect(calcYear.monthsOfPersonBsurvivorWithoutRetirement)
+        .toEqual(8)//8 survivorBenefitMonths (without retirement, because hasn't yet filed) because hits FRA in May.
+    expect(calcYear.monthsOfPersonBsurvivorWithRetirementPostARF)
+        .toEqual(0)//no "withRetirement" months because hasn't yet filed
+  }))
+
+  it('should determine correct number of retirement and spousal benefit months (including appropriate types) for both spouses (no suspension scenario) in year in which B files, if A filed in previous year. Both hit FRA this year', inject([BenefitService], (service: BenefitService) => {
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.maritalStatus = "married"
+    let birthdayService:BirthdayService = new BirthdayService()
+    let beginningCalcDate = new Date(2019, 0, 1) //Jan 1, 2019 (year in which both reach FRA)
+    let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
+    let personA:Person = new Person("A")
+    personA.SSbirthDate = new Date(1953, 4, 1) //personA May 1953 SSbirthdate
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //personA May 2019 FRA
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate) //May 2019 survivorFRA
+    personA.retirementBenefitDate = new Date(2017, 1, 1) //personA filed in previous year
+    personA.spousalBenefitDate = new Date(2019, 2, 1) //file for spousal March 2019 (later of two retirement dates)
+    let personB:Person = new Person("B")
+    personB.SSbirthDate = new Date(1953, 4, 1) //personB May 1953 SSbirthdate
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //personB May 2019 FRA
+    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate) //May 2019 survivorFRA
+    personB.retirementBenefitDate = new Date(2019, 2, 1) //personB files for retirement in March 2019
+    personB.spousalBenefitDate = new Date(2019, 2, 1) //file for spousal March 2019 (later of two retirement dates)
+    calcYear = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    expect(calcYear.monthsOfPersonAretirementPreARF)
+        .toEqual(4)//filed in previous year. Reaches FRA in May
+    expect(calcYear.monthsOfPersonAretirementPostARF)
+        .toEqual(8)//filed in previous year. Reaches FRA in May
+    expect(calcYear.monthsOfPersonAspousalWithoutRetirement)
+        .toEqual(0)//not a restricted app scenario
+    expect(calcYear.monthsOfPersonAspousalWithRetirementPreARF)
+        .toEqual(2)//March and April
+    expect(calcYear.monthsOfPersonAspousalWithRetirementPostARF)
+        .toEqual(8)//May-Dec
+    expect(calcYear.monthsOfPersonAspousalWithRetirementwithSuspensionDRCs)
+        .toEqual(0)//not a suspension scenario
+    expect(calcYear.monthsOfPersonAsurvivorWithoutRetirement)
+        .toEqual(0)//already filed for retirement by time reaches survivorFRA
+    expect(calcYear.monthsOfPersonAsurvivorWithRetirementPostARF)
+        .toEqual(8)//reaches survivorFRA in May, has already filed for retirement benefits. So 8 months.
+    expect(calcYear.monthsOfPersonBretirementPreARF)
+        .toEqual(2)//March and April
+    expect(calcYear.monthsOfPersonBretirementPostARF)
+        .toEqual(8)//May-Dec
+    expect(calcYear.monthsOfPersonBspousalWithoutRetirement)
+        .toEqual(0)//not a restricted app scenario
+    expect(calcYear.monthsOfPersonBspousalWithRetirementPreARF)
+        .toEqual(2)//March, April
+    expect(calcYear.monthsOfPersonBspousalWithRetirementPostARF)
+        .toEqual(8)//May-Dec
+    expect(calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs)
+        .toEqual(0)//not a suspension scenario
+    expect(calcYear.monthsOfPersonBsurvivorWithoutRetirement)
+        .toEqual(0)//already filed for retirement by time reaches survivorFRA
+    expect(calcYear.monthsOfPersonBsurvivorWithRetirementPostARF)
+        .toEqual(8)//reaches survivorFRA in May, has already filed for retirement benefits. So 8 months.
+  }))
+
+  it('should count spousal benefit months appropriately (including type of spousalbenefitmonth) for person A when person B is suspended part of year', inject([BenefitService], (service: BenefitService) => {
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "married"
     scenario.personBhasFiled = true //So it knows this is a "personB might have suspension" scenario
@@ -342,7 +448,7 @@ describe('BenefitService', () => {
         //Should get benefits in Aug, Sept, Oct, Nov, Dec. And they are considered "after suspension" because 2020 is after FRA and because personA never suspended.
   }))
 
-  it('should determine correct number of marriedSpousalBenefitMonths for person A when person A is suspended part of year', inject([BenefitService], (service: BenefitService) => {
+  it('should count spousal benefit months appropriately (including type of spousalbenefitmonth) for person A when person A is suspended part of year', inject([BenefitService], (service: BenefitService) => {
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "married"
     scenario.personAhasFiled = true //So it knows this is a "personB might have suspension" scenario

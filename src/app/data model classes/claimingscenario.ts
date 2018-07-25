@@ -19,6 +19,7 @@ export class ClaimingScenario {
 
         //personBdeclineSpousal: boolean = false
 
+        tableOutput: number[][] = []
 }
 
 
