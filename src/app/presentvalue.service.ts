@@ -19,7 +19,7 @@ export class PresentValueService {
 
   today: Date = new Date()
 
-  calculateSinglePersonPV(person:Person, scenario:ClaimingScenario, tableOutput:boolean)
+  calculateSinglePersonPV(person:Person, scenario:ClaimingScenario, debugTable:boolean)
   {
     person.initialRetirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
     let retirementPV: number = 0
@@ -30,7 +30,7 @@ export class PresentValueService {
         person.adjustedRetirementBenefitDate = new Date(person.retirementBenefitDate)
         person.retirementBenefitWithDRCsfromSuspension = 0
         person.DRCsViaSuspension = 0
-        scenario.tableOutput = []
+        scenario.debugTable = []
 
     //Set initial calcYear (Jan 1 of the year they turn 62)
     let calcYear:CalculationYear = new CalculationYear(scenario.initialCalcDate)
@@ -58,7 +58,7 @@ export class PresentValueService {
 
         //Calculate annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
         calcYear = this.benefitService.calculateAnnualRetirementBenefit(person, calcYear)
-        if (tableOutput === true) {scenario.tableOutput.push([calcYear.date.getFullYear(), calcYear.personAannualRetirementBenefit])}
+        if (debugTable === true) {scenario.debugTable.push([calcYear.date.getFullYear(), calcYear.personAannualRetirementBenefit])}
 
         //Calculate probability of being alive at end of age in question
         probabilityAlive = this.mortalityService.calculateProbabilityAlive(person, person.age)
@@ -80,7 +80,7 @@ export class PresentValueService {
     return retirementPV
   }
 
-  calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario, tableOutput:boolean){
+  calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario, debugTable:boolean){
     
     //Assorted variables
     let probabilityAalive: number
@@ -103,7 +103,7 @@ export class PresentValueService {
         personB.DRCsViaSuspension = 0
         personB.spousalBenefitWithSuspensionDRCRetirement = 0
         personB.survivorBenefitWithSuspensionDRCRetirement = 0
-        scenario.tableOutput = []
+        scenario.debugTable = []
 
 
     //Find Jan 1 of the year containing initialCalcDate (year in which first spouse reaches age 62, unless divorced in which case it's year in which user turns 62)
@@ -154,8 +154,8 @@ export class PresentValueService {
       }
 
       //Calculate annual benefits, accounting for Adjustment Reduction Factor in years beginning at FRA
-      calcYear = this.benefitService.calculateAnnualBenefitAmountsCouple(personA, personB, calcYear, tableOutput)
-      if (tableOutput === true) {scenario.tableOutput.push(calcYear.tableOutputRow)}
+      calcYear = this.benefitService.calculateAnnualBenefitAmountsCouple(personA, personB, calcYear, debugTable)
+      if (debugTable === true) {scenario.debugTable.push(calcYear.debugTableRow)}
 
       //If user is divorced, we don't actually want to include the ex-spouse's benefit amounts in our PV sum
       if (scenario.maritalStatus == "divorced") {

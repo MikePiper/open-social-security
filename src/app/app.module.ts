@@ -6,7 +6,7 @@ import { CollapseModule, BsDropdownModule } from 'ngx-bootstrap';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
 import { BenefitService } from './benefit.service';
-import { AppRoutingModule } from './/app-routing.module';
+import { AppRoutingModule } from './app-routing.module';
 import { BirthdayService } from './birthday.service';
 import { AboutComponent } from './about/about.component';
 import { PresentValueService } from './presentvalue.service';
@@ -16,7 +16,8 @@ import { LegalComponent } from './legal/legal.component';
 import { EarningsTestService } from './earningstest.service';
 import { MortalityService } from './mortality.service';
 import { SolutionSetService } from './solutionset.service';
-import { TableOutputComponent } from './tableoutput/tableoutput.component';
+import { DebugTableComponent } from './debugtable/debugtable.component';
+import { OutputTableComponent } from './output-table/output-table.component';
 
 
 @NgModule({
@@ -26,7 +27,8 @@ import { TableOutputComponent } from './tableoutput/tableoutput.component';
     AboutComponent,
     ContactComponent,
     LegalComponent,
-    TableOutputComponent
+    DebugTableComponent,
+    OutputTableComponent
   ],
   imports: [
     BrowserModule,

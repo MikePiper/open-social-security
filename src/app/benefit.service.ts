@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {Person} from './data model classes/person';
 import { CalculationYear } from './data model classes/calculationyear';
 import { ClaimingScenario } from './data model classes/claimingscenario';
-import { TabHeadingDirective } from '../../node_modules/ngx-bootstrap';
+import { TabHeadingDirective } from 'ngx-bootstrap';
 
 
 @Injectable()
@@ -153,7 +153,7 @@ export class BenefitService {
 
 
   //Calculates annual benefits (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
-  calculateAnnualBenefitAmountsCouple(personA:Person, personB:Person, calcYear:CalculationYear, tableOutput:boolean){
+  calculateAnnualBenefitAmountsCouple(personA:Person, personB:Person, calcYear:CalculationYear, debugTable:boolean){
 
       //Calculate annual retirement amounts
       calcYear = this.calculateAnnualRetirementBenefit(personA, calcYear)
@@ -183,8 +183,8 @@ export class BenefitService {
         + calcYear.monthsOfPersonBsurvivorWithRetirementPostARF * personB.survivorBenefitWithRetirementAfterARF
         + calcYear.monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs * personB.survivorBenefitWithSuspensionDRCRetirement
       
-      if (tableOutput === true) {
-        calcYear.tableOutputRow = [calcYear.date.getFullYear(), Math.round(calcYear.personAannualRetirementBenefit), Math.round(calcYear.personBannualRetirementBenefit),
+      if (debugTable === true) {
+        calcYear.debugTableRow = [calcYear.date.getFullYear(), Math.round(calcYear.personAannualRetirementBenefit), Math.round(calcYear.personBannualRetirementBenefit),
           Math.round(calcYear.personAannualSpousalBenefit), Math.round(calcYear.personBannualSpousalBenefit), Math.round(calcYear.personAannualSurvivorBenefit), Math.round(calcYear.personBannualSurvivorBenefit)]
         }
     return calcYear

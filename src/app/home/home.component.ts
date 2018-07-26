@@ -223,13 +223,13 @@ export class HomeComponent implements OnInit {
     
     //Calc PV with input dates
     if (this.scenario.maritalStatus == "single" && !this.customSpouseAretirementDateError) {
-      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.scenario, true)
+      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.scenario, false)
       }
     if(this.scenario.maritalStatus == "married" && !this.customSpouseAretirementDateError && !this.customSpouseBretirementDateError && !this.customSpouseAspousalDateError && !this.customSpouseBspousalDateError) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, true)
+      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, false)
       }
     if(this.scenario.maritalStatus == "divorced" && !this.spouseBfixedRetirementDateError && !this.customSpouseAretirementDateError && !this.customSpouseAspousalDateError) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, true)
+      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, false)
     }
     this.differenceInPV = this.solutionSet.solutionPV - this.customPV
   }
@@ -389,17 +389,17 @@ export class HomeComponent implements OnInit {
     }
   }
 
-resetFixedRetirementDateInputs(){
-  if (this.scenario.personAhasFiled === false) {
-    this.spouseAfixedRetirementBenefitMonth = null
-    this.spouseAfixedRetirementBenefitYear = null
-    this.spouseAfixedRetirementBenefitDate = null
+  resetFixedRetirementDateInputs(){
+    if (this.scenario.personAhasFiled === false) {
+      this.spouseAfixedRetirementBenefitMonth = null
+      this.spouseAfixedRetirementBenefitYear = null
+      this.spouseAfixedRetirementBenefitDate = null
+    }
+    if (this.scenario.personBhasFiled === false) {
+      this.spouseBfixedRetirementBenefitMonth = null
+      this.spouseBfixedRetirementBenefitYear = null
+      this.spouseBfixedRetirementBenefitDate = null
+    }
   }
-  if (this.scenario.personBhasFiled === false) {
-    this.spouseBfixedRetirementBenefitMonth = null
-    this.spouseBfixedRetirementBenefitYear = null
-    this.spouseBfixedRetirementBenefitDate = null
-  }
-}
 
 }

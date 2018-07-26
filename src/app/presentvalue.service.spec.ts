@@ -278,7 +278,7 @@ describe('PresentValueService', () => {
     scenario.discountRate = 1
     scenario.personAhasFiled = true //Doing this just so that it triggers the monthly "count benefit" loop
     expect(service.calculateCouplePV(personA, personB, scenario, false))
-      .toBeCloseTo(487328, 0)
+      .toBeCloseTo(487328, 0)//See "present value service" spreadsheet for a calculation of this figure
   }))
 
   //Test maximize functions

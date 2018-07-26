@@ -1,0 +1,9 @@
+table, th, td {
+    text-align: center;
+    padding: 7px;
+}
+
+table .highlighted{
+    background-color: #267bc5;
+    color:white;
+}

@@ -1,0 +1,32 @@
+<!--
+  
+  Problem here:
+  
+  How to account for situations where one has already filed? What output do we show?
+
+  Show year-by-year until year when both are 70.
+
+  Next row is "following year and beyond"
+
+  Final row is "after one person has died"? (Although that's made trickier by GPO...)
+-->
+
+<div class="table-responsive">
+  <table class="table-bordered table-striped">
+      <tr>
+        <th>Year</th>
+        <th class="highlighted">Recommended Strategy</th>
+        <th *ngIf="scenario.maritalStatus == 'married'">Both filing at age 62</th>
+        <th *ngIf="scenario.maritalStatus == 'married'">Both filing at full retirement age</th>
+        <th *ngIf="scenario.maritalStatus == 'married'">Both filing at 70</th>
+        <th *ngIf="scenario.maritalStatus == 'single' || scenario.maritalStatus == 'divorced'">Filing at age 62</th>
+        <th *ngIf="scenario.maritalStatus == 'single' || scenario.maritalStatus == 'divorced'">Filing at full retirement age</th>
+        <th *ngIf="scenario.maritalStatus == 'single' || scenario.maritalStatus == 'divorced'">Filing at 70</th>
+      </tr>
+      <tr *ngFor="let row of scenario.SOMEFIELD">
+          <td *ngFor="let data of row">
+            {{data}}
+          </td>
+      </tr>
+  </table>
+</div>

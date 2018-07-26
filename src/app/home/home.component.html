@@ -251,9 +251,10 @@
       <p *ngIf="!this.solutionSet.solutionPV && scenario.maritalStatus == 'married'">For reference, this calculator runs <em>many-times faster</em> in Chrome or Firefox than it does in Safari, Edge, or Internet Explorer.</p>
     </span>
 </form>
+
 <span *ngIf="this.solutionSet.solutionPV">
 
-   <!--Recommended Strategy Output-->
+  <!--Recommended Strategy Output-->
   <p>The strategy that maximizes the total dollars you can be expected to spend over your lifetime<span *ngIf="scenario.maritalStatus == 'married'">s</span> is as follows:</p>
   <ul>
     <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}<span *ngIf="this.spouseAworking === true || this.spouseBworking === true">*</span></li>
@@ -267,7 +268,29 @@
     *Please note that while the calculator does account for the earnings test (i.e., benefit adjustments for people who file and who are still working prior to full retirement age), 
     the monthly benefit amounts quoted here do not reflect such adjustments.
   </p>
+  <!--End Recommended Strategy Output-->
+
   <hr>
+
+  <!--Book Promo -->
+  <h2>Want to Learn More about Social Security? Pick Up a Copy of My Book:</h2>
+      <div class="row">
+          <p><em><strong>Social Security Made Simple: Social Security Retirement Benefits and Related Planning Topics Explained in 100 Pages or Less</strong></em></p>
+          <ul>
+            <li><a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank">See it on Amazon</a>.</li>
+          </ul>
+          <a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank"><img title="Book8FrontCovertilted150x200" class="bookimg" src="https://obliviousinvestor.com/wp-content/uploads/2018/05/NewBook8Covertiltedscaled.jpg" width="150" alt="Social Security cover"/></a>
+          <strong>Topics Covered in the Book:</strong>
+              <ul>
+                <li>How retirement benefits, spousal benefits, and widow(er) benefits are calculated,</li>
+                <li>How to decide the best age to claim your benefit,</li>
+                <li>How Social Security benefits are taxed and how that affects tax planning,</li>
+                <li><a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank">Click here to see the full list</a>.</li>
+              </ul>
+      </div>
+  <!--End Book Promo -->
+
+    <hr>
 
   <!--Custom Date(s) Form -->
   <form #customDateForm="ngForm" (ngSubmit)="customDates()">
@@ -337,36 +360,10 @@
     <!--Custom Date Output -->
     <span *ngIf="this.customPV">
       The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} from the recommended strategy, a difference of {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.
-      <app-tableoutput [scenario]="scenario"></app-tableoutput>
+      <app-debugtable [scenario]="scenario"></app-debugtable>
     </span>
     <!--End Custom Date Output -->
   </form>
    <!--End Custom Date(s) Form -->
-
-  <hr>
-  <!--Book Promo -->
-  <h2>Want to Learn More about Social Security? Pick Up a Copy of My Book:</h2>
-      <div class="row">
-          <p><em><strong>Social Security Made Simple: Social Security Retirement Benefits and Related Planning Topics Explained in 100 Pages or Less</strong></em></p>
-          <ul>
-            <li><a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank">See it on Amazon</a>.</li>
-          </ul>
-          <a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank"><img title="Book8FrontCovertilted150x200" class="bookimg" src="https://obliviousinvestor.com/wp-content/uploads/2018/05/NewBook8Covertiltedscaled.jpg" width="150" alt="Social Security cover"/></a>
-          <strong>Topics Covered in the Book:</strong>
-              <ul>
-                <li>How retirement benefits, spousal benefits, and widow(er) benefits are calculated,</li>
-                <li>How to decide the best age to claim your benefit,</li>
-                <li>How Social Security benefits are taxed and how that affects tax planning,</li>
-                <li><a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank">Click here to see the full list</a>.</li>
-              </ul>
-      </div>
-      <div class="row">
-          <p><strong>A Testimonial from a Reader on Amazon:</strong></p>
-          "An excellent review of various facts and decision-making components associated with the Social Security benefits. The book provides a lot of very useful information within small space."
-          <ul>
-            <li><a href="http://www.amazon.com/product-reviews/0997946512/?tag=openss-20" target="_blank">Read other reviews on Amazon</a></li>
-          </ul>
-      </div>
-    <!--End Book Promo -->
 </span>
 </div>

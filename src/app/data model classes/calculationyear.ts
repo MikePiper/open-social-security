@@ -1,7 +1,7 @@
 export class CalculationYear {
     //This class is only for things that get reset each year (e.g., months of a benefit)
     date: Date //( Jan 1 of year in question)
-    tableOutputRow: number[] = []
+    debugTableRow: number[] = []
 
     //PersonA
         //retirement
