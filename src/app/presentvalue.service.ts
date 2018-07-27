@@ -533,5 +533,16 @@ maximizeCoupleOneHasFiledPV(scenario:ClaimingScenario, fixedSpouseRetirementBene
     return person
   }
 
-
+  incrementRetirementORendSuspensionDate(person:Person, scenario:ClaimingScenario){
+    if (person.isDisabled) {
+      person.endSuspensionDate.setMonth(person.endSuspensionDate.getMonth()+1)
+    }
+    else if ( (scenario.personAhasFiled && person.id == "A") || (scenario.personBhasFiled && person.id == "B") ){
+      person.endSuspensionDate.setMonth(person.endSuspensionDate.getMonth()+1)
+    }
+    else {//i.e., person hasn't filed and isn't disabled
+    person.retirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+1)
+  }
+    return person
+  }
 }
