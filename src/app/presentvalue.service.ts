@@ -373,72 +373,14 @@ export class PresentValueService {
               }
 
           //Find next possible claiming combination for spouseB
-            //if spouseB has new deemed filing rules, increment both dates by 1. (But don't increment spousalDate if it's currently set later than retirementDate.)
-              //No need to check here if spousal is too early, because at start of this loop it was set to earliest possible.
-            if (personB.actualBirthDate > deemedFilingCutoff) {
-              if (personB.spousalBenefitDate <= personB.retirementBenefitDate) {
-                personB.spousalBenefitDate.setMonth(personB.spousalBenefitDate.getMonth()+1)
-              }
-              personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
-            }
-          
-            else {//i.e., if spouseB has old deemed filing rules
-              //if spouseBretirementDate < FRA, increment both test dates by 1. (Don't increment spousalDate though if it is currently set later than retirementDate.)
-              if (personB.retirementBenefitDate < personB.FRA) {
-                if (personB.spousalBenefitDate <= personB.retirementBenefitDate) {
-                  personB.spousalBenefitDate.setMonth(personB.spousalBenefitDate.getMonth()+1)
-                }
-                personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
-                //No need to check here if spousal is too early, because at start of this loop it was set to earliest possible.
-              }
-              else {//i.e., if spouseBretirementDate >= FRA
-                //Increment retirement testdate by 1 and set spousal date to earliest possible restricted application date (later of FRA or other spouse's retirementtestdate)
-                personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
-                if (personA.retirementBenefitDate > personB.FRA) {
-                  personB.spousalBenefitDate.setMonth(personA.retirementBenefitDate.getMonth())
-                  personB.spousalBenefitDate.setFullYear(personA.retirementBenefitDate.getFullYear())
-                } else {
-                  personB.spousalBenefitDate.setMonth(personB.FRA.getMonth())
-                  personB.spousalBenefitDate.setFullYear(personB.FRA.getFullYear())
-                }
-              }
+            personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
+            personB = this.incrementSpousalBenefitDate(personB, personA)
 
-            }
-          //After spouse B's retirement testdate has been incremented, adjust spouseA's spousal date as necessary
-            //If spouseA has new deemed filing rules, set spouseA spousalDate to later of spouseA retirementDate or spouseB retirementDate
-              if (personA.actualBirthDate > deemedFilingCutoff) {
-                if (personA.retirementBenefitDate > personB.retirementBenefitDate) {
-                  personA.spousalBenefitDate.setMonth(personA.retirementBenefitDate.getMonth())
-                  personA.spousalBenefitDate.setFullYear(personA.retirementBenefitDate.getFullYear())
-                } else {
-                  personA.spousalBenefitDate.setMonth(personB.retirementBenefitDate.getMonth())
-                  personA.spousalBenefitDate.setFullYear(personB.retirementBenefitDate.getFullYear())
-                }
-              }
-              else {//i.e., if spouseA has old deemed filing rules
-                if (personA.retirementBenefitDate < personA.FRA) {
-                  //Set spouseA spousal testdate to later of spouseA retirementDate or spouseB retirementDate
-                  if (personA.retirementBenefitDate > personB.retirementBenefitDate) {
-                    personA.spousalBenefitDate.setMonth(personA.retirementBenefitDate.getMonth())
-                    personA.spousalBenefitDate.setFullYear(personA.retirementBenefitDate.getFullYear())
-                  } else {
-                    personA.spousalBenefitDate.setMonth(personB.retirementBenefitDate.getMonth())
-                    personA.spousalBenefitDate.setFullYear(personB.retirementBenefitDate.getFullYear())
-                  }
-                }
-                else {//i.e., if spouseAretirementDate currently after spouseAFRA
-                  //Set spouseA spousalDate to earliest possible restricted application date (later of FRA or spouse B's retirementDate)
-                  if (personA.FRA > personB.retirementBenefitDate) {
-                    personA.spousalBenefitDate.setMonth(personA.FRA.getMonth())
-                    personA.spousalBenefitDate.setFullYear(personA.FRA.getFullYear())
-                  } else {
-                    personA.spousalBenefitDate.setMonth(personB.retirementBenefitDate.getMonth())
-                    personA.spousalBenefitDate.setFullYear(personB.retirementBenefitDate.getFullYear())
-                  }
-                }
-              }
+          //After personB's retirement/spousal dates have been incremented, adjust personA's spousal date as necessary
+            personA = this.incrementSpousalBenefitDate(personA, personB)
+
         }
-        //Add 1 month to spouseAretirementDate
+        //Increment personA's retirementBenefitDate
           personA.retirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+1)
         
       }
