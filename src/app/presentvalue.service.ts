@@ -374,10 +374,10 @@ export class PresentValueService {
 
           //Find next possible claiming combination for spouseB
             personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
-            personB = this.incrementSpousalBenefitDate(personB, personA)
+            personB = this.incrementSpousalBenefitDate(personB, personA, scenario)
 
           //After personB's retirement/spousal dates have been incremented, adjust personA's spousal date as necessary
-            personA = this.incrementSpousalBenefitDate(personA, personB)
+            personA = this.incrementSpousalBenefitDate(personA, personB, scenario)
 
         }
         //Increment personA's retirementBenefitDate
@@ -472,27 +472,9 @@ maximizeCoupleOneHasFiledPV(scenario:ClaimingScenario, fixedSpouseRetirementBene
         }
       
       //Increment flexibleSpouse's dates (and fixedSpouse's spousal date, since it is just set to be same as flexible spouse's retirement date)
-        //if new deemed filing rules, increment flexibleSpouse's retirement and spousal by 1 month
-        if (flexibleSpouse.actualBirthDate > deemedFilingCutoff) {
-          flexibleSpouse.retirementBenefitDate.setMonth(flexibleSpouse.retirementBenefitDate.getMonth()+1)
-          fixedSpouse.spousalBenefitDate.setMonth(fixedSpouse.spousalBenefitDate.getMonth()+1)
-          if (flexibleSpouse.spousalBenefitDate <= flexibleSpouse.retirementBenefitDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
-            flexibleSpouse.spousalBenefitDate.setMonth(flexibleSpouse.spousalBenefitDate.getMonth()+1)
-          }
-        } else { //i.e., if old deemed filling rules apply
-          //If current retirement test date younger than FRA, increment flexibleSpouse's retirement and spousal by 1 month
-          if (flexibleSpouse.retirementBenefitDate < flexibleSpouse.FRA) {
-            flexibleSpouse.retirementBenefitDate.setMonth(flexibleSpouse.retirementBenefitDate.getMonth()+1)
-            fixedSpouse.spousalBenefitDate.setMonth(fixedSpouse.spousalBenefitDate.getMonth()+1)
-            if (flexibleSpouse.spousalBenefitDate <= flexibleSpouse.retirementBenefitDate) {//Don't increment spousal if it's currently later than retirement due to the "exspouse must be 62" rule
-            flexibleSpouse.spousalBenefitDate.setMonth(flexibleSpouse.spousalBenefitDate.getMonth()+1)
-            }
-          }
-          else {//If current retirement test date beyond FRA, increment flexibleSpouse's retirement by 1 month and keep flexibleSpouse's spousal where it is (at FRA, unless they're older than FRA when filling form)
-            flexibleSpouse.retirementBenefitDate.setMonth(flexibleSpouse.retirementBenefitDate.getMonth()+1)
-            fixedSpouse.spousalBenefitDate.setMonth(fixedSpouse.spousalBenefitDate.getMonth()+1)
-          }
-        }
+        flexibleSpouse.retirementBenefitDate.setMonth(flexibleSpouse.retirementBenefitDate.getMonth()+1)
+        fixedSpouse.spousalBenefitDate.setMonth(fixedSpouse.spousalBenefitDate.getMonth()+1)
+        flexibleSpouse = this.incrementSpousalBenefitDate(flexibleSpouse, fixedSpouse, scenario)
 
     }
       //after loop is finished
@@ -508,32 +490,40 @@ maximizeCoupleOneHasFiledPV(scenario:ClaimingScenario, fixedSpouseRetirementBene
       return solutionSet
   }
 
-  incrementSpousalBenefitDate(person:Person, otherPerson:Person){
+  incrementSpousalBenefitDate(person:Person, otherPerson:Person, scenario:ClaimingScenario){
     let deemedFilingCutoff: Date = new Date(1954, 0, 1)
+    
+    //Determine "otherPerson's Limiting Date" (i.e., the date -- based on otherPerson -- before which "Person" cannot file a spousal benefit)
+    if (scenario.maritalStatus == "married") {
+      var otherPersonsLimitingDate = otherPerson.retirementBenefitDate
+    }
+    if (scenario.maritalStatus == "divorced"){
+      var otherPersonsLimitingDate = new Date(otherPerson.SSbirthDate.getFullYear()+62, 1, 1)
+    }
 
     if (person.actualBirthDate > deemedFilingCutoff) {//i.e., if person has new deemed filing rules
       //set spousalBenefitDate to later of two retirementBenefitDates
-      if (person.retirementBenefitDate > otherPerson.retirementBenefitDate) {
+      if (person.retirementBenefitDate > otherPersonsLimitingDate) {
         person.spousalBenefitDate = new Date(person.retirementBenefitDate)
       } else {
-        person.spousalBenefitDate = new Date(otherPerson.retirementBenefitDate)
+        person.spousalBenefitDate = new Date(otherPersonsLimitingDate)
       }
     }
     else {//i.e., if person has old deemed filing rules
       if (person.retirementBenefitDate < person.FRA) {
         //Set person's spousalBenefitDate to later of two retirementBenefitDates
-        if (person.retirementBenefitDate > otherPerson.retirementBenefitDate) {
+        if (person.retirementBenefitDate > otherPersonsLimitingDate) {
           person.spousalBenefitDate = new Date(person.retirementBenefitDate)
         } else {
-          person.spousalBenefitDate = new Date(otherPerson.retirementBenefitDate)
+          person.spousalBenefitDate = new Date(otherPersonsLimitingDate)
         }
       }
       else {//i.e., if person's retirementBenefitDate currently after his/her FRA
         //Set person's spousalBenefitlDate to earliest possible restricted application date (later of FRA or other person's retirementBenefitDate)
-        if (person.FRA > otherPerson.retirementBenefitDate) {
+        if (person.FRA > otherPersonsLimitingDate) {
           person.spousalBenefitDate = new Date(person.FRA)
         } else {
-          person.spousalBenefitDate = new Date(otherPerson.retirementBenefitDate)
+          person.spousalBenefitDate = new Date(otherPersonsLimitingDate)
         }
       }
     }
