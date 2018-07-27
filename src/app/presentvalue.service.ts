@@ -500,9 +500,12 @@ maximizeCoupleOneHasFiledPV(scenario:ClaimingScenario, fixedSpouseRetirementBene
     if (scenario.maritalStatus == "divorced"){
       var otherPersonsLimitingDate = new Date(otherPerson.SSbirthDate.getFullYear()+62, 1, 1)
     }
+    if (otherPerson.isDisabled === true){//If otherPerson is disabled, there is no "otherPersonsLimitingDate."" So just make this own age 62. Also, this check has to come last since it overrides others.
+      var otherPersonsLimitingDate = new Date(person.SSbirthDate.getFullYear()+62, 1, 1)
+    }
 
     if (person.actualBirthDate > deemedFilingCutoff) {//i.e., if person has new deemed filing rules
-      //set spousalBenefitDate to later of two retirementBenefitDates
+      //set spousalBenefitDate to own retirementBenefitDate, but no earlier than otherPersonsLimitingDate
       if (person.retirementBenefitDate > otherPersonsLimitingDate) {
         person.spousalBenefitDate = new Date(person.retirementBenefitDate)
       } else {
@@ -511,7 +514,7 @@ maximizeCoupleOneHasFiledPV(scenario:ClaimingScenario, fixedSpouseRetirementBene
     }
     else {//i.e., if person has old deemed filing rules
       if (person.retirementBenefitDate < person.FRA) {
-        //Set person's spousalBenefitDate to later of two retirementBenefitDates
+        //set spousalBenefitDate to own retirementBenefitDate, but no earlier than otherPersonsLimitingDate
         if (person.retirementBenefitDate > otherPersonsLimitingDate) {
           person.spousalBenefitDate = new Date(person.retirementBenefitDate)
         } else {
@@ -519,7 +522,7 @@ maximizeCoupleOneHasFiledPV(scenario:ClaimingScenario, fixedSpouseRetirementBene
         }
       }
       else {//i.e., if person's retirementBenefitDate currently after his/her FRA
-        //Set person's spousalBenefitlDate to earliest possible restricted application date (later of FRA or other person's retirementBenefitDate)
+        //Set person's spousalBenefitlDate to earliest possible restricted application date (i.e., later of FRA or otherPersonsLimitingDate)
         if (person.FRA > otherPersonsLimitingDate) {
           person.spousalBenefitDate = new Date(person.FRA)
         } else {

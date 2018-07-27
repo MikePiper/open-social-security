@@ -12,6 +12,7 @@ export class Person {
     governmentPension: number = 0
     quitWorkDate: Date
     monthlyEarnings: number = 0
+    isDisabled: boolean = false //true only if disabled and expecting to be on disability until FRA
 
 
 
