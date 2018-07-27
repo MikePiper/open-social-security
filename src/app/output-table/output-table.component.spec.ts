@@ -1,25 +1,18 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { OutputTableComponent } from './output-table.component';
+import { async, TestBed, inject } from '@angular/core/testing'
+import { OutputTableComponent } from './output-table.component'
+import { ClaimingScenario } from '../data model classes/claimingscenario'
 
 describe('OutputTableComponent', () => {
-  let component: OutputTableComponent;
-  let fixture: ComponentFixture<OutputTableComponent>;
-
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ OutputTableComponent ]
+      providers: [OutputTableComponent]
     })
-    .compileComponents();
-  }));
+    .compileComponents()
+  }))
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(OutputTableComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+  it('should be created', inject([OutputTableComponent], (component: OutputTableComponent) => {
+    expect(component).toBeTruthy()
+  }))
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+  
+})

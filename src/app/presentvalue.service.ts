@@ -565,4 +565,38 @@ maximizeCoupleOneHasFiledPV(scenario:ClaimingScenario, fixedSpouseRetirementBene
       this.maximizedOrNot = true
       return solutionSet
   }
+
+  incrementSpousalBenefitDate(person:Person, otherPerson:Person){
+    let deemedFilingCutoff: Date = new Date(1954, 0, 1)
+
+    if (person.actualBirthDate > deemedFilingCutoff) {//i.e., if person has new deemed filing rules
+      //set spousalBenefitDate to later of two retirementBenefitDates
+      if (person.retirementBenefitDate > otherPerson.retirementBenefitDate) {
+        person.spousalBenefitDate = new Date(person.retirementBenefitDate)
+      } else {
+        person.spousalBenefitDate = new Date(otherPerson.retirementBenefitDate)
+      }
+    }
+    else {//i.e., if person has old deemed filing rules
+      if (person.retirementBenefitDate < person.FRA) {
+        //Set person's spousalBenefitDate to later of two retirementBenefitDates
+        if (person.retirementBenefitDate > otherPerson.retirementBenefitDate) {
+          person.spousalBenefitDate = new Date(person.retirementBenefitDate)
+        } else {
+          person.spousalBenefitDate = new Date(otherPerson.retirementBenefitDate)
+        }
+      }
+      else {//i.e., if person's retirementBenefitDate currently after his/her FRA
+        //Set person's spousalBenefitlDate to earliest possible restricted application date (later of FRA or other person's retirementBenefitDate)
+        if (person.FRA > otherPerson.retirementBenefitDate) {
+          person.spousalBenefitDate = new Date(person.FRA)
+        } else {
+          person.spousalBenefitDate = new Date(otherPerson.retirementBenefitDate)
+        }
+      }
+    }
+    return person
+  }
+
+
 }
