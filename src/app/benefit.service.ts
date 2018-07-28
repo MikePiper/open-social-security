@@ -10,8 +10,6 @@ export class BenefitService {
 
   constructor() { }
 
-  storedRetirementCalculations = {}
-
   calculateRetirementBenefit(person:Person, benefitDate: Date) {
     let retirementBenefit: number = 0
     let monthsWaited = benefitDate.getMonth() - person.FRA.getMonth() + 12 * (benefitDate.getFullYear() - person.FRA.getFullYear())

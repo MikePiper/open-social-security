@@ -233,10 +233,10 @@ export class PresentValueService {
     }
     //after loop is finished
     console.log("saved PV: " + savedPV)
-    console.log("savedClaimingDate: " + savedClaimingDate)
+    console.log("savedClaimingDate: " + savedClaimingDate.toLocaleDateString())
 
     //Generate solution set (for sake of output) from saved values
-    let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(scenario.maritalStatus, person.SSbirthDate, person, Number(savedPV), savedClaimingDate)
+    let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(scenario, person.SSbirthDate, person, Number(savedPV), savedClaimingDate)
     this.maximizedOrNot = true
     return solutionSet
   }
@@ -275,12 +275,14 @@ export class PresentValueService {
     personA = this.adjustSpousalBenefitDate(personA, personB, scenario)
     personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
 
-    //Initialize savedPV as zero. Set spouseAsavedDate and spouseBsavedDate equal to their current testDates.
+    //Initialize savedPV as zero. Set personAsavedDate and personBsavedDate equal to their current testDates.
       let savedPV: number = 0
-      let spouseAsavedRetirementDate = new Date(personA.retirementBenefitDate)
-      let spouseBsavedRetirementDate = new Date(personB.retirementBenefitDate)
-      let spouseAsavedSpousalDate = new Date(personA.spousalBenefitDate)
-      let spouseBsavedSpousalDate = new Date(personB.spousalBenefitDate)
+      let personAsavedRetirementDate = new Date(personA.retirementBenefitDate)
+      let personBsavedRetirementDate = new Date(personB.retirementBenefitDate)
+      let personAsavedSpousalDate = new Date(personA.spousalBenefitDate)
+      let personBsavedSpousalDate = new Date(personB.spousalBenefitDate)
+      let personAsavedendSuspensionDate = new Date(personA.endSuspensionDate)
+      let personBsavedendSuspensionDate = new Date(personB.endSuspensionDate)
 
     //Set endingTestDate for each spouse equal to the month they turn 70
     let spouseAendTestDate = new Date(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth(), 1)
@@ -310,18 +312,16 @@ export class PresentValueService {
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTestPV >= savedPV) {
               savedPV = currentTestPV
-              spouseAsavedRetirementDate.setMonth(personA.retirementBenefitDate.getMonth())
-              spouseAsavedRetirementDate.setFullYear(personA.retirementBenefitDate.getFullYear())
-              spouseBsavedRetirementDate.setMonth(personB.retirementBenefitDate.getMonth())
-              spouseBsavedRetirementDate.setFullYear(personB.retirementBenefitDate.getFullYear())
-              spouseAsavedSpousalDate.setMonth(personA.spousalBenefitDate.getMonth())
-              spouseAsavedSpousalDate.setFullYear(personA.spousalBenefitDate.getFullYear())
-              spouseBsavedSpousalDate.setMonth(personB.spousalBenefitDate.getMonth())
-              spouseBsavedSpousalDate.setFullYear(personB.spousalBenefitDate.getFullYear())
+              personAsavedRetirementDate = new Date(personA.retirementBenefitDate)
+              personBsavedRetirementDate = new Date(personB.retirementBenefitDate)
+              personAsavedSpousalDate = new Date(personA.spousalBenefitDate)
+              personBsavedSpousalDate = new Date(personB.spousalBenefitDate)
+              personAsavedendSuspensionDate = new Date(personA.endSuspensionDate)
+              personBsavedendSuspensionDate = new Date(personB.endSuspensionDate)
               }
 
           //Find next possible claiming combination for spouseB
-            personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
+            personB = this.incrementRetirementORendSuspensionDate(personB, scenario)
             personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
 
           //After personB's retirement/spousal dates have been incremented, adjust personA's spousal date as necessary
@@ -329,18 +329,20 @@ export class PresentValueService {
 
         }
         //Increment personA's retirementBenefitDate
-          personA.retirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+1)
+          personA = this.incrementRetirementORendSuspensionDate(personA, scenario)
         
       }
     //after loop is finished
       console.log("saved PV: " + savedPV)
-      console.log("spouseAretirementDate: " + spouseAsavedRetirementDate)
-      console.log("spouseBretirementDate: " + spouseBsavedRetirementDate)
-      console.log("spouseAspousalDate: " + spouseAsavedSpousalDate)
-      console.log("spouseBspousalDate: " + spouseBsavedSpousalDate)
+      console.log("personAsavedRetirementDate: " + personAsavedRetirementDate.toLocaleDateString())
+      console.log("personBsavedRetirementDate: " + personBsavedRetirementDate.toLocaleDateString())
+      console.log("personAsavedSpousalDate: " + personAsavedSpousalDate.toLocaleDateString())
+      console.log("personBsavedSpousalDate: " + personBsavedSpousalDate.toLocaleDateString())
+      console.log("personAsavedendSuspensionDate: " + personAsavedendSuspensionDate.toLocaleDateString())
+      console.log("personBsavedendSuspensionDate: " + personBsavedendSuspensionDate.toLocaleDateString())
 
       //Generate solution set (for sake of output) from saved values
-      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario.maritalStatus, personA, personB, spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, Number(savedPV))
+      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, personA, personB, personAsavedRetirementDate, personBsavedRetirementDate, personAsavedSpousalDate, personBsavedSpousalDate, personAsavedendSuspensionDate, personBsavedendSuspensionDate, Number(savedPV))
       
       this.maximizedOrNot = true
       return solutionSet
@@ -411,8 +413,8 @@ maximizeCoupleOneHasFiledPV(scenario:ClaimingScenario, fixedSpouseRetirementBene
     }
       //after loop is finished
       console.log("saved PV: " + savedPV)
-      console.log("saved flexibleSpouseRetirementDate: " + flexibleSpouseSavedRetirementDate)
-      console.log("saved flexibleSpouseSpousalDate: " + flexibleSpouseSavedSpousalDate)
+      console.log("saved flexibleSpouseRetirementDate: " + flexibleSpouseSavedRetirementDate.toLocaleDateString())
+      console.log("saved flexibleSpouseSpousalDate: " + flexibleSpouseSavedSpousalDate.toLocaleDateString())
   
       let solutionSet:SolutionSet = this.solutionSetService.generateCoupleOneHasFiledSolutionSet(flexibleSpouse, fixedSpouse, scenario,
       flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, Number(savedPV))

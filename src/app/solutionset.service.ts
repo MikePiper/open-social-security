@@ -13,7 +13,7 @@ export class SolutionSetService {
 
   constructor(private benefitService: BenefitService) { }
 
-  generateSingleSolutionSet(maritalStatus: string, SSbirthDate:Date, person:Person, savedPV:number, savedClaimingDate:Date){
+  generateSingleSolutionSet(scenario:ClaimingScenario, SSbirthDate:Date, person:Person, savedPV:number, savedClaimingDate:Date){
         //Find age and monthly benefit amount at savedClaimingDate, for sake of output statement.
         let savedClaimingAge: number = savedClaimingDate.getFullYear() - SSbirthDate.getFullYear() + (savedClaimingDate.getMonth() - SSbirthDate.getMonth())/12
         let savedClaimingAgeYears: number = Math.floor(savedClaimingAge)
@@ -25,53 +25,64 @@ export class SolutionSetService {
           "solutionPV":savedPV,
           "solutionsArray": []
         }
-        let retirementSolution = new ClaimingSolution(maritalStatus, "retirementAlone", person, savedClaimingDate, savedRetirementBenefit, savedClaimingAgeYears, savedClaimingAgeMonths)
+        let retirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", person, savedClaimingDate, savedRetirementBenefit, savedClaimingAgeYears, savedClaimingAgeMonths)
         solutionSet.solutionsArray.push(retirementSolution)
         return solutionSet
   }
 
-  generateCoupleSolutionSet(maritalStatus:string, personA:Person, personB:Person,
-    spouseAsavedRetirementDate: Date, spouseBsavedRetirementDate: Date, spouseAsavedSpousalDate: Date, spouseBsavedSpousalDate: Date, savedPV: number){
+  //For two-person scenarios, other than a) divorce or b) one person being over 70
+  generateCoupleSolutionSet(scenario:ClaimingScenario, personA:Person, personB:Person,
+    personAsavedRetirementDate: Date, personBsavedRetirementDate: Date, personAsavedSpousalDate: Date, personBsavedSpousalDate: Date, personAsavedEndSuspensionDate:Date, personBsavedEndSuspensionDate:Date, savedPV: number){
         //Find monthly benefit amounts and ages at saved claiming dates, for sake of output statement.
-        //spouseA retirement stuff
-        let spouseAsavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(personA, spouseAsavedRetirementDate)
-        let spouseAsavedRetirementAge: number = spouseAsavedRetirementDate.getFullYear() - personA.SSbirthDate.getFullYear() + (spouseAsavedRetirementDate.getMonth() - personA.SSbirthDate.getMonth())/12
-        let spouseAsavedRetirementAgeYears: number = Math.floor(spouseAsavedRetirementAge)
-        let spouseAsavedRetirementAgeMonths: number = Math.round((spouseAsavedRetirementAge%1)*12)
-        //spouseB retirement stuff
-        let spouseBsavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(personB, spouseBsavedRetirementDate)
-        let spouseBsavedRetirementAge: number = spouseBsavedRetirementDate.getFullYear() - personB.SSbirthDate.getFullYear() + (spouseBsavedRetirementDate.getMonth() - personB.SSbirthDate.getMonth())/12
-        let spouseBsavedRetirementAgeYears: number = Math.floor(spouseBsavedRetirementAge)
-        let spouseBsavedRetirementAgeMonths: number = Math.round((spouseBsavedRetirementAge%1)*12)
-        //spouseA spousal stuff
-        let spouseAsavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(personA, personB, spouseAsavedRetirementBenefit, spouseAsavedSpousalDate)
-          if (spouseAsavedSpousalBenefit == 0 && spouseAsavedSpousalDate < spouseAsavedRetirementDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
-            spouseAsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(personA, personB, 0, spouseAsavedSpousalDate)
+        //personA retirement stuff
+          if (personA.isDisabled === true || scenario.personAhasFiled === true){
+            //retirement benefit solution is a suspension solution
           }
-        let spouseAsavedSpousalAge: number = spouseAsavedSpousalDate.getFullYear() - personA.SSbirthDate.getFullYear() + (spouseAsavedSpousalDate.getMonth() - personA.SSbirthDate.getMonth())/12
-        let spouseAsavedSpousalAgeYears: number = Math.floor(spouseAsavedSpousalAge)
-        let spouseAsavedSpousalAgeMonths: number = Math.round((spouseAsavedSpousalAge%1)*12)
-        //spouseB spousal stuff
-        let spouseBsavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(personB, personA, spouseBsavedRetirementBenefit, spouseBsavedSpousalDate)
-        if (spouseBsavedSpousalBenefit == 0 && spouseBsavedSpousalDate < spouseBsavedRetirementDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
-          spouseBsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(personB, personA, 0, spouseBsavedSpousalDate)
+          else {
+            //normal retirement benefit solution
+            var personAsavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(personA, personAsavedRetirementDate)
+            var personAsavedRetirementAge: number = personAsavedRetirementDate.getFullYear() - personA.SSbirthDate.getFullYear() + (personAsavedRetirementDate.getMonth() - personA.SSbirthDate.getMonth())/12
+            var personAsavedRetirementAgeYears: number = Math.floor(personAsavedRetirementAge)
+            var personAsavedRetirementAgeMonths: number = Math.round((personAsavedRetirementAge%1)*12)
+          }
+        //personB retirement stuff
+            var personBsavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(personB, personBsavedRetirementDate)
+            var personBsavedRetirementAge: number = personBsavedRetirementDate.getFullYear() - personB.SSbirthDate.getFullYear() + (personBsavedRetirementDate.getMonth() - personB.SSbirthDate.getMonth())/12
+            var personBsavedRetirementAgeYears: number = Math.floor(personBsavedRetirementAge)
+            var personBsavedRetirementAgeMonths: number = Math.round((personBsavedRetirementAge%1)*12)
+        //personA suspension stuff
+
+        //personB suspension stuff
+
+        //personA spousal stuff
+        let personAsavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(personA, personB, personAsavedRetirementBenefit, personAsavedSpousalDate)
+          if (personAsavedSpousalBenefit == 0 && personAsavedSpousalDate < personAsavedRetirementDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
+            personAsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(personA, personB, 0, personAsavedSpousalDate)
+          }
+        let personAsavedSpousalAge: number = personAsavedSpousalDate.getFullYear() - personA.SSbirthDate.getFullYear() + (personAsavedSpousalDate.getMonth() - personA.SSbirthDate.getMonth())/12
+        let personAsavedSpousalAgeYears: number = Math.floor(personAsavedSpousalAge)
+        let personAsavedSpousalAgeMonths: number = Math.round((personAsavedSpousalAge%1)*12)
+        //personB spousal stuff
+        let personBsavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(personB, personA, personBsavedRetirementBenefit, personBsavedSpousalDate)
+        if (personBsavedSpousalBenefit == 0 && personBsavedSpousalDate < personBsavedRetirementDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
+          personBsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(personB, personA, 0, personBsavedSpousalDate)
         }
-        let spouseBsavedSpousalAge: number = spouseBsavedSpousalDate.getFullYear() - personB.SSbirthDate.getFullYear() + (spouseBsavedSpousalDate.getMonth() - personB.SSbirthDate.getMonth())/12
-        let spouseBsavedSpousalAgeYears: number = Math.floor(spouseBsavedSpousalAge)
-        let spouseBsavedSpousalAgeMonths: number = Math.round((spouseBsavedSpousalAge%1)*12)
-        //spouseA survivor stuff
-        if (spouseAsavedRetirementBenefit >= spouseBsavedRetirementBenefit) {
-          var spouseAsavedSurvivorBenefitOutput: number = 0
+        let personBsavedSpousalAge: number = personBsavedSpousalDate.getFullYear() - personB.SSbirthDate.getFullYear() + (personBsavedSpousalDate.getMonth() - personB.SSbirthDate.getMonth())/12
+        let personBsavedSpousalAgeYears: number = Math.floor(personBsavedSpousalAge)
+        let personBsavedSpousalAgeMonths: number = Math.round((personBsavedSpousalAge%1)*12)
+        //personA survivor stuff
+        if (personAsavedRetirementBenefit >= personBsavedRetirementBenefit) {
+          var personAsavedSurvivorBenefitOutput: number = 0
         } else {
-          var spouseAsavedSurvivorBenefitOutput: number =
-          spouseAsavedRetirementBenefit + this.benefitService.calculateSurvivorBenefit(personA, spouseAsavedRetirementBenefit, personA.survivorFRA, personB, spouseBsavedRetirementDate, spouseBsavedRetirementDate)
+          var personAsavedSurvivorBenefitOutput: number =
+          personAsavedRetirementBenefit + this.benefitService.calculateSurvivorBenefit(personA, personAsavedRetirementBenefit, personA.survivorFRA, personB, personBsavedRetirementDate, personBsavedRetirementDate)
         }
-        //spouseB survivor stuff
-        if (spouseBsavedRetirementBenefit >= spouseAsavedRetirementBenefit) {
-          var spouseBsavedSurvivorBenefitOutput: number = 0
+        //personB survivor stuff
+        if (personBsavedRetirementBenefit >= personAsavedRetirementBenefit) {
+          var personBsavedSurvivorBenefitOutput: number = 0
         } else {
-          var spouseBsavedSurvivorBenefitOutput: number =
-          spouseBsavedRetirementBenefit + this.benefitService.calculateSurvivorBenefit(personB, spouseBsavedRetirementBenefit, personB.survivorFRA, personA, spouseAsavedRetirementDate, spouseAsavedRetirementDate)
+          var personBsavedSurvivorBenefitOutput: number =
+          personBsavedRetirementBenefit + this.benefitService.calculateSurvivorBenefit(personB, personBsavedRetirementBenefit, personB.survivorFRA, personA, personAsavedRetirementDate, personAsavedRetirementDate)
         }
 
         let solutionSet: SolutionSet = {
@@ -79,37 +90,37 @@ export class SolutionSetService {
           solutionsArray: []
         }
         //Determine claimingSolution objects
-        if (spouseAsavedRetirementDate > spouseAsavedSpousalDate) {
-          var spouseAretirementSolution = new ClaimingSolution(maritalStatus, "retirementReplacingSpousal", personA, spouseAsavedRetirementDate, spouseAsavedRetirementBenefit, spouseAsavedRetirementAgeYears, spouseAsavedRetirementAgeMonths)
+        if (personAsavedRetirementDate > personAsavedSpousalDate) {
+          var personAretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementReplacingSpousal", personA, personAsavedRetirementDate, personAsavedRetirementBenefit, personAsavedRetirementAgeYears, personAsavedRetirementAgeMonths)
         } else {
-          var spouseAretirementSolution = new ClaimingSolution(maritalStatus, "retirementAlone", personA, spouseAsavedRetirementDate, spouseAsavedRetirementBenefit, spouseAsavedRetirementAgeYears, spouseAsavedRetirementAgeMonths)
+          var personAretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", personA, personAsavedRetirementDate, personAsavedRetirementBenefit, personAsavedRetirementAgeYears, personAsavedRetirementAgeMonths)
         }
-        if (spouseBsavedRetirementDate > spouseBsavedSpousalDate) {
-          var spouseBretirementSolution = new ClaimingSolution(maritalStatus, "retirementReplacingSpousal", personB, spouseBsavedRetirementDate, spouseBsavedRetirementBenefit, spouseBsavedRetirementAgeYears, spouseBsavedRetirementAgeMonths)
+        if (personBsavedRetirementDate > personBsavedSpousalDate) {
+          var personBretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementReplacingSpousal", personB, personBsavedRetirementDate, personBsavedRetirementBenefit, personBsavedRetirementAgeYears, personBsavedRetirementAgeMonths)
         } else {
-          var spouseBretirementSolution = new ClaimingSolution(maritalStatus, "retirementAlone", personB, spouseBsavedRetirementDate, spouseBsavedRetirementBenefit, spouseBsavedRetirementAgeYears, spouseBsavedRetirementAgeMonths)
+          var personBretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", personB, personBsavedRetirementDate, personBsavedRetirementBenefit, personBsavedRetirementAgeYears, personBsavedRetirementAgeMonths)
         }
-        if (spouseAsavedSpousalDate < spouseAsavedRetirementDate) {
-          var spouseAspousalSolution = new ClaimingSolution(maritalStatus, "spousalAlone", personA, spouseAsavedSpousalDate, spouseAsavedSpousalBenefit, spouseAsavedSpousalAgeYears, spouseAsavedSpousalAgeMonths)
+        if (personAsavedSpousalDate < personAsavedRetirementDate) {
+          var personAspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalAlone", personA, personAsavedSpousalDate, personAsavedSpousalBenefit, personAsavedSpousalAgeYears, personAsavedSpousalAgeMonths)
         } else {
-          var spouseAspousalSolution = new ClaimingSolution(maritalStatus, "spousalWithRetirement", personA, spouseAsavedSpousalDate, spouseAsavedSpousalBenefit, spouseAsavedSpousalAgeYears, spouseAsavedSpousalAgeMonths)
+          var personAspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalWithRetirement", personA, personAsavedSpousalDate, personAsavedSpousalBenefit, personAsavedSpousalAgeYears, personAsavedSpousalAgeMonths)
         }
-        if (spouseBsavedSpousalDate < spouseBsavedRetirementDate) {
-          var spouseBspousalSolution = new ClaimingSolution(maritalStatus, "spousalAlone", personB, spouseBsavedSpousalDate, spouseBsavedSpousalBenefit, spouseBsavedSpousalAgeYears, spouseBsavedSpousalAgeMonths)
+        if (personBsavedSpousalDate < personBsavedRetirementDate) {
+          var personBspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalAlone", personB, personBsavedSpousalDate, personBsavedSpousalBenefit, personBsavedSpousalAgeYears, personBsavedSpousalAgeMonths)
         } else {
-          var spouseBspousalSolution = new ClaimingSolution(maritalStatus, "spousalWithRetirement", personB, spouseBsavedSpousalDate, spouseBsavedSpousalBenefit, spouseBsavedSpousalAgeYears, spouseBsavedSpousalAgeMonths)
+          var personBspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalWithRetirement", personB, personBsavedSpousalDate, personBsavedSpousalBenefit, personBsavedSpousalAgeYears, personBsavedSpousalAgeMonths)
         }
-        var spouseAsurvivorSolution = new ClaimingSolution(maritalStatus, "survivor", personA, new Date(9999,0,1), spouseAsavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
-        var spouseBsurvivorSolution = new ClaimingSolution(maritalStatus, "survivor", personA, new Date(9999,0,1), spouseBsavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+        var personAsurvivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", personA, new Date(9999,0,1), personAsavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+        var personBsurvivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", personA, new Date(9999,0,1), personBsavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
 
 
         //Push claimingSolution objects to solutionSet.solutionsArray (But don't push them if the benefit amount is zero.)
-        if (spouseAsavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(spouseAretirementSolution)}
-        if (spouseBsavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(spouseBretirementSolution)}
-        if (spouseAsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(spouseAspousalSolution)}
-        if (spouseBsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(spouseBspousalSolution)}
-        if (spouseAsavedSurvivorBenefitOutput > spouseAsavedRetirementBenefit) {solutionSet.solutionsArray.push(spouseAsurvivorSolution)} //Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
-        if (spouseBsavedSurvivorBenefitOutput > spouseBsavedRetirementBenefit) {solutionSet.solutionsArray.push(spouseBsurvivorSolution)}
+        if (personAsavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(personAretirementSolution)}
+        if (personBsavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(personBretirementSolution)}
+        if (personAsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(personAspousalSolution)}
+        if (personBsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(personBspousalSolution)}
+        if (personAsavedSurvivorBenefitOutput > personAsavedRetirementBenefit) {solutionSet.solutionsArray.push(personAsurvivorSolution)} //Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
+        if (personBsavedSurvivorBenefitOutput > personBsavedRetirementBenefit) {solutionSet.solutionsArray.push(personBsurvivorSolution)}
     
         //Sort array by date
         solutionSet.solutionsArray.sort(function(a,b){
@@ -120,6 +131,7 @@ export class SolutionSetService {
         return solutionSet
   }
 
+  //For divorce scenarios and married scenarios where one person is over 70
   generateCoupleOneHasFiledSolutionSet(flexibleSpouse:Person, fixedSpouse:Person, scenario:ClaimingScenario,
     flexibleSpouseSavedRetirementDate:Date, flexibleSpouseSavedSpousalDate:Date, fixedSpouseRetirementBenefitDate:Date, fixedSpouseSavedSpousalDate:Date, savedPV:number){
         let fixedSpouseRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(fixedSpouse, fixedSpouseRetirementBenefitDate)

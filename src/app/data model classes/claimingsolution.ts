@@ -43,6 +43,14 @@ import { Person } from "./person"
             this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) +
            " per month -- assuming you wait at least until your full retirement age to file for that survivor benefit."
           }
+          if (this.benefitType == "suspendToday") {
+            this.message = "You suspend your retirement benefit today, then unsuspend " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
+            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ")"
+          }
+          if (this.benefitType == "suspendAtFRA") {
+            this.message = "You suspend your retirement benefit at your full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + "), then unsuspend " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
+            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ")"
+          }
         }
         if (person.id == "B") {
           if (this.benefitType == "retirementAlone"){
@@ -65,6 +73,14 @@ import { Person } from "./person"
            this.message = "If your spouse outlives you, his/her total benefit (including survivor benefit) would be " +
            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) +
            " per month -- assuming he/she waits at least until full retirement age to file for that survivor benefit."
+          }
+          if (this.benefitType == "suspendToday") {
+            this.message = "Your spouse suspends his/her retirement benefit today, then unsuspends " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
+            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ")"
+          }
+          if (this.benefitType == "suspendAtFRA") {
+            this.message = "Your spouse suspends his/her retirement benefit at full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + "), then unsuspends " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
+            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ")"
           }
         }
     }
