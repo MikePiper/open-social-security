@@ -20,29 +20,31 @@ describe('SolutionSetService', () => {
 
 //Test generateSingleSolutionSet
   it('SolutionSet object should have PV that was passed in', inject([SolutionSetService], (service: SolutionSetService) => {
-    let person:Person = new Person("A") 
-    let maritalStatus: string = "single"
+    let person:Person = new Person("A")
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.maritalStatus = "single"
     let SSbirthDate:Date = new Date(1960, 3, 1) //April 1, 1960
     person.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
     person.PIA = 2000
     let savedPV:number = 180000 //Just completely making this PV up
     let savedClaimingDate:Date = new Date(2029, 5, 1) //2 years and 2 months after FRA, for no particular reason
-    expect(service.generateSingleSolutionSet(maritalStatus, SSbirthDate, person, savedPV, savedClaimingDate).solutionPV)
+    expect(service.generateSingleSolutionSet(scenario, SSbirthDate, person, savedPV, savedClaimingDate).solutionPV)
       .toEqual(savedPV)
   }))
 
   it('SolutionSet object should have appropriate date saved', inject([SolutionSetService], (service: SolutionSetService) => {
     let person:Person = new Person("A") 
-    let maritalStatus: string = "single"
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.maritalStatus = "single"
     let SSbirthDate:Date = new Date(1960, 3, 1) //April 1, 1960
     person.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
     person.PIA = 2000
     let savedPV:number = 180000 //Just completely making this PV up
     let savedClaimingDate:Date = new Date(2029, 5, 1) //2 years and 2 months after FRA, for no particular reason
     let wrongDate:Date = new Date (2028, 4, 1)
-    expect(service.generateSingleSolutionSet(maritalStatus, SSbirthDate, person, savedPV, savedClaimingDate).solutionsArray[0].date)
+    expect(service.generateSingleSolutionSet(scenario, SSbirthDate, person, savedPV, savedClaimingDate).solutionsArray[0].date)
       .toEqual(savedClaimingDate)
-    expect(service.generateSingleSolutionSet(maritalStatus, SSbirthDate, person, savedPV, savedClaimingDate).solutionsArray[0].date)
+    expect(service.generateSingleSolutionSet(scenario, SSbirthDate, person, savedPV, savedClaimingDate).solutionsArray[0].date)
       .not.toEqual(wrongDate)
   }))
   
@@ -51,7 +53,8 @@ describe('SolutionSetService', () => {
   it('SolutionSet object should have appropriate date saved as earliest date', inject([SolutionSetService], (service: SolutionSetService) => {
     let personA:Person = new Person("A")
     let personB:Person = new Person("B")
-    let maritalStatus:string = "married"
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.maritalStatus = "married"
     personA.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
     personB.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
     personA.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
@@ -62,11 +65,13 @@ describe('SolutionSetService', () => {
     let spouseBsavedRetirementDate: Date = new Date(2030, 5, 1)
     let spouseAsavedSpousalDate: Date = new Date(2033, 5, 1)
     let spouseBsavedSpousalDate: Date = new Date(2035, 5, 1)
+    let personAsavedEndSuspensionDate: Date = new Date(1900, 0, 1)
+    let personBsavedEndSuspensionDate: Date = new Date(1900, 0, 1)
     let savedPV: number = 380000 //completely making this up
     personA.governmentPension = 0
     personB.governmentPension = 0
-    expect(service.generateCoupleSolutionSet(maritalStatus, personA, personB,
-      spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, savedPV).solutionsArray[0].date)
+    expect(service.generateCoupleSolutionSet(scenario, personA, personB,
+      spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, personAsavedEndSuspensionDate, personBsavedEndSuspensionDate, savedPV).solutionsArray[0].date)
       .toEqual(spouseBsavedRetirementDate)
   }))
 

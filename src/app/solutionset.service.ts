@@ -46,14 +46,16 @@ export class SolutionSetService {
             var personAsavedRetirementAgeMonths: number = Math.round((personAsavedRetirementAge%1)*12)
           }
         //personB retirement stuff
+          if (personB.isDisabled === true || scenario.personBhasFiled === true){
+            //retirement benefit solution is a suspension solution
+          }
+          else {
+            //normal retirement benefit solution
             var personBsavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(personB, personBsavedRetirementDate)
             var personBsavedRetirementAge: number = personBsavedRetirementDate.getFullYear() - personB.SSbirthDate.getFullYear() + (personBsavedRetirementDate.getMonth() - personB.SSbirthDate.getMonth())/12
             var personBsavedRetirementAgeYears: number = Math.floor(personBsavedRetirementAge)
             var personBsavedRetirementAgeMonths: number = Math.round((personBsavedRetirementAge%1)*12)
-        //personA suspension stuff
-
-        //personB suspension stuff
-
+          }
         //personA spousal stuff
         let personAsavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(personA, personB, personAsavedRetirementBenefit, personAsavedSpousalDate)
           if (personAsavedSpousalBenefit == 0 && personAsavedSpousalDate < personAsavedRetirementDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
