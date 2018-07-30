@@ -67,11 +67,14 @@ describe('SolutionSetService', () => {
     let spouseBsavedSpousalDate: Date = new Date(2035, 5, 1)
     let personAsavedEndSuspensionDate: Date = new Date(1900, 0, 1)
     let personBsavedEndSuspensionDate: Date = new Date(1900, 0, 1)
+    let personAsavedBeginSuspensionDate: Date = new Date(1900, 0, 1)
+    let personBsavedBeginSuspensionDate: Date = new Date(1900, 0, 1)
     let savedPV: number = 380000 //completely making this up
     personA.governmentPension = 0
     personB.governmentPension = 0
     expect(service.generateCoupleSolutionSet(scenario, personA, personB,
-      spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate, personAsavedEndSuspensionDate, personBsavedEndSuspensionDate, savedPV).solutionsArray[0].date)
+      spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate,
+      personAsavedBeginSuspensionDate, personAsavedEndSuspensionDate, personBsavedBeginSuspensionDate, personBsavedEndSuspensionDate, savedPV).solutionsArray[0].date)
       .toEqual(spouseBsavedRetirementDate)
   }))
 

@@ -330,7 +330,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.maximizeCouplePV(personA, personB, scenario).solutionsArray[1].date)
+    expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[1].date)
     .toEqual(new Date(2034, 9, 1))
     //We're looking at item [1] in the array. This array should have 3 items in it: retirement benefit dates for each spouse, and a survivor date for spouse A (lower earner).
     //No spousal dates because neither spouse gets a spousal benefit. Since it's sorted in date order, first retirement date will be low earner, second is higher earner, which we want. Third is survivor.
@@ -365,7 +365,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.maximizeCouplePV(personA, personB, scenario).solutionsArray[1].date)
+    expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[1].date)
     .toEqual(new Date(2019, 8, 1))
     //We're looking at item [1] in the array. This array should have 4 items in it, in this order:
       //low PIA retirement claiming date
@@ -391,7 +391,7 @@ describe('PresentValueService', () => {
     personB.actualBirthDate = new Date(1960, 9, 11) //Spouse B born in October 1960
     personB.SSbirthDate = new Date(1960, 9, 1)
     scenario.initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which user (personA) reaches ages 62
-    let spouseBretirementBenefitDate:Date = new Date (2028, 9, 1) //Filing at exactly age 68
+    personB.fixedRetirementBenefitDate = new Date (2028, 9, 1) //Filing at exactly age 68
     personA.initialAgeRounded = 54
     personB.initialAgeRounded = 58
     let birthdayService:BirthdayService = new BirthdayService()
@@ -408,7 +408,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
+    expect(service.maximizeCouplePViterateOnePerson(scenario, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2026, 10, 1))
     //We're looking at item [0] in the array. This array should have 3 items in it: retirement benefit date and spousal benefit date for spouseA, and a survivor date for spouse A (lower earner).
     //Since it's sorted in date order, we want first date (or second date -- they should be the same)
@@ -429,7 +429,7 @@ describe('PresentValueService', () => {
     personB.actualBirthDate = new Date(1954, 9, 11) //Spouse B born in October 1954
     personB.SSbirthDate = new Date(1954, 9, 1)
     scenario.initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which user (personA) reaches ages 62
-    let spouseBretirementBenefitDate:Date = new Date (2016, 10, 1) //Ex filing at 62
+    personB.fixedRetirementBenefitDate = new Date (2016, 10, 1) //Ex filing at 62
     personA.initialAgeRounded = 62
     personB.initialAgeRounded = 63
     let birthdayService:BirthdayService = new BirthdayService()
@@ -446,7 +446,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 0
-    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
+    expect(service.maximizeCouplePViterateOnePerson(scenario, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2025, 9, 1))
     //We're looking at item [0] in the array. This array should have 1 item in it: retirement benefit date for spouseA.
   }))
@@ -467,7 +467,7 @@ describe('PresentValueService', () => {
     personB.actualBirthDate = new Date(1954, 9, 11) //personB born in October 1954
     personB.SSbirthDate = new Date(1954, 9, 1)
     scenario.initialCalcDate = new Date(personB.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which older reaches ages 62
-    let spouseBretirementBenefitDate:Date = new Date (2016, 10, 1) //personB filed at 62
+    personB.fixedRetirementBenefitDate = new Date (2016, 10, 1) //personB filed at 62
     personA.initialAgeRounded = 62
     personB.initialAgeRounded = 63
     let birthdayService:BirthdayService = new BirthdayService()
@@ -484,7 +484,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 0
-    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
+    expect(service.maximizeCouplePViterateOnePerson(scenario, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2025, 9, 1))
     //We're looking at item [0] in the array. This array should have 2 items in it: retirement date for personA, survivor benefit for personB
   }))
@@ -504,7 +504,7 @@ describe('PresentValueService', () => {
     personB.actualBirthDate = new Date(1954, 9, 11) //personB born in October 1954
     personB.SSbirthDate = new Date(1954, 9, 1)
     scenario.initialCalcDate = new Date(personB.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which older reaches ages 62
-    let spouseBretirementBenefitDate:Date = new Date (2016, 10, 1) //personB filed at 62
+    personB.fixedRetirementBenefitDate = new Date (2016, 10, 1) //personB filed at 62
     personA.initialAgeRounded = 62
     personB.initialAgeRounded = 63
     let birthdayService:BirthdayService = new BirthdayService()
@@ -521,7 +521,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseBretirementBenefitDate, personA, personB).solutionsArray[0].date)
+    expect(service.maximizeCouplePViterateOnePerson(scenario, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2022, 10, 1))
     //We're looking at item [0] in the array. This array should have 3 items in it: retirement date for personA, spousaldate for personA (same as retirement date), survivor benefit for personA
   }))
@@ -543,7 +543,7 @@ describe('PresentValueService', () => {
     personB.actualBirthDate = new Date(1955, 9, 15) //personB born in October 1955
     personB.SSbirthDate = new Date(1955, 9, 1)
     scenario.initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which older reaches ages 62
-    let spouseAretirementBenefitDate:Date = new Date (2016, 10, 1) //personA filed at 62
+    personA.fixedRetirementBenefitDate = new Date (2016, 10, 1) //personA filed at 62
     personA.initialAgeRounded = 63
     personB.initialAgeRounded = 62
     let birthdayService:BirthdayService = new BirthdayService()
@@ -560,7 +560,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 0
-    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseAretirementBenefitDate, personB, personA).solutionsArray[0].date)
+    expect(service.maximizeCouplePViterateOnePerson(scenario, personB, personA).solutionsArray[0].date)
     .toEqual(new Date(2025, 9, 1))
     //We're looking at item [0] in the array. This array should have 2 items in it: retirement date for personB, survivor benefit for personA
   }))
@@ -580,7 +580,7 @@ describe('PresentValueService', () => {
     personB.actualBirthDate = new Date(1960, 9, 15) //personB born in October 1960
     personB.SSbirthDate = new Date(1960, 9, 1)
     scenario.initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which older reaches ages 62
-    let spouseAretirementBenefitDate:Date = new Date (2016, 10, 1) //personA filed at 62
+    personA.fixedRetirementBenefitDate = new Date (2016, 10, 1) //personA filed at 62
     personA.initialAgeRounded = 63
     personB.initialAgeRounded = 62
     let birthdayService:BirthdayService = new BirthdayService()
@@ -597,7 +597,7 @@ describe('PresentValueService', () => {
     personA.governmentPension = 0
     personB.governmentPension = 0
     scenario.discountRate = 1
-    expect(service.maximizeCoupleOneHasFiledPV(scenario, spouseAretirementBenefitDate, personB, personA).solutionsArray[0].date)
+    expect(service.maximizeCouplePViterateOnePerson(scenario, personB, personA).solutionsArray[0].date)
     .toEqual(new Date(2022, 10, 1))
     //We're looking at item [0] in the array. This array should have 3 items in it: retirement date for personB, spousaldate for personB (same as retirement date), survivor benefit for personB
   }))
