@@ -97,11 +97,14 @@ describe('SolutionSetService', () => {
     let fixedSpouseRetirementBenefitDate: Date = new Date(2030, 5, 1)
     let flexibleSpouseSavedSpousalDate: Date = new Date(2031, 5, 1)
     let fixedSpouseSavedSpousalDate: Date = new Date(2031, 5, 1)
+    let flexibleSpouseSavedBeginSuspensionDate: Date = new Date(1900, 0, 1)
+    let flexibleSpouseSavedEndSuspensionDate: Date = new Date(1900, 0, 1)
     let savedPV: number = 380000 //completely making this up
     flexibleSpouse.governmentPension = 0
     fixedSpouse.governmentPension = 0
     expect(service.generateCoupleOneHasFiledSolutionSet(flexibleSpouse, fixedSpouse, scenario,
-      flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate, savedPV).solutionsArray[0].date)
+      flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate,
+      flexibleSpouseSavedBeginSuspensionDate, flexibleSpouseSavedEndSuspensionDate, savedPV).solutionsArray[0].date)
       .toEqual(flexibleSpouseSavedSpousalDate)
   }))
 

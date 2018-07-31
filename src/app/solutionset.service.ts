@@ -104,12 +104,14 @@ export class SolutionSetService {
         }
         //Create claimingSolution objects
           //personA retirement solution object
-            if (personA.isDisabled === true || scenario.personAhasFiled === true){//create suspension-related object
+            if (personA.isDisabled === true || scenario.personAhasFiled === true){//create suspension-related objects
               if (personAsavedBeginSuspensionDate.getTime() == personA.FRA.getTime()){
-                var personAretirementSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personA, personAsavedBeginSuspensionDate, personAsavedRetirementBenefit, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths, personAsavedEndSuspensionDate)
+                var personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personA, personAsavedBeginSuspensionDate, personAsavedRetirementBenefit, 0, 0)
+                var personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personAsavedEndSuspensionDate, personAsavedRetirementBenefit, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
               }
               else {
-                var personAretirementSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personA, personAsavedBeginSuspensionDate, personAsavedRetirementBenefit, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths, personAsavedEndSuspensionDate)
+                var personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personA, personAsavedBeginSuspensionDate, personAsavedRetirementBenefit, 0, 0)
+                var personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personAsavedEndSuspensionDate, personAsavedRetirementBenefit, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
               }
             }
             else {//create normal retirement solution object
@@ -122,10 +124,12 @@ export class SolutionSetService {
           //personB retirement solution object
             if (personB.isDisabled === true || scenario.personBhasFiled === true){
               if (personBsavedBeginSuspensionDate.getTime() == personB.FRA.getTime()){
-                var personBretirementSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personB, personBsavedBeginSuspensionDate, personBsavedRetirementBenefit, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths, personBsavedEndSuspensionDate)
+                var personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personB, personBsavedBeginSuspensionDate, personBsavedRetirementBenefit, 0, 0)
+                var personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personBsavedEndSuspensionDate, personBsavedRetirementBenefit, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
               }
               else {
-                var personBretirementSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personB, personBsavedBeginSuspensionDate, personBsavedRetirementBenefit, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths, personBsavedEndSuspensionDate)
+                var personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personB, personBsavedBeginSuspensionDate, personBsavedRetirementBenefit, 0, 0)
+                var personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personBsavedEndSuspensionDate, personBsavedRetirementBenefit, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
               }
             }
             else{//create normal retirement solution object
@@ -149,27 +153,31 @@ export class SolutionSetService {
             }
           //personA and personB survivor solution objects
             var personAsurvivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", personA, new Date(9999,0,1), personAsavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
-            var personBsurvivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", personA, new Date(9999,0,1), personBsavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+            var personBsurvivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", personB, new Date(9999,0,1), personBsavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
 
 
         //Push claimingSolution objects to solutionSet.solutionsArray (But don't push them if the benefit amount is zero.)
-        if (personAretirementSolution.benefitType == "suspendAtFRA" || personAretirementSolution.benefitType == "suspendToday") {//If suspension solution, only push if begin/end suspension dates are different
-          if (personAsavedBeginSuspensionDate != personAsavedEndSuspensionDate){
-            solutionSet.solutionsArray.push(personAretirementSolution)
+        if (personAbeginSuspensionSolution) {//If suspension solution, only push if begin/end suspension dates are different
+          if (personAsavedBeginSuspensionDate.getTime() != personAsavedEndSuspensionDate.getTime()){
+            solutionSet.solutionsArray.push(personAbeginSuspensionSolution)
+            solutionSet.solutionsArray.push(personAendSuspensionSolution)
           }
         }
-        else if (personAsavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(personAretirementSolution)}
-        
-        if (personBretirementSolution.benefitType == "suspendAtFRA" || personBretirementSolution.benefitType == "suspendToday") {//If suspension solution, only push if begin/end suspension dates are different
-          if (personBsavedBeginSuspensionDate != personBsavedEndSuspensionDate){
-            solutionSet.solutionsArray.push(personBretirementSolution)
+        else if (personAsavedRetirementBenefit > 0) {//There's only a retirement solution if there isn't a suspension solution. And we only save it if benefit is > 0.
+          solutionSet.solutionsArray.push(personAretirementSolution)
+        }
+        if (personBbeginSuspensionSolution) {//If suspension solution, only push if begin/end suspension dates are different
+          if (personBsavedBeginSuspensionDate.getTime() != personBsavedEndSuspensionDate.getTime()){
+            solutionSet.solutionsArray.push(personBbeginSuspensionSolution)
+            solutionSet.solutionsArray.push(personBendSuspensionSolution)
           }
         }
-        else if (personBsavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(personBretirementSolution)}
-
+        else if (personBsavedRetirementBenefit > 0) {//There's only a retirement solution if there isn't a suspension solution. And we only save it if benefit is > 0.
+          solutionSet.solutionsArray.push(personBretirementSolution)
+        }
         if (personAsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(personAspousalSolution)}
-        if (personBsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(personBspousalSolution)}
         if (personAsavedSurvivorBenefitOutput > personAsavedRetirementBenefit) {solutionSet.solutionsArray.push(personAsurvivorSolution)} //Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
+        if (personBsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(personBspousalSolution)}
         if (personBsavedSurvivorBenefitOutput > personBsavedRetirementBenefit) {solutionSet.solutionsArray.push(personBsurvivorSolution)}
     
         //Sort array by date
@@ -183,13 +191,25 @@ export class SolutionSetService {
 
   //For divorce scenarios and married scenarios where one person is over 70
   generateCoupleOneHasFiledSolutionSet(flexibleSpouse:Person, fixedSpouse:Person, scenario:ClaimingScenario,
-    flexibleSpouseSavedRetirementDate:Date, flexibleSpouseSavedSpousalDate:Date, fixedSpouseRetirementBenefitDate:Date, fixedSpouseSavedSpousalDate:Date, savedPV:number){
+    flexibleSpouseSavedRetirementDate:Date, flexibleSpouseSavedSpousalDate:Date, fixedSpouseRetirementBenefitDate:Date, fixedSpouseSavedSpousalDate:Date,
+    flexibleSpouseSavedBeginSuspensionDate:Date, flexibleSpouseSavedEndSuspensionDate:Date, savedPV:number){
         let fixedSpouseRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(fixedSpouse, fixedSpouseRetirementBenefitDate)
         //flexible spouse retirement age/benefitAmount
-        let flexibleSpouseSavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(flexibleSpouse, flexibleSpouseSavedRetirementDate)
-        let flexibleSpouseSavedRetirementAge: number = flexibleSpouseSavedRetirementDate.getFullYear() - flexibleSpouse.SSbirthDate.getFullYear() + (flexibleSpouseSavedRetirementDate.getMonth() - flexibleSpouse.SSbirthDate.getMonth())/12
-        let flexibleSpouseSavedRetirementAgeYears: number = Math.floor(flexibleSpouseSavedRetirementAge)
-        let flexibleSpouseSavedRetirementAgeMonths: number = Math.round((flexibleSpouseSavedRetirementAge%1)*12)
+          if (flexibleSpouse.isDisabled === true || (flexibleSpouse.id =="A" && scenario.personAhasFiled === true) || (flexibleSpouse.id =="B" && scenario.personBhasFiled === true)){
+            //retirement benefit solution is a suspension solution
+            flexibleSpouse.DRCsViaSuspension = flexibleSpouseSavedEndSuspensionDate.getMonth() - flexibleSpouseSavedBeginSuspensionDate.getMonth() + (12 * (flexibleSpouseSavedEndSuspensionDate.getFullYear() - flexibleSpouseSavedBeginSuspensionDate.getFullYear()))
+            var flexibleSpouseSavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(flexibleSpouse, flexibleSpouse.fixedRetirementBenefitDate)
+            var flexibleSpouseSavedEndSuspensionAge: number = flexibleSpouseSavedEndSuspensionDate.getFullYear() - flexibleSpouse.SSbirthDate.getFullYear() + (flexibleSpouseSavedEndSuspensionDate.getMonth() - flexibleSpouse.SSbirthDate.getMonth())/12
+            var flexibleSpouseSavedEndSuspensionAgeYears: number = Math.floor(flexibleSpouseSavedEndSuspensionAge)
+            var flexibleSpouseSavedEndSuspensionAgeMonths: number = Math.round((flexibleSpouseSavedEndSuspensionAge%1)*12)
+          }
+          else {
+            //normal retirement benefit solution
+            var flexibleSpouseSavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(flexibleSpouse, flexibleSpouseSavedRetirementDate)
+            var flexibleSpouseSavedRetirementAge: number = flexibleSpouseSavedRetirementDate.getFullYear() - flexibleSpouse.SSbirthDate.getFullYear() + (flexibleSpouseSavedRetirementDate.getMonth() - flexibleSpouse.SSbirthDate.getMonth())/12
+            var flexibleSpouseSavedRetirementAgeYears: number = Math.floor(flexibleSpouseSavedRetirementAge)
+            var flexibleSpouseSavedRetirementAgeMonths: number = Math.round((flexibleSpouseSavedRetirementAge%1)*12)
+          }
         //flexible spouse spousal age/benefitAmount
         let flexibleSpouseSavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(flexibleSpouse, fixedSpouse, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedSpousalDate)
         if (flexibleSpouseSavedSpousalBenefit == 0 && flexibleSpouseSavedSpousalDate < flexibleSpouseSavedRetirementDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
@@ -224,33 +244,56 @@ export class SolutionSetService {
         }
 
         //create ClaimingSolution objects
-        if (flexibleSpouseSavedRetirementDate > flexibleSpouseSavedSpousalDate) {
-          var flexibleSpouseRetirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementReplacingSpousal", flexibleSpouse, flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
-        } else {
-          var flexibleSpouseRetirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", flexibleSpouse, flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
-        }
-        if (flexibleSpouseSavedSpousalDate < flexibleSpouseSavedRetirementDate) {
-          var flexibleSpouseSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalAlone", flexibleSpouse, flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
-        } else {
-          var flexibleSpouseSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalWithRetirement", flexibleSpouse, flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
-        }
-        var flexibleSpouseSurvivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", flexibleSpouse, new Date(9999,0,1), flexibleSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
-        
-        if (scenario.maritalStatus == "married"){//if this is not a divorce scenario, set claimingSolution objects for fixed spouse's spousal and survivor benefit (doesn't have one for retirement, because already filed)
-        //fixedSpouseSpousalSolution: new claiming solution as spouseB ("with retirement" because already filed for retirement)
-          var fixedSpouseSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalWithRetirement", fixedSpouse, fixedSpouseSavedSpousalDate, fixedSpouseSavedSpousalBenefit, fixedSpouseSavedSpousalAgeYears, fixedSpouseSavedSpousalAgeMonths)
-        //fixedSpouseSurvivorSolution is a new claiming solution as spouseB
-          var fixedSpouseSurvivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", fixedSpouse, new Date(9999,0,1), fixedSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
-        }
+          //flexibleSpouse retirement solution object
+            if (flexibleSpouse.isDisabled === true || (flexibleSpouse.id =="A" && scenario.personAhasFiled === true) || (flexibleSpouse.id =="B" && scenario.personBhasFiled === true)){//create suspension-related objects
+              if (flexibleSpouseSavedBeginSuspensionDate.getTime() == flexibleSpouse.FRA.getTime()){
+                var flexibleSpouseBeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", flexibleSpouse, flexibleSpouseSavedBeginSuspensionDate, flexibleSpouseSavedRetirementBenefit, 0, 0)
+                var flexibleSpouseEndSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", flexibleSpouse, flexibleSpouseSavedEndSuspensionDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedEndSuspensionAgeYears, flexibleSpouseSavedEndSuspensionAgeMonths)
+              }
+              else {
+                var flexibleSpouseBeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", flexibleSpouse, flexibleSpouseSavedBeginSuspensionDate, flexibleSpouseSavedRetirementBenefit, 0, 0)
+                var flexibleSpouseEndSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", flexibleSpouse, flexibleSpouseSavedEndSuspensionDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedEndSuspensionAgeYears, flexibleSpouseSavedEndSuspensionAgeMonths)
+              }
+            }
+            else {//create normal retirement solution object
+              if (flexibleSpouseSavedRetirementDate > flexibleSpouseSavedSpousalDate) {
+                var flexibleSpouseRetirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementReplacingSpousal", flexibleSpouse, flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
+              } else {
+                var flexibleSpouseRetirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", flexibleSpouse, flexibleSpouseSavedRetirementDate, flexibleSpouseSavedRetirementBenefit, flexibleSpouseSavedRetirementAgeYears, flexibleSpouseSavedRetirementAgeMonths)
+              }
+            }
+          //flexibleSpouse spousalSolution object
+            if (flexibleSpouseSavedSpousalDate < flexibleSpouseSavedRetirementDate) {
+              var flexibleSpouseSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalAlone", flexibleSpouse, flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
+            } else {
+              var flexibleSpouseSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalWithRetirement", flexibleSpouse, flexibleSpouseSavedSpousalDate, flexibleSpouseSavedSpousalBenefit, flexibleSpouseSavedSpousalAgeYears, flexibleSpouseSavedSpousalAgeMonths)
+            }
+          //flexibleSpouse survivorSolution object
+            var flexibleSpouseSurvivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", flexibleSpouse, new Date(9999,0,1), flexibleSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+          //fixedSpouse solution objects
+            if (scenario.maritalStatus == "married"){//if this is not a divorce scenario, set claimingSolution objects for fixed spouse's spousal and survivor benefit (doesn't have one for retirement, because already filed)
+            //fixedSpouseSpousalSolution: new claiming solution as spouseB ("with retirement" because already filed for retirement)
+              var fixedSpouseSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalWithRetirement", fixedSpouse, fixedSpouseSavedSpousalDate, fixedSpouseSavedSpousalBenefit, fixedSpouseSavedSpousalAgeYears, fixedSpouseSavedSpousalAgeMonths)
+            //fixedSpouseSurvivorSolution is a new claiming solution as spouseB
+              var fixedSpouseSurvivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", fixedSpouse, new Date(9999,0,1), fixedSpouseSavedSurvivorBenefitOutput, 0, 0) //Date isn't output, but we want it last in array. Ages aren't output
+            }
 
-        //push claimingSolution objects to array
-        if (flexibleSpouseSavedRetirementBenefit > 0) {solutionSet.solutionsArray.push(flexibleSpouseRetirementSolution)}
-        if (flexibleSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(flexibleSpouseSpousalSolution)}
-        if (flexibleSpouseSavedSurvivorBenefitOutput > flexibleSpouseSavedRetirementBenefit) {solutionSet.solutionsArray.push(flexibleSpouseSurvivorSolution)}//Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
-        if (scenario.maritalStatus == "married"){
-          if (fixedSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(fixedSpouseSpousalSolution)}
-          if (fixedSpouseSavedSurvivorBenefitOutput > fixedSpouseRetirementBenefit) {solutionSet.solutionsArray.push(fixedSpouseSurvivorSolution)}//Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
-        }
+        //Push claimingSolution objects to array, if amounts are greater than zero
+          if (flexibleSpouseBeginSuspensionSolution) {//If suspension solution, only push if begin/end suspension dates are different
+            if (flexibleSpouseSavedBeginSuspensionDate.getTime() != flexibleSpouseSavedEndSuspensionDate.getTime()){
+              solutionSet.solutionsArray.push(flexibleSpouseBeginSuspensionSolution)
+              solutionSet.solutionsArray.push(flexibleSpouseEndSuspensionSolution)
+            }
+          }
+          else if (flexibleSpouseSavedRetirementBenefit > 0) {//Only want to push retirement solution if there is no suspension solution
+            solutionSet.solutionsArray.push(flexibleSpouseRetirementSolution)
+          }
+          if (flexibleSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(flexibleSpouseSpousalSolution)}
+          if (flexibleSpouseSavedSurvivorBenefitOutput > flexibleSpouseSavedRetirementBenefit) {solutionSet.solutionsArray.push(flexibleSpouseSurvivorSolution)}//Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
+          if (scenario.maritalStatus == "married"){
+            if (fixedSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(fixedSpouseSpousalSolution)}
+            if (fixedSpouseSavedSurvivorBenefitOutput > fixedSpouseRetirementBenefit) {solutionSet.solutionsArray.push(fixedSpouseSurvivorSolution)}//Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
+          }
 
         //Sort array by date
         solutionSet.solutionsArray.sort(function(a,b){
