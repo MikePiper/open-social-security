@@ -375,7 +375,7 @@ export class PresentValueService {
       console.log("personBsavedendSuspensionDate: " + personBsavedEndSuspensionDate.toLocaleDateString())
 
       //Generate solution set (for sake of output) from saved values
-      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, personA, personB, personAsavedRetirementDate, personBsavedRetirementDate,
+      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleIterateBothSolutionSet(scenario, personA, personB, personAsavedRetirementDate, personBsavedRetirementDate,
         personAsavedSpousalDate, personBsavedSpousalDate, personAsavedBeginSuspensionDate, personAsavedEndSuspensionDate, personBsavedBeginSuspensionDate, personBsavedEndSuspensionDate, Number(savedPV))
       
       this.maximizedOrNot = true
@@ -462,7 +462,7 @@ maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Perso
       console.log("saved flexibleSpouseRetirementDate: " + flexibleSpouseSavedRetirementDate.toLocaleDateString())
       console.log("saved flexibleSpouseSpousalDate: " + flexibleSpouseSavedSpousalDate.toLocaleDateString())
   
-      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleOneHasFiledSolutionSet(flexibleSpouse, fixedSpouse, scenario,
+      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleIterateOneSolutionSet(flexibleSpouse, fixedSpouse, scenario,
       flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouse.fixedRetirementBenefitDate, fixedSpouseSavedSpousalDate,
       flexibleSpouseSavedBeginSuspensionDate, flexibleSpouseSavedEndSuspensionDate, Number(savedPV))
 

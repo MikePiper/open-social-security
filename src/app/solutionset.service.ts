@@ -31,7 +31,7 @@ export class SolutionSetService {
   }
 
   //For two-person scenarios, other than a) divorce or b) one person being over 70
-  generateCoupleSolutionSet(scenario:ClaimingScenario, personA:Person, personB:Person,
+  generateCoupleIterateBothSolutionSet(scenario:ClaimingScenario, personA:Person, personB:Person,
     personAsavedRetirementDate: Date, personBsavedRetirementDate: Date, personAsavedSpousalDate: Date, personBsavedSpousalDate: Date,
     personAsavedBeginSuspensionDate:Date, personAsavedEndSuspensionDate:Date, personBsavedBeginSuspensionDate:Date, personBsavedEndSuspensionDate:Date, savedPV: number){
         //Find monthly benefit amounts and ages at saved claiming dates, for sake of output statement.
@@ -190,7 +190,7 @@ export class SolutionSetService {
   }
 
   //For divorce scenarios and married scenarios where one person is over 70
-  generateCoupleOneHasFiledSolutionSet(flexibleSpouse:Person, fixedSpouse:Person, scenario:ClaimingScenario,
+  generateCoupleIterateOneSolutionSet(flexibleSpouse:Person, fixedSpouse:Person, scenario:ClaimingScenario,
     flexibleSpouseSavedRetirementDate:Date, flexibleSpouseSavedSpousalDate:Date, fixedSpouseRetirementBenefitDate:Date, fixedSpouseSavedSpousalDate:Date,
     flexibleSpouseSavedBeginSuspensionDate:Date, flexibleSpouseSavedEndSuspensionDate:Date, savedPV:number){
         let fixedSpouseRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(fixedSpouse, fixedSpouseRetirementBenefitDate)
@@ -291,7 +291,10 @@ export class SolutionSetService {
           if (flexibleSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(flexibleSpouseSpousalSolution)}
           if (flexibleSpouseSavedSurvivorBenefitOutput > flexibleSpouseSavedRetirementBenefit) {solutionSet.solutionsArray.push(flexibleSpouseSurvivorSolution)}//Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
           if (scenario.maritalStatus == "married"){
-            if (fixedSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(fixedSpouseSpousalSolution)}
+            if ( (flexibleSpouse.id == "A" && scenario.personAhasFiled === false) || (flexibleSpouse.id == "B" && scenario.personBhasFiled === false) ) {
+            //regarding above logic: fixed spouse is over 70. If flexible spouse already filed for retirement (and we're just testing suspension options) we don't want a fixed spouse spousal solution, because fixed spouse already filed for spousal
+              if (fixedSpouseSavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(fixedSpouseSpousalSolution)}
+            }
             if (fixedSpouseSavedSurvivorBenefitOutput > fixedSpouseRetirementBenefit) {solutionSet.solutionsArray.push(fixedSpouseSurvivorSolution)}//Since survivorBenefitOutput is really "own retirement benefit plus own survivor benefit" we only want to include in array if that output is greater than own retirement (i.e., if actual survivor benefit is greater than 0)
           }
 

@@ -72,7 +72,7 @@ describe('SolutionSetService', () => {
     let savedPV: number = 380000 //completely making this up
     personA.governmentPension = 0
     personB.governmentPension = 0
-    expect(service.generateCoupleSolutionSet(scenario, personA, personB,
+    expect(service.generateCoupleIterateBothSolutionSet(scenario, personA, personB,
       spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate,
       personAsavedBeginSuspensionDate, personAsavedEndSuspensionDate, personBsavedBeginSuspensionDate, personBsavedEndSuspensionDate, savedPV).solutionsArray[0].date)
       .toEqual(spouseBsavedRetirementDate)
@@ -102,7 +102,7 @@ describe('SolutionSetService', () => {
     let savedPV: number = 380000 //completely making this up
     flexibleSpouse.governmentPension = 0
     fixedSpouse.governmentPension = 0
-    expect(service.generateCoupleOneHasFiledSolutionSet(flexibleSpouse, fixedSpouse, scenario,
+    expect(service.generateCoupleIterateOneSolutionSet(flexibleSpouse, fixedSpouse, scenario,
       flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate,
       flexibleSpouseSavedBeginSuspensionDate, flexibleSpouseSavedEndSuspensionDate, savedPV).solutionsArray[0].date)
       .toEqual(flexibleSpouseSavedSpousalDate)
