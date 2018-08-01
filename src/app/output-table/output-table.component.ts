@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core'
+import { ClaimingScenario } from '../data model classes/claimingscenario'
 
 @Component({
   selector: 'app-output-table',
@@ -11,5 +12,7 @@ export class OutputTableComponent implements OnInit {
 
   ngOnInit() {
   }
+  
+  @Input() scenario:ClaimingScenario
 
 }

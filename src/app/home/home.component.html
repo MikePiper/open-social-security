@@ -360,7 +360,7 @@
     <!--Custom Date Output -->
     <span *ngIf="this.customPV">
       The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} from the recommended strategy, a difference of {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.
-      <app-debugtable [scenario]="scenario"></app-debugtable>
+      <app-output-table [scenario]="scenario"></app-output-table>
     </span>
     <!--End Custom Date Output -->
   </form>

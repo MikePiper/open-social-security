@@ -236,13 +236,13 @@ export class HomeComponent implements OnInit {
     
     //Calc PV with input dates
     if (this.scenario.maritalStatus == "single" && !this.customSpouseAretirementDateError) {
-      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.scenario, false)
+      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.scenario, true)
       }
     if(this.scenario.maritalStatus == "married" && !this.customSpouseAretirementDateError && !this.customSpouseBretirementDateError && !this.customSpouseAspousalDateError && !this.customSpouseBspousalDateError) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, false)
+      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, true)
       }
     if(this.scenario.maritalStatus == "divorced" && !this.spouseBfixedRetirementDateError && !this.customSpouseAretirementDateError && !this.customSpouseAspousalDateError) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, false)
+      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, true)
     }
     this.differenceInPV = this.solutionSet.solutionPV - this.customPV
   }

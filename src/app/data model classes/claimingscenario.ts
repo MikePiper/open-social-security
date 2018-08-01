@@ -19,7 +19,8 @@ export class ClaimingScenario {
 
         //personBdeclineSpousal: boolean = false
 
-        debugTable: any[][] = []
+        outputTable: any[][] = []
+        outputTableComplete:boolean = false
 }
 
 

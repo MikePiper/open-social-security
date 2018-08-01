@@ -9,15 +9,17 @@
 
 <div class="table-responsive">
   <table class="table-bordered table-striped">
-      <tr>
+      <tr class="highlighted">
         <th>Year</th>
-        <th>Your Retirement Benefit</th>
-        <th *ngIf="scenario.maritalStatus == 'married'">Your Spousal Benefit</th>
-        <th *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Retirement Benefit</th>
-        <th *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Spousal Benefit</th>
-        <th *ngIf="scenario.maritalStatus == 'married'">Total</th>
+        <th>Your Annual Retirement Benefit</th>
+        <th *ngIf=" scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced' ">Your Annual Spousal Benefit</th>
+        <th *ngIf=" scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced' ">Your Annual Survivor Benefit</th>
+        <th *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Annual Retirement Benefit</th>
+        <th *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Annual Spousal Benefit</th>
+        <th *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Annual Survivor Benefit</th>
+        <th *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced' ">Total</th>
       </tr>
-      <tr *ngFor="let row of scenario.debugTable">
+      <tr *ngFor="let row of scenario.outputTable">
           <td *ngFor="let data of row">
             {{data}}
           </td>

@@ -7,19 +7,22 @@ import {SolutionSet} from './data model classes/solutionset'
 import {Person} from './data model classes/person'
 import {ClaimingScenario} from './data model classes/claimingscenario'
 import {CalculationYear} from './data model classes/calculationyear'
+import {OutputTableService} from './outputtable.service'
+
 
 
 @Injectable()
 export class PresentValueService {
 
-  constructor(private benefitService: BenefitService, private mortalityService:MortalityService, private earningsTestService: EarningsTestService, private solutionSetService: SolutionSetService) { }
+  constructor(private benefitService: BenefitService, private mortalityService:MortalityService, private earningsTestService: EarningsTestService, private solutionSetService: SolutionSetService,
+  private outputTableService: OutputTableService) { }
   
   //Has maximize calc been run?
   maximizedOrNot: boolean = false
 
   today: Date = new Date()
 
-  calculateSinglePersonPV(person:Person, scenario:ClaimingScenario, outputTable:boolean)
+  calculateSinglePersonPV(person:Person, scenario:ClaimingScenario, printOutputTable:boolean)
   {
     person.initialRetirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
     let retirementPV: number = 0
@@ -30,7 +33,7 @@ export class PresentValueService {
         person.adjustedRetirementBenefitDate = new Date(person.retirementBenefitDate)
         person.retirementBenefitWithDRCsfromSuspension = 0
         person.DRCsViaSuspension = 0
-        scenario.debugTable = []
+        scenario.outputTable = []
 
     //Set initial calcYear (Jan 1 of the year they turn 62)
     let calcYear:CalculationYear = new CalculationYear(scenario.initialCalcDate)
@@ -58,7 +61,9 @@ export class PresentValueService {
 
         //Calculate annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
         calcYear = this.benefitService.calculateAnnualRetirementBenefit(person, calcYear)
-        if (outputTable === true) {scenario.debugTable.push([calcYear.date.getFullYear(), calcYear.personAannualRetirementBenefit])}
+
+        //generate row for outputTable if necessary
+        if (printOutputTable === true) {scenario = this.outputTableService.generateOutputTableSingle(person, scenario, calcYear)}
 
         //Calculate probability of being alive at end of age in question
         probabilityAlive = this.mortalityService.calculateProbabilityAlive(person, person.age)
@@ -80,7 +85,7 @@ export class PresentValueService {
     return retirementPV
   }
 
-  calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario, outputTable:boolean){
+  calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario, printOutputTable:boolean){
     
     //Assorted variables
     let probabilityAalive: number
@@ -103,7 +108,7 @@ export class PresentValueService {
         personB.DRCsViaSuspension = 0
         personB.spousalBenefitWithSuspensionDRCRetirement = 0
         personB.survivorBenefitWithSuspensionDRCRetirement = 0
-        scenario.debugTable = []
+        scenario.outputTable = []
 
 
     //Find Jan 1 of the year containing initialCalcDate (year in which first spouse reaches age 62, unless divorced in which case it's year in which user turns 62)
@@ -154,8 +159,7 @@ export class PresentValueService {
       }
 
       //Calculate annual benefits, accounting for Adjustment Reduction Factor in years beginning at FRA
-      calcYear = this.benefitService.calculateAnnualBenefitAmountsCouple(personA, personB, calcYear, outputTable)
-      if (outputTable === true) {scenario.debugTable.push(calcYear.debugTableRow)}
+      calcYear = this.benefitService.calculateAnnualBenefitAmountsCouple(personA, personB, calcYear, printOutputTable)
 
       //If user is divorced, we don't actually want to include the ex-spouse's benefit amounts in our PV sum
       if (scenario.maritalStatus == "divorced") {
@@ -164,6 +168,11 @@ export class PresentValueService {
         calcYear.personBannualSurvivorBenefit = 0
       }
 
+      //generate row for outputTable if necessary
+        if (printOutputTable === true) {
+          if (scenario.maritalStatus == "married") {scenario = this.outputTableService.generateOutputTableCouple(personA, personB, scenario, calcYear)}
+          else if (scenario.maritalStatus == "divorced") {scenario = this.outputTableService.generateOutputTableDivorced(personA, scenario, calcYear)}
+        }
 
       //Calculate each person's probability of being alive at end of age in question
         probabilityAalive = this.mortalityService.calculateProbabilityAlive(personA, personA.age)
