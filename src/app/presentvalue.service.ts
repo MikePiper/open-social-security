@@ -374,14 +374,17 @@ export class PresentValueService {
           personA = this.incrementRetirementORendSuspensionDate(personA, scenario)
         
       }
-    //after loop is finished
-      console.log("saved PV: " + savedPV)
-      console.log("personAsavedRetirementDate: " + personAsavedRetirementDate.toLocaleDateString())
-      console.log("personBsavedRetirementDate: " + personBsavedRetirementDate.toLocaleDateString())
-      console.log("personAsavedSpousalDate: " + personAsavedSpousalDate.toLocaleDateString())
-      console.log("personBsavedSpousalDate: " + personBsavedSpousalDate.toLocaleDateString())
-      console.log("personAsavedendSuspensionDate: " + personAsavedEndSuspensionDate.toLocaleDateString())
-      console.log("personBsavedendSuspensionDate: " + personBsavedEndSuspensionDate.toLocaleDateString())
+    //after loop is finished, set person objects' benefit dates to the saved dates, for sake of running PV calc again for outputTable
+      personA.retirementBenefitDate = new Date(personAsavedRetirementDate)
+      personA.spousalBenefitDate = new Date(personAsavedSpousalDate)
+      personA.beginSuspensionDate = new Date(personAsavedBeginSuspensionDate)
+      personA.endSuspensionDate = new Date(personAsavedEndSuspensionDate)
+      personB.retirementBenefitDate = new Date(personBsavedRetirementDate)
+      personB.spousalBenefitDate = new Date(personBsavedSpousalDate)
+      personB.beginSuspensionDate = new Date(personBsavedBeginSuspensionDate)
+      personB.endSuspensionDate = new Date(personBsavedEndSuspensionDate)
+
+      let outputTablePVcalc: number = this.calculateCouplePV(personA, personB, scenario, true)
 
       //Generate solution set (for sake of output) from saved values
       let solutionSet:SolutionSet = this.solutionSetService.generateCoupleIterateBothSolutionSet(scenario, personA, personB, personAsavedRetirementDate, personBsavedRetirementDate,

@@ -29,6 +29,7 @@ export class HomeComponent implements OnInit {
   personA:Person = new Person("A")
   personB:Person = new Person("B")
   scenario:ClaimingScenario = new ClaimingScenario()
+  customDateScenario:ClaimingScenario
   today:Date = new Date()
   deemedFilingCutoff: Date = new Date(1954, 0, 1)
 
@@ -126,6 +127,7 @@ export class HomeComponent implements OnInit {
   onSubmit() {
     let startTime = performance.now() //for testing performance
     console.log("-------------")
+    this.scenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
 
     //Call appropriate "maximizePV" function to find best solution
     if (this.scenario.maritalStatus == "single") {
@@ -235,14 +237,18 @@ export class HomeComponent implements OnInit {
     }
     
     //Calc PV with input dates
+      //Create a new ClaimingScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one. (This is necessary so that it can have a separate "outputTable" field from the original.)
+        //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
+        this.customDateScenario = Object.assign({}, this.scenario)
+        this.customDateScenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
     if (this.scenario.maritalStatus == "single" && !this.customSpouseAretirementDateError) {
-      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.scenario, true)
+      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.customDateScenario, true)
       }
     if(this.scenario.maritalStatus == "married" && !this.customSpouseAretirementDateError && !this.customSpouseBretirementDateError && !this.customSpouseAspousalDateError && !this.customSpouseBspousalDateError) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, true)
+      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
       }
     if(this.scenario.maritalStatus == "divorced" && !this.spouseBfixedRetirementDateError && !this.customSpouseAretirementDateError && !this.customSpouseAspousalDateError) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, true)
+      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
     }
     this.differenceInPV = this.solutionSet.solutionPV - this.customPV
   }

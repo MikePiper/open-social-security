@@ -1,11 +1,3 @@
-<!--
-
-  Show year-by-year until year when both are 70.
-
-  Next row is "following year and beyond"
-
-  Final row is "after one person has died"? (Although that's made trickier by GPO...)
--->
 
 <div class="table-responsive">
   <table class="table-bordered table-striped">
@@ -25,4 +17,9 @@
           </td>
       </tr>
   </table>
+  <p *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">
+    *The survivor benefit amounts in this row assume that
+    a) the deceased person lived at least until the age at which they planned to file for their retirement benefit and that
+    b) the surviving person waits at least until their full retirement age to file for a survivor benefit.
+  </p>
 </div>
