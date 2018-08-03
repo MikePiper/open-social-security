@@ -18,30 +18,16 @@ import { Person } from "./person"
         this.ageMonths = ageMonths
         if (person.id == "A") {
           if (this.benefitType == "retirementAlone"){
-            this.message = "You file for your retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
-            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ")"
+            this.message = "You file for your retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "retirementReplacingSpousal") {
-            this.message = "You file for your retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
-            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ", replacing your spousal benefit)"
+            this.message = "You file for your retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "spousalAlone") {
-            this.message = "You file for your spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
-            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ")"
+            this.message = "You file for your spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "spousalWithRetirement") {
-            this.message = "You file for your spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
-            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ", in addition to your monthly retirement benefit)"
-          }
-          if (this.benefitType == "survivor" && this.maritalStatus == "married") {
-            this. message = "If you outlive your spouse, your total benefit (including survivor benefit) would be " +
-            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) +
-           " per month -- assuming you wait at least until your full retirement age to file for that survivor benefit."
-          }
-          if (this.benefitType == "survivor" && this.maritalStatus == "divorced") {
-            this. message = "If you outlive your ex-spouse, your total benefit (including survivor benefit) would be " +
-            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) +
-           " per month -- assuming you wait at least until your full retirement age to file for that survivor benefit."
+            this.message = "You file for your spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "suspendToday") {
             this.message = "You suspend your retirement benefit today."
@@ -50,31 +36,21 @@ import { Person } from "./person"
             this.message = "You suspend your retirement benefit at your full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + ")."
           }
           if (this.benefitType == "unsuspend") {
-            this.message = "You unsuspend your retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
-            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ")"
+            this.message = "You unsuspend your retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
         }
         if (person.id == "B") {
           if (this.benefitType == "retirementAlone"){
-            this.message = "Your spouse files for his/her retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
-            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ")"
+            this.message = "Your spouse files for his/her retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "retirementReplacingSpousal") {
-            this.message = "Your spouse files for his/her retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
-            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ", replacing his/her spousal benefit)"
+            this.message = "Your spouse files for his/her retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "spousalAlone") {
-            this.message = "Your spouse files for his/her spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
-            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ")"
+            this.message = "Your spouse files for his/her spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "spousalWithRetirement") {
-            this.message = "Your spouse files for his/her spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months. (Monthly benefit: " +
-            this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) + ", in addition to his/her monthly retirement benefit)"
-          }
-          if (this.benefitType == "survivor" && this.maritalStatus == "married") {
-           this.message = "If your spouse outlives you, his/her total benefit (including survivor benefit) would be " +
-           this.benefitAmount.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) +
-           " per month -- assuming he/she waits at least until full retirement age to file for that survivor benefit."
+            this.message = "Your spouse files for his/her spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "suspendToday") {
             this.message = "Your spouse suspends his/her retirement benefit today."

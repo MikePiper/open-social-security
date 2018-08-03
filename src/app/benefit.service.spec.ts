@@ -327,7 +327,10 @@ describe('BenefitService', () => {
     personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate) //May 2019 survivorFRA
     personB.retirementBenefitDate = new Date(2021, 7, 1) //August 1, 2021 retirementBenefit date
     personB.spousalBenefitDate = new Date(2021, 7, 1) //August 1, 2021 spousalBenefit date
-    calcYear = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    let countCoupleBenefitMonthsResult:any[] = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    calcYear = countCoupleBenefitMonthsResult[0]
+    personA = countCoupleBenefitMonthsResult[1]
+    personB = countCoupleBenefitMonthsResult[2]
     expect(calcYear.monthsOfPersonAretirementPreARF)
         .toEqual(3)//pre-ARF retirement benefit in Feb, March, April (3 months)
     expect(calcYear.monthsOfPersonAretirementPostARF)
@@ -380,7 +383,10 @@ describe('BenefitService', () => {
     personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate) //May 2019 survivorFRA
     personB.retirementBenefitDate = new Date(2019, 2, 1) //personB files for retirement in March 2019
     personB.spousalBenefitDate = new Date(2019, 2, 1) //file for spousal March 2019 (later of two retirement dates)
-    calcYear = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    let countCoupleBenefitMonthsResult:any[] = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    calcYear = countCoupleBenefitMonthsResult[0]
+    personA = countCoupleBenefitMonthsResult[1]
+    personB = countCoupleBenefitMonthsResult[2]
     expect(calcYear.monthsOfPersonAretirementPreARF)
         .toEqual(4)//filed in previous year. Reaches FRA in May
     expect(calcYear.monthsOfPersonAretirementPostARF)
@@ -436,7 +442,10 @@ describe('BenefitService', () => {
     personB.spousalBenefitDate = new Date(2018, 7, 1) //August 1, 2018 spousalBenefit date (not relevant to calculation of the "expected" value, but it's necessary for CountCoupleBenefitMonths to run)
     personB.beginSuspensionDate = new Date (2019, 6, 1) //suspending beginning in July 2019
     personB.endSuspensionDate = new Date (2020, 7, 1) //Aug 2020 is first month of unsuspension
-    calcYear = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    let countCoupleBenefitMonthsResult:any[] = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    calcYear = countCoupleBenefitMonthsResult[0]
+    personA = countCoupleBenefitMonthsResult[1]
+    personB = countCoupleBenefitMonthsResult[2]
     expect(calcYear.monthsOfPersonAspousalWithoutRetirement)
         .toEqual(0)
     expect(calcYear.monthsOfPersonAspousalWithRetirementPreARF)
@@ -465,7 +474,10 @@ describe('BenefitService', () => {
     personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //personB May 2019 FRA
     personA.beginSuspensionDate = new Date (2020, 4, 1) //suspending beginning in May 2020
     personA.endSuspensionDate = new Date (2022, 7, 1) //Aug 2022 is first month of unsuspension
-    calcYear = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    let countCoupleBenefitMonthsResult:any[] = service.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    calcYear = countCoupleBenefitMonthsResult[0]
+    personA = countCoupleBenefitMonthsResult[1]
+    personB = countCoupleBenefitMonthsResult[2]
     expect(calcYear.monthsOfPersonAspousalWithoutRetirement)
         .toEqual(0)
     expect(calcYear.monthsOfPersonAspousalWithRetirementPreARF)

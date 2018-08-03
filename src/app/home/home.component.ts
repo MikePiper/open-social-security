@@ -127,6 +127,7 @@ export class HomeComponent implements OnInit {
   onSubmit() {
     let startTime = performance.now() //for testing performance
     console.log("-------------")
+    this.getPrimaryFormInputs()
     this.scenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
 
     //Call appropriate "maximizePV" function to find best solution

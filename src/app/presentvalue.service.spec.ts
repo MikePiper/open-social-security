@@ -327,10 +327,6 @@ describe('PresentValueService', () => {
     personB.PIA = 1900
     personA.quitWorkDate = new Date(2018,3,1) //already quit working
     personB.quitWorkDate = new Date(2018,3,1) //already quit working
-    personA.monthlyEarnings = 0
-    personB.monthlyEarnings = 0
-    personA.governmentPension = 0
-    personB.governmentPension = 0
     scenario.discountRate = 1
     expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[1].date)
     .toEqual(new Date(2034, 9, 1))
@@ -362,10 +358,6 @@ describe('PresentValueService', () => {
     personB.PIA = 1400
     personA.quitWorkDate = new Date(2018,3,1) //already quit working
     personB.quitWorkDate = new Date(2018,3,1) //already quit working
-    personA.monthlyEarnings = 0
-    personB.monthlyEarnings = 0
-    personA.governmentPension = 0
-    personB.governmentPension = 0
     scenario.discountRate = 1
     expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[1].date)
     .toEqual(new Date(2019, 8, 1))
@@ -403,10 +395,6 @@ describe('PresentValueService', () => {
     personB.PIA = 1150
     personA.quitWorkDate = new Date(2018,3,1) //already quit working
     personB.quitWorkDate = new Date(2018,3,1) //already quit working
-    personA.monthlyEarnings = 0
-    personB.monthlyEarnings = 0
-    personA.governmentPension = 0
-    personB.governmentPension = 0
     scenario.discountRate = 0
     expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[2].date)
     .toEqual(new Date(2025, 9, 1))
@@ -440,10 +428,6 @@ describe('PresentValueService', () => {
     personB.PIA = 2000
     personA.quitWorkDate = new Date(2018,3,1) //already quit working
     personB.quitWorkDate = new Date(2018,3,1) //already quit working
-    personA.monthlyEarnings = 0
-    personB.monthlyEarnings = 0
-    personA.governmentPension = 0
-    personB.governmentPension = 0
     scenario.discountRate = 1
     expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[1].date)
     .toEqual(new Date(2022, 10, 1))
@@ -479,10 +463,6 @@ describe('PresentValueService', () => {
     personB.PIA = 1100
     personA.quitWorkDate = new Date(2018,3,1) //already quit working
     personB.quitWorkDate = new Date(2018,3,1) //already quit working
-    personA.monthlyEarnings = 0
-    personB.monthlyEarnings = 0
-    personA.governmentPension = 0
-    personB.governmentPension = 0
     scenario.discountRate = 1
     expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[2].date)
     .toEqual(new Date(2024, 9, 1))
@@ -517,10 +497,6 @@ describe('PresentValueService', () => {
     personB.PIA = 1900
     personA.quitWorkDate = new Date(2018,3,1) //already quit working
     personB.quitWorkDate = new Date(2018,3,1) //already quit working
-    personA.monthlyEarnings = 0
-    personB.monthlyEarnings = 0
-    personA.governmentPension = 0
-    personB.governmentPension = 0
     scenario.discountRate = 1
     expect(service.maximizeCouplePViterateOnePerson(scenario, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2026, 10, 1))
@@ -555,10 +531,6 @@ describe('PresentValueService', () => {
     personB.PIA = 800
     personA.quitWorkDate = new Date(2018,3,1) //already quit working
     personB.quitWorkDate = new Date(2018,3,1) //already quit working
-    personA.monthlyEarnings = 0
-    personB.monthlyEarnings = 0
-    personA.governmentPension = 0
-    personB.governmentPension = 0
     scenario.discountRate = 0
     expect(service.maximizeCouplePViterateOnePerson(scenario, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2025, 9, 1))
@@ -592,10 +564,6 @@ describe('PresentValueService', () => {
     personB.PIA = 2000
     personA.quitWorkDate = new Date(2010,3,1) //already quit working
     personB.quitWorkDate = new Date(2010,3,1) //already quit working
-    personA.monthlyEarnings = 0
-    personB.monthlyEarnings = 0
-    personA.governmentPension = 0
-    personB.governmentPension = 0
     scenario.discountRate = 0
     expect(service.maximizeCouplePViterateOnePerson(scenario, personB, personA).solutionsArray[0].date)
     .toEqual(new Date(2030, 9, 1))
@@ -629,10 +597,6 @@ describe('PresentValueService', () => {
     personB.PIA = 2000
     personA.quitWorkDate = new Date(2010,3,1) //already quit working
     personB.quitWorkDate = new Date(2010,3,1) //already quit working
-    personA.monthlyEarnings = 0
-    personB.monthlyEarnings = 0
-    personA.governmentPension = 0
-    personB.governmentPension = 0
     scenario.discountRate = 2
     expect(service.maximizeCouplePViterateOnePerson(scenario, personA, personB).solutionsArray[0].date)
     .toEqual(new Date(2022, 10, 1))
@@ -640,41 +604,37 @@ describe('PresentValueService', () => {
   }))
 
   it ('should tell personB to suspend until 70 if they already filed at FRA, personA is over 70 and filed early, personB has much higher PIA, both have long life expectancies, and low discount rate', inject([PresentValueService], (service: PresentValueService) => {
+    let mortalityService:MortalityService = new MortalityService()
+    let birthdayService:BirthdayService = new BirthdayService()
     let personA:Person = new Person("A")
     let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.personAhasFiled = true
     scenario.personBhasFiled = true
     scenario.maritalStatus = "married"
-    let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS1", 0)
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
     personA.actualBirthDate = new Date(1948, 3, 11) //personA born April 1948
     personA.SSbirthDate = new Date(1948, 3, 1)
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
     personB.actualBirthDate = new Date(1952, 3, 15) //personB born April 1952
     personB.SSbirthDate = new Date(1952, 3, 1)
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
     scenario.initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which older reaches ages 62
     personA.fixedRetirementBenefitDate = new Date (2010, 4, 1) //personA filed at 62 and 1 month
     personB.fixedRetirementBenefitDate = new Date (personB.FRA) //personB filed at FRA
     personA.initialAgeRounded = 70
     personB.initialAgeRounded = 66
-    let birthdayService:BirthdayService = new BirthdayService()
-    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
     personA.PIA = 400
     personB.PIA = 2000
     personA.quitWorkDate = new Date(2010,3,1) //already quit working
     personB.quitWorkDate = new Date(2010,3,1) //already quit working
-    personA.monthlyEarnings = 0
-    personB.monthlyEarnings = 0
-    personA.governmentPension = 0
-    personB.governmentPension = 0
     scenario.discountRate = 0
     expect(service.maximizeCouplePViterateOnePerson(scenario, personB, personA).solutionsArray[1].date)
     .toEqual(new Date(2022, 3, 1))
-    //We're looking at item [1] in the array. This array should have X items in it: personB suspension date, personB end suspension date, personA spousal date, personA survivor
+    //We're looking at item [1] in the array. This array should have X items in it: personB beginSuspension date (today), personB endSuspension date (2022, age 70), personA spousal date (same as previous), personA survivor (year 9999)
   }))
 
 })

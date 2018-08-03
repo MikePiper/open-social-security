@@ -23,15 +23,16 @@ export class Person {
     age: number //as in, "age as of current calculation year"
     hasHadGraceYear:boolean = false
 
-    initialRetirementBenefit: number = 0
-    retirementBenefitAfterARF: number = 0
-    retirementBenefitWithDRCsfromSuspension: number = 0
+    initialRetirementBenefit: number = 0 //Can be calculated immediately in PV calc.
+    retirementBenefitAfterARF: number = 0 //Can be calculated after we know Person's earnings test results (i.e., once they reach their FRA)
+    retirementBenefitWithDRCsfromSuspension: number = 0 //Can be calculated after we know person's earnings test results and after endSuspension date has been reached.
 
-    spousalBenefitWithoutRetirement: number = 0 //By definition this is after-ARF.
-    spousalBenefitWithRetirementPreARF: number = 0
-    spousalBenefitWithRetirementAfterARF: number = 0
-    spousalBenefitWithSuspensionDRCRetirement: number = 0
+    spousalBenefitWithoutRetirement: number = 0 //By definition this is after-ARF. Can be calculated immediately.
+    spousalBenefitWithRetirementPreARF: number = 0 //Can be calculated immediately.
+    spousalBenefitWithRetirementAfterARF: number = 0 //Can be calculated after we know Person's earnings test results (i.e., once they reach their FRA)
+    spousalBenefitWithSuspensionDRCRetirement: number = 0 //Can be calculated after we know person's earnings test results and after endSuspension date has been reached.
 
+    //Survivor benefit amounts have to get recalculated when *either* person reaches their FRA or end suspension date
     survivorBenefitWithoutRetirement: number = 0 //This is after ARF also, since we're assuming survivor benefits aren't claimed until FRA.
     survivorBenefitWithRetirementPreARF: number = 0
     survivorBenefitWithRetirementAfterARF: number = 0

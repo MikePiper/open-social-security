@@ -27,7 +27,7 @@ export class OutputTableService {
         calcYear.date.getFullYear(),
         calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
         calcYear.personAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-        0,
+        "$0",
         (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
       ])
     }
@@ -36,7 +36,7 @@ export class OutputTableService {
         calcYear.date.getFullYear().toString() + " and beyond",
         calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
         calcYear.personAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-        0,
+        "$0",
         (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
       ])
     }
@@ -44,7 +44,7 @@ export class OutputTableService {
       scenario.outputTable.push([
         "If you outlive your ex-spouse*",
         calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-        0,
+        "$0",
         calcYear.personAannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
         (calcYear.personAannualRetirementBenefit + calcYear.personAannualSurvivorBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
     ] )
@@ -61,10 +61,10 @@ export class OutputTableService {
         calcYear.date.getFullYear(),
         calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
         calcYear.personAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-        0,
+        "$0",
         calcYear.personBannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
         calcYear.personBannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-        0,
+        "$0",
         (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit + calcYear.personBannualRetirementBenefit + calcYear.personBannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
       ])
     }
@@ -73,10 +73,10 @@ export class OutputTableService {
         calcYear.date.getFullYear().toString() + " and beyond",
         calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
         calcYear.personAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-        0,
+        "$0",
         calcYear.personBannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
         calcYear.personBannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-        0,
+        "$0",
         (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit + calcYear.personBannualRetirementBenefit + calcYear.personBannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
       ])
     }
@@ -84,20 +84,20 @@ export class OutputTableService {
       scenario.outputTable.push([
         "If you outlive your spouse*",
         calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-        0,
+        "$0",
         calcYear.personAannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-        0,
-        0,
-        0,
+        "$0",
+        "$0",
+        "$0",
         (calcYear.personAannualRetirementBenefit + calcYear.personAannualSurvivorBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
       ])
       scenario.outputTable.push([
         "If your spouse outlives you*",
-        0,
-        0,
-        0,
+        "$0",
+        "$0",
+        "$0",
         calcYear.personBannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-        0,
+        "$0",
         calcYear.personBannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
         (calcYear.personBannualRetirementBenefit + calcYear.personBannualSurvivorBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})      ])
       scenario.outputTableComplete = true

@@ -297,7 +297,10 @@ describe('EarningstestService', () => {
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "married"
     //calculate months of various benefits before application of earnings test
-    calcYear = benefitService.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    let countCoupleBenefitMonthsResult:any[] = benefitService.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)
+    calcYear = countCoupleBenefitMonthsResult[0]
+    personA = countCoupleBenefitMonthsResult[1]
+    personB = countCoupleBenefitMonthsResult[2]
     let earningsTestResults = service.earningsTestCouple(calcYear, scenario, personA, personB)
     /*calc by hand...
     personA's retirement benefit is $1440 (80% of PIA)

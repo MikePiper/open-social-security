@@ -433,7 +433,8 @@ export class BenefitService {
           testMonth.setMonth(testMonth.getMonth()+1)
       }
     }
-    return calcYear
+    let countCoupleBenefitMonthsResult:any[] = [calcYear, personA, personB]
+    return countCoupleBenefitMonthsResult
   }
 
 
