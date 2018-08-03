@@ -404,8 +404,7 @@ export class PresentValueService {
       let outputTablePVcalc: number = this.calculateCouplePV(personA, personB, scenario, true)
 
       //Generate solution set (for sake of output) from saved values
-      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleIterateBothSolutionSet(scenario, personA, personB, personAsavedRetirementDate, personBsavedRetirementDate,
-        personAsavedSpousalDate, personBsavedSpousalDate, personAsavedBeginSuspensionDate, personAsavedEndSuspensionDate, personBsavedBeginSuspensionDate, personBsavedEndSuspensionDate, Number(savedPV))
+      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, personA, personB, Number(savedPV))
       
       console.log(solutionSet)
 
@@ -499,13 +498,16 @@ maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Perso
       let outputTablePVcalc: number = this.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario, true)
       }
       else {
-        let outputTablePVcalc: number = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, true)
+      let outputTablePVcalc: number = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, true)
       }
   
       //generate solutionSet
-      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleIterateOneSolutionSet(flexibleSpouse, fixedSpouse, scenario,
-      flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouse.fixedRetirementBenefitDate, fixedSpouseSavedSpousalDate,
-      flexibleSpouseSavedBeginSuspensionDate, flexibleSpouseSavedEndSuspensionDate, Number(savedPV))
+      if (flexibleSpouse.id == "A"){
+        var solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, flexibleSpouse, fixedSpouse, Number(savedPV))
+      }
+      else {
+        var solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, fixedSpouse, flexibleSpouse, Number(savedPV))
+      }
 
       console.log(solutionSet)
       return solutionSet

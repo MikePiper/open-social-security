@@ -61,51 +61,22 @@ describe('SolutionSetService', () => {
     personB.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
     personA.PIA = 1200
     personB.PIA = 1900
-    let spouseAsavedRetirementDate: Date = new Date(2031, 5, 1) //no particular reason for any of these dates
-    let spouseBsavedRetirementDate: Date = new Date(2030, 5, 1)
-    let spouseAsavedSpousalDate: Date = new Date(2033, 5, 1)
-    let spouseBsavedSpousalDate: Date = new Date(2035, 5, 1)
-    let personAsavedEndSuspensionDate: Date = new Date(1900, 0, 1)
-    let personBsavedEndSuspensionDate: Date = new Date(1900, 0, 1)
-    let personAsavedBeginSuspensionDate: Date = new Date(1900, 0, 1)
-    let personBsavedBeginSuspensionDate: Date = new Date(1900, 0, 1)
+    personA.initialAge = 58
+    personB.initialAge = 58
+    personA.retirementBenefitDate = new Date(2031, 5, 1) //no particular reason for any of these dates
+    personB.retirementBenefitDate = new Date(2030, 5, 1)
+    personA.spousalBenefitDate = new Date(2033, 5, 1)
+    personB.spousalBenefitDate = new Date(2035, 5, 1)
+    personA.beginSuspensionDate = new Date(1900, 0, 1)
+    personA.endSuspensionDate = new Date(1900, 0, 1)
+    personB.beginSuspensionDate = new Date(1900, 0, 1)
+    personB.endSuspensionDate = new Date(1900, 0, 1)
     let savedPV: number = 380000 //completely making this up
     personA.governmentPension = 0
     personB.governmentPension = 0
-    expect(service.generateCoupleIterateBothSolutionSet(scenario, personA, personB,
-      spouseAsavedRetirementDate, spouseBsavedRetirementDate, spouseAsavedSpousalDate, spouseBsavedSpousalDate,
-      personAsavedBeginSuspensionDate, personAsavedEndSuspensionDate, personBsavedBeginSuspensionDate, personBsavedEndSuspensionDate, savedPV).solutionsArray[0].date)
-      .toEqual(spouseBsavedRetirementDate)
+    expect(service.generateCoupleSolutionSet(scenario, personA, personB, savedPV).solutionsArray[0].date)
+      .toEqual(personB.retirementBenefitDate)
   }))
 
-
-  //test generateCoupleOneHasFiledSolutionSet
-  it('SolutionSet object should have appropriate date saved as earliest date', inject([SolutionSetService], (service: SolutionSetService) => {
-    let flexibleSpouse:Person = new Person("A")
-    let fixedSpouse:Person = new Person("B")
-    let scenario:ClaimingScenario = new ClaimingScenario
-    scenario.maritalStatus = "divorced"
-    scenario.personAhasFiled = false
-    scenario.personBhasFiled = true
-    flexibleSpouse.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
-    flexibleSpouse.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
-    fixedSpouse.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
-    fixedSpouse.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
-    flexibleSpouse.PIA = 1200
-    fixedSpouse.PIA = 1900
-    let flexibleSpouseSavedRetirementDate: Date = new Date(2033, 5, 1) //no particular reason for any of these dates
-    let fixedSpouseRetirementBenefitDate: Date = new Date(2030, 5, 1)
-    let flexibleSpouseSavedSpousalDate: Date = new Date(2031, 5, 1)
-    let fixedSpouseSavedSpousalDate: Date = new Date(2031, 5, 1)
-    let flexibleSpouseSavedBeginSuspensionDate: Date = new Date(1900, 0, 1)
-    let flexibleSpouseSavedEndSuspensionDate: Date = new Date(1900, 0, 1)
-    let savedPV: number = 380000 //completely making this up
-    flexibleSpouse.governmentPension = 0
-    fixedSpouse.governmentPension = 0
-    expect(service.generateCoupleIterateOneSolutionSet(flexibleSpouse, fixedSpouse, scenario,
-      flexibleSpouseSavedRetirementDate, flexibleSpouseSavedSpousalDate, fixedSpouseRetirementBenefitDate, fixedSpouseSavedSpousalDate,
-      flexibleSpouseSavedBeginSuspensionDate, flexibleSpouseSavedEndSuspensionDate, savedPV).solutionsArray[0].date)
-      .toEqual(flexibleSpouseSavedSpousalDate)
-  }))
 
 })
