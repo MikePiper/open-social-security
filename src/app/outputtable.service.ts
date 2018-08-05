@@ -31,7 +31,7 @@ export class OutputTableService {
         (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
       ])
     }
-    else if (person.age > 70 && person.age < 72) {
+    else if (person.age > 70 && person.age < 71) {
       scenario.outputTable.push([
         calcYear.date.getFullYear().toString() + " and beyond",
         calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
@@ -40,7 +40,7 @@ export class OutputTableService {
         (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
       ])
     }
-    if (person.age > 72 && scenario.outputTableComplete === false){
+    if (person.age > 71 && scenario.outputTableComplete === false){
       scenario.outputTable.push([
         "If you outlive your ex-spouse*",
         calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
@@ -80,7 +80,7 @@ export class OutputTableService {
         (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit + calcYear.personBannualRetirementBenefit + calcYear.personBannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
       ])
     }
-    if (personA.age > 72 && personB.age > 72 && scenario.outputTableComplete === false){
+    if (personA.age > 71 && personB.age > 71 && scenario.outputTableComplete === false){
       scenario.outputTable.push([
         "If you outlive your spouse*",
         calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),

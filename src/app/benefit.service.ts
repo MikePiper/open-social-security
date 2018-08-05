@@ -235,7 +235,7 @@ export class BenefitService {
             calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs = 12
             calcYear.monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs = 12
         }
-      else if (scenario.maritalStatus == "divorced" || (scenario.personAhasFiled === false && scenario.personBhasFiled === false) ){//there's no possibility of suspension, because it's a divorce scenario or a neither-has-filed scenario
+      else if (scenario.personAhasFiled === false && scenario.personBhasFiled === false){//there's no possibility of suspension, because neither has filed
         //Do an annual loop that runs much faster:
         let monthsOfBenefit: number
         let ARFmonths:number

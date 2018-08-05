@@ -487,8 +487,8 @@ describe('PresentValueService', () => {
     scenario.personAhasFiled = true
     scenario.personBhasFiled = false
     scenario.maritalStatus = "married"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "sm2", 0)
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "sm2", 0)
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SM2", 0)
     personA.actualBirthDate = new Date(1954, 2, 11) //personA born in March 1954
     personA.SSbirthDate = new Date(1954, 2, 1)
     personB.actualBirthDate = new Date(1954, 2, 15) //personB born in March 1954
@@ -556,8 +556,6 @@ describe('PresentValueService', () => {
     let personA:Person = new Person("A")
     let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
-    scenario.personAhasFiled = false
-    scenario.personBhasFiled = false
     scenario.maritalStatus = "divorced"
     let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
@@ -592,7 +590,6 @@ describe('PresentValueService', () => {
     let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.personAhasFiled = true
-    scenario.personBhasFiled = false
     scenario.maritalStatus = "married"
     let mortalityService:MortalityService = new MortalityService()
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS1", 0)
@@ -702,8 +699,8 @@ describe('PresentValueService', () => {
     scenario.personAhasFiled = true
     scenario.personBhasFiled = true
     scenario.maritalStatus = "married"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "sm2", 0)
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "sm2", 0)
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SM2", 0)
     personA.actualBirthDate = new Date(1947, 2, 11) //personA born in March 1947
     personA.SSbirthDate = new Date(1947, 2, 1)
     personB.actualBirthDate = new Date(1954, 2, 15) //personB born in March 1954
@@ -730,5 +727,41 @@ describe('PresentValueService', () => {
     //Both people have already filed for retirement. B isn't going to suspend. A can't anymore since over 70. No spousal solution for A because PIA too high. No spousal solution for B because already filed for it. Array is empty.
   }))
 
+  it ('should tell personA to suspend from FRA to 70 in divorce scenario, if filed early, zero discount rate, very long life expectancy, and no spousal or survivor to be had from ex-spouse', inject([PresentValueService], (service: PresentValueService) => {
+    let mortalityService:MortalityService = new MortalityService()
+    let birthdayService:BirthdayService = new BirthdayService()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.personAhasFiled = true
+    scenario.maritalStatus = "divorced"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personA.actualBirthDate = new Date(1954, 2, 11) //personA born in March 1954
+    personA.SSbirthDate = new Date(1954, 2, 1)
+    personB.actualBirthDate = new Date(1954, 2, 15) //personB born in March 1954
+    personB.SSbirthDate = new Date(1954, 2, 1)
+    scenario.initialCalcDate = new Date(personA.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which older reaches ages 62
+    personA.initialAge = 64
+    personB.initialAge = 64
+    personA.initialAgeRounded = 64
+    personB.initialAgeRounded = 64
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    personA.PIA = 2000
+    personB.PIA = 700
+    personA.quitWorkDate = new Date(2010,3,1) //already quit working
+    personB.quitWorkDate = new Date(2010,3,1) //already quit working
+    personA.fixedRetirementBenefitDate = new Date (2017, 2, 1) //personA filed at 63
+    personB.fixedRetirementBenefitDate = new Date (personB.FRA) //ex-spouse going to file at FRA
+    scenario.discountRate = 0
+    expect(service.maximizeCouplePViterateOnePerson(scenario, personA, personB).solutionsArray[0].date)
+    .toEqual(new Date(personA.FRA))
+    expect(service.maximizeCouplePViterateOnePerson(scenario, personA, personB).solutionsArray[1].date)
+    .toEqual(new Date(2024, 2, 1))
+    //Should be 2 solution objects: begin suspension and end suspension date for personA. No spousal benefits for them. And it is divorce scenario, so no solution objects for personB.
+  }))
 
 })

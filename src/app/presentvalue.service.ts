@@ -19,8 +19,7 @@ export class PresentValueService {
 
   today: Date = new Date()
 
-  calculateSinglePersonPV(person:Person, scenario:ClaimingScenario, printOutputTable:boolean)
-  {
+  calculateSinglePersonPV(person:Person, scenario:ClaimingScenario, printOutputTable:boolean) : number {
     person.initialRetirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
     let retirementPV: number = 0
     let probabilityAlive: number
@@ -82,7 +81,7 @@ export class PresentValueService {
     return retirementPV
   }
 
-  calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario, printOutputTable:boolean){
+  calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario, printOutputTable:boolean) : number{
     
     //Assorted variables
     let probabilityAalive: number
@@ -157,20 +156,6 @@ export class PresentValueService {
         personB.survivorBenefitWithSuspensionDRCRetirement = this.benefitService.calculateSurvivorBenefit(personB, personB.retirementBenefitWithDRCsfromSuspension, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
       }
 
-      /*
-      //Old version of logic above.
-      if (personA.retirementBenefitWithDRCsfromSuspension == 0 && calcYear.date.getFullYear() >= personA.FRA.getFullYear() && calcYear.date.getFullYear() >= personA.endSuspensionDate.getFullYear()) {
-        personA.retirementBenefitWithDRCsfromSuspension = this.benefitService.calculateRetirementBenefit(personA, personA.adjustedRetirementBenefitDate)
-        personA.spousalBenefitWithSuspensionDRCRetirement = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefitWithDRCsfromSuspension, personA.spousalBenefitDate)
-        personA.survivorBenefitWithSuspensionDRCRetirement = this.benefitService.calculateSurvivorBenefit(personA, personA.retirementBenefitWithDRCsfromSuspension, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
-      }
-      if (personB.retirementBenefitWithDRCsfromSuspension == 0 && calcYear.date.getFullYear() >= personB.FRA.getFullYear() && calcYear.date.getFullYear() >= personB.endSuspensionDate.getFullYear()) {
-        personB.retirementBenefitWithDRCsfromSuspension = this.benefitService.calculateRetirementBenefit(personB, personB.adjustedRetirementBenefitDate)
-        personB.spousalBenefitWithSuspensionDRCRetirement = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefitWithDRCsfromSuspension, personB.spousalBenefitDate)
-        personB.survivorBenefitWithSuspensionDRCRetirement = this.benefitService.calculateSurvivorBenefit(personB, personB.retirementBenefitWithDRCsfromSuspension, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
-      }
-      */
-
       //Calculate annual benefits, accounting for Adjustment Reduction Factor in years beginning at FRA
       calcYear = this.benefitService.calculateAnnualBenefitAmountsCouple(personA, personB, calcYear, printOutputTable)
 
@@ -222,7 +207,7 @@ export class PresentValueService {
 
 
 
-  maximizeSinglePersonPV(person:Person, scenario:ClaimingScenario){
+  maximizeSinglePersonPV(person:Person, scenario:ClaimingScenario) : SolutionSet{
     //find initial testClaimingDate for age 62
     person.retirementBenefitDate = new Date(person.SSbirthDate.getFullYear()+62, 1, 1)
     if (person.actualBirthDate.getDate() <= 2){
@@ -268,7 +253,7 @@ export class PresentValueService {
   }
 
 
-  maximizeCouplePViterateBothPeople(personA:Person, personB:Person, scenario:ClaimingScenario){
+  maximizeCouplePViterateBothPeople(personA:Person, personB:Person, scenario:ClaimingScenario) : SolutionSet{
 
     //find initial retirementBenefitDate for personA (first month for which they are considered 62 for entire month)
     personA.retirementBenefitDate = new Date(personA.actualBirthDate.getFullYear()+62, personA.actualBirthDate.getMonth(), 1)
@@ -414,7 +399,7 @@ export class PresentValueService {
 
 //This function is for when one spouse is over 70 (and therefore has no retirement age or suspension age to iterate).
 //Also is the function for a divorcee, because we take the ex-spouse's filing date as a given (i.e., as an input)
-maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Person, fixedSpouse:Person){
+maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Person, fixedSpouse:Person) : SolutionSet{
 
     fixedSpouse.retirementBenefitDate = new Date(fixedSpouse.fixedRetirementBenefitDate)
 
@@ -435,12 +420,12 @@ maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Perso
       if (this.today > flexibleSpouse.FRA){
         flexibleSpouse.beginSuspensionDate = new Date(this.today.getFullYear(), this.today.getMonth(), 1)
         flexibleSpouse.endSuspensionDate = new Date(this.today.getFullYear(), this.today.getMonth(), 1)
-        flexibleSpouse.retirementBenefitDate = new Date(flexibleSpouse.fixedRetirementBenefitDate)
       }
       else {
         flexibleSpouse.beginSuspensionDate = new Date(flexibleSpouse.FRA)
         flexibleSpouse.endSuspensionDate = new Date(flexibleSpouse.FRA)
       }
+      flexibleSpouse.retirementBenefitDate = new Date(flexibleSpouse.fixedRetirementBenefitDate)
     }
 
     //Set initial spousalBenefitDate for flexibleSpouse
@@ -514,7 +499,7 @@ maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Perso
   }
 
   //Adjusts spousal date as necessary. Is used after new retirement date is selected for either person.
-  adjustSpousalBenefitDate(person:Person, otherPerson:Person, scenario:ClaimingScenario){
+  adjustSpousalBenefitDate(person:Person, otherPerson:Person, scenario:ClaimingScenario) : Person {
     let deemedFilingCutoff: Date = new Date(1954, 0, 1)
     let otherPersonsLimitingDate: Date
 
@@ -571,7 +556,7 @@ maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Perso
     return person
   }
 
-  incrementRetirementORendSuspensionDate(person:Person, scenario:ClaimingScenario){
+  incrementRetirementORendSuspensionDate(person:Person, scenario:ClaimingScenario) : Person {
     if (person.isDisabled) {
       person.endSuspensionDate.setMonth(person.endSuspensionDate.getMonth()+1)
     }
