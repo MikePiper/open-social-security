@@ -290,7 +290,7 @@ describe('PresentValueService', () => {
     person.SSbirthDate = new Date(1960, 3, 1)
     scenario.initialCalcDate = new Date(person.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which user reaches ages 62
     person.FRA = new Date (2027, 3, 1) //FRA April 2027 (age 67)
-    person.initialAge = 58 //younger than 62 when fillling out form
+    person.initialAge = 58
     person.PIA = 1000
     person.quitWorkDate = new Date (2020, 3, 1) //quitting work prior to age 62, earnings test not relevant
     person.monthlyEarnings = 4500 //Doesn't matter really, given date inputs
@@ -301,6 +301,30 @@ describe('PresentValueService', () => {
       .toEqual(new Date(2022, 4, 1))
   }))
 
+  it('should tell a single person to suspend until 70 if filed early, long life expectancy, and zero discount rate', inject([PresentValueService], (service: PresentValueService) => {
+    let person:Person = new Person("A")
+    let scenario:ClaimingScenario = new ClaimingScenario
+    let birthdayService:BirthdayService = new BirthdayService()
+    let mortalityService:MortalityService = new MortalityService()
+    scenario.maritalStatus = "single"
+    scenario.personAhasFiled = true
+    person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
+    person.actualBirthDate = new Date(1953, 3, 15) //Person born April 15 1953
+    person.SSbirthDate = new Date(1953, 3, 1)
+    scenario.initialCalcDate = new Date(person.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which user reaches ages 62
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    person.initialAge = 65
+    person.initialAgeRounded = 65
+    person.PIA = 1000
+    person.quitWorkDate = new Date (2010, 3, 1) //Already quit working, so earnings test not relevant
+    person.fixedRetirementBenefitDate = new Date (2017, 3, 1) //filed for retirement at age 64
+    scenario.discountRate = 0
+    expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
+      .toEqual(new Date(person.FRA))
+    expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[1].date)
+      .toEqual(new Date(2023, 3, 1))
+    //solutionsArray should have two items: begin suspension date (at FRA), and end suspension date (age 70)
+  }))
 
   //Test maximizeCouplePViterateBothPeople()
   it ('should tell a high-PIA spouse to wait until 70, with low discount rate and long lifespans', inject([PresentValueService], (service: PresentValueService) => {
@@ -376,7 +400,6 @@ describe('PresentValueService', () => {
     let personA:Person = new Person("A")
     let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
-    scenario.personAhasFiled = false
     scenario.personBhasFiled = true
     scenario.maritalStatus = "married"
     let mortalityService:MortalityService = new MortalityService()

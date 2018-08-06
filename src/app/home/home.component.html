@@ -87,7 +87,7 @@
         <!--End Spouse A Earnings Test Inputs -->
 
         <!--Begin Spouse A Already-Filed Inputs-->
-        <div *ngIf="scenario.maritalStatus != 'single'">
+        <div>
           <label>Have you already filed for retirement benefits?</label>
           <input type="radio" id="personAfiledYes" [(ngModel)]="scenario.personAhasFiled" name="scenario.personAhasFiled" [value]="true" (change)="resetFixedRetirementDateInputs()">
           <label for="personAfiledYes">Yes</label>

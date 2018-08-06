@@ -13,21 +13,42 @@ export class SolutionSetService {
 
   constructor(private benefitService: BenefitService) { }
 
-  generateSingleSolutionSet(scenario:ClaimingScenario, SSbirthDate:Date, person:Person, savedPV:number, savedClaimingDate:Date){
-        //Find age and monthly benefit amount at savedClaimingDate, for sake of output statement.
-        let savedClaimingAge: number = savedClaimingDate.getFullYear() - SSbirthDate.getFullYear() + (savedClaimingDate.getMonth() - SSbirthDate.getMonth())/12
+  generateSingleSolutionSet(scenario:ClaimingScenario, person:Person, savedPV:number){
+    let solutionSet:SolutionSet = {
+      "solutionPV":savedPV,
+      "solutionsArray": []
+    }
+
+    if (person.isDisabled === true || scenario.personAhasFiled === true){//retirement benefit solution is a suspension solution
+      person.DRCsViaSuspension = person.endSuspensionDate.getMonth() - person.beginSuspensionDate.getMonth() + (12 * (person.endSuspensionDate.getFullYear() - person.beginSuspensionDate.getFullYear()))
+      var savedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(person, person.fixedRetirementBenefitDate)
+      var savedEndSuspensionAge: number = person.endSuspensionDate.getFullYear() - person.SSbirthDate.getFullYear() + (person.endSuspensionDate.getMonth() - person.SSbirthDate.getMonth())/12
+      var savedEndSuspensionAgeYears: number = Math.floor(savedEndSuspensionAge)
+      var savedEndSuspensionAgeMonths: number = Math.round((savedEndSuspensionAge%1)*12)
+      //Create begin/end suspension solution objects
+      if (person.beginSuspensionDate.getTime() == person.FRA.getTime()){
+        var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", person, person.beginSuspensionDate, savedRetirementBenefit, 0, 0)
+        var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedRetirementBenefit, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
+      }
+      else {
+        var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", person, person.beginSuspensionDate, savedRetirementBenefit, 0, 0)
+        var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedRetirementBenefit, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
+      }
+      if (person.beginSuspensionDate.getTime() != person.endSuspensionDate.getTime()){//If suspension solution, only push if begin/end suspension dates are different
+        solutionSet.solutionsArray.push(beginSuspensionSolution)
+        solutionSet.solutionsArray.push(endSuspensionSolution)
+      }
+    }
+    else {//normal retirement solution
+        let savedClaimingAge: number = person.retirementBenefitDate.getFullYear() - person.SSbirthDate.getFullYear() + (person.retirementBenefitDate.getMonth() - person.SSbirthDate.getMonth())/12
         let savedClaimingAgeYears: number = Math.floor(savedClaimingAge)
         let savedClaimingAgeMonths: number = Math.round((savedClaimingAge%1)*12)
-        let savedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(person, savedClaimingDate)
-
-        //Create "solutionSet" object and claimingSolution object to populate it
-        let solutionSet:SolutionSet = {
-          "solutionPV":savedPV,
-          "solutionsArray": []
-        }
-        let retirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", person, savedClaimingDate, savedRetirementBenefit, savedClaimingAgeYears, savedClaimingAgeMonths)
+        let savedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
+        let retirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", person, person.retirementBenefitDate, savedRetirementBenefit, savedClaimingAgeYears, savedClaimingAgeMonths)
         solutionSet.solutionsArray.push(retirementSolution)
-        return solutionSet
+    }        
+
+    return solutionSet
   }
 
   //For two-person scenarios, other than a) divorce or b) one person being over 70

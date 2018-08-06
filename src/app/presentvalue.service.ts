@@ -20,16 +20,16 @@ export class PresentValueService {
   today: Date = new Date()
 
   calculateSinglePersonPV(person:Person, scenario:ClaimingScenario, printOutputTable:boolean) : number {
-    person.initialRetirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
-    let retirementPV: number = 0
-    let probabilityAlive: number
-    let earningsTestResult:any[] 
     //reset values for new PV calc
         person.hasHadGraceYear = false
         person.adjustedRetirementBenefitDate = new Date(person.retirementBenefitDate)
         person.retirementBenefitWithDRCsfromSuspension = 0
         person.DRCsViaSuspension = 0
         scenario.outputTable = []
+        person.initialRetirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
+        let retirementPV: number = 0
+        let probabilityAlive: number
+        let earningsTestResult:any[] 
 
     //Set initial calcYear (Jan 1 of the year they turn 62)
     let calcYear:CalculationYear = new CalculationYear(scenario.initialCalcDate)
@@ -57,6 +57,7 @@ export class PresentValueService {
 
         //Calculate annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
         calcYear = this.benefitService.calculateAnnualRetirementBenefit(person, calcYear)
+
 
         //generate row for outputTable if necessary
         if (printOutputTable === true) {scenario = this.outputTableService.generateOutputTableSingle(person, scenario, calcYear)}
@@ -209,11 +210,9 @@ export class PresentValueService {
 
   maximizeSinglePersonPV(person:Person, scenario:ClaimingScenario) : SolutionSet{
     //find initial testClaimingDate for age 62
-    person.retirementBenefitDate = new Date(person.SSbirthDate.getFullYear()+62, 1, 1)
-    if (person.actualBirthDate.getDate() <= 2){
-      person.retirementBenefitDate.setMonth(person.actualBirthDate.getMonth())
-    } else {
-      person.retirementBenefitDate.setMonth(person.actualBirthDate.getMonth()+1)
+    person.retirementBenefitDate = new Date(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
+    if (person.actualBirthDate.getDate() > 2){
+      person.retirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+1)
     }
 
     //If user is currently over age 62 when filling out form, set testClaimingDate to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
@@ -223,29 +222,47 @@ export class PresentValueService {
       person.retirementBenefitDate.setFullYear(this.today.getFullYear())
     }
 
+    //If user has already filed or is on disability, initialize begin/end suspension dates as their FRA (but no earlier than this month), and set person's retirementBenefitDate using fixedRetirementBenefitDate field 
+    if (person.isDisabled === true || scenario.personAhasFiled === true) {
+      if (this.today > person.FRA){
+        person.beginSuspensionDate = new Date(this.today.getFullYear(), this.today.getMonth(), 1)
+        person.endSuspensionDate = new Date(this.today.getFullYear(), this.today.getMonth(), 1)
+      }
+      else {
+        person.beginSuspensionDate = new Date(person.FRA)
+        person.endSuspensionDate = new Date(person.FRA)
+      }
+      person.retirementBenefitDate = new Date(person.fixedRetirementBenefitDate)
+    }
+
     //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
     let savedPV: number = this.calculateSinglePersonPV(person, scenario, false)
-    let savedClaimingDate = new Date(person.retirementBenefitDate)
+    let savedClaimingDate: Date = new Date(person.retirementBenefitDate)
+    let savedBeginSuspensionDate: Date = new Date(person.beginSuspensionDate)
+    let savedEndSuspensionDate: Date = new Date(person.endSuspensionDate)
 
     //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
     let endingTestDate = new Date(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth()-1, 1)
-    while (person.retirementBenefitDate <= endingTestDate){
-      //Add 1 month to claiming age and run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
-      person.retirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth() + 1)
+    while (person.retirementBenefitDate <= endingTestDate && person.endSuspensionDate <= endingTestDate){
+      //Increment claiming date (or suspension date) and run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
+      person = this.incrementRetirementORendSuspensionDate(person, scenario)
       let currentTestPV = this.calculateSinglePersonPV(person, scenario, false)
-      if (currentTestPV >= savedPV)
-        {savedClaimingDate.setMonth(person.retirementBenefitDate.getMonth())
-          savedClaimingDate.setFullYear(person.retirementBenefitDate.getFullYear())
-          savedPV = currentTestPV}
+      if (currentTestPV >= savedPV){
+          savedPV = currentTestPV
+          savedClaimingDate = new Date(person.retirementBenefitDate)
+          savedBeginSuspensionDate = new Date(person.beginSuspensionDate)
+          savedEndSuspensionDate = new Date(person.endSuspensionDate)
+      }
     }
 
-    //after loop is finished, set person object's benefit date to the saved date, for sake of running PV calc again for outputTable
+    //after loop is finished, set Person's retirementBenefitDate and suspension dates to the saved dates, for sake of running PV calc again for outputTable
     person.retirementBenefitDate = new Date(savedClaimingDate)
+    person.beginSuspensionDate = new Date(savedBeginSuspensionDate)
+    person.endSuspensionDate = new Date(savedEndSuspensionDate)
     let outputTablePVcalc: number = this.calculateSinglePersonPV(person, scenario, true)
 
-
     //Generate solution set (for sake of output) from saved values
-    let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(scenario, person.SSbirthDate, person, Number(savedPV), savedClaimingDate)
+    let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(scenario, person, Number(savedPV))
 
     console.log(solutionSet)
 
@@ -557,10 +574,10 @@ maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Perso
   }
 
   incrementRetirementORendSuspensionDate(person:Person, scenario:ClaimingScenario) : Person {
-    if (person.isDisabled) {
+    if (person.isDisabled === true) {
       person.endSuspensionDate.setMonth(person.endSuspensionDate.getMonth()+1)
     }
-    else if ( (scenario.personAhasFiled && person.id == "A") || (scenario.personBhasFiled && person.id == "B") ){
+    else if ( (scenario.personAhasFiled === true && person.id == "A") || (scenario.personBhasFiled === true && person.id == "B") ){
       person.endSuspensionDate.setMonth(person.endSuspensionDate.getMonth()+1)
     }
     else {//i.e., person hasn't filed and isn't disabled

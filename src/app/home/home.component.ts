@@ -132,7 +132,13 @@ export class HomeComponent implements OnInit {
 
     //Call appropriate "maximizePV" function to find best solution
     if (this.scenario.maritalStatus == "single") {
-      this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(this.personA, this.scenario)
+        //check for error in fixed filing date, if applicable
+        if (this.scenario.personAhasFiled === true) {
+          this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.personA, this.personA.fixedRetirementBenefitDate)
+        }
+        if (!this.spouseAfixedRetirementDateError) {
+          this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(this.personA, this.scenario)
+        }
     }
     else if (this.scenario.maritalStatus == "married") {
       //check for errors in fixed filing dates, if applicable

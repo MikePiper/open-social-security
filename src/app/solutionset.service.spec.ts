@@ -23,12 +23,12 @@ describe('SolutionSetService', () => {
     let person:Person = new Person("A")
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "single"
-    let SSbirthDate:Date = new Date(1960, 3, 1) //April 1, 1960
+    person.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
     person.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
     person.PIA = 2000
     let savedPV:number = 180000 //Just completely making this PV up
-    let savedClaimingDate:Date = new Date(2029, 5, 1) //2 years and 2 months after FRA, for no particular reason
-    expect(service.generateSingleSolutionSet(scenario, SSbirthDate, person, savedPV, savedClaimingDate).solutionPV)
+    person.retirementBenefitDate = new Date(2029, 5, 1) //2 years and 2 months after FRA, for no particular reason
+    expect(service.generateSingleSolutionSet(scenario, person, savedPV).solutionPV)
       .toEqual(savedPV)
   }))
 
@@ -36,15 +36,15 @@ describe('SolutionSetService', () => {
     let person:Person = new Person("A") 
     let scenario:ClaimingScenario = new ClaimingScenario()
     scenario.maritalStatus = "single"
-    let SSbirthDate:Date = new Date(1960, 3, 1) //April 1, 1960
+    person.SSbirthDate = new Date(1960, 3, 1) //April 1, 1960
     person.FRA = new Date(2027, 3, 1) //FRA April 1, 2027
     person.PIA = 2000
     let savedPV:number = 180000 //Just completely making this PV up
-    let savedClaimingDate:Date = new Date(2029, 5, 1) //2 years and 2 months after FRA, for no particular reason
+    person.retirementBenefitDate = new Date(2029, 5, 1) //2 years and 2 months after FRA, for no particular reason
     let wrongDate:Date = new Date (2028, 4, 1)
-    expect(service.generateSingleSolutionSet(scenario, SSbirthDate, person, savedPV, savedClaimingDate).solutionsArray[0].date)
-      .toEqual(savedClaimingDate)
-    expect(service.generateSingleSolutionSet(scenario, SSbirthDate, person, savedPV, savedClaimingDate).solutionsArray[0].date)
+    expect(service.generateSingleSolutionSet(scenario, person, savedPV).solutionsArray[0].date)
+      .toEqual(person.retirementBenefitDate)
+    expect(service.generateSingleSolutionSet(scenario, person, savedPV).solutionsArray[0].date)
       .not.toEqual(wrongDate)
   }))
   
