@@ -255,6 +255,7 @@
 <span *ngIf="this.solutionSet.solutionPV">
 
   <!--Recommended Strategy Output-->
+  <h2>Recommended Strategy</h2>
   <p>The strategy that maximizes the total dollars you can be expected to spend over your lifetime<span *ngIf="scenario.maritalStatus == 'married'">s</span> is as follows:</p>
   <ul>
     <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>

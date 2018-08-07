@@ -1,4 +1,17 @@
-
+<h2>Year-by-Year Benefit Amounts</h2>
+<span *ngIf="scenario.maritalStatus == 'single'">
+    <p>
+      The following table shows what your year-by-year benefit amounts would be <em>if</em> you are still alive throughout the year in question.
+    </p>
+  </span>
+<span *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">
+  <p>
+      The following table shows what your year-by-year benefit amounts would be <em>if</em> both people are still alive throughout the year in question.
+      The survivor benefit amounts at the bottom of the table assume that
+      a) the deceased person lived at least until the age at which they planned to file for their retirement benefit and that
+      b) the surviving person waits at least until their full retirement age to file for a survivor benefit.
+  </p>
+</span>
 <div class="table-responsive">
   <table class="table-bordered table-striped">
       <tr class="highlighted">
@@ -17,19 +30,4 @@
           </td>
       </tr>
   </table>
-  <span *ngIf="scenario.maritalStatus == 'single'">
-      <p>
-        The year-by-year benefit amounts in this table assume that you are still alive throughout the year in question.
-      </p>
-    </span>
-  <span *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">
-    <p>
-      The year-by-year benefit amounts in this table assume that both people are still alive throughout the year in question.
-    </p>
-    <p>
-      The survivor benefit amounts in the table assume that
-      a) the deceased person lived at least until the age at which they planned to file for their retirement benefit and that
-      b) the surviving person waits at least until their full retirement age to file for a survivor benefit.
-    </p>
-  </span>
 </div>

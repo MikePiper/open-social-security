@@ -42,7 +42,7 @@ export class OutputTableService {
     }
     if (person.age > 71 && scenario.outputTableComplete === false){
       scenario.outputTable.push([
-        "If you outlive your ex-spouse*",
+        "If you outlive your ex-spouse",
         calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
         "$0",
         calcYear.personAannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
@@ -82,7 +82,7 @@ export class OutputTableService {
     }
     if (personA.age > 71 && personB.age > 71 && scenario.outputTableComplete === false){
       scenario.outputTable.push([
-        "If you outlive your spouse*",
+        "If you outlive your spouse",
         calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
         "$0",
         calcYear.personAannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
@@ -92,7 +92,7 @@ export class OutputTableService {
         (calcYear.personAannualRetirementBenefit + calcYear.personAannualSurvivorBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
       ])
       scenario.outputTable.push([
-        "If your spouse outlives you*",
+        "If your spouse outlives you",
         "$0",
         "$0",
         "$0",
