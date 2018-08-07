@@ -333,9 +333,17 @@ export class PresentValueService {
       let personAsavedEndSuspensionDate = new Date(personA.endSuspensionDate)
       let personBsavedEndSuspensionDate = new Date(personB.endSuspensionDate)
 
-    //Set endingTestDate for each spouse equal to the month they turn 70
+    //Set endingTestDate for each spouse equal to the month they turn 70. Or if using fixed-death-age-assumption younger than 70, set to assumed month of death
     let spouseAendTestDate = new Date(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth(), 1)
     let spouseBendTestDate = new Date(personB.SSbirthDate.getFullYear()+70, personB.SSbirthDate.getMonth(), 1)
+    if (personA.mortalityTable[70] == 0) {
+      let deceasedByAge:number = personA.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69. But we want last possible filing date suggested to be 68, so we subtract 1 in following line.
+      spouseAendTestDate = new Date(personA.SSbirthDate.getFullYear()+deceasedByAge-1, personA.SSbirthDate.getMonth(), 1)
+    }
+    if (personB.mortalityTable[70] == 0) {
+      let deceasedByAge:number = personB.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69
+      spouseBendTestDate = new Date(personB.SSbirthDate.getFullYear()+deceasedByAge-1, personB.SSbirthDate.getMonth(), 1)
+    }
 
     while (personA.retirementBenefitDate <= spouseAendTestDate && personA.endSuspensionDate <= spouseAendTestDate) {
         //Reset personB.retirementBenefitDate to earliest possible (i.e., their "age 62 for whole month" month or today's month if they're currently older than 62)
@@ -461,8 +469,12 @@ maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Perso
     let flexibleSpouseSavedEndSuspensionDate = new Date(flexibleSpouse.endSuspensionDate)
     let fixedSpouseSavedSpousalDate: Date = new Date(fixedSpouse.spousalBenefitDate)
 
-    //Set endTestDate equal to the month flexibleSpouse turns 70
+    //Set endTestDate equal to the month flexibleSpouse turns 70. Or, if flexible spouse chose a fixed-death-age assumption younger than age 70, set ending test date to that fixed death age.
     let endTestDate = new Date(flexibleSpouse.SSbirthDate.getFullYear()+70, flexibleSpouse.SSbirthDate.getMonth(), 1)
+    if (flexibleSpouse.mortalityTable[70] == 0) {
+      let deceasedByAge:number = flexibleSpouse.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69. But we want last possible filing date suggested to be 68, so we subtract 1 in following line.
+      endTestDate = new Date(flexibleSpouse.SSbirthDate.getFullYear()+deceasedByAge-1, flexibleSpouse.SSbirthDate.getMonth(), 1)
+    }
 
     while (flexibleSpouse.retirementBenefitDate <= endTestDate && flexibleSpouse.endSuspensionDate <= endTestDate) {
       //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
