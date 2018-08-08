@@ -31,7 +31,7 @@ export class PresentValueService {
         let probabilityAlive: number
         let earningsTestResult:any[] 
 
-    //Set initial calcYear (Jan 1 of the year they turn 62)
+    //Set initial calcYear (Jan 1 of the year that benefit begins)
     let calcYear:CalculationYear = new CalculationYear(scenario.initialCalcDate)
 
     //calculate age as of that date
@@ -58,6 +58,8 @@ export class PresentValueService {
         //Calculate annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
         calcYear = this.benefitService.calculateAnnualRetirementBenefit(person, calcYear)
 
+        //adjust annualbenefit fields on calcYear object for future benefit cuts, if so desired
+        if (scenario.benefitCutAssumption === true) {calcYear = this.adjustBenefitsForAssumedCut(calcYear, scenario)}
 
         //generate row for outputTable if necessary
         if (printOutputTable === true) {scenario = this.outputTableService.generateOutputTableSingle(person, scenario, calcYear)}
@@ -67,6 +69,13 @@ export class PresentValueService {
 
         //Calculate probability-weighted benefit
         let annualPV = calcYear.personAannualRetirementBenefit * probabilityAlive
+
+        //Adjust probability-weighted benefit for assumed benefit cut, if so desired
+        if (scenario.benefitCutAssumption === true){
+          if (calcYear.date.getFullYear() >= scenario.benefitCutYear) {
+            annualPV = annualPV * (1 - scenario.benefitCutPercentage/100)
+          }
+        }
 
         //Discount that benefit to age 62
         annualPV = annualPV / (1 + scenario.discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
@@ -107,8 +116,9 @@ export class PresentValueService {
         personB.survivorBenefitWithSuspensionDRCRetirement = 0
         scenario.outputTable = []
 
-    //Find Jan 1 of the year containing initialCalcDate (year in which first spouse reaches age 62, unless divorced in which case it's year in which user turns 62)
+    //Find Jan 1 of initial calcYear (year in which first person turns 62)
     let calcYear:CalculationYear = new CalculationYear(scenario.initialCalcDate)
+
 
     //Find age of each spouse as of that Jan 1
     personA.age = ( calcYear.date.getMonth() - personA.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
@@ -166,6 +176,9 @@ export class PresentValueService {
         calcYear.personBannualSpousalBenefit = 0
         calcYear.personBannualSurvivorBenefit = 0
       }
+
+      //adjust annualbenefit fields on calcYear object for future benefit cuts, if so desired
+      if (scenario.benefitCutAssumption === true) {calcYear = this.adjustBenefitsForAssumedCut(calcYear, scenario)}
 
       //generate row for outputTable if necessary
         if (printOutputTable === true) {
@@ -596,5 +609,17 @@ maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Perso
     person.retirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+1)
   }
     return person
+  }
+
+  adjustBenefitsForAssumedCut(calcYear:CalculationYear, scenario:ClaimingScenario){
+      if (calcYear.date.getFullYear() >= scenario.benefitCutYear) {
+        calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
+        calcYear.personAannualSpousalBenefit = calcYear.personAannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)
+        calcYear.personAannualSurvivorBenefit = calcYear.personAannualSurvivorBenefit * (1 - scenario.benefitCutPercentage/100)
+        calcYear.personBannualRetirementBenefit = calcYear.personBannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
+        calcYear.personBannualSpousalBenefit = calcYear.personBannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)
+        calcYear.personBannualSurvivorBenefit = calcYear.personBannualSurvivorBenefit * (1 - scenario.benefitCutPercentage/100)
+      }
+    return calcYear
   }
 }

@@ -4,6 +4,9 @@ export class ClaimingScenario {
     discountRate: number
     maritalStatus: string = "single"
     initialCalcDate: Date
+    benefitCutAssumption: boolean = false
+        benefitCutYear: number = 2034
+        benefitCutPercentage: number = 23
 
     //PersonA
         personAhasFiled: boolean = false

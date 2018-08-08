@@ -235,14 +235,34 @@
             <input type="number" [(ngModel)]="personB.governmentPension" id="spouseBgovernmentPension" name="personB.governmentPension">
         </div>
       </span>
+
+        <!--Begin "Other Inputs" such as discount rate and benefit cut assumptions -->
         <div *ngIf="this.advanced === true">
-          <h2>Other Inputs</h2>
-          <label>Real discount rate</label>
-          <input type="text" [(ngModel)]="scenario.discountRate" name="scenario.discountRate" class="smallTextInput" required>%
-          <p class="inputexplanation">A "discount rate" is necessary to reflect the fact that a dollar today is worth more than a dollar in the future, because a dollar today can be invested.
-            The <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a> is generally considered an appropriate discount rate for these purposes.
-            See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a discussion of that topic.</p>
+            <h2>Other Inputs</h2>
+            <label>Real discount rate</label>
+            <input type="text" [(ngModel)]="scenario.discountRate" name="scenario.discountRate" class="smallTextInput" required>%
+            <p class="inputexplanation">
+              A "discount rate" is necessary to reflect the fact that a dollar today is worth more than a dollar in the future, because a dollar today can be invested.
+              The <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a> is generally considered an appropriate discount rate for these purposes.
+              See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a discussion of that topic.
+            </p>
+            <label for="benefitCutAssumption">Check this box to test a scenario in Social Security benefits are cut by a certain percentage as of a certain date</label>
+            <input id="benefitCutAssumption" [(ngModel)]="scenario.benefitCutAssumption" name="scenario.benefitCutAssumption" value="true" type="checkbox">
+              <span *ngIf="scenario.benefitCutAssumption === true">
+                <div>
+                    <label>Year in which benefit reduction is implemented</label>
+                    <select [(ngModel)]="scenario.benefitCutYear" name="scenario.benefitCutYear" required>
+                        <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+                    </select>
+                    <label class="paddedLabel" >Severity of benefit reduction</label>
+                    <input type="text" [(ngModel)]="scenario.benefitCutPercentage" name="scenario.benefitCutPercentage" class="smallTextInput" required>%
+                </div>
+                <p>For reference, the <a href="https://www.ssa.gov/OACT/TR/2018/" target="_blank">2018 Social Security trustees report</a> estimates that if no legislative changes are made,
+                    benefits will have to be cut by 23% as of 2034.</p>
+              </span>
         </div>
+        <!--End "Other Inputs" such as discount rate and benefit cut assumptions -->
+
       <div>
         <button type="submit" id="maximizeSubmit" class="btn btn-primary" (mousedown)="waitCursor()">Submit</button>
       </div>

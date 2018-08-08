@@ -46,3 +46,8 @@ margin-right:45px;
 .smallTextInput {
     width:50px;
 }
+
+.paddedLabel {
+    padding-left:20px;
+    padding-right:0px;
+}
