@@ -243,8 +243,8 @@
             <input type="text" [(ngModel)]="scenario.discountRate" name="scenario.discountRate" class="smallTextInput" required>%
             <p class="inputexplanation">
               A "discount rate" is necessary to reflect the fact that a dollar today is worth more than a dollar in the future, because a dollar today can be invested.
-              The <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a> is generally considered an appropriate discount rate for these purposes.
-              See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a discussion of that topic.
+              The default here is the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>.
+              See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a discussion of why that is chosen as the default.
             </p>
             <label>Assume that Social Security benefits will be cut in the future?</label>
             <input type="radio" id="benefitCutAssumptionNo" [(ngModel)]="scenario.benefitCutAssumption" name="scenario.benefitCutAssumption" [value]="false">
@@ -289,6 +289,7 @@
       <a href="https://obliviousinvestor.com/what-does-present-value-mean/" target="_blank">See this article</a> for a more thorough explanation of the "present value" concept.</p>
   </span>
   <app-output-table [scenario]="scenario"></app-output-table>
+
   <!--End Recommended Strategy Output-->
 
   <hr>

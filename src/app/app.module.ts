@@ -18,6 +18,8 @@ import { MortalityService } from './mortality.service';
 import { SolutionSetService } from './solutionset.service';
 import { DebugTableComponent } from './debugtable/debugtable.component';
 import { OutputTableComponent } from './output-table/output-table.component';
+import { CsvModule } from '@ctrl/ngx-csv'
+
 
 
 @NgModule({
@@ -36,7 +38,8 @@ import { OutputTableComponent } from './output-table/output-table.component';
     FormsModule,
     AppRoutingModule,
     CollapseModule.forRoot(),
-    BsDropdownModule.forRoot()
+    BsDropdownModule.forRoot(),
+    CsvModule
   ],
   providers: [BenefitService, BirthdayService, PresentValueService, EarningsTestService, MortalityService, SolutionSetService],
   bootstrap: [AppComponent]
