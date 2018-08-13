@@ -32,6 +32,11 @@ export class HomeComponent implements OnInit {
   customDateScenario:ClaimingScenario
   today:Date = new Date()
   deemedFilingCutoff: Date = new Date(1954, 0, 1)
+  primaryFormHasChanged: boolean = false
+        /*
+        This is set to true when they change an input in the primary form. Then set to false after onSubmit() has been run. Point is that we want the whole maximize function to be run when
+        they use the "submit" button on alternative date form if they changed a primary form input. But we don't want to do all that math if they just provided new custom dates.
+        */
 
 //Variables to make form work
   inputMonths: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
@@ -171,6 +176,7 @@ export class HomeComponent implements OnInit {
         }
     }
     this.normalCursor()
+    this.primaryFormHasChanged = false
       //For testing performance
       let endTime = performance.now()
       let elapsed = (endTime - startTime) /1000
@@ -179,6 +185,9 @@ export class HomeComponent implements OnInit {
   }
 
   customDates() {
+    if (this.primaryFormHasChanged === true){//Have to rerun the original calculation again if a primary input has changed.
+      this.onSubmit()
+    }
 
     //Reset input benefit dates, then get from user input
     this.personA.retirementBenefitDate = null
@@ -423,4 +432,8 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  primaryFormInputChange(){
+    this.getPrimaryFormInputs()
+    this.primaryFormHasChanged = true
+  }
 }

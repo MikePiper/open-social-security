@@ -1,5 +1,5 @@
 <div id="container">
-<form #inputForm="ngForm" (ngSubmit)="onSubmit()" (change)="getPrimaryFormInputs()" novalidate>
+<form #inputForm="ngForm" (ngSubmit)="onSubmit()" (change)="primaryFormInputChange()" novalidate>
       <div>
         <label for="advanced">Advanced Options</label>
         <input type="checkbox" [(ngModel)]="advanced" id="advanced" name="advanced" value="true">
