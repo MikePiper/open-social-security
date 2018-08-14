@@ -176,7 +176,10 @@ export class HomeComponent implements OnInit {
         }
     }
     this.normalCursor()
-    this.primaryFormHasChanged = false
+    this.primaryFormHasChanged = false//Set this to false so that customDates() doesn't rerun onSubmit() next time it is run, unless another change is made to primary inputs
+    if (this.customSpouseAretirementBenefitMonth || this.customSpouseAspousalBenefitMonth || this.customSpouseBretirementBenefitMonth || this.customSpouseBspousalBenefitMonth){//If custom date inputs have been provided (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs
+      this.customDates()
+    }
       //For testing performance
       let endTime = performance.now()
       let elapsed = (endTime - startTime) /1000
