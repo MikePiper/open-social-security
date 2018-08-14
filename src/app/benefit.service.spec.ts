@@ -57,15 +57,26 @@ describe('BenefitService', () => {
   }))
 
 
-  it('should calculate retirement benefit properly using DRCs from suspension', inject([BenefitService], (service: BenefitService) => {
+  it('should calculate retirement benefit properly using DRCs from suspension in an early entitlement scenario', inject([BenefitService], (service: BenefitService) => {
     let person:Person = new Person("A")
     person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2030
     person.PIA = 1000
     let benefitDate = new Date (2027, 7 , 1) //36 months early
     person.DRCsViaSuspension = 16 //then suspended for 16 months
     expect(service.calculateRetirementBenefit(person, benefitDate))
-        .toBeCloseTo(906.67, 1)
-    //calc by hand: 1000 * 0.8 + 1000 * (2/3/100) * 16 = 906.67
+        .toBeCloseTo(885.33, 1)
+    //calc by hand: 1000 * 0.8 + (1000 * 0.8) * (2/3/100) * 16 = 885.33
+  }))
+
+  it('should calculate retirement benefit properly using DRCs from suspension in an entitlement-after-FRA scenario', inject([BenefitService], (service: BenefitService) => {
+    let person:Person = new Person("A")
+    person.FRA = new Date (2030, 7, 1) //FRA Aug 1, 2030
+    person.PIA = 1000
+    let benefitDate = new Date (2031, 7 , 1) //12 months after FRA
+    person.DRCsViaSuspension = 16 //then suspended for 16 months
+    expect(service.calculateRetirementBenefit(person, benefitDate))
+        .toBeCloseTo(1186.67, 1)
+    //calc by hand: 1000 * 1.08 + 1000 * (2/3/100) * 16 = 1186.67
   }))
 
 

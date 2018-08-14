@@ -22,8 +22,13 @@ export class BenefitService {
     if (monthsWaited > 0 )
     {retirementBenefit = person.PIA + (person.PIA / 100 * 2 / 3 * monthsWaited)}
     
-    retirementBenefit = retirementBenefit + person.PIA * (2/3/100) * person.DRCsViaSuspension
-    
+    if (benefitDate >= person.FRA) {//If person didn't file until FRA or later, DRCs via suspension are applied to PIA
+      retirementBenefit = retirementBenefit + (person.PIA * (2/3/100) * person.DRCsViaSuspension)
+    }
+    else {//If person filed before FRA, DRCs via suspension are applied to reduced benefit amount
+      retirementBenefit = retirementBenefit + (retirementBenefit * (2/3/100) * person.DRCsViaSuspension)
+    }
+
     return Number(retirementBenefit)
   }
 
