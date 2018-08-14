@@ -155,6 +155,7 @@ export class HomeComponent implements OnInit {
         }
       //if there are no errors in fixed filing dates, run applicable maximize function
         if (!this.spouseAfixedRetirementDateError && !this.spouseBfixedRetirementDateError){
+          console.log("no errors")
           if (this.personA.initialAge < 70 && this.personB.initialAge < 70) {//i.e., if both spouses are under 70 (and we therefore need to iterate ages for both)
             this.solutionSet = this.presentvalueService.maximizeCouplePViterateBothPeople(this.personA, this.personB, this.scenario)
           }
@@ -165,6 +166,8 @@ export class HomeComponent implements OnInit {
             this.solutionSet = this.presentvalueService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
           }
         }
+        console.log(this.spouseAfixedRetirementDateError)
+        console.log(this.spouseBfixedRetirementDateError)
     }
     else if (this.scenario.maritalStatus == "divorced") {
       this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.personB, this.personB.fixedRetirementBenefitDate)
@@ -214,7 +217,7 @@ export class HomeComponent implements OnInit {
     if (this.scenario.maritalStatus == "married") {
       this.customSpouseBspousalDateError = this.checkValidSpousalInputs(this.personB, this.personA, this.personB.retirementBenefitDate, this.personB.spousalBenefitDate, this.personA.retirementBenefitDate)
     }
-    if (this.scenario.personBhasFiled === true){
+    if (this.scenario.personAhasFiled === true){
       this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.personA, this.personA.fixedRetirementBenefitDate)
     }
     if (this.scenario.maritalStatus == "divorced" || this.scenario.personBhasFiled === true){
