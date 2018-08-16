@@ -129,31 +129,26 @@ export class HomeComponent implements OnInit {
     "solutionsArray": []
   }
 
+
+  
   onSubmit() {
+    this.waitCursor()
+    setTimeout( () => {//whole rest of this function is in a setTimeout statement, to have 10 millisecond delay, to give DOM time to update with status message from waitCursor()
     let startTime = performance.now() //for testing performance
     console.log("-------------")
+    this.resetErrors()
     this.getPrimaryFormInputs()
     this.scenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
+    this.checkForFixedRetirementDateErrors()
 
-    //Call appropriate "maximizePV" function to find best solution
+
+    //If there are no fixedRetirementDate errors, call appropriate "maximizePV" function to find best solution
     if (this.scenario.maritalStatus == "single") {
-        //check for error in fixed filing date, if applicable
-        if (this.scenario.personAhasFiled === true) {
-          this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.personA, this.personA.fixedRetirementBenefitDate)
-        }
         if (!this.spouseAfixedRetirementDateError) {
           this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(this.personA, this.scenario)
         }
     }
     else if (this.scenario.maritalStatus == "married") {
-      //check for errors in fixed filing dates, if applicable
-        if (this.scenario.personAhasFiled === true) {
-          this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.personA, this.personA.fixedRetirementBenefitDate)
-        }
-        if (this.scenario.personBhasFiled === true) {
-          this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.personB, this.personB.fixedRetirementBenefitDate)
-        }
-      //if there are no errors in fixed filing dates, run applicable maximize function
         if (!this.spouseAfixedRetirementDateError && !this.spouseBfixedRetirementDateError){
           if (this.personA.initialAge < 70 && this.personB.initialAge < 70) {//i.e., if both spouses are under 70 (and we therefore need to iterate ages for both)
             this.solutionSet = this.presentvalueService.maximizeCouplePViterateBothPeople(this.personA, this.personB, this.scenario)
@@ -167,10 +162,6 @@ export class HomeComponent implements OnInit {
         }
     }
     else if (this.scenario.maritalStatus == "divorced") {
-      this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.personB, this.personB.fixedRetirementBenefitDate)
-      if (this.scenario.personAhasFiled === true) {
-        this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.personA, this.personA.fixedRetirementBenefitDate)
-      }
         if (!this.spouseAfixedRetirementDateError && !this.spouseBfixedRetirementDateError){
           this.solutionSet = this.presentvalueService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
         }
@@ -185,12 +176,14 @@ export class HomeComponent implements OnInit {
       let elapsed = (endTime - startTime) /1000
       this.statusMessage = ""
       console.log("Time elapsed: " + elapsed)
+    }, 25)//This is the back-half of the "setTimeout"
   }
 
   customDates() {
     if (this.primaryFormHasChanged === true){//Have to rerun the original calculation again if a primary input has changed.
       this.onSubmit()
     }
+    this.customPV = undefined //Makes custom date output disappear until new PV is calc'd. (We don't want a broken-looking half-table appearing if there is an error in new inputs.)
 
     //Reset input benefit dates, then get from user input
     this.personA.retirementBenefitDate = null
@@ -211,18 +204,14 @@ export class HomeComponent implements OnInit {
 
 
     //Check for errors in input dates
+    this.checkForFixedRetirementDateErrors()
     this.customSpouseAretirementDateError = this.checkValidRetirementInputs(this.personA, this.personA.retirementBenefitDate)
     this.customSpouseBretirementDateError = this.checkValidRetirementInputs(this.personB, this.personB.retirementBenefitDate)
     this.customSpouseAspousalDateError = this.checkValidSpousalInputs(this.personA, this.personB, this.personA.retirementBenefitDate, this.personA.spousalBenefitDate, this.personB.retirementBenefitDate)
     if (this.scenario.maritalStatus == "married") {
       this.customSpouseBspousalDateError = this.checkValidSpousalInputs(this.personB, this.personA, this.personB.retirementBenefitDate, this.personB.spousalBenefitDate, this.personA.retirementBenefitDate)
     }
-    if (this.scenario.personAhasFiled === true){
-      this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.personA, this.personA.fixedRetirementBenefitDate)
-    }
-    if (this.scenario.maritalStatus == "divorced" || this.scenario.personBhasFiled === true){
-      this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.personB, this.personB.fixedRetirementBenefitDate)
-    }
+
 
     //Get spousal benefit dates if there were no inputs from user (i.e. if spouseA won't actually file for a spousal benefit at any time, get the input that makes function run appropriately)
     if ( (this.personA.PIA > 0.5 * this.personB.PIA && this.personA.actualBirthDate > this.deemedFilingCutoff) || this.spouseAdeclineSpousal === true ) {
@@ -254,7 +243,7 @@ export class HomeComponent implements OnInit {
       //eliminate spouseAspousalDateError, because user didn't even input anything
       this.customSpouseBspousalDateError = undefined
     }
-    
+
     //Calc PV with input dates
       //Create a new ClaimingScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one. (This is necessary so that it can have a separate "outputTable" field from the original.)
         //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
@@ -294,8 +283,12 @@ export class HomeComponent implements OnInit {
     this.personB.initialAgeRounded = Math.round(this.personB.initialAge)
     this.personA.quitWorkDate = new Date(this.spouseAquitWorkYear, this.spouseAquitWorkMonth-1, 1)
     this.personB.quitWorkDate = new Date(this.spouseBquitWorkYear, this.spouseBquitWorkMonth-1, 1)
-    this.personA.fixedRetirementBenefitDate = new Date(this.spouseAfixedRetirementBenefitYear, this.spouseAfixedRetirementBenefitMonth-1, 1)
-    this.personB.fixedRetirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitYear, this.spouseBfixedRetirementBenefitMonth-1, 1)
+    if (this.spouseAfixedRetirementBenefitMonth && this.spouseAfixedRetirementBenefitYear){
+      this.personA.fixedRetirementBenefitDate = new Date(this.spouseAfixedRetirementBenefitYear, this.spouseAfixedRetirementBenefitMonth-1, 1)
+    }
+    if (this.spouseBfixedRetirementBenefitMonth && this.spouseBfixedRetirementBenefitYear){
+      this.personB.fixedRetirementBenefitDate = new Date(this.spouseBfixedRetirementBenefitYear, this.spouseBfixedRetirementBenefitMonth-1, 1)
+    }
     this.personA.mortalityTable = this.mortalityService.determineMortalityTable(this.spouseAgender, this.spouseAmortalityInput, this.spouseAassumedDeathAge)
     this.personB.mortalityTable = this.mortalityService.determineMortalityTable(this.spouseBgender, this.spouseBmortalityInput, this.spouseBassumedDeathAge)
     //set initialCalcDate
@@ -317,14 +310,23 @@ export class HomeComponent implements OnInit {
       if (this.scenario.maritalStatus == "divorced") {
         this.scenario.initialCalcDate = new Date(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
       }
+      //Reset conditionally-hidden inputs as necessary, based on changes to other inputs. (If a hidden input should be null/false based on status of other inputs, make sure it is null/false.)
+      this.resetHiddenInputs()
     }
 
   checkValidRetirementInputs(person:Person, retirementBenefitDate:Date) {
     let error = undefined
 
     //Make sure there is an input
-    if ( isNaN(retirementBenefitDate.getFullYear()) || isNaN(retirementBenefitDate.getMonth()) ) {
-      error = "Please enter a date."
+    //if ( isNaN(retirementBenefitDate.getFullYear()) || isNaN(retirementBenefitDate.getMonth()) ) {
+    if (!retirementBenefitDate || isNaN(retirementBenefitDate.getFullYear()) ){
+      if (this.scenario.maritalStatus == "divorced" && person.id == "B"){
+        error = "Your ex-spouse's filing date is necessary in order to run the calculation. If you do not know the answer, you can call the SSA to see if your ex-spouse has filed for his/her retirement benefit. Or you can guess as to your ex-spouse's plans (e.g., assume they file at age 66)."
+      }
+      else {//otherwise just give generic "please enter date" message
+        error = "Please enter a date."
+      }
+      return error
     }
 
     //Validation in case they try to start benefit earlier than possible or after 70
@@ -332,7 +334,7 @@ export class HomeComponent implements OnInit {
     if (person.actualBirthDate.getDate() > 2) {
       earliestDate.setMonth(earliestDate.getMonth()+1)
     }
-    if (retirementBenefitDate < earliestDate) {error = "Please enter a later date. You cannot file for retirement benefits before the first month in which you are 62 for the entire month."}
+    if (retirementBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for retirement benefits before the first month in which they are 62 for the entire month."}
     let latestDate: Date = new Date (person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth(), 1)
     if (retirementBenefitDate > latestDate) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
     return error
@@ -409,29 +411,49 @@ export class HomeComponent implements OnInit {
     document.getElementById("maximizeSubmit").style.cursor = "default";
   }
 
-  resetWorkInputs() {
-    if (this.spouseAworking === false) {
-      this.personA.monthlyEarnings = 0
-      this.spouseAquitWorkMonth = null
-      this.spouseAquitWorkYear = null
-    }
-    if (this.spouseBworking === false) {
-      this.personB.monthlyEarnings = 0
-      this.spouseBquitWorkMonth = null
-      this.spouseBquitWorkYear = null
-    }
+
+  resetHiddenInputs(){
+    //Reset "personB has filed" to false if divorced. (Otherwise can have bug if they selected married, yes personB has filed, then switch to divorced because the "has personB filed" input disappears and calc won't run.)
+      if (this.scenario.maritalStatus == "divorced" && this.personB.initialAge < 70) {
+        this.scenario.personBhasFiled = false
+      }
+    //reset earnings test inputs if "still working" is false
+      if (this.spouseAworking === false) {
+        this.personA.monthlyEarnings = 0
+        this.spouseAquitWorkMonth = null
+        this.spouseAquitWorkYear = null
+      }
+      if (this.spouseBworking === false) {
+        this.personB.monthlyEarnings = 0
+        this.spouseBquitWorkMonth = null
+        this.spouseBquitWorkYear = null
+      }
+    //reset fixed retirement date inputs if person has no fixed retirement date
+      if (this.scenario.personAhasFiled === false && this.personA.isDisabled === false) {
+        this.spouseAfixedRetirementBenefitMonth = null
+        this.spouseAfixedRetirementBenefitYear = null
+        this.personA.fixedRetirementBenefitDate = null
+      }
+      if (this.scenario.personBhasFiled === false && this.personA.isDisabled === false && this.scenario.maritalStatus == "married") {
+        this.spouseBfixedRetirementBenefitMonth = null
+        this.spouseBfixedRetirementBenefitYear = null
+        this.personB.fixedRetirementBenefitDate = null
+      }
   }
 
-  resetFixedRetirementDateInputs(){
-    if (this.scenario.personAhasFiled === false) {
-      this.spouseAfixedRetirementBenefitMonth = null
-      this.spouseAfixedRetirementBenefitYear = null
-      this.personA.fixedRetirementBenefitDate = null
+  resetErrors(){
+    this.spouseAfixedRetirementDateError = undefined
+    this.spouseBfixedRetirementDateError = undefined
+    this.customSpouseAretirementDateError = undefined
+    this.customSpouseBretirementDateError = undefined
+  }
+
+  checkForFixedRetirementDateErrors(){
+    if (this.scenario.personAhasFiled === true) {
+      this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.personA, this.personA.fixedRetirementBenefitDate)
     }
-    if (this.scenario.personBhasFiled === false) {
-      this.spouseBfixedRetirementBenefitMonth = null
-      this.spouseBfixedRetirementBenefitYear = null
-      this.personB.fixedRetirementBenefitDate = null
+    if ( (this.scenario.maritalStatus == "married" && this.scenario.personBhasFiled === true) || (this.scenario.maritalStatus == "divorced") )  {//If married and personB has filed, or if divorced
+      this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.personB, this.personB.fixedRetirementBenefitDate)
     }
   }
 

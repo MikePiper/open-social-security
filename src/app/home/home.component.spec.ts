@@ -38,7 +38,7 @@ describe('HomeComponent', () => {
       let person:Person = new Person("A")
       person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
       person.SSbirthDate = new Date (1960, 11, 1)
-      let retirementBenefitDate:Date = new Date(undefined, 7, 1)
+      let retirementBenefitDate:Date = new Date(undefined)
       expect(component.checkValidRetirementInputs(person, retirementBenefitDate))
         .toEqual("Please enter a date.")
     }))
@@ -49,7 +49,7 @@ describe('HomeComponent', () => {
       person.SSbirthDate = new Date (1960, 11, 1)
       let retirementBenefitDate:Date = new Date (2022, 11, 1) //62 years and 0 months (not possible for somebody born on not first or second of month)
       expect(component.checkValidRetirementInputs(person, retirementBenefitDate))
-        .toEqual("Please enter a later date. You cannot file for retirement benefits before the first month in which you are 62 for the entire month.")
+        .toEqual("Please enter a later date. A person cannot file for retirement benefits before the first month in which they are 62 for the entire month.")
     }))
 
     it('should reject retirementBenefitDate that is later than 70', inject([HomeComponent], (component: HomeComponent) => {
