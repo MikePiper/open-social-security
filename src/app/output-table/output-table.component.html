@@ -16,10 +16,12 @@
   <table class="table-bordered table-striped">
       <tr class="highlighted">
         <th>Year</th>
-        <th>Your Annual Retirement Benefit</th>
-        <th *ngIf=" scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced' ">Your Annual Spousal Benefit</th>
-        <th *ngIf=" scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced' ">Your Annual Survivor Benefit</th>
-        <th *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Annual Retirement Benefit</th>
+        <th *ngIf="personA.isDisabled === false">Your Annual Retirement Benefit</th>
+        <th *ngIf="personA.isDisabled === true">Your Annual Retirement/Disability Benefit</th>
+        <th *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">Your Annual Spousal Benefit</th>
+        <th *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">Your Annual Survivor Benefit</th>
+        <th *ngIf="scenario.maritalStatus == 'married' && personB.isDisabled === false">Your Spouse's Annual Retirement Benefit</th>
+        <th *ngIf="scenario.maritalStatus == 'married' && personB.isDisabled === true">Your Spouse's Annual Retirement/Disability Benefit</th>
         <th *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Annual Spousal Benefit</th>
         <th *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Annual Survivor Benefit</th>
         <th *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced' ">Total</th>

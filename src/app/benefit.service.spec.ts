@@ -496,4 +496,63 @@ describe('BenefitService', () => {
         .toEqual(0)
         //Should get benefits in Jan, Feb, March, April. They are post-ARF but before suspensionDRCs
   }))
+
+  //Testing calculateFamilyMaximum()
+  it('calculateFamilyMaximum() should calculate AIME appropriately in scenario with PIA below first bend point', inject([BenefitService], (service: BenefitService) => {
+    let person:Person = new Person("A")
+    person.isDisabled = true
+    person.fixedRetirementBenefitDate = new Date(2015, 5, 13)
+    person.PIA = 700
+    expect(service.calculateFamilyMaximum(person).AIME)
+        .toBeCloseTo(760.25, 1)
+    //2017 COLA = 2%. 2016 COLA = 0.3%. 2015 COLA = 0.
+    //700 / 1.02 / 1.003 / 1 = 684.22 <- PIAbeforeCOLAs
+    //In 2015, PIA bend points were $826 and $4980
+    //684.22 / 0.9 = $760.25
+  }))
+
+  it('calculateFamilyMaximum() should calculate AIME appropriately in disability scenario with PIA between first and second bend points', inject([BenefitService], (service: BenefitService) => {
+    let person:Person = new Person("A")
+    person.isDisabled = true
+    person.fixedRetirementBenefitDate = new Date(2015, 5, 13)
+    person.PIA = 1000
+    expect(service.calculateFamilyMaximum(person).AIME)
+        .toBeCloseTo(1557.44, 1)
+    //2017 COLA = 2%. 2016 COLA = 0.3%. 2015 COLA = 0.
+    //1000 / 1.02 / 1.003 / 1 = 977.46 <- PIAbeforeCOLAs
+    //In 2015, PIA bend points were $826 and $4980
+    //AIME = 977.46/0.32 - 1.8125 * 826 = 1557.44
+    //reverse check: AIME of 1557.44 -> 0.9 x 826 + 0.32 x (1557.44 - 826) = $977.46 Good!
+  }))
+
+  it('calculateFamilyMaximum() should calculate AIME appropriately in disability scenario with PIA beyond second bend point', inject([BenefitService], (service: BenefitService) => {
+    let person:Person = new Person("A")
+    person.isDisabled = true
+    person.fixedRetirementBenefitDate = new Date(2013, 5, 13)
+    person.PIA = 2400
+    expect(service.calculateFamilyMaximum(person).AIME)
+        .toBeCloseTo(6688.4, 1)
+    //2017 COLA = 2%. 2016 COLA = 0.3%. 2015 COLA = 0. 2014 COLA = 1.7%. 2013 COLA = 1.5%.
+    //2400 / 1.02 / 1.003 / 1 / 1.017 / 1.015 = 2272.60 <- PIAbeforeCOLAs
+    //In 2013, PIA bend points were $791 and $4768
+    //AIME = (2272.60 - 0.58*791 - 0.17*4768) / 0.15 = $6688.4
+    //reverse check: AIME of 6688.4 -> 0.9*791 + 0.32*(4768-791) + 0.15*(6688.4-4768) = 2272.6 Good!
+  }))
+
+  it('calculateFamilyMaximum() should calculate family maximum appropriately for person on disability', inject([BenefitService], (service: BenefitService) => {
+    let person:Person = new Person("A")
+    person.isDisabled = true
+    person.fixedRetirementBenefitDate = new Date(2015, 5, 13)
+    person.PIA = 2000
+    expect(service.calculateFamilyMaximum(person).familyMaximum)
+        .toBeCloseTo(2977.46, 1)
+    //2017 COLA = 2%. 2016 COLA = 0.3%. 2015 COLA = 0.
+    //2000 / 1.02 / 1.003 / 1  = 1954.92 <- PIAbeforeCOLAs
+    //In 2015, PIA bend points were $826 and $4980
+    //AIME = 1954.92/0.32 - 1.8125 * 826 = 4612
+    //85% of AIME = 3920.2
+    //family max (before COLAs) is lesser of 85% of AIME (3920.2) or 150% of PIAbeforeCOLA (2932.38) = 2932.38
+    //Now we add back COLAs (2000 - 1954.92 = 45.08)
+    //2932.38 + 45.08 = 2977.46
+  }))
 })

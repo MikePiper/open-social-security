@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core'
 import { ClaimingScenario } from '../data model classes/claimingscenario'
+import { Person } from '../data model classes/person'
 
 @Component({
   selector: 'app-output-table',
@@ -14,5 +15,7 @@ export class OutputTableComponent implements OnInit {
   }
   
   @Input() scenario:ClaimingScenario
+  @Input() personA:Person
+  @Input() personB:Person
 
 }
