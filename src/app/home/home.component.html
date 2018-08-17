@@ -106,7 +106,7 @@
           <label for="personAfiledNo">No</label>
         </div>
         <div *ngIf="scenario.personAhasFiled === true" class="form-inline">
-            <label *ngIf="scenario.personAhasFiled === true">Month in which you filed for your retirement benefit:</label>
+            <label *ngIf="scenario.personAhasFiled === true">Month and year in which you filed for your retirement benefit:</label>
             <select class="form-control" [(ngModel)]="spouseAfixedRetirementBenefitMonth" name="spouseAfixedRetirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
@@ -223,8 +223,8 @@
           </div>
       
           <div *ngIf="scenario.maritalStatus == 'divorced' || scenario.personBhasFiled === true" class="form-inline">
-            <label *ngIf="scenario.maritalStatus == 'divorced'">Month in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
-            <label *ngIf="scenario.personBhasFiled === true && scenario.maritalStatus == 'married'">Month in which your spouse filed for his/her retirement benefit:</label>
+            <label *ngIf="scenario.maritalStatus == 'divorced'">Month and year in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
+            <label *ngIf="scenario.personBhasFiled === true && scenario.maritalStatus == 'married'">Month and year in which your spouse filed for his/her retirement benefit:</label>
             <select class="form-control" [(ngModel)]="spouseBfixedRetirementBenefitMonth" name="spouseBfixedRetirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
