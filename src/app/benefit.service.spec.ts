@@ -555,4 +555,15 @@ describe('BenefitService', () => {
     //Now we add back COLAs (2000 - 1954.92 = 45.08)
     //2932.38 + 45.08 = 2977.46
   }))
+
+  it('calculateFamilyMaximum() should calculate family maximum appropriately based on normal retirement benefit', inject([BenefitService], (service: BenefitService) => {
+    let person:Person = new Person("A")
+    person.SSbirthDate = new Date(1952, 4, 1)//Person born in May 1952.
+    person.PIA = 2000
+    expect(service.calculateFamilyMaximum(person).familyMaximum)
+        .toBeCloseTo(3501.24, 1)
+    //person reaches 62 in 2014
+    //Family max bend points in 2014: 1042,	1505, 1962
+    //manual calc: 1.5 * 1042 + 2.72 * (1505 - 1042) + 1.34 * (1962 - 1505) + 1.75 * (2000 - 1962) = 3501.24
+  }))
 })

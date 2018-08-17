@@ -508,6 +508,24 @@ export class BenefitService {
       //Then we have to add COLAs back.
           person.familyMaximum = person.familyMaximum + (person.PIA - PIAbeforeCOLAs)
     }
+    else {//i.e., person isn't disabled
+    //Family max is 150% up to first bend point, 272% from first to second, 134% from second to third, 175% beyond that
+      let firstBendPoint: number = this.bendPointsArray[person.SSbirthDate.getFullYear() + 62 - 1979].firstFamilyMaxBendPoint
+      let secondBendPoint: number = this.bendPointsArray[person.SSbirthDate.getFullYear() + 62 - 1979].secondFamilyMaxBendPoint
+      let thirdBendPoint: number = this.bendPointsArray[person.SSbirthDate.getFullYear() + 62 - 1979].thirdFamilyMaxBendPoint
+      if (person.PIA <= firstBendPoint){
+        person.familyMaximum = 1.5 * person.PIA
+      }
+      else if (person.PIA <= secondBendPoint){
+        person.familyMaximum = 1.5 * firstBendPoint + 2.72 * (person.PIA - firstBendPoint)
+      }
+      else if (person.PIA <= thirdBendPoint){
+        person.familyMaximum = 1.5 * firstBendPoint + 2.72 * (secondBendPoint - firstBendPoint) + 1.34 * (person.PIA - secondBendPoint)
+      }
+      else {
+        person.familyMaximum = 1.5 * firstBendPoint + 2.72 * (secondBendPoint - firstBendPoint) + 1.34 * (thirdBendPoint - secondBendPoint) + 1.75 * (person.PIA - thirdBendPoint)
+      }
+    }
     return person
   }
 
