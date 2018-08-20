@@ -38,6 +38,9 @@ import { Person } from "./person"
           if (this.benefitType == "unsuspend") {
             this.message = "You unsuspend your retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
+          if (this.benefitType == "disabilityConversion"){
+            this.message = "At your full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + "), your disability benefit will automatically convert to a retirement benefit of the same amount."
+          }
         }
         if (person.id == "B") {
           if (this.benefitType == "retirementAlone"){
@@ -60,6 +63,9 @@ import { Person } from "./person"
           }
           if (this.benefitType == "unsuspend") {
             this.message = "Your spouse unsuspends his/her retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+          }
+          if (this.benefitType == "disabilityConversion"){
+            this.message = "At your spouse's full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + "), his/her disability benefit will automatically convert to a retirement benefit of the same amount."
           }
         }
     }

@@ -18,8 +18,14 @@ export class SolutionSetService {
       "solutionPV":savedPV,
       "solutionsArray": []
     }
-
-    if (person.isDisabled === true || scenario.personAhasFiled === true){//retirement benefit solution is a suspension solution
+    if (person.isDisabled === true) {
+      //create disability-converts-to-retirement solution object
+      var disabilityConversionDate = new Date(person.FRA)
+      disabilityConversionDate.setMinutes(disabilityConversionDate.getMinutes()-1)//Has to be immediately before actual FRA for sake output, because we want this object to come before a "suspend at FRA" object
+      var disabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", person, disabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
+      solutionSet.solutionsArray.push(disabilityConversionSolution)
+    }
+    if (person.isDisabled === true || scenario.personAhasFiled === true){//there may be a suspension solution
       person.DRCsViaSuspension = person.endSuspensionDate.getMonth() - person.beginSuspensionDate.getMonth() + (12 * (person.endSuspensionDate.getFullYear() - person.beginSuspensionDate.getFullYear()))
       var savedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(person, person.fixedRetirementBenefitDate)
       var savedEndSuspensionAge: number = person.endSuspensionDate.getFullYear() - person.SSbirthDate.getFullYear() + (person.endSuspensionDate.getMonth() - person.SSbirthDate.getMonth())/12
@@ -47,7 +53,12 @@ export class SolutionSetService {
         let retirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", person, person.retirementBenefitDate, savedRetirementBenefit, savedClaimingAgeYears, savedClaimingAgeMonths)
         solutionSet.solutionsArray.push(retirementSolution)
     }        
-
+    //Sort array by date
+    solutionSet.solutionsArray.sort(function(a,b){
+      // Turn your strings into dates, and then subtract them
+      // to get a value that is either negative, positive, or zero.
+      return a.date.getTime() - b.date.getTime()
+    })
     return solutionSet
   }
 
@@ -150,6 +161,23 @@ export class SolutionSetService {
             var personBspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalWithRetirement", personB, personB.spousalBenefitDate, personBsavedSpousalBenefit, personBsavedSpousalAgeYears, personBsavedSpousalAgeMonths)
           }
 
+        //personA disability stuff
+          if (personA.isDisabled === true) {
+            //create disability-converts-to-retirement solution object
+            var personAdisabilityConversionDate = new Date(personA.FRA)
+            personAdisabilityConversionDate.setMinutes(personAdisabilityConversionDate.getMinutes()-1)//Has to be immediately before actual FRA for sake output, because we want this object to come before a "suspend at FRA" object
+            var personAdisabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", personA, personAdisabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
+            solutionSet.solutionsArray.push(personAdisabilityConversionSolution)
+          }
+
+        //personB disability stuff
+          if (personB.isDisabled === true) {
+            //create disability-converts-to-retirement solution object
+            var personBdisabilityConversionDate = new Date(personB.FRA)
+            personBdisabilityConversionDate.setMinutes(personBdisabilityConversionDate.getMinutes()-1)//Has to be immediately before actual FRA for sake output, because we want this object to come before a "suspend at FRA" object
+            var personBdisabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", personB, personBdisabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
+            solutionSet.solutionsArray.push(personBdisabilityConversionSolution)
+          }
 
         //Push claimingSolution objects to solutionSet.solutionsArray (But don't push them if the benefit amount is zero.)
 

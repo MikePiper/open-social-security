@@ -48,7 +48,7 @@
               </select>
         </div>
 
-        <!--Disability Inputs for personA
+        <!--Disability Inputs for personA-->
           <span *ngIf="advanced === true">
             <label>Are you currently receiving Social Security disability benefits <em>and</em> expecting to stay on disability until your full retirement age?</label>
             <input type="radio" id="personAdisabled" [(ngModel)]="personA.isDisabled" name="personA.isDisabled" [value]="true">
@@ -56,21 +56,22 @@
             <input type="radio" id="personAnotDisabled" [(ngModel)]="personA.isDisabled" name="personA.isDisabled" [value]="false">
             <label for="personAnotDisabled">No</label>
           </span>
-        -->
+        <!--End Disability Inputs for personA-->
+        
         <div>
           <label *ngIf="personA.isDisabled === false">PIA</label>
           <label *ngIf="personA.isDisabled === true">Monthly amount of your disability benefit</label>
           <input type="number" [(ngModel)]="personA.PIA" name="personA.PIA" #spouseAPIAinput="ngModel" id="spouseAPIA" required pattern="[0-9]{1,7}">
           <span *ngIf="spouseAPIAinput.invalid" class="alert alert-danger">digits only, please</span>
           <p class="inputexplanation">Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age.
-            You can get an <em>estimate</em> of your PIA from your Social Security statement.
+            You can get an <em>estimate</em> of your PIA from <a href="https://www.ssa.gov/myaccount/" target="_blank">your Social Security statement</a>.
             You can also call the SSA to request that they calculate your PIA,
             or you can calculate it yourself with the calculator at <a href="https://socialsecurity.tools/" target="_blank">SocialSecurity.tools</a>
             or the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> calculator.</p>
         </div>
         
         <!--Begin SpouseA Earnings Test Inputs -->
-        <span *ngIf="advanced === true">
+        <span *ngIf="advanced === true && personA.isDisabled === false">
             <div>
                 <label>Are you still working?</label>
                 <input type="radio" id="spouseAworkingYes" [(ngModel)]="spouseAworking" name="spouseAworking" [value]="true">
@@ -97,7 +98,7 @@
         </span>
         <!--End Spouse A Earnings Test Inputs -->
 
-        <!--Begin Spouse A Already-Filed Inputs-->
+        <!--Begin Spouse A Already-Filed/Disability-began Inputs-->
         <div *ngIf="personA.isDisabled === false">
           <label>Have you already filed for retirement benefits?</label>
           <input type="radio" id="personAfiledYes" [(ngModel)]="scenario.personAhasFiled" name="scenario.personAhasFiled" [value]="true">
@@ -105,8 +106,9 @@
           <input type="radio" id="personAfiledNo" [(ngModel)]="scenario.personAhasFiled" name="scenario.personAhasFiled" [value]="false">
           <label for="personAfiledNo">No</label>
         </div>
-        <div *ngIf="scenario.personAhasFiled === true" class="form-inline">
+        <div *ngIf="scenario.personAhasFiled === true || personA.isDisabled === true" class="form-inline">
             <label *ngIf="scenario.personAhasFiled === true">Month and year in which you filed for your retirement benefit:</label>
+            <label *ngIf="personA.isDisabled === true">Month and year in which your disability benefit began:</label>
             <select class="form-control" [(ngModel)]="spouseAfixedRetirementBenefitMonth" name="spouseAfixedRetirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
@@ -167,7 +169,7 @@
           </select>
         </div>
 
-        <!--Disability Inputs for personB
+        <!--Disability Inputs for personB-->
           <span *ngIf="advanced === true">
             <label>Is your spouse currently receiving Social Security disability benefits <em>and</em> expecting to stay on disability until his/her full retirement age?</label>
             <input type="radio" id="personBdisabled" [(ngModel)]="personB.isDisabled" name="personB.isDisabled" [value]="true">
@@ -175,7 +177,7 @@
             <input type="radio" id="personBnotDisabled" [(ngModel)]="personB.isDisabled" name="personB.isDisabled" [value]="false">
             <label for="personBnotDisabled">No</label>
           </span>
-        -->
+        
 
         <!--Begin personB PIA Inputs -->
         <div>
@@ -184,9 +186,11 @@
           <input type="number" [(ngModel)]="personB.PIA" name="personB.PIA" #spouseBPIAinput="ngModel" required pattern="[0-9]{1,8}">
           <span *ngIf="spouseBPIAinput.invalid" class="alert alert-danger">digits only, please</span>
         </div>
+        <!--End Disability Inputs for personB-->
+
 
         <!--Begin SpouseB Earnings Test Inputs -->
-        <span *ngIf="advanced === true">
+        <span *ngIf="advanced === true && personB.isDisabled === false">
             <div *ngIf="scenario.maritalStatus == 'married'">
                 <label>Is your spouse still working?</label>
                 <input type="radio" id="spouseBworkingYes" [(ngModel)]="spouseBworking" name="spouseBworking" [value]="true">
@@ -213,7 +217,7 @@
 
 
 
-        <!--Ex-spouse Retirement Date Inputs (Also, SpouseB already-filed inputs-->
+        <!--Ex-spouse Retirement Date Inputs (Also, personB already-filed inputs or personB disability-began input) -->
           <div *ngIf="scenario.maritalStatus == 'married' && personB.isDisabled === false">
             <label>Has your spouse already filed for retirement benefits?</label>
             <input type="radio" id="personBfiledYes" [(ngModel)]="scenario.personBhasFiled" name="scenario.personBhasFiled" [value]="true">
@@ -222,9 +226,12 @@
             <label for="personBfiledNo">No</label>
           </div>
       
-          <div *ngIf="scenario.maritalStatus == 'divorced' || scenario.personBhasFiled === true" class="form-inline">
-            <label *ngIf="scenario.maritalStatus == 'divorced'">Month and year in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
-            <label *ngIf="scenario.personBhasFiled === true && scenario.maritalStatus == 'married'">Month and year in which your spouse filed for his/her retirement benefit:</label>
+          <div *ngIf=" (scenario.maritalStatus == 'married' && scenario.personBhasFiled === true)  ||
+                        (scenario.maritalStatus == 'married' && personB.isDisabled === true) ||
+                        (scenario.maritalStatus == 'divorced' && personB.isDisabled === false)" class="form-inline">
+            <label *ngIf="scenario.maritalStatus == 'married' && scenario.personBhasFiled === true">Month and year in which your spouse filed for his/her retirement benefit:</label>
+            <label *ngIf="scenario.maritalStatus == 'married' && personB.isDisabled === true">Month and year in which your spouse's disability benefit began:</label>
+            <label *ngIf="scenario.maritalStatus == 'divorced' && personB.isDisabled === false">Month and year in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
             <select class="form-control" [(ngModel)]="spouseBfixedRetirementBenefitMonth" name="spouseBfixedRetirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>

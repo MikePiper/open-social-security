@@ -204,7 +204,6 @@ export class HomeComponent implements OnInit {
 
 
     //Check for errors in input dates
-    this.checkForFixedRetirementDateErrors()
     this.customSpouseAretirementDateError = this.checkValidRetirementInputs(this.personA, this.personA.retirementBenefitDate)
     this.customSpouseBretirementDateError = this.checkValidRetirementInputs(this.personB, this.personB.retirementBenefitDate)
     this.customSpouseAspousalDateError = this.checkValidSpousalInputs(this.personA, this.personB, this.personA.retirementBenefitDate, this.personA.spousalBenefitDate, this.personB.retirementBenefitDate)
@@ -329,12 +328,12 @@ export class HomeComponent implements OnInit {
       return error
     }
 
-    //Validation in case they try to start benefit earlier than possible or after 70
+    //Validation in case they try to start retirement benefit earlier first 62-all-month month or after 70
     let earliestDate: Date = new Date(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
     if (person.actualBirthDate.getDate() > 2) {
       earliestDate.setMonth(earliestDate.getMonth()+1)
     }
-    if (retirementBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for retirement benefits before the first month in which they are 62 for the entire month."}
+    if (person.isDisabled === false && retirementBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for retirement benefits before the first month in which they are 62 for the entire month."}
     let latestDate: Date = new Date (person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth(), 1)
     if (retirementBenefitDate > latestDate) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
     return error
@@ -350,14 +349,15 @@ export class HomeComponent implements OnInit {
     }
 
     //Deemed filing validation
-    if (person.actualBirthDate < this.deemedFilingCutoff) {//old deemed filing rules apply: If spousalBenefitDate < FRA, it must be equal to ownRetirementBenefitDate
-        if ( spousalBenefitDate < person.FRA && spousalBenefitDate.getTime() !== ownRetirementBenefitDate.getTime() )
+    if (person.actualBirthDate < this.deemedFilingCutoff) {//old deemed filing rules apply: If spousalBenefitDate < FRA, it must not be before own retirementBenefitDate
+        if ( spousalBenefitDate < person.FRA && spousalBenefitDate.getTime() < ownRetirementBenefitDate.getTime() )
         {
         error = "You can't file a restricted application (i.e., application for spousal-only) prior to your FRA."
         }
     }
     else {//new deemed filing rules apply
       //Married version: own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's retirementBenefitDate
+      //Of note: entitlement to disability benefits + eligibility for spousal benefit does NOT cause deemed filing
         if(this.scenario.maritalStatus == "married") {
           if (ownRetirementBenefitDate < otherPersonRetirementBenefitDate) {
             secondStartDate = new Date(otherPersonRetirementBenefitDate)
@@ -365,29 +365,31 @@ export class HomeComponent implements OnInit {
           else {
             secondStartDate = new Date(ownRetirementBenefitDate)
           }
-          if ( spousalBenefitDate.getTime() !== secondStartDate.getTime() ) {
+          if ( spousalBenefitDate.getTime() !== secondStartDate.getTime() && person.isDisabled === false) {
           error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or your spouse's retirement benefit date."
           }
         }
       //Divorced version: own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's age62 date
+        //If otherPerson is already on disability benefits, "second start date" is just own retirement benefit date
+        //Of note: entitlement to own disability benefit + eligibility for spousal benefit does NOT cause deemed filing
         if(this.scenario.maritalStatus == "divorced") {
           let exSpouse62Date = new Date(otherPerson.actualBirthDate.getFullYear()+62, otherPerson.actualBirthDate.getMonth(), 1)
           if (otherPerson.actualBirthDate.getDate() > 2){
             exSpouse62Date.setMonth(exSpouse62Date.getMonth()+1)
           }
-          if (ownRetirementBenefitDate < exSpouse62Date) {
+          if (ownRetirementBenefitDate < exSpouse62Date && otherPerson.isDisabled === false) {//ie, if own retirement benefit date comes before otherPerson is 62, and otherPerson is not disabled
             secondStartDate = new Date(exSpouse62Date)
           }
-          else {
+          else {//ie., if own retirementBenefitDate comes after other person is 62, or if otherPerson is disabled
             secondStartDate = new Date(ownRetirementBenefitDate)
           }
-          if ( spousalBenefitDate.getTime() !== secondStartDate.getTime() ) {
+          if ( spousalBenefitDate.getTime() !== secondStartDate.getTime() && person.isDisabled === false) {
           error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month."
           }
         }
     }
 
-    //Validation in case they try to start benefit earlier than possible.
+    //Validation in case they try to start benefit earlier than own "62 all month" month.
     let earliestDate: Date = new Date(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
     if (person.actualBirthDate.getDate() > 2) {
       earliestDate.setMonth(earliestDate.getMonth()+1)
@@ -439,6 +441,19 @@ export class HomeComponent implements OnInit {
         this.spouseBfixedRetirementBenefitYear = null
         this.personB.fixedRetirementBenefitDate = null
       }
+    //If person is disabled, set "still working" to false, set "has filed" to false
+    if (this.personA.isDisabled === true){
+      this.spouseAworking = false
+      this.scenario.personAhasFiled = false
+    }
+    if (this.personB.isDisabled === true){
+      this.spouseBworking = false
+      this.scenario.personBhasFiled = false
+    }
+    //If divorce scenario *and* personB is on disability, give them a fixedRetirementBenefitDate of today (point being so that "ex-spouse must be 62" rule doesn't get in way)
+    if (this.scenario.maritalStatus == "divorced" && this.personB.isDisabled === true){
+      this.personB.fixedRetirementBenefitDate = new Date()
+    }
   }
 
   resetErrors(){
@@ -449,10 +464,12 @@ export class HomeComponent implements OnInit {
   }
 
   checkForFixedRetirementDateErrors(){
-    if (this.scenario.personAhasFiled === true) {
+    if (this.scenario.personAhasFiled === true || this.personA.isDisabled === true) {
       this.spouseAfixedRetirementDateError = this.checkValidRetirementInputs(this.personA, this.personA.fixedRetirementBenefitDate)
     }
-    if ( (this.scenario.maritalStatus == "married" && this.scenario.personBhasFiled === true) || (this.scenario.maritalStatus == "divorced") )  {//If married and personB has filed, or if divorced
+    if ( (this.scenario.maritalStatus == "married" && this.scenario.personBhasFiled === true) ||
+        (this.scenario.maritalStatus == 'married' && this.personB.isDisabled === true) ||
+        (this.scenario.maritalStatus == "divorced" && this.personB.isDisabled === false) )  {//If married and personB has filed or is disabled, or if divorced and personB is not disabled. (If divorced and personB *is* disabled, personB just automatically gets a date of today)
       this.spouseBfixedRetirementDateError = this.checkValidRetirementInputs(this.personB, this.personB.fixedRetirementBenefitDate)
     }
   }
