@@ -1,0 +1,53 @@
+      
+FAMILY MAX FOR PERSON ON DISABILITY
+
+    https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615742
+    family maximum is lesser of:
+    85% of the AIME (but not less than the PIA before COLAs), or
+    150% of the worker's PIA before COLAs.
+    ...then you add all the COLAs back.
+
+
+COMBINED FAMILY MAXIMUM (CFM)
+
+Rules:
+https://secure.ssa.gov/poms.nsf/lnx/0300615770
+
+    When a child is entitled on two different records, combined family max gets calculated (in year in which simultaneous entitlement first occurs)
+
+    CFM is smaller of:
+    1) sum of each worker's regular family max
+    2) [ (maximum taxable wages for year in question)/12, treated as an AIME (i.e. plugged into PIA formula) ] x 1.75
+
+    example: child is first entitled on two records in 2018
+        128,400 /12 = 10,700.
+
+        .9 (895) + .32 (5397 - 895) + .15 (10700 - 5397) = 3041.59
+
+        3041.59 x 1.75 = 5322, which is maximum possible CFM for 2018
+    
+
+APPLICATION OF FAMILY MAXIMUM (INCLUDING COMBINED FAMILY MAX)
+
+Rules and examples:
+https://secure.ssa.gov/poms.nsf/lnx/0300615768
+
+    1) If combined family max situation, calculate CFM. And family max is combined on record of higher earner.
+
+    2) Back out that worker's PIA to get amount left for rest of family.
+
+    3) Divide "amount left for rest of family" by number of other people entitled on that work record.
+
+    4) If any person in family is entitled on their own record in addition to being entitled on record of worker in question:
+        4a) Compare their own entitlement amount to their share of "amount left for rest of family"
+        4b) Their total benefit is now the greater of the two. But their benefit as spouse/child is now only the amount needed to bring total up to their share of "amount for rest of family"
+        4c) So now we calculate a new "amount left for *rest* of family" (i.e., family other than worker and other than this child/spouse). So it's original "amount for rest of family" minus amount that this person is actually getting as child/spouse.
+            (In effect, if a child/spouse is getting their own retirement/disability benefit, it leaves more to rest of family, because part of that person's total benefit isn't coming on record of worker.)
+
+    5) For each person, compare amount that they'd get under family max calculation above to the amount they'd get without regard to faxily max (e.g., 50% of worker's PIA). Then they get lesser of the two.
+
+    Example: Worker's PIA is $1,000 with family max of $1,600. Spouse and two children entitled on worker's record.
+                $600 available for rest of family. Divided by 3 people gives $200 per person (which does not exceed the $500 they'd each get without family max. So max is indeed relevant.)
+                If spouse also has own retirement benefit of $150, now only $50 counts toward family max. So it's $550 now that gets divided between two children.
+                    (Assuming here that combined family max isn't relevant -- kids aren't entitled on spouse's record for some reason. If they were, we'd calc combined family max and use that from beginning instead.)
+

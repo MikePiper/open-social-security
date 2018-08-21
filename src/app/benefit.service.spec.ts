@@ -497,6 +497,26 @@ describe('BenefitService', () => {
         //Should get benefits in Jan, Feb, March, April. They are post-ARF but before suspensionDRCs
   }))
 
+
+  //Testing calculatePIAfromAIME()
+  it('should calculate PIA appropriately from AIME with PIA below first bend point', inject([BenefitService], (service: BenefitService) => {
+    expect(service.calculatePIAfromAIME(700, 2015))
+        .toEqual(630)
+    //First bend point is 826 in 2015. 700 * 0.9 = 630
+  }))
+
+  it('should calculate PIA appropriately from AIME with PIA between first and second bend points', inject([BenefitService], (service: BenefitService) => {
+    expect(service.calculatePIAfromAIME(3000, 2013))
+        .toEqual(1418.78)
+    //Bend points in 2013 are 791 and 4768. 791 * 0.9 + (3000 - 791) * 0.32 = 1418.78
+  }))
+
+  it('should calculate PIA appropriately from AIME with PIA above second bend point', inject([BenefitService], (service: BenefitService) => {
+    expect(service.calculatePIAfromAIME(6000, 2018))
+        .toEqual(2336.59)
+    //Bend points in 2018 are 895 and 5397. 0.9 * 895 + 0.32 * (5397-895) + 0.15 * (6000-5397) = 2336.59
+  }))
+
   //Testing calculateFamilyMaximum()
   it('calculateFamilyMaximum() should calculate AIME appropriately in scenario with PIA below first bend point', inject([BenefitService], (service: BenefitService) => {
     let person:Person = new Person("A")
@@ -565,5 +585,27 @@ describe('BenefitService', () => {
     //person reaches 62 in 2014
     //Family max bend points in 2014: 1042,	1505, 1962
     //manual calc: 1.5 * 1042 + 2.72 * (1505 - 1042) + 1.34 * (1962 - 1505) + 1.75 * (2000 - 1962) = 3501.24
+  }))
+
+
+  //testing calculateCombinedFamilyMaximum()
+  it('should calculate combined family maximum appropriately in scenario where it is just sum of two maximums', inject([BenefitService], (service: BenefitService) => {
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
+    personA.familyMaximum = 1000
+    personB.familyMaximum = 1500
+    expect(service.calculateCombinedFamilyMaximum(personA, personB, 2016))
+        .toEqual(2500)
+    //Limit for combinedFamilyMax in 2016 was 4995.20, per POMS RS 00615.770. So we just combine the two
+  }))
+
+  it('should calculate combined family maximum appropriately in scenario where it is just sum of two maximums', inject([BenefitService], (service: BenefitService) => {
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
+    personA.familyMaximum = 2500
+    personB.familyMaximum = 2500
+    expect(service.calculateCombinedFamilyMaximum(personA, personB, 2013))
+        .toBeCloseTo(4708, 0)
+    //Limit for combinedFamilyMax in 2013 was 4708.30, per POMS RS 00615.770. So we use that limit in this case.
   }))
 })
