@@ -8,19 +8,6 @@ export class ClaimingScenario {
         benefitCutYear: number = 2034
         benefitCutPercentage: number = 23
 
-    //PersonA
-        personAhasFiled: boolean = false
-            //hasFiled must be here, rather than in Person class. Since the fixed/flexible function in SolutionSetService does not know which Person object is which, if "hasFiled" comes through on a person object,
-            //it will never know. It needs "personAhasfiled" to come through on scenario object so it can figure out which spouse is which for purpose of creating output.
-
-        //personAdeclineSpousal: boolean = false
-
-
-    //PersonB
-        personBhasFiled: boolean = false
-
-
-        //personBdeclineSpousal: boolean = false
 
         outputTable: any[][] = []
         outputTableComplete:boolean = false

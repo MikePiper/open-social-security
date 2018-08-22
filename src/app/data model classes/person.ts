@@ -12,6 +12,7 @@ export class Person {
     governmentPension: number = 0
     quitWorkDate: Date
     monthlyEarnings: number = 0
+    hasFiled:boolean = false
     isDisabled: boolean = false //true only if disabled and expecting to be on disability until FRA
     familyMaximum: number
     AIME: number //AIME as calculated in the year that entitlement began. Only used in disability scenarios (for calculating disability-related family max)

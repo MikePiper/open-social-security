@@ -66,6 +66,10 @@ export class BenefitService {
       spousalBenefit = 0
     }
 
+    //If otherPerson has a family max (ie if they're married) make sure spousal benefit doesn't cause family max to be exceeded
+    if (otherPerson.familyMaximum && spousalBenefit > otherPerson.familyMaximum - otherPerson.PIA){
+      spousalBenefit = otherPerson.familyMaximum - otherPerson.PIA
+    }
 
     return Number(spousalBenefit)
   }
@@ -244,7 +248,7 @@ export class BenefitService {
             calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs = 12
             calcYear.monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs = 12
         }
-      else if (scenario.personAhasFiled === false && scenario.personBhasFiled === false){//there's no possibility of suspension, because neither has filed
+      else if (personA.hasFiled === false && personB.hasFiled === false){//there's no possibility of suspension, because neither has filed
         //Do an annual loop that runs much faster:
         let monthsOfBenefit: number
         let ARFmonths:number
@@ -510,9 +514,16 @@ export class BenefitService {
     }
     else {//i.e., person isn't disabled
     //Family max is 150% up to first bend point, 272% from first to second, 134% from second to third, 175% beyond that
-      let firstBendPoint: number = this.annualIndexedValuesArray[person.SSbirthDate.getFullYear() + 62 - 1979].firstFamilyMaxBendPoint
-      let secondBendPoint: number = this.annualIndexedValuesArray[person.SSbirthDate.getFullYear() + 62 - 1979].secondFamilyMaxBendPoint
-      let thirdBendPoint: number = this.annualIndexedValuesArray[person.SSbirthDate.getFullYear() + 62 - 1979].thirdFamilyMaxBendPoint
+      if (this.annualIndexedValuesArray[person.SSbirthDate.getFullYear() + 62 - 1979]){//If bend points exist for year in which person turned 62. (Which mostly means if they turned 62 in the past, use those bend points.)
+        var firstBendPoint: number = this.annualIndexedValuesArray[person.SSbirthDate.getFullYear() + 62 - 1979].firstFamilyMaxBendPoint
+        var secondBendPoint: number = this.annualIndexedValuesArray[person.SSbirthDate.getFullYear() + 62 - 1979].secondFamilyMaxBendPoint
+        var thirdBendPoint: number = this.annualIndexedValuesArray[person.SSbirthDate.getFullYear() + 62 - 1979].thirdFamilyMaxBendPoint
+      }
+      else {//If they turn 62 in the future, use most recent published bend points.
+        var firstBendPoint: number = this.annualIndexedValuesArray[this.annualIndexedValuesArray.length - 1].firstFamilyMaxBendPoint
+        var secondBendPoint: number = this.annualIndexedValuesArray[this.annualIndexedValuesArray.length - 1].secondFamilyMaxBendPoint
+        var thirdBendPoint: number = this.annualIndexedValuesArray[this.annualIndexedValuesArray.length - 1].thirdFamilyMaxBendPoint
+      }
       if (person.PIA <= firstBendPoint){
         person.familyMaximum = 1.5 * person.PIA
       }
