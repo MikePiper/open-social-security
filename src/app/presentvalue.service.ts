@@ -154,13 +154,6 @@ export class PresentValueService {
         personA = countCoupleBenefitMonthsResult[1]
         personB = countCoupleBenefitMonthsResult[2]
 
-        if (printOutputTable === true){
-          console.log(calcYear.date.getFullYear())
-          console.log(calcYear.monthsOfPersonBretirementPreARF)
-          console.log(calcYear.monthsOfPersonBretirementPostARF)
-          console.log(calcYear.monthsOfPersonBretirementWithSuspensionDRCs)
-          console.log("personB.initialretirementbenefit: " + personB.initialRetirementBenefit)
-        }
 
       //Earnings test        
       if (earningsTestResult === undefined || calcYear.date.getFullYear() <= personA.FRA.getFullYear() || calcYear.date.getFullYear() <= personB.FRA.getFullYear()){//Only have to run earnings test if it's before FRA or if it has never been run (has to be run once for after-ARF values to be calc'd)
@@ -221,6 +214,18 @@ export class PresentValueService {
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
+      if (printOutputTable === true){
+        console.log(calcYear.date.getFullYear())
+        console.log("calcYear.personAannualRetirementBenefit: " + calcYear.personAannualRetirementBenefit)
+        console.log("calcYear.personBannualRetirementBenefit: " + calcYear.personBannualRetirementBenefit)
+        console.log("calcYear.personAannualSpousalBenefit: " + calcYear.personAannualSpousalBenefit)
+        console.log("calcYear.personBannualSpousalBenefit: " + calcYear.personBannualSpousalBenefit)
+        console.log("calcYear.personAannualSurvivorBenefit: " + calcYear.personBannualSurvivorBenefit)
+        console.log("calcYear.personBannualSurvivorBenefit: " + calcYear.personBannualSurvivorBenefit)
+        console.log("probabilityAalive: " + probabilityAalive)
+        console.log("probabilityBalive: " + probabilityBalive)
+        console.log("annualPV: " + annualPV)
+      }
 
       //Add discounted benefit to ongoing count of retirementPV, add 1 to each age, add 1 year to currentCalculationDate, and start loop over
         couplePV = couplePV + annualPV

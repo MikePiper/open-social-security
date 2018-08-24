@@ -248,7 +248,7 @@ export class BenefitService {
             calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs = 12
             calcYear.monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs = 12
         }
-      else if (personA.hasFiled === false && personB.hasFiled === false){//there's no possibility of suspension, because neither has filed
+      else if (personA.hasFiled === false && personB.hasFiled === false && personA.isDisabled === false && personB.isDisabled === false){//there's no possibility of suspension, because neither has filed or is disabled
         //Do an annual loop that runs much faster:
         let monthsOfBenefit: number
         let ARFmonths:number

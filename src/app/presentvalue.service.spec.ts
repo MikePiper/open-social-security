@@ -281,6 +281,45 @@ describe('PresentValueService', () => {
       .toBeCloseTo(487328, 0)//See "present value service" spreadsheet for a calculation of this figure
   }))
 
+  it('should return appropriate PV for married couple (where spousal benefits are relevant). PersonB is disabled prior to 62. He suspends FRA to 70. Person A files at 70 for retirement and spousal.', inject([PresentValueService], (service: PresentValueService) => { 
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    let birthdayService:BirthdayService = new BirthdayService()
+    let mortalityService:MortalityService = new MortalityService()
+    scenario.maritalStatus = "married"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personA.SSbirthDate = new Date(1970, 0, 1) //Spouse A born in Jan 1970 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
+    personB.SSbirthDate = new Date(1970, 0, 1) //Spouse B born in Jan 1970
+    scenario.initialCalcDate = new Date(personB.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which older reaches ages 62
+    personA.initialAgeRounded = 61
+    personB.initialAgeRounded = 61
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    personA.PIA = 500
+    personB.PIA = 1500
+        personB.isDisabled = true
+        personB.retirementBenefitDate = new Date (2018, 0, 1) //On disabillity as of age 48
+        personB.fixedRetirementBenefitDate = new Date (2018, 0, 1) //On disabillity as of age 48
+        //personB.hasFiled = true
+        //personB.retirementBenefitDate = new Date(personB.FRA)
+        //personB.fixedRetirementBenefitDate = new Date(personB.FRA)
+    personB.beginSuspensionDate = new Date(personB.FRA)
+    personB.endSuspensionDate = new Date(2040, 0, 1)//Suspends FRA-70
+    personA.retirementBenefitDate = new Date (2040, 0, 1) //Filing exactly at 70
+    personA.spousalBenefitDate = new Date (2040, 0, 1) //Later of two retirement benefit dates
+    personB.spousalBenefitDate = new Date (2040, 0, 1) //Later of two retirement benefit dates
+    personA.quitWorkDate = new Date(2018,3,1) //already quit working
+    personB.quitWorkDate = new Date(2018,3,1) //already quit working
+    scenario.discountRate = 1
+    expect(service.calculateCouplePV(personA, personB, scenario, false))
+      .toBeCloseTo(494744.55, 0)//See "present value service" spreadsheet for a calculation of this figure
+  }))
+
+
   //Test maximizeSinglePersonPV()
   it('should tell a single person to file ASAP with very high discount rate', inject([PresentValueService], (service: PresentValueService) => {
     let person:Person = new Person("A")
@@ -567,7 +606,42 @@ describe('PresentValueService', () => {
     //personBs should be somewhere early-ish, while personA should wait as long as possible (age 68)
   }))
 
-
+  it ('should tell personA to suspend from FRA to 70, if personA is disabled, personA has higher PIA, both have normal life expectancies', inject([PresentValueService], (service: PresentValueService) => {
+    let mortalityService:MortalityService = new MortalityService()
+    let birthdayService:BirthdayService = new BirthdayService()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.maritalStatus = "married"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personA.actualBirthDate = new Date(1960, 2, 11) //personA born in March 1960
+    personA.SSbirthDate = new Date(1960, 2, 1)
+    personB.actualBirthDate = new Date(1960, 2, 15) //personB born in March 1960
+    personB.SSbirthDate = new Date(1960, 2, 1)
+    personA.initialAge = 58
+    personB.initialAge = 58
+    personA.initialAgeRounded = 58
+    personB.initialAgeRounded = 58
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    personA.PIA = 2000
+    personB.PIA = 1100
+    personA.isDisabled = true
+    personA.fixedRetirementBenefitDate = new Date(2016, 5, 1) //On disability since June 2016
+    scenario.initialCalcDate = new Date(personA.fixedRetirementBenefitDate)//start calculation on date of personA's disability entitlement
+    personA.quitWorkDate = new Date(2010,3,1) //already quit working
+    personB.quitWorkDate = new Date(2015,3,1) //already quit working
+    scenario.discountRate = 1
+    expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[2].date)
+    .toEqual(new Date(personA.FRA))
+    expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[3].date)
+    .toEqual(new Date(2030, 2, 1))
+    //We're looking at items [2,3] in the array. This array should have 4 items in it: conversiontoDisability for personA, begin suspension for personA, end suspension for personA, retirement for personB
+    //personB retirement should be first (probably 2022-ish or soon thereafter), then other solution objects
+  }))
 
   //tests for maximizeCouplePViterateOnePerson
   it ('should tell a divorced user with significantly lower PIA to file ASAP', inject([PresentValueService], (service: PresentValueService) => {
