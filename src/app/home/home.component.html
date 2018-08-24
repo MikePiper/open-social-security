@@ -1,6 +1,6 @@
 <div id="container">
 <form #inputForm="ngForm" (ngSubmit)="onSubmit()" (change)="primaryFormInputChange()" novalidate>
-      <div>
+      <div class="no-print">
         <label for="advanced">Advanced Options</label>
         <input type="checkbox" [(ngModel)]="advanced" id="advanced" name="advanced" value="true">
       </div>
@@ -297,7 +297,7 @@
         <!--End "Other Inputs" such as discount rate and benefit cut assumptions -->
 
       <div>
-        <button type="submit" id="maximizeSubmit" class="btn btn-primary" >Submit</button>
+        <button type="submit" id="maximizeSubmit" class="btn btn-primary no-print" >Submit</button>
       </div>
       <div class="statusMessage" *ngIf="this.statusMessage">{{this.statusMessage}}</div>
       <p *ngIf="!this.solutionSet.solutionPV && scenario.maritalStatus == 'married'">If you are married, your computer will have to do quite a lot of math. Depending on your browser and your computer's processor speed, this calculation may take up to a minute. Please be patient with your computer.</p>
@@ -322,30 +322,34 @@
 
   <!--End Recommended Strategy Output-->
 
-  <hr>
 
   <!--Book Promo -->
-  <h2>Want to Learn More about Social Security? Pick Up a Copy of My Book:</h2>
-      <div class="row">
-          <p><em><strong>Social Security Made Simple: Social Security Retirement Benefits and Related Planning Topics Explained in 100 Pages or Less</strong></em></p>
-          <ul>
-            <li><a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank">See it on Amazon</a>.</li>
-          </ul>
-          <a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank"><img title="Book8FrontCovertilted150x200" class="bookimg" src="https://obliviousinvestor.com/wp-content/uploads/2018/05/NewBook8Covertiltedscaled.jpg" width="150" alt="Social Security cover"/></a>
-          <strong>Topics Covered in the Book:</strong>
-              <ul>
-                <li>How retirement benefits, spousal benefits, and widow(er) benefits are calculated,</li>
-                <li>How to decide the best age to claim your benefit,</li>
-                <li>How Social Security benefits are taxed and how that affects tax planning,</li>
-                <li><a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank">Click here to see the full list</a>.</li>
-              </ul>
-      </div>
+  <span class="no-print">
+    <hr>
+    <h2>Want to Learn More about Social Security? Pick Up a Copy of My Book:</h2>
+    <h3><em>Social Security Made Simple: Social Security Retirement Benefits and Related Planning Topics Explained in 100 Pages or Less</em></h3>
+        <div class="row">
+            <ul>
+              <li><a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank">See it on Amazon</a>.</li>
+            </ul>
+            <a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank"><img title="Book8FrontCovertilted150x200" class="bookimg" src="https://obliviousinvestor.com/wp-content/uploads/2018/05/NewBook8Covertiltedscaled.jpg" width="150" alt="Social Security cover"/></a>
+            <strong>Topics Covered in the Book:</strong>
+                <ul>
+                  <li>How retirement benefits, spousal benefits, and widow(er) benefits are calculated,</li>
+                  <li>How to decide the best age to claim your benefit,</li>
+                  <li>How Social Security benefits are taxed and how that affects tax planning,</li>
+                  <li><a href="http://www.amazon.com/dp/0997946512/?tag=openss-20" target="_blank">Click here to see the full list</a>.</li>
+                </ul>
+        </div>
+      <hr>
+      <hr>
+  </span>
   <!--End Book Promo -->
 
-    <hr>
+
 
   <!--Custom Date(s) Form -->
-  <form #customDateForm="ngForm" (ngSubmit)="customDates()" (change)="resetHiddenInputs()">
+  <form #customDateForm="ngForm" (ngSubmit)="customDates()" (change)="resetHiddenInputs()" [ngClass]="{'no-print': !this.customPV}">
   <h2>Test an alternative claiming strategy:</h2>
 
         <!--PersonA Custom Date Inputs -->
@@ -459,7 +463,7 @@
 
       </span>
     <div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary no-print">Submit</button>
     </div>
     <!--Custom Date Output -->
     <span *ngIf="this.customPV">
@@ -469,5 +473,9 @@
     <!--End Custom Date Output -->
   </form>
    <!--End Custom Date(s) Form -->
+
+   <a (click)="printPage()" class="no-print">Print this output (or save as pdf)</a>
+   
 </span>
+
 </div>

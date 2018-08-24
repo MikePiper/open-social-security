@@ -413,4 +413,8 @@ export class HomeComponent implements OnInit {
     this.getPrimaryFormInputs()
     this.primaryFormHasChanged = true
   }
+
+  printPage(){
+    window.print()
+  }
 }

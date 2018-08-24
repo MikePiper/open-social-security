@@ -74,3 +74,12 @@ label {
         position:static;
     }
 }
+
+@media print {
+    .no-print{
+      display:none;
+    }
+    .inputexplanation{
+        display:none;
+    }
+  }
