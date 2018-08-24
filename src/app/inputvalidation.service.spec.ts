@@ -2,6 +2,7 @@ import {TestBed, inject} from '@angular/core/testing'
 import {InputValidationService} from './inputvalidation.service'
 import {Person} from './data model classes/person'
 import {ClaimingScenario} from './data model classes/claimingscenario'
+import {BirthdayService} from './birthday.service'
 
 describe('InputvalidationService', () => {
   beforeEach(() => {
@@ -161,7 +162,93 @@ describe('InputvalidationService', () => {
   }))
 
   //Testing checkValidBeginSuspensionInput()
-  //Testing checkValidEndSuspensionInput()
+  it('should reject beginSuspensionDate that is prior to FRA', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let person:Person = new Person("A")
+    person.actualBirthDate = new Date (1953, 4, 29) //May 29, 1953
+    person.SSbirthDate = new Date (1953, 4, 1)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    person.beginSuspensionDate = new Date(2019, 3, 1)
+    expect(service.checkValidBeginSuspensionInput(person))
+      .toEqual("It is not possible to suspend benefits prior to full retirement age.")
+  }))
 
-  
+  it('should reject beginSuspensionDate that is in the past', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let person:Person = new Person("A")
+    person.actualBirthDate = new Date (1950, 4, 29) //May 29, 1950
+    person.SSbirthDate = new Date (1950, 4, 1)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    person.beginSuspensionDate = new Date(2018, 3, 1)
+    expect(service.checkValidBeginSuspensionInput(person))
+      .toEqual("Please enter a date no earlier than today.")
+  }))
+
+  it('should reject beginSuspensionDate that is prior to fixedRetirementBenefitDate', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let person:Person = new Person("A")
+    person.actualBirthDate = new Date (1960, 4, 29)
+    person.SSbirthDate = new Date (1960, 4, 1)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    person.fixedRetirementBenefitDate = new Date(2028, 1, 1) //Feb 2018
+    person.beginSuspensionDate = new Date(2027, 5, 1)
+    expect(service.checkValidBeginSuspensionInput(person))
+      .toEqual("It is not possible to suspend a retirement benefit prior to having filed for that retirement benefit.")
+  }))
+
+  it('should give no error message when beginSuspensionDate is a valid choice', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let person:Person = new Person("A")
+    person.actualBirthDate = new Date (1956, 4, 29)
+    person.SSbirthDate = new Date (1956, 4, 1)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    person.fixedRetirementBenefitDate = new Date(2018, 6, 1) //July 2018
+    person.beginSuspensionDate = new Date(2025, 3, 1)
+    expect(service.checkValidBeginSuspensionInput(person))
+      .toBeUndefined()
+  }))
+
+
+  //Testing checkValidEndSuspensionInput()
+  it('should give no error message when endSuspensionDate is a valid choice', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let person:Person = new Person("A")
+    person.actualBirthDate = new Date (1956, 4, 29)
+    person.SSbirthDate = new Date (1956, 4, 1)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    person.fixedRetirementBenefitDate = new Date(2018, 6, 1) //July 2018
+    person.beginSuspensionDate = new Date(2025, 3, 1)
+    person.endSuspensionDate = new Date(2026, 3, 1)
+    expect(service.checkValidEndSuspensionInput(person))
+      .toBeUndefined()
+  }))
+
+
+  it('should reject endSuspensionDate when it is prior to beginSuspensionDate', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let person:Person = new Person("A")
+    person.actualBirthDate = new Date (1956, 4, 29)
+    person.SSbirthDate = new Date (1956, 4, 1)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    person.fixedRetirementBenefitDate = new Date(2018, 6, 1) //July 2018
+    person.beginSuspensionDate = new Date(2026, 3, 1)
+    person.endSuspensionDate = new Date(2025, 3, 1)
+    expect(service.checkValidEndSuspensionInput(person))
+      .toEqual("Please enter an end-suspension date that is no earlier than the begin-suspension date.")
+  }))
+
+  it('should reject endSuspensionDate when it is after age 70', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let person:Person = new Person("A")
+    person.actualBirthDate = new Date (1956, 4, 29)
+    person.SSbirthDate = new Date (1956, 4, 1)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    person.fixedRetirementBenefitDate = new Date(2018, 6, 1) //July 2018
+    person.beginSuspensionDate = new Date(2026, 3, 1)
+    person.endSuspensionDate = new Date(2026, 5, 1)
+    expect(service.checkValidEndSuspensionInput(person))
+      .toEqual("Please enter a date no later than the month in which this person attains age 70.")
+  }))
+
+
 });
