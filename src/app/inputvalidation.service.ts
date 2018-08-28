@@ -138,7 +138,7 @@ export class InputValidationService {
     if (person.actualBirthDate < this.deemedFilingCutoff) {//old deemed filing rules apply: If spousalBenefitDate < FRA, it must not be before own retirementBenefitDate
         if ( spousalBenefitDate < person.FRA && spousalBenefitDate.getTime() < ownRetirementBenefitDate.getTime() )
         {
-        error = "You can't file a restricted application (i.e., application for spousal-only) prior to your FRA."
+        error = "A person cannot file a restricted application (i.e., application for spousal-only) prior to their FRA."
         }
     }
     else {//new deemed filing rules apply
@@ -152,7 +152,7 @@ export class InputValidationService {
             secondStartDate = new Date(ownRetirementBenefitDate)
           }
           if ( spousalBenefitDate.getTime() !== secondStartDate.getTime() && person.isDisabled === false) {
-          error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or your spouse's retirement benefit date."
+          error = "Per new deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date."
           }
         }
       //Divorced version: own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's age62 date
@@ -180,10 +180,10 @@ export class InputValidationService {
     if (person.actualBirthDate.getDate() > 2) {
       earliestDate.setMonth(earliestDate.getMonth()+1)
     }
-    if (spousalBenefitDate < earliestDate) {error = "Please enter a later date. You cannot file for spousal benefits before the first month in which you are 62 for the entire month."}
+    if (spousalBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for spousal benefits before the first month in which they are 62 for the entire month."}
 
     //Validation in case they try to start spousal benefit before other spouse's retirement benefit.
-    if (spousalBenefitDate < otherPersonRetirementBenefitDate && scenario.maritalStatus == "married") {error = "You cannot start your spousal benefit before your spouse has filed for his/her own retirement benefit."}
+    if (spousalBenefitDate < otherPersonRetirementBenefitDate && scenario.maritalStatus == "married") {error = "A person cannot start spousal benefits before the other spouse has filed for his/her own retirement benefit."}
 
     return error
   }
@@ -225,5 +225,6 @@ export class InputValidationService {
     }
     return error
   }
+
 
 }

@@ -109,7 +109,7 @@
         <div *ngIf="personA.hasFiled === true || personA.isDisabled === true" class="form-inline">
             <label *ngIf="personA.hasFiled === true">Month and year in which you filed for your retirement benefit:</label>
             <label *ngIf="personA.isDisabled === true">Month and year in which your disability benefit began:</label>
-            <select class="form-control" [(ngModel)]="personAfixedRetirementBenefitMonth" name="personAfixedRetirementBenefitMonth" required>
+            <select class="form-control" [(ngModel)]="personAfixedRetirementBenefitMonth" name="personAfixedRetirementBenefitMonth" id="personAfixedRetirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
             <select class="form-control" [(ngModel)]="personAfixedRetirementBenefitYear" name="personAfixedRetirementBenefitYear" required>
@@ -232,7 +232,7 @@
             <label *ngIf="scenario.maritalStatus == 'married' && personB.hasFiled === true">Month and year in which your spouse filed for his/her retirement benefit:</label>
             <label *ngIf="scenario.maritalStatus == 'married' && personB.isDisabled === true">Month and year in which your spouse's disability benefit began:</label>
             <label *ngIf="scenario.maritalStatus == 'divorced' && personB.isDisabled === false">Month and year in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
-            <select class="form-control" [(ngModel)]="personBfixedRetirementBenefitMonth" name="personBfixedRetirementBenefitMonth" required>
+            <select class="form-control" [(ngModel)]="personBfixedRetirementBenefitMonth" name="personBfixedRetirementBenefitMonth" id="personBfixedRetirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
             <select class="form-control" [(ngModel)]="personBfixedRetirementBenefitYear" name="personBfixedRetirementBenefitYear" required>
@@ -355,7 +355,7 @@
         <!--PersonA Custom Date Inputs -->
         <div class="form-inline" *ngIf="personA.hasFiled === false && personA.isDisabled === false">
             <label>Your month/year to claim retirement benefit:</label>
-            <select class="form-control" [(ngModel)]="customPersonAretirementBenefitMonth" name="customPersonAretirementBenefitMonth" required>
+            <select class="form-control" [(ngModel)]="customPersonAretirementBenefitMonth" name="customPersonAretirementBenefitMonth" id="customPersonAretirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
             <select class="form-control" [(ngModel)]="customPersonAretirementBenefitYear" name="customPersonAretirementBenefitYear" required>
@@ -367,7 +367,7 @@
         <span *ngIf="personA.initialAge < 70 && (personA.hasFiled === true || personA.isDisabled === true)">
           <div class="form-inline" *ngIf="personA.declineSuspension === false">
             <label>Month/year in which you will suspend your benefit:</label>
-            <select class="form-control" [(ngModel)]="customPersonAbeginSuspensionMonth" name="customPersonAbeginSuspensionMonth" required>
+            <select class="form-control" [(ngModel)]="customPersonAbeginSuspensionMonth" name="customPersonAbeginSuspensionMonth" id="customPersonAbeginSuspensionMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
             <select class="form-control" [(ngModel)]="customPersonAbeginSuspensionYear" name="customPersonAbeginSuspensionYear" required>
@@ -377,7 +377,7 @@
           </div>
           <div class="form-inline" *ngIf="personA.declineSuspension === false">
             <label>Month/year in which you will unsuspend your benefit:</label>
-            <select class="form-control" [(ngModel)]="customPersonAendSuspensionMonth" name="customPersonAendSuspensionMonth" required>
+            <select class="form-control" [(ngModel)]="customPersonAendSuspensionMonth" name="customPersonAendSuspensionMonth" id="customPersonAendSuspensionMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
             <select class="form-control" [(ngModel)]="customPersonAendSuspensionYear" name="customPersonAendSuspensionYear" required>
@@ -392,7 +392,7 @@
     <span *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">
         <div class="form-inline" *ngIf="(personA.PIA < 0.5 * personB.PIA || personA.actualBirthDate < this.deemedFilingCutoff) && personA.declineSpousal === false">
           <label>Your month/year to claim spousal benefit:</label>
-          <select class="form-control" [(ngModel)]="customPersonAspousalBenefitMonth" name="customPersonAspousalBenefitMonth" required>
+          <select class="form-control" [(ngModel)]="customPersonAspousalBenefitMonth" name="customPersonAspousalBenefitMonth" id="customPersonAspousalBenefitMonth" required>
             <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
           </select>
           <select class="form-control" [(ngModel)]="customPersonAspousalBenefitYear" name="customPersonAspousalBenefitYear" required>
@@ -409,7 +409,7 @@
         <!--PersonB Custom Date Inputs -->
         <div *ngIf="scenario.maritalStatus == 'married' && personB.hasFiled === false && personB.isDisabled === false" class="form-inline">
             <label>Your spouse's month/year to claim retirement benefit:</label>
-            <select class="form-control" [(ngModel)]="customPersonBretirementBenefitMonth" name="customPersonBretirementBenefitMonth" required>
+            <select class="form-control" [(ngModel)]="customPersonBretirementBenefitMonth" name="customPersonBretirementBenefitMonth" id="customPersonBretirementBenefitMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
             <select class="form-control" [(ngModel)]="customPersonBretirementBenefitYear" name="customPersonBretirementBenefitYear" required>
@@ -421,7 +421,7 @@
         <span *ngIf="scenario.maritalStatus == 'married' && personB.initialAge < 70 && (personB.hasFiled === true || personB.isDisabled === true)">
           <div class="form-inline" *ngIf="personB.declineSuspension === false">
             <label>Month/year in which your spouse will suspend his/her benefit:</label>
-            <select class="form-control" [(ngModel)]="customPersonBbeginSuspensionMonth" name="customPersonBbeginSuspensionMonth" required>
+            <select class="form-control" [(ngModel)]="customPersonBbeginSuspensionMonth" name="customPersonBbeginSuspensionMonth" id="customPersonBbeginSuspensionMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
             <select class="form-control" [(ngModel)]="customPersonBbeginSuspensionYear" name="customPersonBbeginSuspensionYear" required>
@@ -431,7 +431,7 @@
           </div>
           <div class="form-inline" *ngIf="personB.declineSuspension === false">
             <label>Month/year in which your spouse will unsuspend his/her benefit:</label>
-            <select class="form-control" [(ngModel)]="customPersonBendSuspensionMonth" name="customPersonBendSuspensionMonth" required>
+            <select class="form-control" [(ngModel)]="customPersonBendSuspensionMonth" name="customPersonBendSuspensionMonth" id="customPersonBendSuspensionMonth" required>
               <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
             </select>
             <select class="form-control" [(ngModel)]="customPersonBendSuspensionYear" name="customPersonBendSuspensionYear" required>
@@ -446,7 +446,7 @@
         <div class="form-inline" *ngIf="(personB.PIA < 0.5 * personA.PIA || personB.actualBirthDate < this.deemedFilingCutoff) && personB.declineSpousal === false">
           <span *ngIf="scenario.maritalStatus == 'married'">
           <label>Your spouse's month/year to claim spousal benefit:</label>
-          <select class="form-control" [(ngModel)]="customPersonBspousalBenefitMonth" name="customPersonBspousalBenefitMonth" required>
+          <select class="form-control" [(ngModel)]="customPersonBspousalBenefitMonth" name="customPersonBspousalBenefitMonth" id="customPersonBspousalBenefitMonth" required>
             <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
           </select>
           <select class="form-control" [(ngModel)]="customPersonBspousalBenefitYear" name="customPersonBspousalBenefitYear" required>

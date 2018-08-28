@@ -140,6 +140,7 @@ export class HomeComponent implements OnInit {
     this.getPrimaryFormInputs()
     this.scenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
     this.errorCollection = this.inputValidationService.checkForFixedRetirementDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
+    this.focusError()
 
     //If there are no fixedRetirementDate errors, call appropriate "maximizePV" function to find best solution
     if (this.errorCollection.hasErrors === false){
@@ -412,6 +413,39 @@ export class HomeComponent implements OnInit {
   primaryFormInputChange(){
     this.getPrimaryFormInputs()
     this.primaryFormHasChanged = true
+  }
+
+  focusError(){//Do all these checks in reverse order on screen, so that top-most check happens last (i.e., so that the input element that gets focused is the top-most one on the screen)
+    if (this.errorCollection.customPersonBspousalDateError){
+      document.getElementById("customPersonBspousalBenefitMonth").focus()
+    }
+    if (this.errorCollection.customPersonBendSuspensionDateError){
+      document.getElementById("customPersonBendSuspensionMonth").focus()
+    }
+    if (this.errorCollection.customPersonBbeginSuspensionDateError){
+      document.getElementById("customPersonBbeginSuspensionMonth").focus()
+    }
+    if (this.errorCollection.customPersonBretirementDateError){
+      document.getElementById("customPersonBretirementBenefitMonth").focus()
+    }
+    if (this.errorCollection.customPersonAspousalDateError){
+      document.getElementById("customPersonAspousalBenefitMonth").focus()
+    }
+    if (this.errorCollection.customPersonAendSuspensionDateError){
+      document.getElementById("customPersonAendSuspensionMonth").focus()
+    }
+    if (this.errorCollection.customPersonAbeginSuspensionDateError){
+      document.getElementById("customPersonAbeginSuspensionMonth").focus()
+    }
+    if (this.errorCollection.customPersonAretirementDateError){
+      document.getElementById("customPersonAretirementBenefitMonth").focus()
+    }
+    if (this.errorCollection.personBfixedRetirementDateError){
+      document.getElementById("personBfixedRetirementBenefitMonth").focus()
+    }
+    if (this.errorCollection.personAfixedRetirementDateError){
+      document.getElementById("personAfixedRetirementBenefitMonth").focus()
+    }
   }
 
   printPage(){
