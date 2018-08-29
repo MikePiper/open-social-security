@@ -20,12 +20,12 @@ export class InputValidationService {
     errorCollection.personBfixedRetirementDateError = undefined
     //check for errors
     if (personA.hasFiled === true || personA.isDisabled === true) {
-      errorCollection.personAfixedRetirementDateError = this.checkValidRetirementInputs(scenario, personA, personA.fixedRetirementBenefitDate)
+      errorCollection.personAfixedRetirementDateError = this.checkValidRetirementInput(scenario, personA, personA.fixedRetirementBenefitDate)
     }
     if ( (scenario.maritalStatus == "married" && personB.hasFiled === true) ||
         (scenario.maritalStatus == 'married' && personB.isDisabled === true) ||
         (scenario.maritalStatus == "divorced" && personB.isDisabled === false) )  {//If married and personB has filed or is disabled, or if divorced and personB is not disabled. (If divorced and personB *is* disabled, personB just automatically gets a date of today)
-      errorCollection.personBfixedRetirementDateError = this.checkValidRetirementInputs(scenario, personB, personB.fixedRetirementBenefitDate)
+      errorCollection.personBfixedRetirementDateError = this.checkValidRetirementInput(scenario, personB, personB.fixedRetirementBenefitDate)
     }
     //Set hasErrors boolean
     if (
@@ -62,13 +62,13 @@ export class InputValidationService {
     errorCollection.customPersonAendSuspensionDateError = undefined
     errorCollection.customPersonBendSuspensionDateError = undefined
     //Check for errors
-    errorCollection.customPersonAretirementDateError = this.checkValidRetirementInputs(scenario, personA, personA.retirementBenefitDate)
+    errorCollection.customPersonAretirementDateError = this.checkValidRetirementInput(scenario, personA, personA.retirementBenefitDate)
     if (scenario.maritalStatus == "married" || scenario.maritalStatus == "divorced"){
-      errorCollection.customPersonAspousalDateError = this.checkValidSpousalInputs(scenario, personA, personB, personA.retirementBenefitDate, personA.spousalBenefitDate, personB.retirementBenefitDate)
+      errorCollection.customPersonAspousalDateError = this.checkValidSpousalInput(scenario, personA, personB, personA.retirementBenefitDate, personA.spousalBenefitDate, personB.retirementBenefitDate)
     }
     if (scenario.maritalStatus == "married") {
-      errorCollection.customPersonBretirementDateError = this.checkValidRetirementInputs(scenario, personB, personB.retirementBenefitDate)
-      errorCollection.customPersonBspousalDateError = this.checkValidSpousalInputs(scenario, personB, personA, personB.retirementBenefitDate, personB.spousalBenefitDate, personA.retirementBenefitDate)
+      errorCollection.customPersonBretirementDateError = this.checkValidRetirementInput(scenario, personB, personB.retirementBenefitDate)
+      errorCollection.customPersonBspousalDateError = this.checkValidSpousalInput(scenario, personB, personA, personB.retirementBenefitDate, personB.spousalBenefitDate, personA.retirementBenefitDate)
     }
     if (personA.initialAge < 70 && personA.declineSuspension === false && (personA.isDisabled === true || personA.hasFiled === true)){
       errorCollection.customPersonAbeginSuspensionDateError = this.checkValidBeginSuspensionInput(personA)
@@ -101,7 +101,7 @@ export class InputValidationService {
     return errorCollection
   }
 
-  checkValidRetirementInputs(scenario:ClaimingScenario, person:Person, retirementBenefitDate:Date) {
+  checkValidRetirementInput(scenario:ClaimingScenario, person:Person, retirementBenefitDate:Date) {
     let error = undefined
 
     //Make sure there is an input
@@ -126,7 +126,7 @@ export class InputValidationService {
     return error
   }
 
-  checkValidSpousalInputs(scenario:ClaimingScenario, person:Person, otherPerson:Person, ownRetirementBenefitDate:Date, spousalBenefitDate:Date, otherPersonRetirementBenefitDate:Date) {
+  checkValidSpousalInput(scenario:ClaimingScenario, person:Person, otherPerson:Person, ownRetirementBenefitDate:Date, spousalBenefitDate:Date, otherPersonRetirementBenefitDate:Date) {
     let error = undefined
     let secondStartDate:Date = new Date(1,1,1)
     //Make sure there is an input (Note that this will get overrode in the customDates function after the error check, in cases where there isn't supposed to be a user input)

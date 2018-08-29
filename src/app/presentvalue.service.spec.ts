@@ -177,7 +177,6 @@ describe('PresentValueService', () => {
 
 
   it ('should return appropriate PV for basic divorce scenario', inject([PresentValueService], (service: PresentValueService) => {
-    //Can't really write a test for "one has filed" scenario for a still-married couple, because the PV will be different every time, as the person in question gets older (and remaing years decreases)
     let personA:Person = new Person("A")
     let personB:Person = new Person("B")
     let scenario:ClaimingScenario = new ClaimingScenario()
@@ -358,9 +357,10 @@ describe('PresentValueService', () => {
     person.quitWorkDate = new Date (2010, 3, 1) //Already quit working, so earnings test not relevant
     person.fixedRetirementBenefitDate = new Date (2017, 3, 1) //filed for retirement at age 64
     scenario.discountRate = 0
-    expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
+    let results = service.maximizeSinglePersonPV(person, scenario)
+    expect(results.solutionsArray[0].date)
       .toEqual(new Date(person.FRA))
-    expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[1].date)
+    expect(results.solutionsArray[1].date)
       .toEqual(new Date(2023, 3, 1))
     //solutionsArray should have two items: begin suspension date (at FRA), and end suspension date (age 70)
   }))
@@ -635,13 +635,55 @@ describe('PresentValueService', () => {
     personA.quitWorkDate = new Date(2010,3,1) //already quit working
     personB.quitWorkDate = new Date(2015,3,1) //already quit working
     scenario.discountRate = 1
-    expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[2].date)
+    let results = service.maximizeCouplePViterateBothPeople(personA, personB, scenario)
+    expect(results.solutionsArray[2].date)
     .toEqual(new Date(personA.FRA))
-    expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[3].date)
+    expect(results.solutionsArray[3].date)
     .toEqual(new Date(2030, 2, 1))
     //We're looking at items [2,3] in the array. This array should have 4 items in it: conversiontoDisability for personA, begin suspension for personA, end suspension for personA, retirement for personB
     //personB retirement should be first (probably 2022-ish or soon thereafter), then other solution objects
   }))
+
+  it ('should tell personB to file for spousal benefits ASAP (even though personA is younger than 62 at the time), if personA is disabled, personA has much higher PIA, one has a short life expectancy, and high-ish discount rate. Should also tell personA to suspend at FRA', inject([PresentValueService], (service: PresentValueService) => {
+    let mortalityService:MortalityService = new MortalityService()
+    let birthdayService:BirthdayService = new BirthdayService()
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
+    let scenario:ClaimingScenario = new ClaimingScenario()
+    scenario.maritalStatus = "married"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personA.actualBirthDate = new Date(1964, 3, 11) //personA born in April 1964
+    personA.SSbirthDate = new Date(1964, 3, 1)
+    personB.actualBirthDate = new Date(1960, 3, 15) //personB born in April 1960
+    personB.SSbirthDate = new Date(1960, 3, 1)
+    personA.initialAge = 54
+    personB.initialAge = 58
+    personA.initialAgeRounded = 54
+    personB.initialAgeRounded = 58
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    personA.PIA = 2800
+    personB.PIA = 1000
+    personA.isDisabled = true
+    personA.fixedRetirementBenefitDate = new Date(2018, 4, 1) //On disability since May 2018
+    scenario.initialCalcDate = new Date(personA.fixedRetirementBenefitDate)//start calculation on date of personA's disability entitlement
+    personA.quitWorkDate = new Date(2010,3,1) //already quit working
+    personB.quitWorkDate = new Date(2010,3,1) //already quit working
+    scenario.discountRate = 2
+    let results = service.maximizeCouplePViterateBothPeople(personA, personB, scenario)
+    expect(results.solutionsArray[0].date)
+    .toEqual(new Date(2022, 4, 1))//personB should file for retirement at 62 and 1 month
+    expect(results.solutionsArray[1].date)
+    .toEqual(new Date(2022, 4, 1))//personB should file for spousal at 62 and 1 month
+    expect(results.solutionsArray[3].date)
+    .toEqual(new Date(personA.FRA))//personA should suspend at FRA
+    //This array should have 5 items in it: retirement date for personB, spousal date for personB, conversiontoDisability for personA, begin suspension for personA, end suspension for personA
+  }))
+
+
 
   //tests for maximizeCouplePViterateOnePerson
   it ('should tell a divorced user with significantly lower PIA to file ASAP', inject([PresentValueService], (service: PresentValueService) => {
@@ -882,9 +924,10 @@ describe('PresentValueService', () => {
     personA.fixedRetirementBenefitDate = new Date (2017, 2, 1) //personA filed at 63
     personB.fixedRetirementBenefitDate = new Date (personB.FRA) //ex-spouse going to file at FRA
     scenario.discountRate = 0
-    expect(service.maximizeCouplePViterateOnePerson(scenario, personA, personB).solutionsArray[0].date)
+    let results = service.maximizeCouplePViterateOnePerson(scenario, personA, personB)
+    expect(results.solutionsArray[0].date)
     .toEqual(new Date(personA.FRA))
-    expect(service.maximizeCouplePViterateOnePerson(scenario, personA, personB).solutionsArray[1].date)
+    expect(results.solutionsArray[1].date)
     .toEqual(new Date(2024, 2, 1))
     //Should be 2 solution objects: begin suspension and end suspension date for personA. No spousal benefits for them. And it is divorce scenario, so no solution objects for personB.
   }))

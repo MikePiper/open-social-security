@@ -23,7 +23,7 @@ describe('InputvalidationService', () => {
     person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
     person.SSbirthDate = new Date (1960, 11, 1)
     let retirementBenefitDate:Date = new Date(2023, 7, 1)
-    expect(service.checkValidRetirementInputs(scenario, person, retirementBenefitDate))
+    expect(service.checkValidRetirementInput(scenario, person, retirementBenefitDate))
       .toEqual(undefined)
   }))
 
@@ -33,7 +33,7 @@ describe('InputvalidationService', () => {
     person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
     person.SSbirthDate = new Date (1960, 11, 1)
     let retirementBenefitDate:Date = new Date(undefined)
-    expect(service.checkValidRetirementInputs(scenario, person, retirementBenefitDate))
+    expect(service.checkValidRetirementInput(scenario, person, retirementBenefitDate))
       .toEqual("Please enter a date.")
   }))
 
@@ -43,7 +43,7 @@ describe('InputvalidationService', () => {
     person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
     person.SSbirthDate = new Date (1960, 11, 1)
     let retirementBenefitDate:Date = new Date (2022, 11, 1) //62 years and 0 months (not possible for somebody born on not first or second of month)
-    expect(service.checkValidRetirementInputs(scenario, person, retirementBenefitDate))
+    expect(service.checkValidRetirementInput(scenario, person, retirementBenefitDate))
       .toEqual("Please enter a later date. A person cannot file for retirement benefits before the first month in which they are 62 for the entire month.")
   }))
 
@@ -53,7 +53,7 @@ describe('InputvalidationService', () => {
     person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
     person.SSbirthDate = new Date (1960, 11, 1)
     let retirementBenefitDate:Date = new Date (2031, 0, 1) //70 years and 1 month
-    expect(service.checkValidRetirementInputs(scenario, person, retirementBenefitDate))
+    expect(service.checkValidRetirementInput(scenario, person, retirementBenefitDate))
       .toEqual("Please enter an earlier date. You do not want to wait beyond age 70.")
   }))
 
@@ -72,7 +72,7 @@ describe('InputvalidationService', () => {
     let ownRetirementBenefitDate:Date = new Date(2026, 11, 1) //own retirement at 66 years 0 months
     let spousalBenefitDate:Date = new Date(2026, 11, 1) //own spousal at 66 years 0 months
     let otherSpouseRetirementBenefitDate:Date = new Date(2022, 7, 1) //Before the attempted own spousal date, so that it's not a problem
-    expect(service.checkValidSpousalInputs(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
+    expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
       .toEqual(undefined)
   }))
 
@@ -89,7 +89,7 @@ describe('InputvalidationService', () => {
     let ownRetirementBenefitDate:Date = new Date(2026, 11, 1) //own retirement at 66 years 0 months
     let spousalBenefitDate:Date = new Date(2022, 10, 1) //own spousal at 61 years 11 months
     let otherSpouseRetirementBenefitDate:Date = new Date(2022, 7, 1) //Before the attempted own spousal date, so that *this* isn't the problem
-    expect(service.checkValidSpousalInputs(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
+    expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
       .toEqual("Please enter a later date. A person cannot file for spousal benefits before the first month in which they are 62 for the entire month.")
   }))
 
@@ -106,7 +106,7 @@ describe('InputvalidationService', () => {
     let ownRetirementBenefitDate:Date = new Date(2026, 11, 1) //own retirement at 66 years 0 months
     let spousalBenefitDate:Date = new Date(2026, 11, 1) //own spousal at 66 years 0 months
     let otherSpouseRetirementBenefitDate:Date = new Date(2031, 11, 1) //After the attempted own spousal date
-    expect(service.checkValidSpousalInputs(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
+    expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
       .toEqual("A person cannot start spousal benefits before the other spouse has filed for his/her own retirement benefit.")
   }))
 
@@ -123,7 +123,7 @@ describe('InputvalidationService', () => {
     let ownRetirementBenefitDate:Date = new Date(2026, 11, 1) //own retirement at 66 years 0 months
     let spousalBenefitDate:Date = new Date(2032, 0, 1) //own spousal at 66 years 0 months
     let otherSpouseRetirementBenefitDate:Date = new Date(2031, 11, 1) //After the attempted own spousal date
-    expect(service.checkValidSpousalInputs(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
+    expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
       .toEqual("Per new deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date.")
   }))
 
@@ -140,7 +140,7 @@ describe('InputvalidationService', () => {
     let ownRetirementBenefitDate:Date = new Date(2026, 11, 1) //own retirement at 66 years 0 months
     let spousalBenefitDate:Date = new Date(2032, 0, 1) //own spousal at 66 years 0 months
     let otherSpouseRetirementBenefitDate:Date = new Date(2031, 11, 1) //After the attempted own spousal date
-    expect(service.checkValidSpousalInputs(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
+    expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
       .toEqual("Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month.")
   }))
 
@@ -157,7 +157,7 @@ describe('InputvalidationService', () => {
     let ownRetirementBenefitDate:Date = new Date(2023, 4, 1) //own retirement at 70 years 0 months
     let spousalBenefitDate:Date = new Date(2017, 4, 1) //own spousal at 64 years 0 months (prior to FRA)
     let otherSpouseRetirementBenefitDate:Date = new Date(2017, 3, 1) //Prior to attempted ownSpousalBenefitDate, so that *this* isn't the problem
-    expect(service.checkValidSpousalInputs(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
+    expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
       .toEqual("A person cannot file a restricted application (i.e., application for spousal-only) prior to their FRA.")
   }))
 
