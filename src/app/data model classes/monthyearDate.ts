@@ -7,23 +7,36 @@ export class MonthYearDate {
     month:number
     year:number
 
-    //year and month are optional, because we also need an empty constructor for making today.
-    //Uselessday is optional because we don't use it at all. It's just there to allow old instantiation syntax of Date objects with (Year, Month, Day) to work
-    constructor(year?:number, month?:number, uselessday?:number){
-        if (!year && !month && !uselessday){
+    /*
+    options for constructor:
+        () for today
+        (year, month)
+        (year, month, day) <- day just gets ignored
+        (MonthYearDate object)
+    */
+    constructor(param1?, param2?, param3?){
+        if (!param1 && !param2 && !param3){//if no parameters, create MonthYearDate object for today
             var today:Date = new Date()
             this.year = today.getFullYear()
             this.month = today.getMonth()
         }
-        if (year % 1 != 0 || year < 0){
-            throw new Error("Invalid year for monthYearDate object")
+        else if (!isNaN(param1) && !isNaN(param2))//there is at least one parameter (due to prior check) and params 1 and 2 are numbers
+        {
+            if (param1 % 1 != 0 || param1 < 0){
+                throw new Error("Invalid year for monthYearDate object")
+            }
+            if (param2 % 1 != 0 || param2 < 0 || param2 > 11 ){
+                throw new Error("Invalid month for monthYearDate object")
+            }
+            this.year = param1
+            this.month = param2
         }
-        if (month % 1 != 0 || month < 0 || month > 11 ){
-            throw new Error("Invalid month for monthYearDate object")
+        else if (typeof param1 == "object"){//param1 and param2 aren't numbers.
+            this.year = param1.getFullYear()
+            this.month = param1.getMonth()
         }
-        this.year = year
-        this.month = month
     }
+
 
 
     getFullYear(){

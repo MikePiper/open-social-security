@@ -136,7 +136,7 @@ export class InputValidationService {
 
     //Deemed filing validation
     if (person.actualBirthDate < this.deemedFilingCutoff) {//old deemed filing rules apply: If spousalBenefitDate < FRA, it must not be before own retirementBenefitDate
-        if ( spousalBenefitDate < person.FRA && spousalBenefitDate.getTime() < ownRetirementBenefitDate.getTime() )
+        if ( spousalBenefitDate < person.FRA && spousalBenefitDate < ownRetirementBenefitDate )
         {
         error = "A person cannot file a restricted application (i.e., application for spousal-only) prior to their FRA."
         }
