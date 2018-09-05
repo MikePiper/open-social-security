@@ -7,7 +7,14 @@ export class monthYearDate {
     month:number
     year:number
 
-    constructor(year:number, month:number, uselessday?:number){
+    //year and month are optional, because we also need an empty constructor for making today.
+    //Uselessday is optional because we don't use it at all. It's just there to allow old instantiation syntax of Date objects with (Year, Month, Day) to work
+    constructor(year?:number, month?:number, uselessday?:number){
+        if (!year && !month && !uselessday){
+            var today:Date = new Date()
+            this.year = today.getFullYear()
+            this.month = today.getMonth()
+        }
         if (year % 1 != 0 || year < 0){
             throw new Error("Invalid year for monthYearDate object")
         }
