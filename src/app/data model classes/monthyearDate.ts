@@ -2,7 +2,7 @@
 This class exists in the hope of speeding up date processing relative to javascript's native date objects. 
 */
 
-export class monthYearDate {
+export class MonthYearDate {
 
     month:number
     year:number
