@@ -141,6 +141,16 @@ export class BenefitService {
     return Number(survivorBenefit)
   }
 
+  calculateChildBenefitParentLiving(parent:Person):number{
+    let childBenefit:number = parent.PIA * 0.5
+    return Number(childBenefit)
+  }
+
+  calculateChildBenefitParentDeceased(parent:Person):number{
+    let childBenefit:number = parent.PIA * 0.75
+    return Number(childBenefit)
+  }
+
   //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
   calculateAnnualRetirementBenefit(person:Person, calcYear:CalculationYear){
     if (person.id == 'A') {
