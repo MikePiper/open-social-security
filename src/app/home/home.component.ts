@@ -302,7 +302,6 @@ export class HomeComponent implements OnInit {
     this.personB.quitWorkDate = new MonthYearDate(this.personBquitWorkYear, this.personBquitWorkMonth-1, 1)
     if (this.personAfixedRetirementBenefitMonth && this.personAfixedRetirementBenefitYear){
       this.personA.fixedRetirementBenefitDate = new MonthYearDate(this.personAfixedRetirementBenefitYear, this.personAfixedRetirementBenefitMonth-1, 1)
-      console.log(this.personA.fixedRetirementBenefitDate)
     }
     if (this.personBfixedRetirementBenefitMonth && this.personBfixedRetirementBenefitYear){
       this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1, 1)
