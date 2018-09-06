@@ -50,7 +50,7 @@
 
         <!--Disability Inputs for personA-->
           <span *ngIf="advanced === true">
-            <label>Are you currently receiving Social Security disability benefits <em>and</em> expecting to stay on disability until your full retirement age?</label>
+            <label>Disability: are you currently receiving Social Security disability <em>and</em> expecting to stay on disability until your full retirement age?</label>
             <input type="radio" id="personAdisabled" [(ngModel)]="personA.isDisabled" name="personA.isDisabled" [value]="true">
             <label for="personAdisabled">Yes</label>
             <input type="radio" id="personAnotDisabled" [(ngModel)]="personA.isDisabled" name="personA.isDisabled" [value]="false">
@@ -171,7 +171,7 @@
 
         <!--Disability Inputs for personB-->
           <span *ngIf="advanced === true">
-            <label>Is your spouse currently receiving Social Security disability benefits <em>and</em> expecting to stay on disability until his/her full retirement age?</label>
+            <label>Disability: is your spouse currently receiving Social Security disability <em>and</em> expecting to stay on disability until his/her full retirement age?</label>
             <input type="radio" id="personBdisabled" [(ngModel)]="personB.isDisabled" name="personB.isDisabled" [value]="true">
             <label for="personBdisabled">Yes</label>
             <input type="radio" id="personBnotDisabled" [(ngModel)]="personB.isDisabled" name="personB.isDisabled" [value]="false">
@@ -474,7 +474,7 @@
   </form>
    <!--End Custom Date(s) Form -->
 
-   <a (click)="printPage()" class="no-print">Print this output (or save as pdf)</a>
+   <a (click)="printPage()" class="no-print">Print this output (Can also be used to save as pdf in most browsers.)</a>
    
 </span>
 

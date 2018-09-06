@@ -3,6 +3,7 @@ import {Person} from './data model classes/person'
 import {ClaimingScenario} from './data model classes/claimingscenario'
 import {ErrorCollection} from './data model classes/errorcollection'
 import { isUndefined } from 'util';
+import {MonthYearDate} from "./data model classes/monthyearDate"
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class InputValidationService {
 
   constructor() { }
   deemedFilingCutoff: Date = new Date(1954, 0, 1)
-  today:Date = new Date()
+  today:MonthYearDate = new MonthYearDate()
 
   //This has to happen separately from the function that checks for all the custom-date errors, becuase this relates to inputs from primary form
   checkForFixedRetirementDateErrors(errorCollection:ErrorCollection, scenario:ClaimingScenario, personA:Person, personB:Person){
@@ -101,7 +102,7 @@ export class InputValidationService {
     return errorCollection
   }
 
-  checkValidRetirementInput(scenario:ClaimingScenario, person:Person, retirementBenefitDate:Date) {
+  checkValidRetirementInput(scenario:ClaimingScenario, person:Person, retirementBenefitDate:MonthYearDate) {
     let error = undefined
 
     //Make sure there is an input
@@ -116,19 +117,19 @@ export class InputValidationService {
     }
 
     //Validation in case they try to start retirement benefit earlier first 62-all-month month or after 70
-    let earliestDate: Date = new Date(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
+    let earliestDate: MonthYearDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
     if (person.actualBirthDate.getDate() > 2) {
       earliestDate.setMonth(earliestDate.getMonth()+1)
     }
     if (person.isDisabled === false && retirementBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for retirement benefits before the first month in which they are 62 for the entire month."}
-    let latestDate: Date = new Date (person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth(), 1)
+    let latestDate: MonthYearDate = new MonthYearDate (person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth(), 1)
     if (retirementBenefitDate > latestDate) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
     return error
   }
 
-  checkValidSpousalInput(scenario:ClaimingScenario, person:Person, otherPerson:Person, ownRetirementBenefitDate:Date, spousalBenefitDate:Date, otherPersonRetirementBenefitDate:Date) {
+  checkValidSpousalInput(scenario:ClaimingScenario, person:Person, otherPerson:Person, ownRetirementBenefitDate:MonthYearDate, spousalBenefitDate:MonthYearDate, otherPersonRetirementBenefitDate:MonthYearDate) {
     let error = undefined
-    let secondStartDate:Date = new Date(1,1,1)
+    let secondStartDate:MonthYearDate = new MonthYearDate(1,1,1)
     //Make sure there is an input (Note that this will get overrode in the customDates function after the error check, in cases where there isn't supposed to be a user input)
     if ( isNaN(spousalBenefitDate.getFullYear()) || isNaN(spousalBenefitDate.getMonth()) ) {
       error = "Please enter a date."
@@ -146,12 +147,12 @@ export class InputValidationService {
       //Of note: entitlement to disability benefits + eligibility for spousal benefit does NOT cause deemed filing
         if(scenario.maritalStatus == "married") {
           if (ownRetirementBenefitDate < otherPersonRetirementBenefitDate) {
-            secondStartDate = new Date(otherPersonRetirementBenefitDate)
+            secondStartDate = new MonthYearDate(otherPersonRetirementBenefitDate)
           }
           else {
-            secondStartDate = new Date(ownRetirementBenefitDate)
+            secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
           }
-          if ( spousalBenefitDate.getTime() !== secondStartDate.getTime() && person.isDisabled === false) {
+          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isDisabled === false) {
           error = "Per new deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date."
           }
         }
@@ -159,24 +160,24 @@ export class InputValidationService {
         //If otherPerson is already on disability benefits, "second start date" is just own retirement benefit date
         //Of note: entitlement to own disability benefit + eligibility for spousal benefit does NOT cause deemed filing
         if(scenario.maritalStatus == "divorced") {
-          let exSpouse62Date = new Date(otherPerson.actualBirthDate.getFullYear()+62, otherPerson.actualBirthDate.getMonth(), 1)
+          let exSpouse62Date = new MonthYearDate(otherPerson.actualBirthDate.getFullYear()+62, otherPerson.actualBirthDate.getMonth(), 1)
           if (otherPerson.actualBirthDate.getDate() > 2){
             exSpouse62Date.setMonth(exSpouse62Date.getMonth()+1)
           }
           if (ownRetirementBenefitDate < exSpouse62Date && otherPerson.isDisabled === false) {//ie, if own retirement benefit date comes before otherPerson is 62, and otherPerson is not disabled
-            secondStartDate = new Date(exSpouse62Date)
+            secondStartDate = new MonthYearDate(exSpouse62Date)
           }
           else {//ie., if own retirementBenefitDate comes after other person is 62, or if otherPerson is disabled
-            secondStartDate = new Date(ownRetirementBenefitDate)
+            secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
           }
-          if ( spousalBenefitDate.getTime() !== secondStartDate.getTime() && person.isDisabled === false) {
+          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isDisabled === false) {
           error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month."
           }
         }
     }
 
     //Validation in case they try to start benefit earlier than own "62 all month" month.
-    let earliestDate: Date = new Date(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
+    let earliestDate: MonthYearDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
     if (person.actualBirthDate.getDate() > 2) {
       earliestDate.setMonth(earliestDate.getMonth()+1)
     }
@@ -220,7 +221,7 @@ export class InputValidationService {
       error = "Please enter an end-suspension date that is no earlier than the begin-suspension date."
     }
     //Can't be after 70
-    if (person.endSuspensionDate > new Date(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth(), 1)){
+    if (person.endSuspensionDate > new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth(), 1)){
       error = "Please enter a date no later than the month in which this person attains age 70."
     }
     return error

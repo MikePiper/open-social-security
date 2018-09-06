@@ -9,6 +9,7 @@ import {HttpClient} from '@angular/common/http'
 import {ClaimingScenario} from '../data model classes/claimingscenario'
 import {ErrorCollection} from '../data model classes/errorcollection'
 import {InputValidationService} from '../inputvalidation.service'
+import {MonthYearDate} from "../data model classes/monthyearDate"
 
 
 @Component({
@@ -34,7 +35,7 @@ export class HomeComponent implements OnInit {
   scenario:ClaimingScenario = new ClaimingScenario()
   customDateScenario:ClaimingScenario
   errorCollection:ErrorCollection = new ErrorCollection()
-  today:Date = new Date()
+  today:MonthYearDate = new MonthYearDate()
   deemedFilingCutoff: Date = new Date(1954, 0, 1)
   statusMessage:string = ""
   primaryFormHasChanged: boolean = false
@@ -184,48 +185,48 @@ export class HomeComponent implements OnInit {
     //If there are inputs for a fixedRetirementBenefitDate (as would be the case if person has filed or is on disability -- or for personB in a divorce scenario) go get those inputs and make a Date object
     //Then use that object for personA's retirementBenefitDate. Otherwise, use input from Custom Date form
     if (this.personAfixedRetirementBenefitMonth || this.personAfixedRetirementBenefitYear){
-      this.personA.fixedRetirementBenefitDate = new Date(this.personAfixedRetirementBenefitYear, this.personAfixedRetirementBenefitMonth-1, 1)
-      this.personA.retirementBenefitDate = new Date(this.personA.fixedRetirementBenefitDate)
+      this.personA.fixedRetirementBenefitDate = new MonthYearDate(this.personAfixedRetirementBenefitYear, this.personAfixedRetirementBenefitMonth-1, 1)
+      this.personA.retirementBenefitDate = new MonthYearDate(this.personA.fixedRetirementBenefitDate)
     }
     else {
-      this.personA.retirementBenefitDate = new Date(this.customPersonAretirementBenefitYear, this.customPersonAretirementBenefitMonth-1, 1)
+      this.personA.retirementBenefitDate = new MonthYearDate(this.customPersonAretirementBenefitYear, this.customPersonAretirementBenefitMonth-1, 1)
     }
     if (this.personBfixedRetirementBenefitMonth || this.personBfixedRetirementBenefitYear){
-      this.personB.fixedRetirementBenefitDate = new Date(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1, 1)
-      this.personB.retirementBenefitDate = new Date(this.personB.fixedRetirementBenefitDate)
+      this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1, 1)
+      this.personB.retirementBenefitDate = new MonthYearDate(this.personB.fixedRetirementBenefitDate)
     }
     else {
-      this.personB.retirementBenefitDate = new Date(this.customPersonBretirementBenefitYear, this.customPersonBretirementBenefitMonth-1, 1)
+      this.personB.retirementBenefitDate = new MonthYearDate(this.customPersonBretirementBenefitYear, this.customPersonBretirementBenefitMonth-1, 1)
 
     }
     //Get inputs for custom spousal dates
-    this.personA.spousalBenefitDate = new Date(this.customPersonAspousalBenefitYear, this.customPersonAspousalBenefitMonth-1, 1)
-    this.personB.spousalBenefitDate = new Date(this.customPersonBspousalBenefitYear, this.customPersonBspousalBenefitMonth-1, 1)
+    this.personA.spousalBenefitDate = new MonthYearDate(this.customPersonAspousalBenefitYear, this.customPersonAspousalBenefitMonth-1, 1)
+    this.personB.spousalBenefitDate = new MonthYearDate(this.customPersonBspousalBenefitYear, this.customPersonBspousalBenefitMonth-1, 1)
 
     //If there are inputs for custom begin/end suspension dates create Date objects and set applicable person field. (Set to 1900 if there are no inputs)
     if (this.customPersonAbeginSuspensionMonth || this.customPersonAbeginSuspensionYear) {
-      this.personA.beginSuspensionDate = new Date (this.customPersonAbeginSuspensionYear, this.customPersonAbeginSuspensionMonth-1, 1)
+      this.personA.beginSuspensionDate = new MonthYearDate (this.customPersonAbeginSuspensionYear, this.customPersonAbeginSuspensionMonth-1, 1)
     }
     else {
-      this.personA.beginSuspensionDate = new Date(1900, 0, 1)
+      this.personA.beginSuspensionDate = new MonthYearDate(1900, 0, 1)
     }
     if (this.customPersonAendSuspensionMonth || this.customPersonAendSuspensionYear) {
-      this.personA.endSuspensionDate = new Date (this.customPersonAendSuspensionYear, this.customPersonAendSuspensionMonth-1, 1)
+      this.personA.endSuspensionDate = new MonthYearDate (this.customPersonAendSuspensionYear, this.customPersonAendSuspensionMonth-1, 1)
     }
     else {
-      this.personA.endSuspensionDate = new Date(1900, 0, 1)
+      this.personA.endSuspensionDate = new MonthYearDate(1900, 0, 1)
     }
     if (this.customPersonBbeginSuspensionMonth || this.customPersonBbeginSuspensionYear) {
-      this.personB.beginSuspensionDate = new Date (this.customPersonBbeginSuspensionYear, this.customPersonBbeginSuspensionMonth-1, 1)
+      this.personB.beginSuspensionDate = new MonthYearDate (this.customPersonBbeginSuspensionYear, this.customPersonBbeginSuspensionMonth-1, 1)
     }
     else {
-      this.personB.beginSuspensionDate = new Date(1900, 0, 1)
+      this.personB.beginSuspensionDate = new MonthYearDate(1900, 0, 1)
     }
     if (this.customPersonBendSuspensionMonth || this.customPersonBendSuspensionYear) {
-      this.personB.endSuspensionDate = new Date (this.customPersonBendSuspensionYear, this.customPersonBendSuspensionMonth-1, 1)
+      this.personB.endSuspensionDate = new MonthYearDate (this.customPersonBendSuspensionYear, this.customPersonBendSuspensionMonth-1, 1)
     }
     else {
-      this.personB.endSuspensionDate = new Date(1900, 0, 1)
+      this.personB.endSuspensionDate = new MonthYearDate(1900, 0, 1)
     }
 
 
@@ -234,25 +235,25 @@ export class HomeComponent implements OnInit {
       //If married, personA spousal date is later of retirement dates
       if (this.scenario.maritalStatus == "married") {
         if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
-          this.personA.spousalBenefitDate = new Date(this.personA.retirementBenefitDate)
+          this.personA.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
         }
         else {
-          this.personA.spousalBenefitDate = new Date(this.personB.retirementBenefitDate)
+          this.personA.spousalBenefitDate = new MonthYearDate(this.personB.retirementBenefitDate)
         }
       }
       //If divorced, personA spousal date is personA retirementdate
       else if (this.scenario.maritalStatus == "divorced"){
-        this.personA.spousalBenefitDate = new Date(this.personA.retirementBenefitDate)
+        this.personA.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
       }
     }
     //Ditto, for personB
     if ( (this.personB.PIA > 0.5 * this.personA.PIA && this.personB.actualBirthDate > this.deemedFilingCutoff) || this.personB.declineSpousal === true ) {
       //personB spousal date is later of retirement dates
       if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
-        this.personB.spousalBenefitDate = new Date(this.personA.retirementBenefitDate)
+        this.personB.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
       }
       else {
-        this.personB.spousalBenefitDate = new Date(this.personB.retirementBenefitDate)
+        this.personB.spousalBenefitDate = new MonthYearDate(this.personB.retirementBenefitDate)
       }
     }
 
@@ -280,13 +281,13 @@ export class HomeComponent implements OnInit {
   //Use inputs to calculate ages, SSbirthdates, FRAs, etc. Happens every time an input in the primary form is changed.
   getPrimaryFormInputs() {
     this.personA.actualBirthDate = new Date (this.personAinputYear, this.personAinputMonth-1, this.personAinputDay)
-    this.personA.SSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.personAinputMonth, this.personAinputDay, this.personAinputYear))
-    this.personA.FRA = new Date(this.birthdayService.findFRA(this.personA.SSbirthDate))
-    this.personA.survivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.personA.SSbirthDate))
+    this.personA.SSbirthDate = this.birthdayService.findSSbirthdate(this.personAinputMonth, this.personAinputDay, this.personAinputYear)
+    this.personA.FRA = this.birthdayService.findFRA(this.personA.SSbirthDate)
+    this.personA.survivorFRA = this.birthdayService.findSurvivorFRA(this.personA.SSbirthDate)
     this.personB.actualBirthDate = new Date (this.personBinputYear, this.personBinputMonth-1, this.personBinputDay)
-    this.personB.SSbirthDate = new Date(this.birthdayService.findSSbirthdate(this.personBinputMonth, this.personBinputDay, this.personBinputYear))
-    this.personB.FRA = new Date(this.birthdayService.findFRA(this.personB.SSbirthDate))
-    this.personB.survivorFRA = new Date(this.birthdayService.findSurvivorFRA(this.personB.SSbirthDate))
+    this.personB.SSbirthDate = this.birthdayService.findSSbirthdate(this.personBinputMonth, this.personBinputDay, this.personBinputYear)
+    this.personB.FRA = this.birthdayService.findFRA(this.personB.SSbirthDate)
+    this.personB.survivorFRA = this.birthdayService.findSurvivorFRA(this.personB.SSbirthDate)
     this.personA.initialAge =  ( this.today.getMonth() - this.personA.SSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.personA.SSbirthDate.getFullYear()) )/12
       if (this.personA.initialAge > 70){
         this.personA.hasFiled = true
@@ -297,38 +298,39 @@ export class HomeComponent implements OnInit {
       }
     this.personA.initialAgeRounded = Math.round(this.personA.initialAge)
     this.personB.initialAgeRounded = Math.round(this.personB.initialAge)
-    this.personA.quitWorkDate = new Date(this.personAquitWorkYear, this.personAquitWorkMonth-1, 1)
-    this.personB.quitWorkDate = new Date(this.personBquitWorkYear, this.personBquitWorkMonth-1, 1)
+    this.personA.quitWorkDate = new MonthYearDate(this.personAquitWorkYear, this.personAquitWorkMonth-1, 1)
+    this.personB.quitWorkDate = new MonthYearDate(this.personBquitWorkYear, this.personBquitWorkMonth-1, 1)
     if (this.personAfixedRetirementBenefitMonth && this.personAfixedRetirementBenefitYear){
-      this.personA.fixedRetirementBenefitDate = new Date(this.personAfixedRetirementBenefitYear, this.personAfixedRetirementBenefitMonth-1, 1)
+      this.personA.fixedRetirementBenefitDate = new MonthYearDate(this.personAfixedRetirementBenefitYear, this.personAfixedRetirementBenefitMonth-1, 1)
+      console.log(this.personA.fixedRetirementBenefitDate)
     }
     if (this.personBfixedRetirementBenefitMonth && this.personBfixedRetirementBenefitYear){
-      this.personB.fixedRetirementBenefitDate = new Date(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1, 1)
+      this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1, 1)
     }
     this.personA.mortalityTable = this.mortalityService.determineMortalityTable(this.personAgender, this.personAmortalityInput, this.personAassumedDeathAge)
     this.personB.mortalityTable = this.mortalityService.determineMortalityTable(this.personBgender, this.personBmortalityInput, this.personBassumedDeathAge)
     //set initialCalcDate
       //if single, it's year in which user turns 62
         if (this.scenario.maritalStatus == "single") {
-          this.scenario.initialCalcDate = new Date(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
+          this.scenario.initialCalcDate = new MonthYearDate(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
         }
       //If married, set initialCalcDate to Jan 1 of year in which first spouse reaches age 62
         if (this.scenario.maritalStatus == "married"){
           if (this.personA.SSbirthDate < this.personB.SSbirthDate)
             {
-            this.scenario.initialCalcDate = new Date(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
+              this.scenario.initialCalcDate = new MonthYearDate(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
             }
           else {
-          this.scenario.initialCalcDate = new Date(this.personB.SSbirthDate.getFullYear()+62, 0, 1)
+            this.scenario.initialCalcDate = new MonthYearDate(this.personB.SSbirthDate.getFullYear()+62, 0, 1)
             }
         }
       //If divorced, we want initialCalcDate to be Jan 1 of personA's age62 year.
         if (this.scenario.maritalStatus == "divorced") {
-          this.scenario.initialCalcDate = new Date(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
+          this.scenario.initialCalcDate = new MonthYearDate(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
         }
       //Don't let initialCalcDate be earlier than this year
         if (this.scenario.initialCalcDate.getFullYear() < this.today.getFullYear()){
-          this.scenario.initialCalcDate = new Date(this.today.getFullYear(), 0, 1)
+          this.scenario.initialCalcDate = new MonthYearDate(this.today.getFullYear(), 0, 1)
         }
       //Reset conditionally-hidden inputs as necessary, based on changes to other inputs. (If a hidden input should be null/false based on status of other inputs, make sure it is null/false.)
       this.resetHiddenInputs()
@@ -385,7 +387,7 @@ export class HomeComponent implements OnInit {
     }
     //If divorce scenario *and* personB is on disability, give them a fixedRetirementBenefitDate of today (point being so that "ex-spouse must be 62" rule doesn't get in way)
     if (this.scenario.maritalStatus == "divorced" && this.personB.isDisabled === true){
-      this.personB.fixedRetirementBenefitDate = new Date()
+      this.personB.fixedRetirementBenefitDate = new MonthYearDate()
     }
     //If "declineSpousal" or "declineSuspension" inputs are checked in custom date form, reset related month/year inputs
     if (this.personA.declineSpousal === true){

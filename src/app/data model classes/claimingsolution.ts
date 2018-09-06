@@ -1,15 +1,16 @@
 import { Person } from "./person"
+import {MonthYearDate} from "./monthyearDate"
 
   export class ClaimingSolution {
     maritalStatus: string
     benefitType: string //retirementAlone, retirementReplacingSpousal, spousalAlone, spousalWithRetirement, survivor
-    date: Date
+    date: MonthYearDate
     benefitAmount: number
     ageYears: number
     ageMonths: number
     message: string //build one of messages below
 
-    constructor(maritalStatus: string, typeOfBenefit:string, person:Person, date:Date, benefitAmount: number, ageYears:number, ageMonths:number){
+    constructor(maritalStatus: string, typeOfBenefit:string, person:Person, date:MonthYearDate, benefitAmount: number, ageYears:number, ageMonths:number){
         this.maritalStatus = maritalStatus
         this.benefitType = typeOfBenefit
         this.date = date

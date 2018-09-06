@@ -4,6 +4,7 @@ import {SolutionSet} from './data model classes/solutionset'
 import {ClaimingSolution} from './data model classes/claimingsolution'
 import {Person} from './data model classes/person'
 import {ClaimingScenario} from './data model classes/claimingscenario'
+import {MonthYearDate} from "./data model classes/monthyearDate"
 
 
 @Injectable({
@@ -20,8 +21,7 @@ export class SolutionSetService {
     }
     if (person.isDisabled === true) {
       //create disability-converts-to-retirement solution object
-      var disabilityConversionDate = new Date(person.FRA)
-      disabilityConversionDate.setMinutes(disabilityConversionDate.getMinutes()-1)//Has to be immediately before actual FRA for sake output, because we want this object to come before a "suspend at FRA" object
+      var disabilityConversionDate = new MonthYearDate(person.FRA)
       var disabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", person, disabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
       solutionSet.solutionsArray.push(disabilityConversionSolution)
     }
@@ -32,7 +32,7 @@ export class SolutionSetService {
       var savedEndSuspensionAgeYears: number = Math.floor(savedEndSuspensionAge)
       var savedEndSuspensionAgeMonths: number = Math.round((savedEndSuspensionAge%1)*12)
       //Create begin/end suspension solution objects
-      if (person.beginSuspensionDate.getTime() == person.FRA.getTime()){
+      if (person.beginSuspensionDate.valueOf() == person.FRA.valueOf()){
         var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", person, person.beginSuspensionDate, savedRetirementBenefit, 0, 0)
         var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedRetirementBenefit, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
       }
@@ -40,7 +40,7 @@ export class SolutionSetService {
         var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", person, person.beginSuspensionDate, savedRetirementBenefit, 0, 0)
         var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedRetirementBenefit, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
       }
-      if (person.beginSuspensionDate.getTime() != person.endSuspensionDate.getTime()){//If suspension solution, only push if begin/end suspension dates are different
+      if (person.beginSuspensionDate.valueOf() != person.endSuspensionDate.valueOf()){//If suspension solution, only push if begin/end suspension dates are different
         solutionSet.solutionsArray.push(beginSuspensionSolution)
         solutionSet.solutionsArray.push(endSuspensionSolution)
       }
@@ -57,7 +57,7 @@ export class SolutionSetService {
     solutionSet.solutionsArray.sort(function(a,b){
       // Turn your strings into dates, and then subtract them
       // to get a value that is either negative, positive, or zero.
-      return a.date.getTime() - b.date.getTime()
+      return a.date.valueOf() - b.date.valueOf()
     })
     return solutionSet
   }
@@ -77,7 +77,7 @@ export class SolutionSetService {
               var personAsavedEndSuspensionAgeYears: number = Math.floor(personAsavedEndSuspensionAge)
               var personAsavedEndSuspensionAgeMonths: number = Math.round((personAsavedEndSuspensionAge%1)*12)
               //Create begin/end suspension solution objects
-              if (personA.beginSuspensionDate.getTime() == personA.FRA.getTime()){
+              if (personA.beginSuspensionDate.valueOf() == personA.FRA.valueOf()){
                 var personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personA, personA.beginSuspensionDate, personAsavedRetirementBenefit, 0, 0)
                 var personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personA.endSuspensionDate, personAsavedRetirementBenefit, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
               }
@@ -108,7 +108,7 @@ export class SolutionSetService {
               var personBsavedEndSuspensionAgeYears: number = Math.floor(personBsavedEndSuspensionAge)
               var personBsavedEndSuspensionAgeMonths: number = Math.round((personBsavedEndSuspensionAge%1)*12)
               //create begin/end suspension solution objects      
-              if (personB.beginSuspensionDate.getTime() == personB.FRA.getTime()){
+              if (personB.beginSuspensionDate.valueOf() == personB.FRA.valueOf()){
                 var personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personB, personB.beginSuspensionDate, personBsavedRetirementBenefit, 0, 0)
                 var personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personB.endSuspensionDate, personBsavedRetirementBenefit, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
               }
@@ -164,8 +164,7 @@ export class SolutionSetService {
         //personA disability stuff
           if (personA.isDisabled === true) {
             //create disability-converts-to-retirement solution object
-            var personAdisabilityConversionDate = new Date(personA.FRA)
-            personAdisabilityConversionDate.setMinutes(personAdisabilityConversionDate.getMinutes()-1)//Has to be immediately before actual FRA for sake output, because we want this object to come before a "suspend at FRA" object
+            var personAdisabilityConversionDate = new MonthYearDate(personA.FRA)
             var personAdisabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", personA, personAdisabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
             solutionSet.solutionsArray.push(personAdisabilityConversionSolution)
           }
@@ -173,8 +172,7 @@ export class SolutionSetService {
         //personB disability stuff
           if (personB.isDisabled === true) {
             //create disability-converts-to-retirement solution object
-            var personBdisabilityConversionDate = new Date(personB.FRA)
-            personBdisabilityConversionDate.setMinutes(personBdisabilityConversionDate.getMinutes()-1)//Has to be immediately before actual FRA for sake output, because we want this object to come before a "suspend at FRA" object
+            var personBdisabilityConversionDate = new MonthYearDate(personB.FRA)
             var personBdisabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", personB, personBdisabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
             solutionSet.solutionsArray.push(personBdisabilityConversionSolution)
           }
@@ -184,7 +182,7 @@ export class SolutionSetService {
             //personA retirement/suspension
             if (personA.initialAge <= 70){//we don't want to push retirement/suspension solutions if the person is over 70 when filling out calculator
               if (personAbeginSuspensionSolution) {//If suspension solution, only push if begin/end suspension dates are different
-                if (personA.beginSuspensionDate.getTime() != personA.endSuspensionDate.getTime()){
+                if (personA.beginSuspensionDate.valueOf() != personA.endSuspensionDate.valueOf()){
                   solutionSet.solutionsArray.push(personAbeginSuspensionSolution)
                   solutionSet.solutionsArray.push(personAendSuspensionSolution)
                 }
@@ -197,7 +195,7 @@ export class SolutionSetService {
             //personB retirement/suspension
             if (personB.initialAge <= 70 && scenario.maritalStatus == "married") {//We don't want to push retirement/suspension solutions if personB is over 70 or if it's a divorce scenario
               if (personBbeginSuspensionSolution) {//If suspension solution, only push if begin/end suspension dates are different
-                if (personB.beginSuspensionDate.getTime() != personB.endSuspensionDate.getTime()){
+                if (personB.beginSuspensionDate.valueOf() != personB.endSuspensionDate.valueOf()){
                   solutionSet.solutionsArray.push(personBbeginSuspensionSolution)
                   solutionSet.solutionsArray.push(personBendSuspensionSolution)
                 }
@@ -229,7 +227,7 @@ export class SolutionSetService {
         solutionSet.solutionsArray.sort(function(a,b){
           // Turn your strings into dates, and then subtract them
           // to get a value that is either negative, positive, or zero.
-          return a.date.getTime() - b.date.getTime()
+          return a.date.valueOf() - b.date.valueOf()
         })
         return solutionSet
   }

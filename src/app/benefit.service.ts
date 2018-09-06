@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {Person} from './data model classes/person';
 import { CalculationYear } from './data model classes/calculationyear';
 import { ClaimingScenario } from './data model classes/claimingscenario';
-import { TabHeadingDirective } from 'ngx-bootstrap';
+import {MonthYearDate} from "./data model classes/monthyearDate"
 
 
 @Injectable()
@@ -10,7 +10,7 @@ export class BenefitService {
 
   constructor() { }
 
-  calculateRetirementBenefit(person:Person, benefitDate: Date) {
+  calculateRetirementBenefit(person:Person, benefitDate: MonthYearDate) {
     let retirementBenefit: number = 0
     let monthsWaited = benefitDate.getMonth() - person.FRA.getMonth() + 12 * (benefitDate.getFullYear() - person.FRA.getFullYear())
     if (monthsWaited < -36)
@@ -36,7 +36,7 @@ export class BenefitService {
     return Number(retirementBenefit)
   }
 
-  calculateSpousalBenefit(person:Person, otherPerson:Person, retirementBenefit: number, spousalStartDate: Date)
+  calculateSpousalBenefit(person:Person, otherPerson:Person, retirementBenefit: number, spousalStartDate: MonthYearDate)
   {
     //no need to check for filing prior to 62, because we're already checking for that in the input form component.
 
@@ -74,8 +74,8 @@ export class BenefitService {
     return Number(spousalBenefit)
   }
 
-  calculateSurvivorBenefit(survivingPerson:Person, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: Date,
-    deceasedPerson:Person, dateOfDeath: Date, deceasedClaimingDate: Date)
+  calculateSurvivorBenefit(survivingPerson:Person, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: MonthYearDate,
+    deceasedPerson:Person, dateOfDeath: MonthYearDate, deceasedClaimingDate: MonthYearDate)
   {
     let deceasedRetirementBenefit: number
     let survivorBenefit: number
@@ -218,8 +218,8 @@ export class BenefitService {
           calcYear.monthsOfPersonAretirementWithSuspensionDRCs = 12
     }
     else {
-      let testMonth:Date = new Date(calcYear.date)
-      let endTestMonth:Date = new Date(calcYear.date.getFullYear(), 11, 1) //Dec of calcYear
+      let testMonth:MonthYearDate = new MonthYearDate(calcYear.date)
+      let endTestMonth:MonthYearDate = new MonthYearDate(calcYear.date.getFullYear(), 11, 1) //Dec of calcYear
       while (testMonth <= endTestMonth){
         if (testMonth >= person.retirementBenefitDate){ //if this is a retirement month...
             if (person.beginSuspensionDate > testMonth || person.endSuspensionDate <= testMonth){//If suspension does NOT eliminate that benefit...
@@ -340,8 +340,8 @@ export class BenefitService {
             calcYear.monthsOfPersonBsurvivorWithRetirementPostARF = monthsOfBenefit - calcYear.monthsOfPersonBsurvivorWithoutRetirement //If a survivor month isn't "withoutRetirement," it is withRetirementPostARF
       }
       else {//have to loop monthly
-        let testMonth:Date = new Date(calcYear.date)
-        let endTestMonth:Date = new Date(calcYear.date.getFullYear(), 11, 1) //Dec of calcYear
+        let testMonth:MonthYearDate = new MonthYearDate(calcYear.date)
+        let endTestMonth:MonthYearDate = new MonthYearDate(calcYear.date.getFullYear(), 11, 1) //Dec of calcYear
         let personAsuspended:boolean
         let personBsuspended:boolean
         while (testMonth <= endTestMonth){
@@ -462,7 +462,7 @@ export class BenefitService {
 
 
   //This function just counts how many months of a retirement/spousal/survivor benefit there are in a given year. It can't determine pre-/post-ARF, pre-/post-suspension, etc.
-  countMonthsOfABenefit(benefitFilingDate:Date, currentCalculationDate:Date){
+  countMonthsOfABenefit(benefitFilingDate:MonthYearDate, currentCalculationDate:MonthYearDate){
     let monthsBeforeBenefit: number = benefitFilingDate.getMonth() - currentCalculationDate.getMonth() + 12*(benefitFilingDate.getFullYear() - currentCalculationDate.getFullYear())
     let monthsOfBenefit: number
     if (monthsBeforeBenefit >= 12) {
@@ -487,7 +487,7 @@ export class BenefitService {
       */
       let PIAbeforeCOLAs: number = person.PIA
       //take current disability benefit (person.PIA) and back out COLAs for every year back to (and including) year in which disability entitlement began
-          let thisYear:number = new Date().getFullYear()
+          let thisYear:number = new MonthYearDate().getFullYear()
           let entitlementYear:number = person.fixedRetirementBenefitDate.getFullYear()
           let i: number = thisYear - 1 //Don't back out COLA for this year, because it isn't effective until next year anyway.
           while (i >= entitlementYear) {

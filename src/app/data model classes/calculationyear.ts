@@ -1,6 +1,8 @@
+import {MonthYearDate} from "./monthyearDate"
+
 export class CalculationYear {
     //This class is only for things that get reset each year (e.g., months of a benefit)
-    date: Date //( Jan 1 of year in question)
+    date: MonthYearDate //( Jan 1 of year in question)
     debugTableRow: number[] = []
 
     //PersonA
@@ -53,7 +55,7 @@ export class CalculationYear {
     //graceYear: boolean = false
     //hasHadGraceYear: boolean = false (This doesn't fit here either.)
 
-    constructor(date:Date) {
+    constructor(date:MonthYearDate) {
         this.date = date
     }
 }

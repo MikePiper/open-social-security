@@ -1,16 +1,18 @@
+import {MonthYearDate} from "./monthyearDate"
+
 export class Person {
     //fixed fields
     id:string
     actualBirthDate: Date
     PIA: number = 1000
-    SSbirthDate: Date
-    FRA: Date
-    survivorFRA: Date
+    SSbirthDate: MonthYearDate
+    FRA: MonthYearDate
+    survivorFRA: MonthYearDate
     initialAge: number //as in, "age on the date they're filling out the form" whereas age/ageRounded/ageLastBirthday are all variables that get changed throughout process as we age the person from one year to the next
     initialAgeRounded: number
     mortalityTable: number[]
     governmentPension: number = 0
-    quitWorkDate: Date
+    quitWorkDate: MonthYearDate
     monthlyEarnings: number = 0
     hasFiled:boolean = false
     isDisabled: boolean = false //true only if disabled and expecting to be on disability until FRA
@@ -43,14 +45,14 @@ export class Person {
     survivorBenefitWithRetirementAfterARF: number = 0
     survivorBenefitWithSuspensionDRCRetirement: number = 0
 
-    fixedRetirementBenefitDate: Date //if they have already filed or are on disability and will be until FRA
-    retirementBenefitDate: Date //date for which we test various choices, if no fixed date
+    fixedRetirementBenefitDate: MonthYearDate //if they have already filed or are on disability and will be until FRA
+    retirementBenefitDate: MonthYearDate //date for which we test various choices, if no fixed date
         DRCsViaSuspension: number = 0
-        beginSuspensionDate: Date = new Date(1900, 0, 1) //When testing in "one is fixed" maximize functions, this is basically just going to be "FRA but no earlier than today"   Benefit IS suspended for this month
-        endSuspensionDate: Date = new Date(1900, 0, 1) //this is a variable that will be iterated. Benefit is NOT suspended for this month
-    spousalBenefitDate: Date
-    adjustedRetirementBenefitDate: Date
-    adjustedSpousalBenefitDate: Date
+        beginSuspensionDate: MonthYearDate = new MonthYearDate(1900, 0, 1) //When testing in "one is fixed" maximize functions, this is basically just going to be "FRA but no earlier than today"   Benefit IS suspended for this month
+        endSuspensionDate: MonthYearDate = new MonthYearDate(1900, 0, 1) //this is a variable that will be iterated. Benefit is NOT suspended for this month
+    spousalBenefitDate: MonthYearDate
+    adjustedRetirementBenefitDate: MonthYearDate
+    adjustedSpousalBenefitDate: MonthYearDate
 
     constructor(id:string){
         this.id = id

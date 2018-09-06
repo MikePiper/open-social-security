@@ -3,6 +3,7 @@ import {CalculationYear} from './data model classes/calculationyear'
 import {Person} from './data model classes/person'
 import {BenefitService} from './benefit.service'
 import {ClaimingScenario} from './data model classes/claimingscenario'
+import {MonthYearDate} from "./data model classes/monthyearDate"
 
 @Injectable({
   providedIn: 'root'
@@ -10,10 +11,10 @@ import {ClaimingScenario} from './data model classes/claimingscenario'
 export class EarningsTestService {
 
   constructor(private benefitService: BenefitService) { }
-  today: Date = new Date()
+  today: MonthYearDate = new MonthYearDate()
 
 
-  calculateWithholding(currentCalculationDate:Date, quitWorkDate:Date, FRA:Date, monthlyEarnings:number){
+  calculateWithholding(currentCalculationDate:MonthYearDate, quitWorkDate:MonthYearDate, FRA:MonthYearDate, monthlyEarnings:number){
       //Determine annual earnings subject to earnings test
       let annualEarnings: number = 0
       if (currentCalculationDate.getFullYear() > quitWorkDate.getFullYear() || currentCalculationDate.getFullYear() > FRA.getFullYear()) {//If current calc year after FRAyear or quitYear, zero earnings to consider
@@ -43,7 +44,7 @@ export class EarningsTestService {
       return Number(withholdingAmount)
   }
 
-  isGraceYear(hasHadGraceYear: boolean, quitWorkDate: Date, currentCalculationDate: Date, retirementBenefitDate: Date, spousalBenefitDate?: Date, survivorBenefitDate?: Date) {
+  isGraceYear(hasHadGraceYear: boolean, quitWorkDate: MonthYearDate, currentCalculationDate: MonthYearDate, retirementBenefitDate: MonthYearDate, spousalBenefitDate?: MonthYearDate, survivorBenefitDate?: MonthYearDate) {
     //If quitWorkDate has already happened (or happens this year) and at least one benefit has started (or starts this year) it's a grace year
     //Assumption: in the year they quit work, following months are non-service months.
     let graceYear:boolean = false
@@ -69,8 +70,8 @@ export class EarningsTestService {
     let withholdingAmount: number = 0
     let monthsWithheld: number = 0
 
-    if (isNaN(person.quitWorkDate.getTime())) {
-      person.quitWorkDate = new Date(1,0,1)
+    if (isNaN(person.quitWorkDate.valueOf())) {
+      person.quitWorkDate = new MonthYearDate(1,0,1)
     }
     if (person.quitWorkDate > this.today){//If quitWorkDate is an invalid date (because there was no input) or is in the past for some reason, this whole business below gets skipped  
         //Determine if it's a grace year. If quitWorkDate has already happened (or happens this year) and retirement benefit has started (or starts this year) it's a grace year
@@ -82,8 +83,8 @@ export class EarningsTestService {
         withholdingAmount = this.calculateWithholding(calcYear.date, person.quitWorkDate, person.FRA, person.monthlyEarnings)
 
         //Have to loop monthly for earnings test
-        let earningsTestMonth:Date = new Date(calcYear.date) //set earningsTestMonth to beginning of year
-        let earningsTestEndDate:Date = new Date(calcYear.date.getFullYear(), 11, 1) //set earningsTestEndDate to Dec of currentCalculationYear
+        let earningsTestMonth:MonthYearDate = new MonthYearDate(calcYear.date) //set earningsTestMonth to beginning of year
+        let earningsTestEndDate:MonthYearDate = new MonthYearDate(calcYear.date.getFullYear(), 11, 1) //set earningsTestEndDate to Dec of currentCalculationYear
         let availableForWithholding:number
         while (withholdingAmount > 0 && earningsTestMonth <= earningsTestEndDate) {
           availableForWithholding = 0 //reset availableForWithholding for new month
@@ -133,11 +134,11 @@ export class EarningsTestService {
     let monthsSpouseBretirementWithheld: number = 0
     let monthsSpouseBspousalWithheld: number = 0
 
-      if (isNaN(personA.quitWorkDate.getTime())) {
-        personA.quitWorkDate = new Date(1,0,1)
+      if (isNaN(personA.quitWorkDate.valueOf())) {
+        personA.quitWorkDate = new MonthYearDate(1,0,1)
       }
-      if (isNaN(personB.quitWorkDate.getTime())) {
-        personB.quitWorkDate = new Date(1,0,1)
+      if (isNaN(personB.quitWorkDate.valueOf())) {
+        personB.quitWorkDate = new MonthYearDate(1,0,1)
       }
       if (personA.quitWorkDate > this.today || personB.quitWorkDate > this.today){//If quitWorkDates are invalid dates (because there was no input) or in the past for some reason, this whole business below gets skipped
         //Determine if it's a grace year for either spouse. If quitWorkDate has already happened (or happens this year) and at least one type of benefit has started (or starts this year)
@@ -157,8 +158,8 @@ export class EarningsTestService {
           }
       
             //Have to loop monthly for earnings test
-            let earningsTestMonth:Date = new Date(calcYear.date) //set earningsTestMonth to beginning of year
-            let earningsTestEndDate:Date = new Date(calcYear.date.getFullYear(), 11, 1) //set earningsTestEndDate to Dec of currentCalculationYear
+            let earningsTestMonth:MonthYearDate = new MonthYearDate(calcYear.date) //set earningsTestMonth to beginning of year
+            let earningsTestEndDate:MonthYearDate = new MonthYearDate(calcYear.date.getFullYear(), 11, 1) //set earningsTestEndDate to Dec of currentCalculationYear
             let availableForWithholding:number
                 
             //Key point with all of the below is that A's earnings first reduce A's retirement benefit and B's spousal benefit. *Then* B's earnings reduce B's spousal benefit. See CFR 404.434
@@ -213,7 +214,7 @@ export class EarningsTestService {
               }
                 
               //Counting B's excess earnings against B's retirement and A's benefit as spouse
-              earningsTestMonth = new Date(calcYear.date) //reset earningsTestMonth to beginning of year
+              earningsTestMonth = new MonthYearDate(calcYear.date) //reset earningsTestMonth to beginning of year
               while (withholdingDueToSpouseBearnings > 0 && earningsTestMonth <= earningsTestEndDate) {
                 availableForWithholding = 0 //reset availableForWithholding for new month
                 //Check what benefits there *are* this month from which we can withhold:
@@ -259,7 +260,7 @@ export class EarningsTestService {
                 
               //If A still has excess earnings, count those against A's benefit as a spouse. (Don't have to check for withholding against benefit as survivor, because we assume no survivor application until survivorFRA.)
               if (withholdingDueToSpouseAearnings > 0) {
-                earningsTestMonth = new Date(calcYear.date) //reset earningsTestMonth to beginning of year
+                earningsTestMonth = new MonthYearDate(calcYear.date) //reset earningsTestMonth to beginning of year
                 while (withholdingDueToSpouseAearnings > 0 && earningsTestMonth <= earningsTestEndDate) {
                   availableForWithholding = 0
                   //Check if there is a spouseAspousal benefit this month (Always "spousalBenefitWithRetirement" because without retirement requires a restricted app. And spouseA is by definition younger than FRA here, otherwise there are no excess earnings.)
@@ -278,7 +279,7 @@ export class EarningsTestService {
                 
               //If B still has excess earnings, count those against B's benefit as a spouse. (Don't have to check for withholding against benefit as survivor, because we assume no survivor application until survivorFRA.)
               if (withholdingDueToSpouseBearnings > 0) {
-                earningsTestMonth = new Date(calcYear.date) //reset earningsTestMonth to beginning of year
+                earningsTestMonth = new MonthYearDate(calcYear.date) //reset earningsTestMonth to beginning of year
                 while (withholdingDueToSpouseBearnings > 0 && earningsTestMonth <= earningsTestEndDate) {
                   availableForWithholding = 0
                   //Check if there is a spouseBspousal benefit this month (Always "spousalBenefitWithRetirement" because without retirement requires a restricted app. And spouseB is by definition younger than FRA here, otherwise there are no excess earnings.)
