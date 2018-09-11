@@ -32,6 +32,11 @@ export class HomeComponent implements OnInit {
 
   personA:Person = new Person("A")
   personB:Person = new Person("B")
+  child1:Person = new Person("1")
+  child2:Person = new Person("2")
+  child3:Person = new Person("3")
+  child4:Person = new Person("4")
+  children:Person[] = [this.child1, this.child2, this.child3, this.child4]
   scenario:CalculationScenario = new CalculationScenario()
   customDateScenario:CalculationScenario
   errorCollection:ErrorCollection = new ErrorCollection()
@@ -408,6 +413,10 @@ export class HomeComponent implements OnInit {
       this.customPersonBbeginSuspensionYear = null
       this.customPersonBendSuspensionMonth = null
       this.customPersonBendSuspensionYear = null
+    }
+    //Zero children if qualifyingChildren boolean is false
+    if (this.scenario.qualifyingChildren === false){
+      this.scenario.numberOfChildren = 0
     }
   }
 

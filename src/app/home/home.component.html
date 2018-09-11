@@ -266,6 +266,31 @@
         </div>
       </span>
 
+        <!--Begin Child Inputs -->
+        <span>
+            <label>Do you have any children who are under age 19 or permanently disabled?</label>
+            <input type="radio" id="childrenYes" [(ngModel)]="scenario.qualifyingChildren" name="scenario.qualifyingChildren" [value]="true">
+            <label for="childrenYes">Yes</label>
+            <input type="radio" id="childrenNo" [(ngModel)]="scenario.qualifyingChildren" name="scenario.qualifyingChildren" [value]="false">
+            <label for="childrenNo">No</label>
+
+            <div *ngIf="scenario.qualifyingChildren === true" class="form-inline">
+                <label>How many?</label>
+                <select [(ngModel)]="scenario.numberOfChildren" name="scenario.numberOfChildren" class="form-control">
+                  <option value=1>1</option>
+                  <option value=2>2</option>
+                  <option value=3>3</option>
+                  <option value=4>4 or more</option>
+                </select>
+
+                <app-childinputs *ngFor="let child of children | slice:0:scenario.numberOfChildren" [child]="child"></app-childinputs>
+              
+            </div>
+        </span>
+
+        <!--End Child Inputs -->
+
+
         <!--Begin "Other Inputs" such as discount rate and benefit cut assumptions -->
         <div *ngIf="this.advanced === true">
             <h2>Other Inputs</h2>

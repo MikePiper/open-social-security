@@ -1,3 +1,22 @@
-<p>
-  childinputs works!
-</p>
+<h3>Child #{{child.id}}</h3>
+<span (change)="getInputs()">
+  <div class="form-inline">
+    <label>Date of birth</label>
+    <select class="form-control" [(ngModel)]="DoBinputMonth" name="DoBinputMonth" required>
+      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+    </select>
+    <select class="form-control" [(ngModel)]="DoBinputDay" name="DoBinputDay" required>
+        <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
+    </select>
+    <select class="form-control" [(ngModel)]="DoBinputYear" name="DoBinputYear" required>
+        <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
+    </select>
+  </div>
+
+  <!--Disability Inputs for personA-->
+  <label>Is this child permanently disabled?</label>
+  <input type="radio" id="childDisabled" [(ngModel)]="child.isDisabled" name="child.isDisabled" [value]="true">
+  <label for="childDisabled">Yes</label>
+  <input type="radio" id="childNotDisabled" [(ngModel)]="child.isDisabled" name="child.isDisabled" [value]="false">
+  <label for="childNotDisabled">No</label>
+</span>
