@@ -6,7 +6,7 @@ import {Person} from '../data model classes/person'
 import {SolutionSet} from '../data model classes/solutionset'
 import {FREDresponse} from '../data model classes/fredresponse'
 import {HttpClient} from '@angular/common/http'
-import {ClaimingScenario} from '../data model classes/claimingscenario'
+import {CalculationScenario} from '../data model classes/calculationscenario'
 import {ErrorCollection} from '../data model classes/errorcollection'
 import {InputValidationService} from '../inputvalidation.service'
 import {MonthYearDate} from "../data model classes/monthyearDate"
@@ -32,8 +32,8 @@ export class HomeComponent implements OnInit {
 
   personA:Person = new Person("A")
   personB:Person = new Person("B")
-  scenario:ClaimingScenario = new ClaimingScenario()
-  customDateScenario:ClaimingScenario
+  scenario:CalculationScenario = new CalculationScenario()
+  customDateScenario:CalculationScenario
   errorCollection:ErrorCollection = new ErrorCollection()
   today:MonthYearDate = new MonthYearDate()
   deemedFilingCutoff: Date = new Date(1954, 0, 1)

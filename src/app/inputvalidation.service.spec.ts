@@ -1,7 +1,7 @@
 import {TestBed, inject} from '@angular/core/testing'
 import {InputValidationService} from './inputvalidation.service'
 import {Person} from './data model classes/person'
-import {ClaimingScenario} from './data model classes/claimingscenario'
+import {CalculationScenario} from './data model classes/calculationscenario'
 import {BirthdayService} from './birthday.service'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
@@ -19,7 +19,7 @@ describe('InputvalidationService', () => {
 
   //Check checkValidRetirementInputs()
   it('should give no error message when input date is good', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     let person:Person = new Person("A")
     person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
@@ -29,7 +29,7 @@ describe('InputvalidationService', () => {
   }))
 
   it('should demand a date when user fails to input one', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     let person:Person = new Person("A")
     person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
@@ -39,7 +39,7 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject retirementBenefitDate that is too early', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     let person:Person = new Person("A")
     person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
@@ -49,7 +49,7 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject retirementBenefitDate that is later than 70', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     let person:Person = new Person("A")
     person.actualBirthDate = new Date (1960, 11, 29) //December 29, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
@@ -61,7 +61,7 @@ describe('InputvalidationService', () => {
 
   //Check checkValidSpousalInputs()
   it('should give no error message when input dates are good', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -78,7 +78,7 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject spousalBenefitDate that is prior to age 62', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -95,7 +95,7 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject spousalBenefitDate that is prior to other spouse retirementBenefitDate', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -112,7 +112,7 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject spousalBenefitDate that is later than later of the two retirementBenefitDates', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -129,7 +129,7 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject spousalBenefitDate that is later than later of the two retirementBenefitDates, for divorcee', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "divorced"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -146,7 +146,7 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject restricted app prior to FRA -- ie spousalBenefitDate prior to FRA for somebody born 1953 or prior ', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")

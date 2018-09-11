@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core'
 import {CalculationYear} from './data model classes/calculationyear'
 import {Person} from './data model classes/person'
 import {BenefitService} from './benefit.service'
-import {ClaimingScenario} from './data model classes/claimingscenario'
+import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
 @Injectable({
@@ -126,7 +126,7 @@ export class EarningsTestService {
   }
 
 
-  earningsTestCouple(calcYear:CalculationYear, scenario:ClaimingScenario, personA:Person, personB:Person){
+  earningsTestCouple(calcYear:CalculationYear, scenario:CalculationScenario, personA:Person, personB:Person){
     let withholdingDueToSpouseAearnings: number = 0
     let withholdingDueToSpouseBearnings: number = 0
     let monthsSpouseAretirementWithheld: number = 0

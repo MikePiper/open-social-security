@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core'
 import { Person } from './data model classes/person'
-import { ClaimingScenario } from './data model classes/claimingscenario'
+import { CalculationScenario } from './data model classes/calculationscenario'
 import { CalculationYear } from './data model classes/calculationyear'
 
 @Injectable({
@@ -10,7 +10,7 @@ export class OutputTableService {
 
   constructor() { }
 
-  generateOutputTableSingle(person:Person, scenario:ClaimingScenario, calcYear:CalculationYear){
+  generateOutputTableSingle(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
     //first line: no need to make a table row if this year has no benefits
     if (calcYear.date.getFullYear() >= person.retirementBenefitDate.getFullYear()){
       if (person.age <= 70 || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts at least until person is 70 (or at least until assumed benefit cut date, if one is provided)
@@ -24,7 +24,7 @@ export class OutputTableService {
     return scenario
   }
 
-  generateOutputTableDivorced(person:Person, scenario:ClaimingScenario, calcYear:CalculationYear){
+  generateOutputTableDivorced(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
     //first line: no need to make a table row if this year has no benefits
     if (calcYear.date.getFullYear() >= person.retirementBenefitDate.getFullYear() || calcYear.date.getFullYear() >= person.spousalBenefitDate.getFullYear()){
       if (person.age <= 70 || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts at least until person is 70 (or at least until assumed benefit cut date, if one is provided)
@@ -59,7 +59,7 @@ export class OutputTableService {
     return scenario
   }
 
-  generateOutputTableCouple(personA:Person, personB:Person, scenario:ClaimingScenario, calcYear:CalculationYear){
+  generateOutputTableCouple(personA:Person, personB:Person, scenario:CalculationScenario, calcYear:CalculationYear){
     //first line: no need to make a table row if this year has no benefits
     if (calcYear.date.getFullYear() >= personA.retirementBenefitDate.getFullYear() || calcYear.date.getFullYear() >= personA.spousalBenefitDate.getFullYear() || calcYear.date.getFullYear() >= personB.retirementBenefitDate.getFullYear() || calcYear.date.getFullYear() >= personB.spousalBenefitDate.getFullYear()){
       if (personA.age <= 70 || personB.age <= 70 || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts at least until both people are 70 (or at least until assumed benefit cut date, if one is provided)

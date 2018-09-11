@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {Person} from './data model classes/person';
 import { CalculationYear } from './data model classes/calculationyear';
-import { ClaimingScenario } from './data model classes/claimingscenario';
+import { CalculationScenario } from './data model classes/calculationscenario';
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
 
@@ -244,7 +244,7 @@ export class BenefitService {
     return calcYear
   }
 
-  CountCoupleBenefitMonths(scenario:ClaimingScenario, calcYear:CalculationYear, personA:Person, personB:Person){
+  CountCoupleBenefitMonths(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personB:Person){
     //This function loops through individual months in a year (unless:
           //a) we're at the point where everybody is post-FRA, post-claiming, post-suspension, in which case it looks at the whole year at once), or
           //b) it's a scenario in which suspending isn't considered, in which case it looks at whole year at once

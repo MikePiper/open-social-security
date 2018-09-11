@@ -18,7 +18,8 @@ import { MortalityService } from './mortality.service';
 import { SolutionSetService } from './solutionset.service';
 import { DebugTableComponent } from './debugtable/debugtable.component';
 import { OutputTableComponent } from './output-table/output-table.component';
-import { CsvModule } from '@ctrl/ngx-csv'
+import { CsvModule } from '@ctrl/ngx-csv';
+import { ChildinputsComponent } from './childinputs/childinputs.component'
 
 
 
@@ -30,7 +31,8 @@ import { CsvModule } from '@ctrl/ngx-csv'
     ContactComponent,
     LegalComponent,
     DebugTableComponent,
-    OutputTableComponent
+    OutputTableComponent,
+    ChildinputsComponent
   ],
   imports: [
     BrowserModule,

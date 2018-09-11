@@ -54,6 +54,14 @@ export class Person {
     adjustedRetirementBenefitDate: MonthYearDate
     adjustedSpousalBenefitDate: MonthYearDate
 
+    childBenefitParentAlive:number
+    childBenefitParentDeceased:number
+
+    //new benefit amount fields -- for using in new system where benefit amount just gets overwritten when recalculated
+    retirementBenefit:number
+    spousalBenefit:number
+    survivorBenefit:number
+
     constructor(id:string){
         this.id = id
     }

@@ -3,7 +3,7 @@ import {SolutionSetService} from './solutionset.service'
 import {BenefitService} from './benefit.service'
 import {SolutionSet} from './data model classes/solutionset'
 import {Person} from './data model classes/person'
-import {ClaimingScenario} from './data model classes/claimingscenario'
+import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
 
@@ -22,7 +22,7 @@ describe('SolutionSetService', () => {
 //Test generateSingleSolutionSet
   it('SolutionSet object should have PV that was passed in', inject([SolutionSetService], (service: SolutionSetService) => {
     let person:Person = new Person("A")
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "single"
     person.SSbirthDate = new MonthYearDate(1960, 3, 1) //April 1, 1960
     person.FRA = new MonthYearDate(2027, 3, 1) //FRA April 1, 2027
@@ -35,7 +35,7 @@ describe('SolutionSetService', () => {
 
   it('SolutionSet object should have appropriate date saved', inject([SolutionSetService], (service: SolutionSetService) => {
     let person:Person = new Person("A") 
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "single"
     person.SSbirthDate = new MonthYearDate(1960, 3, 1) //April 1, 1960
     person.FRA = new MonthYearDate(2027, 3, 1) //FRA April 1, 2027
@@ -54,7 +54,7 @@ describe('SolutionSetService', () => {
   it('SolutionSet object should have appropriate date saved as earliest date', inject([SolutionSetService], (service: SolutionSetService) => {
     let personA:Person = new Person("A")
     let personB:Person = new Person("B")
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     personA.SSbirthDate = new MonthYearDate(1960, 3, 1) //April 1, 1960
     personB.SSbirthDate = new MonthYearDate(1960, 3, 1) //April 1, 1960

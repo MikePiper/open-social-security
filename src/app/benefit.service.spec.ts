@@ -3,7 +3,7 @@ import {BenefitService} from './benefit.service'
 import {BirthdayService} from './birthday.service'
 import {Person} from './data model classes/person'
 import {CalculationYear} from './data model classes/calculationyear'
-import {ClaimingScenario} from './data model classes/claimingscenario'
+import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
 
@@ -319,7 +319,7 @@ describe('BenefitService', () => {
 
   //testing CountCoupleBenefitMonths()
   it('should determine correct number of retirement and spousal benefit months (including appropriate types) for both spouses (no suspension scenario) in year in which A files and reaches FRA. B reaches FRA but has not filed', inject([BenefitService], (service: BenefitService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new MonthYearDate(2019, 0, 1) //Jan 1, 2019 (year in which both reach FRA)
@@ -375,7 +375,7 @@ describe('BenefitService', () => {
   }))
 
   it('should determine correct number of retirement and spousal benefit months (including appropriate types) for both spouses (no suspension scenario) in year in which B files, if A filed in previous year. Both hit FRA this year', inject([BenefitService], (service: BenefitService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new MonthYearDate(2019, 0, 1) //Jan 1, 2019 (year in which both reach FRA)
@@ -431,7 +431,7 @@ describe('BenefitService', () => {
   }))
 
   it('should count spousal benefit months appropriately (including type of spousalbenefitmonth) for person A when person B is suspended part of year', inject([BenefitService], (service: BenefitService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new MonthYearDate(2020, 0, 1) //Jan 1, 2020
@@ -467,7 +467,7 @@ describe('BenefitService', () => {
   }))
 
   it('should count spousal benefit months appropriately (including type of spousalbenefitmonth) for person A when person A is suspended part of year', inject([BenefitService], (service: BenefitService) => {
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let birthdayService:BirthdayService = new BirthdayService()
     let beginningCalcDate = new MonthYearDate(2020, 0, 1) //Jan 1, 2020

@@ -1,6 +1,6 @@
 import { async, TestBed, inject } from '@angular/core/testing'
 import { DebugTableComponent } from './debugtable.component'
-import { ClaimingScenario } from '../data model classes/claimingscenario'
+import { CalculationScenario } from '../data model classes/calculationscenario'
 
 describe('DebugTableComponent', () => {
   beforeEach(async(() => {
@@ -12,7 +12,7 @@ describe('DebugTableComponent', () => {
 
 
   it('should be created', inject([DebugTableComponent], (component: DebugTableComponent) => {
-    component.scenario = new ClaimingScenario
+    component.scenario = new CalculationScenario
     expect(component).toBeTruthy()
   }))
   

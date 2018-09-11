@@ -3,7 +3,7 @@ import {BenefitService} from './benefit.service'
 import {SolutionSet} from './data model classes/solutionset'
 import {ClaimingSolution} from './data model classes/claimingsolution'
 import {Person} from './data model classes/person'
-import {ClaimingScenario} from './data model classes/claimingscenario'
+import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
 
@@ -14,7 +14,7 @@ export class SolutionSetService {
 
   constructor(private benefitService: BenefitService) { }
 
-  generateSingleSolutionSet(scenario:ClaimingScenario, person:Person, savedPV:number){
+  generateSingleSolutionSet(scenario:CalculationScenario, person:Person, savedPV:number){
     let solutionSet:SolutionSet = {
       "solutionPV":savedPV,
       "solutionsArray": []
@@ -63,7 +63,7 @@ export class SolutionSetService {
   }
 
   //For two-person scenarios, other than a) divorce or b) one person being over 70
-  generateCoupleSolutionSet(scenario:ClaimingScenario, personA:Person, personB:Person, savedPV: number){
+  generateCoupleSolutionSet(scenario:CalculationScenario, personA:Person, personB:Person, savedPV: number){
     let solutionSet: SolutionSet = {
       "solutionPV":savedPV,
       solutionsArray: []

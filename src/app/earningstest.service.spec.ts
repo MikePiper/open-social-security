@@ -5,7 +5,7 @@ import {BenefitService} from './benefit.service'
 import {Person} from './data model classes/person'
 import {CalculationYear} from './data model classes/calculationyear'
 import {BirthdayService} from './birthday.service'
-import {ClaimingScenario} from './data model classes/claimingscenario'
+import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
 describe('EarningstestService', () => {
@@ -295,7 +295,7 @@ describe('EarningstestService', () => {
     personB.spousalBenefitWithoutRetirement = benefitService.calculateSpousalBenefit(personB, personA, 0, personB.spousalBenefitDate)
     let beginningCalcDate = new MonthYearDate(2019, 0, 1) //Jan 1, 2019
     let calcYear:CalculationYear = new CalculationYear(beginningCalcDate)
-    let scenario:ClaimingScenario = new ClaimingScenario()
+    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     //calculate months of various benefits before application of earnings test
     let countCoupleBenefitMonthsResult:any[] = benefitService.CountCoupleBenefitMonths(scenario, calcYear, personA, personB)

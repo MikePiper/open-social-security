@@ -5,7 +5,7 @@ import {EarningsTestService} from './earningstest.service'
 import {SolutionSetService} from './solutionset.service'
 import {SolutionSet} from './data model classes/solutionset'
 import {Person} from './data model classes/person'
-import {ClaimingScenario} from './data model classes/claimingscenario'
+import {CalculationScenario} from './data model classes/calculationscenario'
 import {CalculationYear} from './data model classes/calculationyear'
 import {OutputTableService} from './outputtable.service'
 import {MonthYearDate} from "./data model classes/monthyearDate"
@@ -19,7 +19,69 @@ export class PresentValueService {
 
   today: MonthYearDate = new MonthYearDate()
 
-  calculateSinglePersonPV(person:Person, scenario:ClaimingScenario, printOutputTable:boolean) : number {
+  calculateSinglePersonPVmonthlyloop(person:Person, scenario:CalculationScenario, printOutputTable:boolean):number{
+    //reset values for new PV calc
+      let PV:number = 0
+      person.hasHadGraceYear = false
+      person.adjustedRetirementBenefitDate = new MonthYearDate(person.retirementBenefitDate)
+      person.retirementBenefitWithDRCsfromSuspension = 0
+      person.DRCsViaSuspension = 0
+      scenario.outputTable = []
+
+    //calculate initial benefit amounts
+      person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
+      if (scenario.qualifyingChildren === true) {
+        let i = 0
+        while (i < scenario.children.length){
+          scenario.children[i].childBenefitParentAlive = this.benefitService.calculateChildBenefitParentLiving(person)
+          scenario.children[i].childBenefitParentDeceased = this.benefitService.calculateChildBenefitParentDeceased(person)
+          i = i + 1
+        }
+      }
+
+    //calculate family max (no need for combined family max in single-earner scenario)
+    person = this.benefitService.calculateFamilyMaximum(person)
+
+    //Set initial calcYear (Jan 1 of the year that benefit begins)
+    let calcYear:CalculationYear = new CalculationYear(scenario.initialCalcDate)
+
+    //calculate age as of that date
+    person.age = ( 12 * (calcYear.date.getFullYear() - person.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - person.SSbirthDate.getMonth()  )/12
+
+    //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
+    while (person.age < 115) {
+
+      //Do we have to calculate/recalculate any benefits? If so, do so.
+      if (calcYear.date == person.FRA || calcYear.date == person.endSuspensionDate){
+        person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
+      }
+      
+      //Do we ever have to recalculate family max? (No. In family scenario might have to recalculate combined family max though?? Or rather, combined family max doesn't get calculated at beginning but rather in a later year?)
+      //See who gets a benefit this month
+      //Apply family max to reduce anybody's benefit. (Probability alive applies here... Maybe we just have separate scenarios starting at this point -- everybody alive, one person deceased, etc)
+      //Apply earnings test AFTER family max to reduce benefits (and add tally of months withheld)
+      //[How to apply probability alive...sum, and discount...]
+
+      calcYear.date.setMonth(calcYear.date.getMonth()+1)
+      //if it's now January...
+      if (calcYear.date.getMonth() == 0){
+        //TODO: If it's december and printOutputTable is true, add row to outputtable?
+        person.age = person.age + 1
+        if (scenario.qualifyingChildren === true) {
+          let i = 0
+          while (i < scenario.children.length){
+            scenario.children[i].age = scenario.children[i].age + 1
+            i = i + 1
+          }
+        }
+        calcYear = new CalculationYear(calcYear.date)
+      }
+    }
+
+    return PV
+  }
+
+  calculateSinglePersonPV(person:Person, scenario:CalculationScenario, printOutputTable:boolean) : number {
     //reset values for new PV calc
         person.hasHadGraceYear = false
         person.adjustedRetirementBenefitDate = new MonthYearDate(person.retirementBenefitDate)
@@ -92,7 +154,7 @@ export class PresentValueService {
     return retirementPV
   }
 
-  calculateCouplePV(personA:Person, personB:Person, scenario:ClaimingScenario, printOutputTable:boolean) : number{
+  calculateCouplePV(personA:Person, personB:Person, scenario:CalculationScenario, printOutputTable:boolean) : number{
     
     //Assorted variables
     let probabilityAalive: number
@@ -229,7 +291,7 @@ export class PresentValueService {
 
 
 
-  maximizeSinglePersonPV(person:Person, scenario:ClaimingScenario) : SolutionSet{
+  maximizeSinglePersonPV(person:Person, scenario:CalculationScenario) : SolutionSet{
     //find initial testClaimingDate for age 62
     person.retirementBenefitDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
     if (person.actualBirthDate.getDate() > 2){
@@ -291,7 +353,7 @@ export class PresentValueService {
   }
 
 
-  maximizeCouplePViterateBothPeople(personA:Person, personB:Person, scenario:ClaimingScenario) : SolutionSet{
+  maximizeCouplePViterateBothPeople(personA:Person, personB:Person, scenario:CalculationScenario) : SolutionSet{
 
     //find initial retirementBenefitDate for personA (first month for which they are considered 62 for entire month)
     personA.retirementBenefitDate = new MonthYearDate(personA.actualBirthDate.getFullYear()+62, personA.actualBirthDate.getMonth(), 1)
@@ -445,7 +507,7 @@ export class PresentValueService {
 
 //This function is for when one spouse is over 70 (and therefore has no retirement age or suspension age to iterate).
 //Also is the function for a divorcee, because we take the ex-spouse's filing date as a given (i.e., as an input)
-maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Person, fixedSpouse:Person) : SolutionSet{
+maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Person, fixedSpouse:Person) : SolutionSet{
 
     fixedSpouse.retirementBenefitDate = new MonthYearDate(fixedSpouse.fixedRetirementBenefitDate)
 
@@ -546,7 +608,7 @@ maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Perso
   }
 
   //Adjusts spousal date as necessary. Is used after new retirement date is selected for either person.
-  adjustSpousalBenefitDate(person:Person, otherPerson:Person, scenario:ClaimingScenario) : Person {
+  adjustSpousalBenefitDate(person:Person, otherPerson:Person, scenario:CalculationScenario) : Person {
     let deemedFilingCutoff: Date = new Date(1954, 0, 1)
     let otherPersonsLimitingDate: MonthYearDate
 
@@ -606,7 +668,7 @@ maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Perso
     return person
   }
 
-  incrementRetirementORendSuspensionDate(person:Person, scenario:ClaimingScenario) : Person {
+  incrementRetirementORendSuspensionDate(person:Person, scenario:CalculationScenario) : Person {
     if (person.isDisabled === true) {
       person.endSuspensionDate.setMonth(person.endSuspensionDate.getMonth()+1)
     }
@@ -619,7 +681,7 @@ maximizeCouplePViterateOnePerson(scenario:ClaimingScenario, flexibleSpouse:Perso
     return person
   }
 
-  adjustBenefitsForAssumedCut(calcYear:CalculationYear, scenario:ClaimingScenario){
+  adjustBenefitsForAssumedCut(calcYear:CalculationYear, scenario:CalculationScenario){
       if (calcYear.date.getFullYear() >= scenario.benefitCutYear) {
         calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
         calcYear.personAannualSpousalBenefit = calcYear.personAannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)

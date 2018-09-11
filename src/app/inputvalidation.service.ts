@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core'
 import {Person} from './data model classes/person'
-import {ClaimingScenario} from './data model classes/claimingscenario'
+import {CalculationScenario} from './data model classes/calculationscenario'
 import {ErrorCollection} from './data model classes/errorcollection'
 import { isUndefined } from 'util';
 import {MonthYearDate} from "./data model classes/monthyearDate"
@@ -15,7 +15,7 @@ export class InputValidationService {
   today:MonthYearDate = new MonthYearDate()
 
   //This has to happen separately from the function that checks for all the custom-date errors, becuase this relates to inputs from primary form
-  checkForFixedRetirementDateErrors(errorCollection:ErrorCollection, scenario:ClaimingScenario, personA:Person, personB:Person){
+  checkForFixedRetirementDateErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person){
     //reset errors
     errorCollection.personAfixedRetirementDateError = undefined
     errorCollection.personBfixedRetirementDateError = undefined
@@ -52,7 +52,7 @@ export class InputValidationService {
   }
 
   //This has to happen separately from the function that checks for fixed-date errors, becuase this relates to inputs from custom dates form
-  checkForCustomDateErrors(errorCollection:ErrorCollection, scenario:ClaimingScenario, personA:Person, personB:Person){
+  checkForCustomDateErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person){
     //reset errors
     errorCollection.customPersonAretirementDateError = undefined
     errorCollection.customPersonBretirementDateError = undefined
@@ -102,7 +102,7 @@ export class InputValidationService {
     return errorCollection
   }
 
-  checkValidRetirementInput(scenario:ClaimingScenario, person:Person, retirementBenefitDate:MonthYearDate) {
+  checkValidRetirementInput(scenario:CalculationScenario, person:Person, retirementBenefitDate:MonthYearDate) {
     let error = undefined
 
     //Make sure there is an input
@@ -127,7 +127,7 @@ export class InputValidationService {
     return error
   }
 
-  checkValidSpousalInput(scenario:ClaimingScenario, person:Person, otherPerson:Person, ownRetirementBenefitDate:MonthYearDate, spousalBenefitDate:MonthYearDate, otherPersonRetirementBenefitDate:MonthYearDate) {
+  checkValidSpousalInput(scenario:CalculationScenario, person:Person, otherPerson:Person, ownRetirementBenefitDate:MonthYearDate, spousalBenefitDate:MonthYearDate, otherPersonRetirementBenefitDate:MonthYearDate) {
     let error = undefined
     let secondStartDate:MonthYearDate = new MonthYearDate(1,1,1)
     //Make sure there is an input (Note that this will get overrode in the customDates function after the error check, in cases where there isn't supposed to be a user input)

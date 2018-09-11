@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core'
-import { ClaimingScenario } from '../data model classes/claimingscenario'
+import { CalculationScenario } from '../data model classes/calculationscenario'
 import { Person } from '../data model classes/person'
 
 @Component({
@@ -14,7 +14,7 @@ export class OutputTableComponent implements OnInit {
   ngOnInit() {
   }
   
-  @Input() scenario:ClaimingScenario
+  @Input() scenario:CalculationScenario
   @Input() personA:Person
   @Input() personB:Person
 

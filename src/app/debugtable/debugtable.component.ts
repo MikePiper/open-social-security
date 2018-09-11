@@ -1,5 +1,5 @@
 import {Component, OnInit, Input} from '@angular/core'
-import {ClaimingScenario} from '../data model classes/claimingscenario'
+import {CalculationScenario} from '../data model classes/calculationscenario'
 
 @Component({
   selector: 'app-debugtable',
@@ -13,6 +13,6 @@ export class DebugTableComponent implements OnInit {
   ngOnInit() {
   }
 
-  @Input() scenario:ClaimingScenario
+  @Input() scenario:CalculationScenario
 
 }
