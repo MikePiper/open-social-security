@@ -36,7 +36,8 @@ export class HomeComponent implements OnInit {
   child2:Person = new Person("2")
   child3:Person = new Person("3")
   child4:Person = new Person("4")
-  children:Person[] = [this.child1, this.child2, this.child3, this.child4]
+  childrenObjectsArray:Person[] = [this.child1, this.child2, this.child3, this.child4]
+  children:Person[] = []
   scenario:CalculationScenario = new CalculationScenario()
   customDateScenario:CalculationScenario
   errorCollection:ErrorCollection = new ErrorCollection()
@@ -336,6 +337,12 @@ export class HomeComponent implements OnInit {
         if (this.scenario.initialCalcDate.getFullYear() < this.today.getFullYear()){
           this.scenario.initialCalcDate = new MonthYearDate(this.today.getFullYear(), 0, 1)
         }
+      //Clear children array and only push as many children objects as applicable
+      this.children = []
+      for (let i = 0; i < this.scenario.numberOfChildren; i++) { 
+        this.children.push(this.childrenObjectsArray[i])
+    }
+      this.children.push
       //Reset conditionally-hidden inputs as necessary, based on changes to other inputs. (If a hidden input should be null/false based on status of other inputs, make sure it is null/false.)
       this.resetHiddenInputs()
     }

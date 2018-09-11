@@ -283,7 +283,7 @@
                   <option value=4>4 or more</option>
                 </select>
 
-                <app-childinputs *ngFor="let child of children | slice:0:scenario.numberOfChildren" [child]="child"></app-childinputs>
+                <app-childinputs *ngFor="let child of children" [child]="child"></app-childinputs>
               
             </div>
         </span>

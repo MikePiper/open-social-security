@@ -31,12 +31,8 @@ export class PresentValueService {
     //calculate initial benefit amounts
       person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
       if (scenario.qualifyingChildren === true) {
-        let i = 0
-        while (i < scenario.children.length){
-          scenario.children[i].childBenefitParentAlive = this.benefitService.calculateChildBenefitParentLiving(person)
-          scenario.children[i].childBenefitParentDeceased = this.benefitService.calculateChildBenefitParentDeceased(person)
-          i = i + 1
-        }
+      //calculate child benefit amounts (both living parent and deceased parent)
+        
       }
 
     //calculate family max (no need for combined family max in single-earner scenario)
@@ -68,11 +64,7 @@ export class PresentValueService {
         //TODO: If it's december and printOutputTable is true, add row to outputtable?
         person.age = person.age + 1
         if (scenario.qualifyingChildren === true) {
-          let i = 0
-          while (i < scenario.children.length){
-            scenario.children[i].age = scenario.children[i].age + 1
-            i = i + 1
-          }
+          //increase childrens' ages by 1
         }
         calcYear = new CalculationYear(calcYear.date)
       }
