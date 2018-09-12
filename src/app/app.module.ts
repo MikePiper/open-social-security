@@ -19,7 +19,8 @@ import { SolutionSetService } from './solutionset.service';
 import { DebugTableComponent } from './debugtable/debugtable.component';
 import { OutputTableComponent } from './output-table/output-table.component';
 import { CsvModule } from '@ctrl/ngx-csv';
-import { ChildinputsComponent } from './childinputs/childinputs.component'
+import { ChildinputsComponent } from './childinputs/childinputs.component';
+import { ArticlesComponent } from './articles/articles.component'
 
 
 
@@ -32,7 +33,8 @@ import { ChildinputsComponent } from './childinputs/childinputs.component'
     LegalComponent,
     DebugTableComponent,
     OutputTableComponent,
-    ChildinputsComponent
+    ChildinputsComponent,
+    ArticlesComponent
   ],
   imports: [
     BrowserModule,

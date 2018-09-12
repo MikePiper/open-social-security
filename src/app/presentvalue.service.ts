@@ -21,22 +21,27 @@ export class PresentValueService {
 
   calculateSinglePersonPVmonthlyloop(person:Person, scenario:CalculationScenario, printOutputTable:boolean):number{
     //reset values for new PV calc
-      let PV:number = 0
+      let retirementPV:number = 0
+      let annualPV:number = 0
+      let probabilityPersonAlive:number
       person.hasHadGraceYear = false
       person.adjustedRetirementBenefitDate = new MonthYearDate(person.retirementBenefitDate)
       person.retirementBenefitWithDRCsfromSuspension = 0
       person.DRCsViaSuspension = 0
       scenario.outputTable = []
+      let annualBenefitPersonAlive:number = 0
+      let annualBenefitPersonDeceased:number = 0
+      let personSuspended:boolean
 
     //calculate initial benefit amounts
       person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
       if (scenario.numberOfChildren > 0) {
-        for (let child in scenario.children){
-          
+        for (let child of scenario.children){
+          child.childBenefitParentAlive = this.benefitService.calculateChildBenefitParentLiving(person)
+          child.childBenefitParentDeceased = this.benefitService.calculateChildBenefitParentDeceased(person)
         }
       }
     
-
     //calculate family max (no need for combined family max in single-earner scenario)
     person = this.benefitService.calculateFamilyMaximum(person)
 
@@ -49,30 +54,84 @@ export class PresentValueService {
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (person.age < 115) {
 
-      //Do we have to calculate/recalculate any benefits? If so, do so.
+      //Do we have to calculate/recalculate any benefits? If so, do so. (Never have to recalculate a child's benefit amount.)
       if (calcYear.date == person.FRA || calcYear.date == person.endSuspensionDate){
         person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
       }
       
-      //Do we ever have to recalculate family max? (No. In family scenario might have to recalculate combined family max though?? Or rather, combined family max doesn't get calculated at beginning but rather in a later year?)
-      //See who gets a benefit this month
-      //Apply family max to reduce anybody's benefit. (Probability alive applies here... Maybe we just have separate scenarios starting at this point -- everybody alive, one person deceased, etc)
-      //Apply earnings test AFTER family max to reduce benefits (and add tally of months withheld)
-      //[How to apply probability alive...sum, and discount...]
+      //Do we ever have to recalculate family max? (No. In family scenario might have to recalculate combined family max though. Or rather, combined family max doesn't get calculated at beginning but rather in a later year?)
+      
+      //Assume person is alive
+          //calculate monthlyPayment field for each person
+            if (person.beginSuspensionDate > calcYear.date || person.endSuspensionDate <= calcYear.date){personSuspended = false}
+            else {personSuspended = true}
+            if (personSuspended === false && calcYear.date >= person.retirementBenefitDate){
+                person.monthlyPayment = person.retirementBenefit
+                for (let child of scenario.children){
+                  if (child.age < 18 || child.isOnDisability === true){
+                    child.monthlyPayment = child.childBenefitParentAlive
+                  }
+                }
+            }
+          //adjust each person's monthlyPayment as necessary for family max
+            if (scenario.numberOfChildren > 0){
+              let amountLeftForRestOfFamiliy:number = person.familyMaximum = person.PIA
+              let maxAuxilliaryBenefitPerAuxilliary:number = amountLeftForRestOfFamiliy / scenario.numberOfChildren
+              for (let child of scenario.children){
+                if (child.monthlyPayment > maxAuxilliaryBenefitPerAuxilliary){
+                  child.monthlyPayment = maxAuxilliaryBenefitPerAuxilliary
+                }
+              }
+            }
 
-      calcYear.date.setMonth(calcYear.date.getMonth()+1)
-      //if it's now January...
-      if (calcYear.date.getMonth() == 0){
-        //TODO: If it's december and printOutputTable is true, add row to outputtable?
-        person.age = person.age + 1
+          //adjust as necessary for earnings test (and tally months withheld)
+          //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonAlive)
+
+      //Assume person is deceased
+          //calculate monthlyPayment field for each person
+          //adjust each person's monthlyPayment as necessary for family max
+          //adjust as necessary for earnings test and tally months withheld (won't be any withholding for Single scenario if person is deceased)
+          //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
+
+
+      //After month is over:
+        //reset everybody's monthlyPayment
+        //and increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
+        person.monthlyPayment = 0
         if (scenario.numberOfChildren > 0) {
-          //increase childrens' ages by 1
-        }
-        calcYear = new CalculationYear(calcYear.date)
+          for (let child of scenario.children){
+            child.age = child.age + 1/12
+            child.monthlyPayment = 0
+          }
       }
+        //increment month by 1
+        calcYear.date.setMonth(calcYear.date.getMonth()+1)
+
+        //if it's now January...
+        if (calcYear.date.getMonth() == 0){
+          //TODO: If printOutputTable is true, add row to outputtable?
+
+          //Apply probability alive to annual benefit amounts
+          probabilityPersonAlive = this.mortalityService.calculateProbabilityAlive(person, person.age)
+          annualPV = annualBenefitPersonAlive * probabilityPersonAlive + annualBenefitPersonDeceased * (1 - probabilityPersonAlive)
+
+          //Discount that probability-weighted annual benefit amount to age 62
+          annualPV = annualPV / (1 + scenario.discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
+          annualPV = annualPV / Math.pow((1 + scenario.discountRate/100),(person.age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
+
+          //Add discounted benefit to ongoing sum
+          retirementPV = retirementPV + annualPV
+
+          //reset annual benefit amounts, increment person's age by 1 year, and create new CalculationYear object
+          annualBenefitPersonAlive = 0
+          annualBenefitPersonDeceased = 0
+          annualPV = 0
+          person.age = person.age + 1
+          calcYear = new CalculationYear(calcYear.date)
+        }
     }
 
-    return PV
+    return retirementPV
   }
 
   calculateSinglePersonPV(person:Person, scenario:CalculationScenario, printOutputTable:boolean) : number {
