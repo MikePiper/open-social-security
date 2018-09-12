@@ -1,5 +1,5 @@
-<h3>Child #{{child.id}}</h3>
-<span (change)="getInputs()">
+<span (change)="getInputs()" #child{{child.id}}>
+  <h3>Child #{{child.id}}</h3>
   <div class="form-inline">
     <label>Date of birth</label>
     <select class="form-control" [(ngModel)]="DoBinputMonth" name="DoBinputMonth" required>
@@ -13,10 +13,10 @@
     </select>
   </div>
 
-  <!--Disability Inputs for personA-->
+  <!--Disability Inputs-->
   <label>Is this child permanently disabled?</label>
-  <input type="radio" id="childDisabled" [(ngModel)]="child.isDisabled" name="child.isDisabled" [value]="true">
-  <label for="childDisabled">Yes</label>
-  <input type="radio" id="childNotDisabled" [(ngModel)]="child.isDisabled" name="child.isDisabled" [value]="false">
-  <label for="childNotDisabled">No</label>
+  <input type="radio" [(ngModel)]="child.isOnDisability" name=child{{child.id}}.isOnDisability [value]="true">
+  <label>Yes</label>
+  <input type="radio" [(ngModel)]="child.isOnDisability" name=child{{child.id}}.isOnDisability [value]="false">
+  <label>No</label>
 </span>

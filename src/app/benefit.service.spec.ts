@@ -521,7 +521,7 @@ describe('BenefitService', () => {
   //Testing calculateFamilyMaximum()
   it('calculateFamilyMaximum() should calculate AIME appropriately in scenario with PIA below first bend point', inject([BenefitService], (service: BenefitService) => {
     let person:Person = new Person("A")
-    person.isDisabled = true
+    person.isOnDisability = true
     person.fixedRetirementBenefitDate = new MonthYearDate(2015, 5, 13)
     person.PIA = 700
     expect(service.calculateFamilyMaximum(person).AIME)
@@ -534,7 +534,7 @@ describe('BenefitService', () => {
 
   it('calculateFamilyMaximum() should calculate AIME appropriately in disability scenario with PIA between first and second bend points', inject([BenefitService], (service: BenefitService) => {
     let person:Person = new Person("A")
-    person.isDisabled = true
+    person.isOnDisability = true
     person.fixedRetirementBenefitDate = new MonthYearDate(2015, 5, 13)
     person.PIA = 1000
     expect(service.calculateFamilyMaximum(person).AIME)
@@ -548,7 +548,7 @@ describe('BenefitService', () => {
 
   it('calculateFamilyMaximum() should calculate AIME appropriately in disability scenario with PIA beyond second bend point', inject([BenefitService], (service: BenefitService) => {
     let person:Person = new Person("A")
-    person.isDisabled = true
+    person.isOnDisability = true
     person.fixedRetirementBenefitDate = new MonthYearDate(2013, 5, 13)
     person.PIA = 2400
     expect(service.calculateFamilyMaximum(person).AIME)
@@ -562,7 +562,7 @@ describe('BenefitService', () => {
 
   it('calculateFamilyMaximum() should calculate family maximum appropriately for person on disability', inject([BenefitService], (service: BenefitService) => {
     let person:Person = new Person("A")
-    person.isDisabled = true
+    person.isOnDisability = true
     person.fixedRetirementBenefitDate = new MonthYearDate(2015, 5, 13)
     person.PIA = 2000
     expect(service.calculateFamilyMaximum(person).familyMaximum)

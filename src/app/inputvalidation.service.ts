@@ -20,12 +20,12 @@ export class InputValidationService {
     errorCollection.personAfixedRetirementDateError = undefined
     errorCollection.personBfixedRetirementDateError = undefined
     //check for errors
-    if (personA.hasFiled === true || personA.isDisabled === true) {
+    if (personA.hasFiled === true || personA.isOnDisability === true) {
       errorCollection.personAfixedRetirementDateError = this.checkValidRetirementInput(scenario, personA, personA.fixedRetirementBenefitDate)
     }
     if ( (scenario.maritalStatus == "married" && personB.hasFiled === true) ||
-        (scenario.maritalStatus == 'married' && personB.isDisabled === true) ||
-        (scenario.maritalStatus == "divorced" && personB.isDisabled === false) )  {//If married and personB has filed or is disabled, or if divorced and personB is not disabled. (If divorced and personB *is* disabled, personB just automatically gets a date of today)
+        (scenario.maritalStatus == 'married' && personB.isOnDisability === true) ||
+        (scenario.maritalStatus == "divorced" && personB.isOnDisability === false) )  {//If married and personB has filed or is disabled, or if divorced and personB is not disabled. (If divorced and personB *is* disabled, personB just automatically gets a date of today)
       errorCollection.personBfixedRetirementDateError = this.checkValidRetirementInput(scenario, personB, personB.fixedRetirementBenefitDate)
     }
     //Set hasErrors boolean
@@ -71,11 +71,11 @@ export class InputValidationService {
       errorCollection.customPersonBretirementDateError = this.checkValidRetirementInput(scenario, personB, personB.retirementBenefitDate)
       errorCollection.customPersonBspousalDateError = this.checkValidSpousalInput(scenario, personB, personA, personB.retirementBenefitDate, personB.spousalBenefitDate, personA.retirementBenefitDate)
     }
-    if (personA.initialAge < 70 && personA.declineSuspension === false && (personA.isDisabled === true || personA.hasFiled === true)){
+    if (personA.initialAge < 70 && personA.declineSuspension === false && (personA.isOnDisability === true || personA.hasFiled === true)){
       errorCollection.customPersonAbeginSuspensionDateError = this.checkValidBeginSuspensionInput(personA)
       errorCollection.customPersonAendSuspensionDateError = this.checkValidEndSuspensionInput(personA)
     }
-    if (scenario.maritalStatus == "married" && personB.initialAge < 70 && personB.declineSuspension === false && (personB.isDisabled === true || personB.hasFiled === true)){
+    if (scenario.maritalStatus == "married" && personB.initialAge < 70 && personB.declineSuspension === false && (personB.isOnDisability === true || personB.hasFiled === true)){
       errorCollection.customPersonBbeginSuspensionDateError = this.checkValidBeginSuspensionInput(personB)
       errorCollection.customPersonBendSuspensionDateError = this.checkValidEndSuspensionInput(personB)
     }
@@ -121,7 +121,7 @@ export class InputValidationService {
     if (person.actualBirthDate.getDate() > 2) {
       earliestDate.setMonth(earliestDate.getMonth()+1)
     }
-    if (person.isDisabled === false && retirementBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for retirement benefits before the first month in which they are 62 for the entire month."}
+    if (person.isOnDisability === false && retirementBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for retirement benefits before the first month in which they are 62 for the entire month."}
     let latestDate: MonthYearDate = new MonthYearDate (person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth(), 1)
     if (retirementBenefitDate > latestDate) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
     return error
@@ -152,7 +152,7 @@ export class InputValidationService {
           else {
             secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
           }
-          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isDisabled === false) {
+          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false) {
           error = "Per new deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date."
           }
         }
@@ -164,13 +164,13 @@ export class InputValidationService {
           if (otherPerson.actualBirthDate.getDate() > 2){
             exSpouse62Date.setMonth(exSpouse62Date.getMonth()+1)
           }
-          if (ownRetirementBenefitDate < exSpouse62Date && otherPerson.isDisabled === false) {//ie, if own retirement benefit date comes before otherPerson is 62, and otherPerson is not disabled
+          if (ownRetirementBenefitDate < exSpouse62Date && otherPerson.isOnDisability === false) {//ie, if own retirement benefit date comes before otherPerson is 62, and otherPerson is not disabled
             secondStartDate = new MonthYearDate(exSpouse62Date)
           }
           else {//ie., if own retirementBenefitDate comes after other person is 62, or if otherPerson is disabled
             secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
           }
-          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isDisabled === false) {
+          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false) {
           error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month."
           }
         }

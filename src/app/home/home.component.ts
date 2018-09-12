@@ -37,7 +37,6 @@ export class HomeComponent implements OnInit {
   child3:Person = new Person("3")
   child4:Person = new Person("4")
   childrenObjectsArray:Person[] = [this.child1, this.child2, this.child3, this.child4]
-  children:Person[] = []
   scenario:CalculationScenario = new CalculationScenario()
   customDateScenario:CalculationScenario
   errorCollection:ErrorCollection = new ErrorCollection()
@@ -102,6 +101,7 @@ export class HomeComponent implements OnInit {
   personBmortalityInput: string = "SSA"
   personBassumedDeathAge: number = 0
   advanced: boolean = false
+  qualifyingChildrenBoolean:boolean = false
 
     //earnings test inputs
     personAworking: boolean = false
@@ -338,11 +338,10 @@ export class HomeComponent implements OnInit {
           this.scenario.initialCalcDate = new MonthYearDate(this.today.getFullYear(), 0, 1)
         }
       //Clear children array and only push as many children objects as applicable
-      this.children = []
+      this.scenario.children = []
       for (let i = 0; i < this.scenario.numberOfChildren; i++) { 
-        this.children.push(this.childrenObjectsArray[i])
-    }
-      this.children.push
+        this.scenario.children.push(this.childrenObjectsArray[i])
+      }
       //Reset conditionally-hidden inputs as necessary, based on changes to other inputs. (If a hidden input should be null/false based on status of other inputs, make sure it is null/false.)
       this.resetHiddenInputs()
     }
@@ -377,27 +376,27 @@ export class HomeComponent implements OnInit {
         this.personBquitWorkYear = null
       }
     //reset fixed retirement date inputs if person has no fixed retirement date
-      if (this.personA.hasFiled === false && this.personA.isDisabled === false) {
+      if (this.personA.hasFiled === false && this.personA.isOnDisability === false) {
         this.personAfixedRetirementBenefitMonth = null
         this.personAfixedRetirementBenefitYear = null
         this.personA.fixedRetirementBenefitDate = null
       }
-      if (this.personB.hasFiled === false && this.personB.isDisabled === false && this.scenario.maritalStatus == "married") {
+      if (this.personB.hasFiled === false && this.personB.isOnDisability === false && this.scenario.maritalStatus == "married") {
         this.personBfixedRetirementBenefitMonth = null
         this.personBfixedRetirementBenefitYear = null
         this.personB.fixedRetirementBenefitDate = null
       }
     //If person is disabled, set "still working" to false, set "has filed" to false
-    if (this.personA.isDisabled === true){
+    if (this.personA.isOnDisability === true){
       this.personAworking = false
       this.personA.hasFiled = false
     }
-    if (this.personB.isDisabled === true){
+    if (this.personB.isOnDisability === true){
       this.personBworking = false
       this.personB.hasFiled = false
     }
     //If divorce scenario *and* personB is on disability, give them a fixedRetirementBenefitDate of today (point being so that "ex-spouse must be 62" rule doesn't get in way)
-    if (this.scenario.maritalStatus == "divorced" && this.personB.isDisabled === true){
+    if (this.scenario.maritalStatus == "divorced" && this.personB.isOnDisability === true){
       this.personB.fixedRetirementBenefitDate = new MonthYearDate()
     }
     //If "declineSpousal" or "declineSuspension" inputs are checked in custom date form, reset related month/year inputs
@@ -422,8 +421,9 @@ export class HomeComponent implements OnInit {
       this.customPersonBendSuspensionYear = null
     }
     //Zero children if qualifyingChildren boolean is false
-    if (this.scenario.qualifyingChildren === false){
+    if (this.qualifyingChildrenBoolean === false){
       this.scenario.numberOfChildren = 0
+      this.scenario.children = []
     }
   }
 

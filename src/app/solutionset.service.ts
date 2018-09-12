@@ -19,13 +19,13 @@ export class SolutionSetService {
       "solutionPV":savedPV,
       "solutionsArray": []
     }
-    if (person.isDisabled === true) {
+    if (person.isOnDisability === true) {
       //create disability-converts-to-retirement solution object
       var disabilityConversionDate = new MonthYearDate(person.FRA)
       var disabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", person, disabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
       solutionSet.solutionsArray.push(disabilityConversionSolution)
     }
-    if (person.isDisabled === true || person.hasFiled === true){//there may be a suspension solution
+    if (person.isOnDisability === true || person.hasFiled === true){//there may be a suspension solution
       person.DRCsViaSuspension = person.endSuspensionDate.getMonth() - person.beginSuspensionDate.getMonth() + (12 * (person.endSuspensionDate.getFullYear() - person.beginSuspensionDate.getFullYear()))
       var savedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(person, person.fixedRetirementBenefitDate)
       var savedEndSuspensionAge: number = person.endSuspensionDate.getFullYear() - person.SSbirthDate.getFullYear() + (person.endSuspensionDate.getMonth() - person.SSbirthDate.getMonth())/12
@@ -70,7 +70,7 @@ export class SolutionSetService {
     }
 
         //personA retirement stuff
-          if (personA.isDisabled === true || personA.hasFiled === true){//retirement benefit solution is a suspension solution
+          if (personA.isOnDisability === true || personA.hasFiled === true){//retirement benefit solution is a suspension solution
               personA.DRCsViaSuspension = personA.endSuspensionDate.getMonth() - personA.beginSuspensionDate.getMonth() + (12 * (personA.endSuspensionDate.getFullYear() - personA.beginSuspensionDate.getFullYear()))
               var personAsavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(personA, personA.fixedRetirementBenefitDate)
               var personAsavedEndSuspensionAge: number = personA.endSuspensionDate.getFullYear() - personA.SSbirthDate.getFullYear() + (personA.endSuspensionDate.getMonth() - personA.SSbirthDate.getMonth())/12
@@ -101,7 +101,7 @@ export class SolutionSetService {
           }
 
         //personB retirement stuff
-          if (personB.isDisabled === true || personB.hasFiled === true){//retirement benefit solution is a suspension solution
+          if (personB.isOnDisability === true || personB.hasFiled === true){//retirement benefit solution is a suspension solution
               personB.DRCsViaSuspension = personB.endSuspensionDate.getMonth() - personB.beginSuspensionDate.getMonth() + (12 * (personB.endSuspensionDate.getFullYear() - personB.beginSuspensionDate.getFullYear()))
               var personBsavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(personB, personB.fixedRetirementBenefitDate)
               var personBsavedEndSuspensionAge: number = personB.endSuspensionDate.getFullYear() - personB.SSbirthDate.getFullYear() + (personB.endSuspensionDate.getMonth() - personB.SSbirthDate.getMonth())/12
@@ -162,7 +162,7 @@ export class SolutionSetService {
           }
 
         //personA disability stuff
-          if (personA.isDisabled === true) {
+          if (personA.isOnDisability === true) {
             //create disability-converts-to-retirement solution object
             var personAdisabilityConversionDate = new MonthYearDate(personA.FRA)
             var personAdisabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", personA, personAdisabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
@@ -170,7 +170,7 @@ export class SolutionSetService {
           }
 
         //personB disability stuff
-          if (personB.isDisabled === true) {
+          if (personB.isOnDisability === true) {
             //create disability-converts-to-retirement solution object
             var personBdisabilityConversionDate = new MonthYearDate(personB.FRA)
             var personBdisabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", personB, personBdisabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
@@ -206,7 +206,7 @@ export class SolutionSetService {
             }
 
             //personA spousal solution. We don't want a spousal solution if (A is older than 70 or A has filed) AND (B is over 70, B has filed, or B is on disability)
-            if (  (personA.initialAge >= 70 || personA.hasFiled === true) && (personB.initialAge >= 70 || personB.hasFiled === true || personB.isDisabled === true)  ) {
+            if (  (personA.initialAge >= 70 || personA.hasFiled === true) && (personB.initialAge >= 70 || personB.hasFiled === true || personB.isOnDisability === true)  ) {
               //no spousal solution for personA
             } else{
               if (personAsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(personAspousalSolution)}
@@ -214,7 +214,7 @@ export class SolutionSetService {
 
             //personB spousal solution. We don't want a spousal solution if (B is older than 70 or B has filed) AND (A is over 70, A has filed, or A is on disability). Also, not if divorce scenario
             if (scenario.maritalStatus == "married"){
-              if ( (personB.initialAge >= 70 || personB.hasFiled === true) && (personA.initialAge >= 70 || personA.hasFiled === true || personA.isDisabled === true)  ) {
+              if ( (personB.initialAge >= 70 || personB.hasFiled === true) && (personA.initialAge >= 70 || personA.hasFiled === true || personA.isOnDisability === true)  ) {
                 //no spousal solution for personB
               }
               else {

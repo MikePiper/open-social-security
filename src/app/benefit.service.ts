@@ -22,7 +22,7 @@ export class BenefitService {
     if (monthsWaited > 0 )
     {retirementBenefit = person.PIA + (person.PIA / 100 * 2 / 3 * monthsWaited)}
 
-    if (person.isDisabled === true) {//set retirement benefit (before DRCs from suspension) to PIA if person is disabled
+    if (person.isOnDisability === true) {//set retirement benefit (before DRCs from suspension) to PIA if person is disabled
       retirementBenefit = person.PIA
     }
     
@@ -258,7 +258,7 @@ export class BenefitService {
             calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs = 12
             calcYear.monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs = 12
         }
-      else if (personA.hasFiled === false && personB.hasFiled === false && personA.isDisabled === false && personB.isDisabled === false){//there's no possibility of suspension, because neither has filed or is disabled
+      else if (personA.hasFiled === false && personB.hasFiled === false && personA.isOnDisability === false && personB.isOnDisability === false){//there's no possibility of suspension, because neither has filed or is disabled
         //Do an annual loop that runs much faster:
         let monthsOfBenefit: number
         let ARFmonths:number
@@ -478,7 +478,7 @@ export class BenefitService {
 
   //calculates family maximum on one person's work record
   calculateFamilyMaximum(person:Person){
-    if (person.isDisabled === true){
+    if (person.isOnDisability === true){
       /* https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615742
       family maximum is lesser of:
       85% of the AIME (but not less than the PIA before COLAs), or
