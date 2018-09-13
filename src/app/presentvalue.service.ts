@@ -100,10 +100,10 @@ export class PresentValueService {
         person.monthlyPayment = 0
         if (scenario.numberOfChildren > 0) {
           for (let child of scenario.children){
-            child.age = child.age + 1/12
             child.monthlyPayment = 0
+            child.age = child.age + 1/12
           }
-      }
+        }
         //increment month by 1
         calcYear.date.setMonth(calcYear.date.getMonth()+1)
 

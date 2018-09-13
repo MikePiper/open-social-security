@@ -14,26 +14,26 @@ export class EarningsTestService {
   today: MonthYearDate = new MonthYearDate()
 
 
-  calculateWithholding(currentCalculationDate:MonthYearDate, quitWorkDate:MonthYearDate, FRA:MonthYearDate, monthlyEarnings:number){
+  calculateWithholding(currentCalculationDate:MonthYearDate, person:Person){
       //Determine annual earnings subject to earnings test
       let annualEarnings: number = 0
-      if (currentCalculationDate.getFullYear() > quitWorkDate.getFullYear() || currentCalculationDate.getFullYear() > FRA.getFullYear()) {//If current calc year after FRAyear or quitYear, zero earnings to consider
+      if (currentCalculationDate.getFullYear() > person.quitWorkDate.getFullYear() || currentCalculationDate.getFullYear() > person.FRA.getFullYear()) {//If current calc year after FRAyear or quitYear, zero earnings to consider
         annualEarnings = 0            
-      } else if (currentCalculationDate.getFullYear() < quitWorkDate.getFullYear() && currentCalculationDate.getFullYear() < FRA.getFullYear()) {//If current calc year before FRAyear AND before quitYear, 12 months of earnings to consider
-        annualEarnings = 12 * monthlyEarnings
+      } else if (currentCalculationDate.getFullYear() < person.quitWorkDate.getFullYear() && currentCalculationDate.getFullYear() < person.FRA.getFullYear()) {//If current calc year before FRAyear AND before quitYear, 12 months of earnings to consider
+        annualEarnings = 12 * person.monthlyEarnings
       } else {//Annual earnings is equal to monthlyEarnings, times number of months before earlier of FRAmonth or quitMonth
-        if (FRA < quitWorkDate) {
-          annualEarnings = monthlyEarnings * FRA.getMonth() //e.g,. if FRA is in March, "getMonth" returns 2, which is how many months of earnings we want to consider
+        if (person.FRA < person.quitWorkDate) {
+          annualEarnings = person.monthlyEarnings * person.FRA.getMonth() //e.g,. if FRA is in March, "getMonth" returns 2, which is how many months of earnings we want to consider
         } else {
-          annualEarnings = monthlyEarnings * quitWorkDate.getMonth() //e.g,. if quitWorkDate is in March, "getMonth" returns 2, which is how many months of earnings we want to consider
+          annualEarnings = person.monthlyEarnings * person.quitWorkDate.getMonth() //e.g,. if quitWorkDate is in March, "getMonth" returns 2, which is how many months of earnings we want to consider
         }
       }
       //determine withholdingAmount
       let withholdingAmount:number = 0
-      if (currentCalculationDate.getFullYear() < FRA.getFullYear()) {
+      if (currentCalculationDate.getFullYear() < person.FRA.getFullYear()) {
         //withhold using $17,040 threshold, $1 per $2 excess
         withholdingAmount = (annualEarnings - 17040) / 2
-      } else if (currentCalculationDate.getFullYear() == FRA.getFullYear()) {
+      } else if (currentCalculationDate.getFullYear() == person.FRA.getFullYear()) {
         //withhold using $45,360 threshold, $1 per $3 excess
         withholdingAmount = (annualEarnings - 45360) / 3
       }
@@ -44,21 +44,21 @@ export class EarningsTestService {
       return Number(withholdingAmount)
   }
 
-  isGraceYear(hasHadGraceYear: boolean, quitWorkDate: MonthYearDate, currentCalculationDate: MonthYearDate, retirementBenefitDate: MonthYearDate, spousalBenefitDate?: MonthYearDate, survivorBenefitDate?: MonthYearDate) {
+  isGraceYear(person:Person, currentCalculationDate: MonthYearDate) {
     //If quitWorkDate has already happened (or happens this year) and at least one benefit has started (or starts this year) it's a grace year
     //Assumption: in the year they quit work, following months are non-service months.
     let graceYear:boolean = false
-    if (hasHadGraceYear === true) { //if graceyear was true before, set it to false, so it's only true once
+    if (person.hasHadGraceYear === true) { //if graceyear was true before, set it to false, so it's only true once
       graceYear = false
     }
-    else if (quitWorkDate.getFullYear() <= currentCalculationDate.getFullYear()) {
-      if (retirementBenefitDate.getFullYear() <= currentCalculationDate.getFullYear()) {
+    else if (person.quitWorkDate.getFullYear() <= currentCalculationDate.getFullYear()) {
+      if (person.retirementBenefitDate.getFullYear() <= currentCalculationDate.getFullYear()) {
         graceYear = true
       }
-      if (spousalBenefitDate && spousalBenefitDate.getFullYear() <= currentCalculationDate.getFullYear()) {//i.e., if spousalBenefitDate exists, and it is this year or a prior year
+      if (person.spousalBenefitDate && person.spousalBenefitDate.getFullYear() <= currentCalculationDate.getFullYear()) {//i.e., if spousalBenefitDate exists, and it is this year or a prior year
       graceYear = true
       }
-      if (survivorBenefitDate && survivorBenefitDate.getFullYear() <= currentCalculationDate.getFullYear()) {//i.e., if survivorBenefitDate exists, and it is this year or a prior year
+      if (person.survivorFRA && person.survivorFRA.getFullYear() <= currentCalculationDate.getFullYear()) {//i.e., if survivorBenefitDate exists, and it is this year or a prior year
       graceYear = true
       }
     }
@@ -76,11 +76,11 @@ export class EarningsTestService {
     if (person.quitWorkDate > this.today){//If quitWorkDate is an invalid date (because there was no input) or is in the past for some reason, this whole business below gets skipped  
         //Determine if it's a grace year. If quitWorkDate has already happened (or happens this year) and retirement benefit has started (or starts this year) it's a grace year
           //Assumption: in the year they quit work, following months are non-service months.
-        let graceYear:boolean = this.isGraceYear(person.hasHadGraceYear, person.quitWorkDate, calcYear.date, person.retirementBenefitDate)
+        let graceYear:boolean = this.isGraceYear(person, calcYear.date)
         if (graceYear === true) {person.hasHadGraceYear = true}
           
         //Calculate necessary withholding based on earnings
-        withholdingAmount = this.calculateWithholding(calcYear.date, person.quitWorkDate, person.FRA, person.monthlyEarnings)
+        withholdingAmount = this.calculateWithholding(calcYear.date, person)
 
         //Have to loop monthly for earnings test
         let earningsTestMonth:MonthYearDate = new MonthYearDate(calcYear.date) //set earningsTestMonth to beginning of year
@@ -143,14 +143,14 @@ export class EarningsTestService {
       if (personA.quitWorkDate > this.today || personB.quitWorkDate > this.today){//If quitWorkDates are invalid dates (because there was no input) or in the past for some reason, this whole business below gets skipped
         //Determine if it's a grace year for either spouse. If quitWorkDate has already happened (or happens this year) and at least one type of benefit has started (or starts this year)
           //Assumption: in the year they quit work, following months are non-service months.
-        let spouseAgraceYear:boolean = this.isGraceYear(personA.hasHadGraceYear, personA.quitWorkDate, calcYear.date, personA.retirementBenefitDate, personA.spousalBenefitDate, personA.survivorFRA)
+        let spouseAgraceYear:boolean = this.isGraceYear(personA, calcYear.date)
         if (spouseAgraceYear === true) {personA.hasHadGraceYear = true}  
-        let spouseBgraceYear:boolean = this.isGraceYear(personB.hasHadGraceYear, personB.quitWorkDate, calcYear.date, personB.retirementBenefitDate, personB.spousalBenefitDate, personB.survivorFRA)
+        let spouseBgraceYear:boolean = this.isGraceYear(personB, calcYear.date)
         if (spouseBgraceYear === true) {personB.hasHadGraceYear = true}  
 
           //Calculate necessary withholding based on each spouse's earnings
-          withholdingDueToSpouseAearnings = this.calculateWithholding(calcYear.date, personA.quitWorkDate, personA.FRA, personA.monthlyEarnings)
-          withholdingDueToSpouseBearnings = this.calculateWithholding(calcYear.date, personB.quitWorkDate, personB.FRA, personB.monthlyEarnings)
+          withholdingDueToSpouseAearnings = this.calculateWithholding(calcYear.date, personA)
+          withholdingDueToSpouseBearnings = this.calculateWithholding(calcYear.date, personB)
 
           //If divorced, withholding due to spouseB's earnings is zero
           if (scenario.maritalStatus == "divorced"){

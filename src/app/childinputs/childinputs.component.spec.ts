@@ -1,25 +1,16 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
 
 import { ChildinputsComponent } from './childinputs.component';
+import { BirthdayService } from '../birthday.service';
 
 describe('ChildinputsComponent', () => {
-  let component: ChildinputsComponent;
-  let fixture: ComponentFixture<ChildinputsComponent>;
-
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ ChildinputsComponent ]
-    })
-    .compileComponents();
-  }));
-
   beforeEach(() => {
-    fixture = TestBed.createComponent(ChildinputsComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    TestBed.configureTestingModule({
+      providers: [ChildinputsComponent, BirthdayService]
+    })
+  })
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+    it('should be created', inject([ChildinputsComponent], (component: ChildinputsComponent) => {
+        expect(component).toBeTruthy()
+    }))
   });
-});
