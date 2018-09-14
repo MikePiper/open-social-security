@@ -173,17 +173,6 @@ describe('EarningstestService', () => {
         .toEqual(true)
   }))
 
-  it('should return true for graceYear in a grace year, triggered by survivor benefit starting', inject([EarningsTestService], (service: EarningsTestService) => { 
-    let person:Person = new Person("A")
-    person.hasHadGraceYear = false
-    person.quitWorkDate = new MonthYearDate(2025, 4, 1)
-    let currentCalculationDate:MonthYearDate = new MonthYearDate (2025, 0, 1)
-    person.retirementBenefitDate = new MonthYearDate (2028, 4, 1)
-    person.spousalBenefitDate = new MonthYearDate (2028, 4, 1)
-    person.survivorFRA = new MonthYearDate (2024, 4, 1)
-    expect(service.isGraceYear(person, currentCalculationDate))
-        .toEqual(true)
-  }))
 
   //tests for earningsTestSingle()
   it('should show zero monthsOfRetirement, when a single person files before FRA and has high enough earnings', inject([EarningsTestService], (service: EarningsTestService) => {

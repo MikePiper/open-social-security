@@ -58,9 +58,6 @@ export class EarningsTestService {
       if (person.spousalBenefitDate && person.spousalBenefitDate.getFullYear() <= currentCalculationDate.getFullYear()) {//i.e., if spousalBenefitDate exists, and it is this year or a prior year
       graceYear = true
       }
-      if (person.survivorFRA && person.survivorFRA.getFullYear() <= currentCalculationDate.getFullYear()) {//i.e., if survivorBenefitDate exists, and it is this year or a prior year
-      graceYear = true
-      }
     }
     return graceYear
   }

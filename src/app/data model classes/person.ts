@@ -63,6 +63,7 @@ export class Person {
     childBenefitParentAlive:number
     childBenefitParentDeceased:number
     monthlyPayment:number = 0
+    monthsWithheld:number = 0 //for earnings test
 
     constructor(id:string){
         this.id = id

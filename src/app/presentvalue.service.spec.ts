@@ -9,8 +9,74 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
+fdescribe('PresentValueService using monthly loops', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
+    })
+  })
 
-describe('PresentValueService', () => {
+    //Test calculateSinglePersonPVmonthlyLoop()
+    it('should return appropriate PV for single person, no complicating factors', inject([PresentValueService], (service: PresentValueService) => {
+      let person:Person = new Person("A")
+      let scenario:CalculationScenario = new CalculationScenario
+      person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
+      person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
+      person.initialAgeRounded = 58 //younger than 62 when fillling out form
+      person.PIA = 1000
+      person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
+      person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work prior to filing date, earnings test not relevant
+      person.monthlyEarnings = 4500 //Doesn't matter really, given date inputs
+      scenario.discountRate = 1 //1% discount rate
+      scenario.initialCalcDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
+      let mortalityService:MortalityService = new MortalityService()
+      person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+        .toBeCloseTo(151765, 0)
+    }))
+  
+    it('should return appropriate PV for single person, but with "still working" inputs and a different mortality table', inject([PresentValueService], (service: PresentValueService) => { 
+      let person:Person = new Person("A")
+      let scenario:CalculationScenario = new CalculationScenario
+      person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
+      person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
+      person.initialAgeRounded = 58 //younger than 62 when fillling out form
+      person.PIA = 1000
+      person.retirementBenefitDate = new MonthYearDate(2024, 3, 1) //filing at age 64
+      person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work after filing date but before FRA, earnings test IS relevant
+      person.monthlyEarnings = 4500 //Just picking something here...
+      scenario.discountRate = 1 //1% discount rate
+      scenario.initialCalcDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
+      let mortalityService:MortalityService = new MortalityService()
+      person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+        .toBeCloseTo(201310, 0)
+    }))
+  
+    it('should return appropriate PV for a single person who files at FRA but suspends immediately until 70', inject([PresentValueService], (service: PresentValueService) => { 
+      let personA:Person = new Person("A")
+      let scenario:CalculationScenario = new CalculationScenario()
+      let birthdayService:BirthdayService = new BirthdayService()
+      let mortalityService:MortalityService = new MortalityService()
+      scenario.maritalStatus = "single"
+      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      personA.SSbirthDate = new MonthYearDate(1970, 8, 1) //Spouse A born in Sept 1970 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
+      scenario.initialCalcDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which older reaches ages 62
+      personA.initialAgeRounded = 61
+      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+      personA.PIA = 1000
+      personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
+      personA.retirementBenefitDate = new MonthYearDate (personA.FRA) //Filing exactly at FRA of 67
+      personA.beginSuspensionDate = new MonthYearDate(personA.FRA)
+      personA.endSuspensionDate = new MonthYearDate(2040, 8, 1)//Age 70
+      scenario.discountRate = 1
+      expect(service.calculateSinglePersonPVmonthlyloop(personA, scenario, false))
+        .toBeCloseTo(151776, 0)//Point being, this is same PV as when somebody just waits until 70.
+    }))
+})
+
+
+describe('PresentValueService using annual loops', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
@@ -36,7 +102,7 @@ describe('PresentValueService', () => {
     scenario.initialCalcDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
     let mortalityService:MortalityService = new MortalityService()
     person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-    expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+    expect(service.calculateSinglePersonPV(person, scenario, false))
       .toBeCloseTo(151765, 0)
   }))
 
