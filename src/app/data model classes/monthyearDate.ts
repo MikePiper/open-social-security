@@ -74,6 +74,8 @@ export class MonthYearDate {
     }
 
     //for the sake of using greaterthan/lessthan/equalto comparisons
+    //For greater than or less than, can just compare the two date objects
+    //To check if equal, use == and valueOf() DONT FORGET THE PARENTHESES ex if (monthYearDateObject1.valueOf() == monthYearDateObject2.valueOf())
     valueOf():number{
         return Number(this.year * 12 + this.month)
     }

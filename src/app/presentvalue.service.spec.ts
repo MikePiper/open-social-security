@@ -36,7 +36,7 @@ describe('PresentValueService', () => {
     scenario.initialCalcDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
     let mortalityService:MortalityService = new MortalityService()
     person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-    expect(service.calculateSinglePersonPV(person, scenario, false))
+    expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
       .toBeCloseTo(151765, 0)
   }))
 

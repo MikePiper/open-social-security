@@ -48,34 +48,69 @@ export class PresentValueService {
     //Set initial calcYear (Jan 1 of the year that benefit begins)
     let calcYear:CalculationYear = new CalculationYear(scenario.initialCalcDate)
 
-    //calculate age as of that date
+    //calculate age(s) as of that date
     person.age = ( 12 * (calcYear.date.getFullYear() - person.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - person.SSbirthDate.getMonth()  )/12
+    for (let child of scenario.children){
+      child.age = ( 12 * (calcYear.date.getFullYear() - child.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - child.SSbirthDate.getMonth()  )/12
+    }
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (person.age < 115) {
 
       //Do we have to calculate/recalculate any benefits? If so, do so. (Never have to recalculate a child's benefit amount.)
-      if (calcYear.date == person.FRA || calcYear.date == person.endSuspensionDate){
+      if (calcYear.date.valueOf() == person.FRA.valueOf() || calcYear.date.valueOf() == person.endSuspensionDate.valueOf()){
         person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
       }
       
       //Do we ever have to recalculate family max? (No. In family scenario might have to recalculate combined family max though. Or rather, combined family max doesn't get calculated at beginning but rather in a later year?)
       
       //Assume person is alive
-          //calculate monthlyPayment field for each person
-            if (person.beginSuspensionDate > calcYear.date || person.endSuspensionDate <= calcYear.date){personSuspended = false}
-            else {personSuspended = true}
-            if (personSuspended === false && calcYear.date >= person.retirementBenefitDate){
-                person.monthlyPayment = person.retirementBenefit
-                for (let child of scenario.children){
-                  if (child.age < 18 || child.isOnDisability === true){
-                    child.monthlyPayment = child.childBenefitParentAlive
+            //calculate monthlyPayment field for each person
+              if (person.beginSuspensionDate > calcYear.date || person.endSuspensionDate <= calcYear.date){personSuspended = false}
+              else {personSuspended = true}
+              if (calcYear.date >= person.retirementBenefitDate) {
+                if (personSuspended === true){
+                  person.DRCsViaSuspension = person.DRCsViaSuspension + 1
+                  //don't have to set monthlyPayment amounts to zero, because they were already set to zero at end of previous loop
+                }
+                else {//i.e., person isn't suspended
+                  person.monthlyPayment = person.retirementBenefit
+                  for (let child of scenario.children){
+                    if (child.age < 18 || child.isOnDisability === true){
+                      child.monthlyPayment = child.childBenefitParentAlive
+                    }
                   }
                 }
+              }
+            //adjust each person's monthlyPayment as necessary for family max
+              if (scenario.numberOfChildren > 0){
+                let amountLeftForRestOfFamiliy:number = person.familyMaximum - person.PIA
+                let maxAuxilliaryBenefitPerAuxilliary:number = amountLeftForRestOfFamiliy / scenario.numberOfChildren
+                for (let child of scenario.children){
+                  if (child.monthlyPayment > maxAuxilliaryBenefitPerAuxilliary){
+                    child.monthlyPayment = maxAuxilliaryBenefitPerAuxilliary
+                  }
+                }
+              }
+
+            //TODO: adjust as necessary for earnings test (and tally months withheld)
+
+            //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonAlive)
+            annualBenefitPersonAlive = annualBenefitPersonAlive + person.monthlyPayment
+            for (let child of scenario.children){
+              annualBenefitPersonAlive = annualBenefitPersonAlive + child.monthlyPayment
             }
-          //adjust each person's monthlyPayment as necessary for family max
+
+      //Assume person is deceased
+            //calculate monthlyPayment field for each person
+            for (let child of scenario.children){
+              if (child.age < 18 || child.isOnDisability === true){
+                child.monthlyPayment = child.childBenefitParentDeceased
+              }
+            }
+            //adjust each person's monthlyPayment as necessary for family max
             if (scenario.numberOfChildren > 0){
-              let amountLeftForRestOfFamiliy:number = person.familyMaximum = person.PIA
+              let amountLeftForRestOfFamiliy:number = person.familyMaximum
               let maxAuxilliaryBenefitPerAuxilliary:number = amountLeftForRestOfFamiliy / scenario.numberOfChildren
               for (let child of scenario.children){
                 if (child.monthlyPayment > maxAuxilliaryBenefitPerAuxilliary){
@@ -83,27 +118,22 @@ export class PresentValueService {
                 }
               }
             }
+            //TODO? adjust as necessary for earnings test and tally months withheld (won't be any withholding for Single scenario if person is deceased)
 
-          //adjust as necessary for earnings test (and tally months withheld)
-          //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonAlive)
-
-      //Assume person is deceased
-          //calculate monthlyPayment field for each person
-          //adjust each person's monthlyPayment as necessary for family max
-          //adjust as necessary for earnings test and tally months withheld (won't be any withholding for Single scenario if person is deceased)
-          //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
-
+            //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
+            for (let child of scenario.children){
+              annualBenefitPersonDeceased = annualBenefitPersonDeceased + child.monthlyPayment
+            }
 
       //After month is over:
         //reset everybody's monthlyPayment
         //and increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
         person.monthlyPayment = 0
-        if (scenario.numberOfChildren > 0) {
-          for (let child of scenario.children){
-            child.monthlyPayment = 0
-            child.age = child.age + 1/12
-          }
+        for (let child of scenario.children){
+          child.monthlyPayment = 0
+          child.age = child.age + 1/12
         }
+        
         //increment month by 1
         calcYear.date.setMonth(calcYear.date.getMonth()+1)
 
