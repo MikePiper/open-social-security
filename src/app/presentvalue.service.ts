@@ -9,6 +9,7 @@ import {CalculationScenario} from './data model classes/calculationscenario'
 import {CalculationYear} from './data model classes/calculationyear'
 import {OutputTableService} from './outputtable.service'
 import {MonthYearDate} from "./data model classes/monthyearDate"
+import {isUndefined} from 'util'
 
 
 @Injectable()
@@ -48,6 +49,9 @@ export class PresentValueService {
     }
 
     //calculate earnings test withholding for initial year, and determine if this is a grace year
+    if (isUndefined(person.quitWorkDate)) {//If nothing was input for quitWorkDate, make up a date way in the past so following check can run but returns false (and therefore earnings test gets skipped)
+      person.quitWorkDate = new MonthYearDate(1,0,1)
+    }
     let annualWithholding:number = this.earningsTestService.calculateWithholding(calcYear.date, person)
     let graceYear:boolean = this.earningsTestService.isGraceYear(person, calcYear.date)
     if (graceYear === true) {person.hasHadGraceYear = true}
@@ -87,24 +91,10 @@ export class PresentValueService {
             //adjust each person's monthlyPayment as necessary for family max
               if (scenario.children.length > 0){
                 let amountLeftForRestOfFamiliy:number = person.familyMaximum - person.PIA
-                let numberOfAxilliaries:number = 0
-                for (let child of scenario.children){
-                  if (child.isOnDisability === true || child.age < 17.99){
-                    numberOfAxilliaries = numberOfAxilliaries + 1
-                  }
-                }
-                let maxAuxilliaryBenefitPerAuxilliary:number = amountLeftForRestOfFamiliy / numberOfAxilliaries
-                for (let child of scenario.children){
-                  if (child.monthlyPayment > maxAuxilliaryBenefitPerAuxilliary){
-                    child.monthlyPayment = maxAuxilliaryBenefitPerAuxilliary
-                  }
-                }
+                scenario = this.benefitService.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamiliy)
               }
 
             //Adjust as necessary for earnings test (and tally months withheld)
-            if (isNaN(person.quitWorkDate.valueOf())) {//If nothing was input for quitWorkDate, make up a date way in the past so following check can run but returns false (and therefore earnings test gets skipped)
-              person.quitWorkDate = new MonthYearDate(1,0,1)
-            }
             if (person.quitWorkDate > this.today){
               if (annualWithholding > 0){//If more withholding is necessary...
                 if (calcYear.date >= person.retirementBenefitDate  //And they've started retirement benefit...
@@ -153,12 +143,7 @@ export class PresentValueService {
             //adjust each person's monthlyPayment as necessary for family max
             if (scenario.children.length > 0){
               let amountLeftForRestOfFamiliy:number = person.familyMaximum
-              let maxAuxilliaryBenefitPerAuxilliary:number = amountLeftForRestOfFamiliy / scenario.children.length
-              for (let child of scenario.children){
-                if (child.monthlyPayment > maxAuxilliaryBenefitPerAuxilliary){
-                  child.monthlyPayment = maxAuxilliaryBenefitPerAuxilliary
-                }
-              }
+              scenario = this.benefitService.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamiliy)
             }
             //Earnings test: not necessary in Single scenario if person is deceased
 
@@ -169,19 +154,16 @@ export class PresentValueService {
 
 
       //After month is over:
-        //reset everybody's monthlyPayment
-        //and increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
+        //reset everybody's monthlyPayment 
+        //increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
         person.monthlyPayment = 0
         for (let child of scenario.children){
           child.monthlyPayment = 0
           child.age = child.age + 1/12
         }
-        
         //increment month by 1
         calcYear.date.setMonth(calcYear.date.getMonth()+1)
         
-   
-
 
         //if it's now January...
         if (calcYear.date.getMonth() == 0){

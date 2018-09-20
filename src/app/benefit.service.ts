@@ -3,6 +3,7 @@ import {Person} from './data model classes/person';
 import { CalculationYear } from './data model classes/calculationyear';
 import { CalculationScenario } from './data model classes/calculationscenario';
 import {MonthYearDate} from "./data model classes/monthyearDate"
+import { ClaimingSolution } from './data model classes/claimingsolution';
 
 
 @Injectable()
@@ -577,6 +578,22 @@ export class BenefitService {
       PIA = 0.9 * firstBendPoint + 0.32 * (secondBendPoint - firstBendPoint) + 0.15 * (AIME - secondBendPoint)
     }
     return PIA
+  }
+
+  applyFamilyMaximumSingle(scenario:CalculationScenario, amountLeftForRestOfFamiliy:number){
+      let numberOfAxilliaries:number = 0
+      for (let child of scenario.children){
+        if (child.isOnDisability === true || child.age < 17.99){
+          numberOfAxilliaries = numberOfAxilliaries + 1
+        }
+      }
+      let maxAuxilliaryBenefitPerAuxilliary:number = amountLeftForRestOfFamiliy / numberOfAxilliaries
+      for (let child of scenario.children){
+        if (child.monthlyPayment > maxAuxilliaryBenefitPerAuxilliary){
+          child.monthlyPayment = maxAuxilliaryBenefitPerAuxilliary
+        }
+      }
+    return scenario
   }
 
   //access by, eg this.annualIndexedValuesArray[entitlementYear - 1979].secondPIAbendPoint
