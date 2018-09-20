@@ -10,6 +10,67 @@ export class OutputTableService {
 
   constructor() { }
 
+  generateOutputTableSingleMonthly(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
+    if (calcYear.date.getFullYear() >= person.retirementBenefitDate.getFullYear()){//no need to make a table row if this year has no benefits
+      //Find annual benefit amounts, and whether there is a non-disabled child under age 18
+      let childUnder18:boolean = false
+      calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit + person.monthlyPayment
+      if (scenario.children.length > 0) {
+        for (let child of scenario.children){
+         calcYear.totalAnnualChildBenefits = calcYear.totalAnnualChildBenefits + child.monthlyPayment
+         if (child.age < 17.99 && child.isOnDisability === false){
+           childUnder18 = true
+         }
+        }
+      }
+      //If it's december...
+      if (calcYear.date.getMonth() == 11){
+        //Add back any overwithholding to person's annual retirement amount total
+          if (calcYear.personAoverWithholding > 0) {
+            calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit + calcYear.personAoverWithholding
+          }
+        //Add row to table
+        //need year-by year row if...
+        if (person.age <= 70 || //person is younger than 70
+          (childUnder18 === true) || //there is a child who is not disabled and they are younger than 18
+          (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear)){ //person has chosen an assumed benefit cut and that year has not yet arrived
+            if (scenario.children.length > 0){
+              scenario.outputTable.push([
+                calcYear.date.getFullYear(),
+                calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+                calcYear.totalAnnualChildBenefits.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+                (calcYear.personAannualRetirementBenefit + calcYear.totalAnnualChildBenefits).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+              ])
+            }
+            else {
+              scenario.outputTable.push([
+                calcYear.date.getFullYear(),
+                calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+              ])
+            }
+        }
+        else if (scenario.outputTableComplete === false) {
+          if (scenario.children.length > 0){
+            scenario.outputTable.push([
+              calcYear.date.getFullYear().toString() + " and beyond",
+              calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+              calcYear.totalAnnualChildBenefits.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+              (calcYear.personAannualRetirementBenefit + calcYear.totalAnnualChildBenefits).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+            ])
+          }
+          else {
+            scenario.outputTable.push([
+              calcYear.date.getFullYear().toString() + " and beyond",
+              calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+            ])
+          }
+          scenario.outputTableComplete = true
+        }
+      }
+    }
+    return scenario
+  }
+
   generateOutputTableSingle(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
     //first line: no need to make a table row if this year has no benefits
     if (calcYear.date.getFullYear() >= person.retirementBenefitDate.getFullYear()){

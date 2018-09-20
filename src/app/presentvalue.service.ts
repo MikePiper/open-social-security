@@ -22,31 +22,24 @@ export class PresentValueService {
   calculateSinglePersonPVmonthlyloop(person:Person, scenario:CalculationScenario, printOutputTable:boolean):number{
     //reset values for new PV calc
       let retirementPV:number = 0
-      let annualPV:number = 0 //This, annualBenefitPersonAlive, and annualBenefitPersonDeceased (and maybe other stuff) could be fields on calcYear -- and if they're set as zero for a new calcYear, we wouldn't have to reset here
       let probabilityPersonAlive:number
       person.hasHadGraceYear = false
       person.adjustedRetirementBenefitDate = new MonthYearDate(person.retirementBenefitDate)
       person.retirementBenefitWithDRCsfromSuspension = 0
       person.DRCsViaSuspension = 0
+      person.monthsWithheld = 0
       scenario.outputTable = []
-      let annualBenefitPersonAlive:number = 0
-      let annualBenefitPersonDeceased:number = 0
       let personSuspended:boolean
 
-    //calculate initial benefit amounts
+    //calculate initial retirement benefit
       person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
-      if (scenario.numberOfChildren > 0) {
-        for (let child of scenario.children){
-          child.childBenefitParentAlive = this.benefitService.calculateChildBenefitParentLiving(person)
-          child.childBenefitParentDeceased = this.benefitService.calculateChildBenefitParentDeceased(person)
-        }
-      }
-    
-    //calculate family max (no need for combined family max in single-earner scenario)
-    person = this.benefitService.calculateFamilyMaximum(person)
 
-    //Set initial calcYear (Jan 1 of the year that benefit begins)
-    let calcYear:CalculationYear = new CalculationYear(scenario.initialCalcDate)
+    //Create initial CalculationYear object
+    let initialCalcDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
+    if (initialCalcDate.getFullYear() < this.today.getFullYear()){
+      initialCalcDate = new MonthYearDate(this.today.getFullYear(), 0, 1)
+    }
+    let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
 
     //calculate age(s) as of that date
     person.age = ( 12 * (calcYear.date.getFullYear() - person.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - person.SSbirthDate.getMonth()  )/12
@@ -85,16 +78,22 @@ export class PresentValueService {
                 else {//i.e., person isn't suspended
                   person.monthlyPayment = person.retirementBenefit
                   for (let child of scenario.children){
-                    if (child.age < 18 || child.isOnDisability === true){
+                    if (child.age < 17.99 || child.isOnDisability === true){
                       child.monthlyPayment = child.childBenefitParentAlive
                     }
                   }
                 }
               }
             //adjust each person's monthlyPayment as necessary for family max
-              if (scenario.numberOfChildren > 0){
+              if (scenario.children.length > 0){
                 let amountLeftForRestOfFamiliy:number = person.familyMaximum - person.PIA
-                let maxAuxilliaryBenefitPerAuxilliary:number = amountLeftForRestOfFamiliy / scenario.numberOfChildren
+                let numberOfAxilliaries:number = 0
+                for (let child of scenario.children){
+                  if (child.isOnDisability === true || child.age < 17.99){
+                    numberOfAxilliaries = numberOfAxilliaries + 1
+                  }
+                }
+                let maxAuxilliaryBenefitPerAuxilliary:number = amountLeftForRestOfFamiliy / numberOfAxilliaries
                 for (let child of scenario.children){
                   if (child.monthlyPayment > maxAuxilliaryBenefitPerAuxilliary){
                     child.monthlyPayment = maxAuxilliaryBenefitPerAuxilliary
@@ -107,7 +106,7 @@ export class PresentValueService {
               person.quitWorkDate = new MonthYearDate(1,0,1)
             }
             if (person.quitWorkDate > this.today){
-              if (annualWithholding > 0){//If withholding is necessary...
+              if (annualWithholding > 0){//If more withholding is necessary...
                 if (calcYear.date >= person.retirementBenefitDate  //And they've started retirement benefit...
                 && !(graceYear === true || calcYear.date >= person.quitWorkDate) //And it isn't a nonservice month in grace year...
                 && calcYear.date < person.FRA){//And they are younger than FRA...
@@ -130,37 +129,44 @@ export class PresentValueService {
             }
 
             //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonAlive)
-            annualBenefitPersonAlive = annualBenefitPersonAlive + person.monthlyPayment
+            calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + person.monthlyPayment
             for (let child of scenario.children){
-              annualBenefitPersonAlive = annualBenefitPersonAlive + child.monthlyPayment
+              calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + child.monthlyPayment
             }
             if (annualWithholding < 0) {//If annualWithholding is negative due to overwithholding, add that back to total annual benefit sum (i.e., subtract the negative amount)
-              annualBenefitPersonAlive = annualBenefitPersonAlive - annualWithholding
+              calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive - annualWithholding
+              calcYear.personAoverWithholding = 0 - annualWithholding //Need the "personAoverWithholding" field because it gets used for table output
+            }
+
+            //If printOutputTable is true, add row to output table. (We do this under the "parent alive" scenario, because those are the monthly payment amounts we want for the table.)
+            if (printOutputTable === true){
+              this.outputTableService.generateOutputTableSingleMonthly(person, scenario, calcYear)
             }
 
       //Assume person is deceased
             //calculate monthlyPayment field for each person
             for (let child of scenario.children){
-              if (child.age < 18 || child.isOnDisability === true){
+              if (child.age < 17.99 || child.isOnDisability === true){//Use 17.99 as the cutoff because sometimes when child is actually 18 javascript value will be 17.9999999
                 child.monthlyPayment = child.childBenefitParentDeceased
               }
             }
             //adjust each person's monthlyPayment as necessary for family max
-            if (scenario.numberOfChildren > 0){
+            if (scenario.children.length > 0){
               let amountLeftForRestOfFamiliy:number = person.familyMaximum
-              let maxAuxilliaryBenefitPerAuxilliary:number = amountLeftForRestOfFamiliy / scenario.numberOfChildren
+              let maxAuxilliaryBenefitPerAuxilliary:number = amountLeftForRestOfFamiliy / scenario.children.length
               for (let child of scenario.children){
                 if (child.monthlyPayment > maxAuxilliaryBenefitPerAuxilliary){
                   child.monthlyPayment = maxAuxilliaryBenefitPerAuxilliary
                 }
               }
             }
-            //TODO? adjust as necessary for earnings test and tally months withheld (won't be any withholding for Single scenario if person is deceased)
+            //Earnings test: not necessary in Single scenario if person is deceased
 
             //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
             for (let child of scenario.children){
-              annualBenefitPersonDeceased = annualBenefitPersonDeceased + child.monthlyPayment
+              calcYear.annualBenefitSinglePersonDeceased = calcYear.annualBenefitSinglePersonDeceased + child.monthlyPayment
             }
+
 
       //After month is over:
         //reset everybody's monthlyPayment
@@ -173,32 +179,31 @@ export class PresentValueService {
         
         //increment month by 1
         calcYear.date.setMonth(calcYear.date.getMonth()+1)
+        
+   
+
 
         //if it's now January...
         if (calcYear.date.getMonth() == 0){
-          //TODO: If printOutputTable is true, add row to outputtable?
-
           //Apply probability alive to annual benefit amounts
           probabilityPersonAlive = this.mortalityService.calculateProbabilityAlive(person, person.age)
-          annualPV = annualBenefitPersonAlive * probabilityPersonAlive + annualBenefitPersonDeceased * (1 - probabilityPersonAlive)
+          calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * probabilityPersonAlive + calcYear.annualBenefitSinglePersonDeceased * (1 - probabilityPersonAlive)
 
           //Discount that probability-weighted annual benefit amount to age 62
-          annualPV = annualPV / (1 + scenario.discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
-          annualPV = annualPV / Math.pow((1 + scenario.discountRate/100),(person.age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
+          calcYear.annualPV = calcYear.annualPV / (1 + scenario.discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
+          calcYear.annualPV = calcYear.annualPV / Math.pow((1 + scenario.discountRate/100),(person.age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
 
           //Add discounted benefit to ongoing sum
-          retirementPV = retirementPV + annualPV
+          retirementPV = retirementPV + calcYear.annualPV
 
           //Calculate new annual withholding amount for earnings test for this new year
           annualWithholding = this.earningsTestService.calculateWithholding(calcYear.date, person)
 
-          //reset annual benefit amounts, increment person's age by 1 year, and create new CalculationYear object
-          annualBenefitPersonAlive = 0
-          annualBenefitPersonDeceased = 0
-          annualPV = 0
+          //increment person's age by 1 year, and create new CalculationYear object
           person.age = person.age + 1
           calcYear = new CalculationYear(calcYear.date)
         }
+
     }
 
     return retirementPV
@@ -413,8 +418,8 @@ export class PresentValueService {
 
 
 
-
   maximizeSinglePersonPV(person:Person, scenario:CalculationScenario) : SolutionSet{
+
     //find initial testClaimingDate for age 62
     person.retirementBenefitDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
     if (person.actualBirthDate.getDate() > 2){
@@ -441,8 +446,17 @@ export class PresentValueService {
       person.retirementBenefitDate = new MonthYearDate(person.fixedRetirementBenefitDate)
     }
 
+    //Calculate child benefit amounts (if applicable) and family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
+    if (scenario.children.length > 0) {
+      for (let child of scenario.children){
+        child.childBenefitParentAlive = this.benefitService.calculateChildBenefitParentLiving(person)
+        child.childBenefitParentDeceased = this.benefitService.calculateChildBenefitParentDeceased(person)
+      }
+    }
+    person = this.benefitService.calculateFamilyMaximum(person)
+
     //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
-    let savedPV: number = this.calculateSinglePersonPV(person, scenario, false)
+    let savedPV: number = this.calculateSinglePersonPVmonthlyloop(person, scenario, false)
     let savedClaimingDate: MonthYearDate = new MonthYearDate(person.retirementBenefitDate)
     let savedBeginSuspensionDate: MonthYearDate = new MonthYearDate(person.beginSuspensionDate)
     let savedEndSuspensionDate: MonthYearDate = new MonthYearDate(person.endSuspensionDate)
@@ -452,7 +466,7 @@ export class PresentValueService {
     while (person.retirementBenefitDate <= endingTestDate && person.endSuspensionDate <= endingTestDate){
       //Increment claiming date (or suspension date) and run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
       person = this.incrementRetirementORendSuspensionDate(person, scenario)
-      let currentTestPV = this.calculateSinglePersonPV(person, scenario, false)
+      let currentTestPV = this.calculateSinglePersonPVmonthlyloop(person, scenario, false)
       if (currentTestPV >= savedPV){
           savedPV = currentTestPV
           savedClaimingDate = new MonthYearDate(person.retirementBenefitDate)
@@ -465,7 +479,7 @@ export class PresentValueService {
     person.retirementBenefitDate = new MonthYearDate(savedClaimingDate)
     person.beginSuspensionDate = new MonthYearDate(savedBeginSuspensionDate)
     person.endSuspensionDate = new MonthYearDate(savedEndSuspensionDate)
-    let outputTablePVcalc: number = this.calculateSinglePersonPV(person, scenario, true)
+    let outputTablePVcalc: number = this.calculateSinglePersonPVmonthlyloop(person, scenario, true)
 
     //Generate solution set (for sake of output) from saved values
     let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(scenario, person, Number(savedPV))

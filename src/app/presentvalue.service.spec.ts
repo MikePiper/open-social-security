@@ -9,7 +9,7 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
-fdescribe('PresentValueService using monthly loops', () => {
+describe('PresentValueService using monthly loops', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
@@ -26,11 +26,17 @@ fdescribe('PresentValueService using monthly loops', () => {
       person.PIA = 1000
       person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
       person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work prior to filing date, earnings test not relevant
-      person.monthlyEarnings = 4500 //Doesn't matter really, given date inputs
       scenario.discountRate = 1 //1% discount rate
-      scenario.initialCalcDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      let benefitService:BenefitService = new BenefitService()
+      if (scenario.children.length > 0) {
+        for (let child of scenario.children){//TODO: This should be in maximize rather than calculatePV, yeah? Only has to happen once
+          child.childBenefitParentAlive = benefitService.calculateChildBenefitParentLiving(person)
+          child.childBenefitParentDeceased = benefitService.calculateChildBenefitParentDeceased(person)
+        }
+      }
+      person = benefitService.calculateFamilyMaximum(person)
       expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
         .toBeCloseTo(151765, 0)
     }))
@@ -46,32 +52,133 @@ fdescribe('PresentValueService using monthly loops', () => {
       person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work after filing date but before FRA, earnings test IS relevant
       person.monthlyEarnings = 4500 //Just picking something here...
       scenario.discountRate = 1 //1% discount rate
-      scenario.initialCalcDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+      let benefitService:BenefitService = new BenefitService()
+      if (scenario.children.length > 0) {
+        for (let child of scenario.children){//TODO: This should be in maximize rather than calculatePV, yeah? Only has to happen once
+          child.childBenefitParentAlive = benefitService.calculateChildBenefitParentLiving(person)
+          child.childBenefitParentDeceased = benefitService.calculateChildBenefitParentDeceased(person)
+        }
+      }
+      person = benefitService.calculateFamilyMaximum(person)
       expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
         .toBeCloseTo(201310, 0)
     }))
   
     it('should return appropriate PV for a single person who files at FRA but suspends immediately until 70', inject([PresentValueService], (service: PresentValueService) => { 
-      let personA:Person = new Person("A")
+      let person:Person = new Person("A")
       let scenario:CalculationScenario = new CalculationScenario()
       let birthdayService:BirthdayService = new BirthdayService()
       let mortalityService:MortalityService = new MortalityService()
       scenario.maritalStatus = "single"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-      personA.SSbirthDate = new MonthYearDate(1970, 8, 1) //Spouse A born in Sept 1970 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
-      scenario.initialCalcDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0, 1)//initialCalcDate is year in which older reaches ages 62
-      personA.initialAgeRounded = 61
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personA.PIA = 1000
-      personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
-      personA.retirementBenefitDate = new MonthYearDate (personA.FRA) //Filing exactly at FRA of 67
-      personA.beginSuspensionDate = new MonthYearDate(personA.FRA)
-      personA.endSuspensionDate = new MonthYearDate(2040, 8, 1)//Age 70
+      person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      person.SSbirthDate = new MonthYearDate(1970, 8, 1) //Spouse A born in Sept 1970 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
+      person.initialAgeRounded = 61
+      person.FRA = birthdayService.findFRA(person.SSbirthDate)
+      person.PIA = 1000
+      person.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
+      person.retirementBenefitDate = new MonthYearDate (person.FRA) //Filing exactly at FRA of 67
+      person.beginSuspensionDate = new MonthYearDate(person.FRA)
+      person.endSuspensionDate = new MonthYearDate(2040, 8, 1)//Age 70
       scenario.discountRate = 1
-      expect(service.calculateSinglePersonPVmonthlyloop(personA, scenario, false))
+      let benefitService:BenefitService = new BenefitService()
+      if (scenario.children.length > 0) {
+        for (let child of scenario.children){//TODO: This should be in maximize rather than calculatePV, yeah? Only has to happen once
+          child.childBenefitParentAlive = benefitService.calculateChildBenefitParentLiving(person)
+          child.childBenefitParentDeceased = benefitService.calculateChildBenefitParentDeceased(person)
+        }
+      }
+      person = benefitService.calculateFamilyMaximum(person)
+      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
         .toBeCloseTo(151776, 0)//Point being, this is same PV as when somebody just waits until 70.
+    }))
+
+    it('should return appropriate PV for single person, a newborn child, no other complicating factors', inject([PresentValueService], (service: PresentValueService) => {
+      let person:Person = new Person("A")
+      let child1:Person = new Person("1")
+      let scenario:CalculationScenario = new CalculationScenario
+      scenario.children = [child1]
+      person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
+      child1.SSbirthDate = new MonthYearDate(2030, 3, 1) //child1 born in month in which retirement benefit begins
+      person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
+      person.initialAgeRounded = 58 //younger than 62 when fillling out form
+      person.PIA = 1000
+      person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
+      person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work prior to filing date, earnings test not relevant
+      scenario.discountRate = 1 //1% discount rate
+      let mortalityService:MortalityService = new MortalityService()
+      person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      let benefitService:BenefitService = new BenefitService()
+      if (scenario.children.length > 0) {
+        for (let child of scenario.children){//TODO: This should be in maximize rather than calculatePV, yeah? Only has to happen once
+          child.childBenefitParentAlive = benefitService.calculateChildBenefitParentLiving(person)
+          child.childBenefitParentDeceased = benefitService.calculateChildBenefitParentDeceased(person)
+        }
+      }
+      person = benefitService.calculateFamilyMaximum(person)
+      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+        .toBeCloseTo(265512, 0)
+    }))
+
+    it('should return appropriate PV for single person, two newborn twins, no other complicating factors (confirming family max is being applied correctly)', inject([PresentValueService], (service: PresentValueService) => {
+      let person:Person = new Person("A")
+      let child1:Person = new Person("1")
+      let child2:Person = new Person("2")
+      let scenario:CalculationScenario = new CalculationScenario
+      scenario.children = [child1, child2]
+      person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
+      child1.SSbirthDate = new MonthYearDate(2030, 3, 1) //child1 born in month in which retirement benefit begins (April 2030)
+      child2.SSbirthDate = new MonthYearDate(2030, 3, 1) //child2 born in same month
+      person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
+      person.initialAgeRounded = 58 //younger than 62 when fillling out form
+      person.PIA = 1000
+      person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
+      person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work prior to filing date, earnings test not relevant
+      scenario.discountRate = 1 //1% discount rate
+      let mortalityService:MortalityService = new MortalityService()
+      person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      let benefitService:BenefitService = new BenefitService()
+      if (scenario.children.length > 0) {
+        for (let child of scenario.children){//TODO: This should be in maximize rather than calculatePV, yeah? Only has to happen once
+          child.childBenefitParentAlive = benefitService.calculateChildBenefitParentLiving(person)
+          child.childBenefitParentDeceased = benefitService.calculateChildBenefitParentDeceased(person)
+        }
+      }
+      person = benefitService.calculateFamilyMaximum(person)
+      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+        .toBeCloseTo(323555, 0)
+    }))
+
+    it('should return appropriate PV for single person, newborn triplets, no other complicating factors (family max should give it same PV as prior test)', inject([PresentValueService], (service: PresentValueService) => {
+      let person:Person = new Person("A")
+      let child1:Person = new Person("1")
+      let child2:Person = new Person("2")
+      let child3:Person = new Person("3")
+      let scenario:CalculationScenario = new CalculationScenario
+      scenario.children = [child1, child2, child3]
+      person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
+      child1.SSbirthDate = new MonthYearDate(2030, 3, 1) //child1 born in month in which retirement benefit begins (April 2030)
+      child2.SSbirthDate = new MonthYearDate(2030, 3, 1) //child2 born in same month
+      child3.SSbirthDate = new MonthYearDate(2030, 3, 1) //child3 born in same month
+      person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
+      person.initialAgeRounded = 58 //younger than 62 when fillling out form
+      person.PIA = 1000
+      person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
+      person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work prior to filing date, earnings test not relevant
+      scenario.discountRate = 1 //1% discount rate
+      let mortalityService:MortalityService = new MortalityService()
+      person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      let benefitService:BenefitService = new BenefitService()
+      if (scenario.children.length > 0) {
+        for (let child of scenario.children){//TODO: This should be in maximize rather than calculatePV, yeah? Only has to happen once
+          child.childBenefitParentAlive = benefitService.calculateChildBenefitParentLiving(person)
+          child.childBenefitParentDeceased = benefitService.calculateChildBenefitParentDeceased(person)
+        }
+      }
+      person = benefitService.calculateFamilyMaximum(person)
+      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+        .toBeCloseTo(323555, 0)
     }))
 })
 

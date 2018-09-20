@@ -136,7 +136,7 @@
               <label for="personAassumedDeathAge" class="customtooltip">Assumed age at death<span class="tooltiptext">whole numbers only, please</span></label>
               <input type="text" class="smallTextInput" [(ngModel)]="personAassumedDeathAge" id="personAassumedDeathAge" name="personAassumedDeathAge">
             </span>
-            <p class="inputexplanation"><a href="about#mortality" target="_blank">See here</a> for more information about these mortality table options.</p>
+            <p class="inputexplanation"><a [routerLink]="['about']" fragment="mortality" target="_blank">See the "About" page</a> for more information about these mortality table options.</p>
         </span>
         <!--End personA Mortality Inputs -->
 

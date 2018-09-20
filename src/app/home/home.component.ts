@@ -273,7 +273,7 @@ export class HomeComponent implements OnInit {
         this.customDateScenario = Object.assign({}, this.scenario)
         this.customDateScenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
     if (this.scenario.maritalStatus == "single" && this.errorCollection.hasErrors === false) {
-      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.customDateScenario, true)
+      this.customPV = this.presentvalueService.calculateSinglePersonPVmonthlyloop(this.personA, this.customDateScenario, true)
       }
     if(this.scenario.maritalStatus == "married" && this.errorCollection.hasErrors === false) {
       this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
@@ -315,8 +315,8 @@ export class HomeComponent implements OnInit {
     this.personA.mortalityTable = this.mortalityService.determineMortalityTable(this.personAgender, this.personAmortalityInput, this.personAassumedDeathAge)
     this.personB.mortalityTable = this.mortalityService.determineMortalityTable(this.personBgender, this.personBmortalityInput, this.personBassumedDeathAge)
     //set initialCalcDate
-      //if single, it's year in which user turns 62
-        if (this.scenario.maritalStatus == "single") {
+      //if single or divorced, it's year in which personA turns 62
+        if (this.scenario.maritalStatus == "single" || this.scenario.maritalStatus == "divorced") {
           this.scenario.initialCalcDate = new MonthYearDate(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
         }
       //If married, set initialCalcDate to Jan 1 of year in which first spouse reaches age 62
@@ -328,10 +328,6 @@ export class HomeComponent implements OnInit {
           else {
             this.scenario.initialCalcDate = new MonthYearDate(this.personB.SSbirthDate.getFullYear()+62, 0, 1)
             }
-        }
-      //If divorced, we want initialCalcDate to be Jan 1 of personA's age62 year.
-        if (this.scenario.maritalStatus == "divorced") {
-          this.scenario.initialCalcDate = new MonthYearDate(this.personA.SSbirthDate.getFullYear()+62, 0, 1)
         }
       //Don't let initialCalcDate be earlier than this year
         if (this.scenario.initialCalcDate.getFullYear() < this.today.getFullYear()){

@@ -12,6 +12,7 @@ export class ChildinputsComponent implements OnInit {
   constructor(private birthdayService:BirthdayService) { }
 
   ngOnInit() {
+    this.getInputs()//Run this here in case a person checks "yes" for children and never changes the related DoB or disability inputs. (If we don't run it, children birthdates will be undefined)
   }
 
   @Input() child: Person

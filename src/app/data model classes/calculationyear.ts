@@ -20,13 +20,6 @@ export class CalculationYear {
             monthsOfPersonAsurvivorWithRetirementPostARF: number = 0
             monthsOfPersonAsurvivorWithRetirementwithSuspensionDRCs: number = 0
 
-
-        personAannualRetirementBenefit: number = 0
-        personAannualSpousalBenefit: number = 0
-        personAannualSurvivorBenefit: number = 0
-
-        personAoverWithholding: number = 0
-
     //PersonB
         //retirement
             monthsOfPersonBretirementPreARF:number = 0
@@ -42,20 +35,33 @@ export class CalculationYear {
             monthsOfPersonBsurvivorWithRetirementPostARF: number = 0
             monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs: number = 0
 
-        personBannualRetirementBenefit: number = 0
-        personBannualSpousalBenefit: number = 0
-        personBannualSurvivorBenefit: number = 0
 
-        personBoverWithholding: number = 0
+    personAoverWithholding: number = 0//These amounts get used as an add-back in output table
+    personBoverWithholding: number = 0//These amounts get used as an add-back in output table
+    //annualWithholdingDueToPersonAearnings: number
+    //annualWithholdingDueToPersonBearnings: number
+    //personAgraceYear: boolean = false
+    //personBgraceYear: boolean = false
 
+    //Sums for calculating PV
+    annualBenefitSinglePersonAlive: number = 0
+    annualBenefitSinglePersonDeceased: number = 0
+    annualBenefitBothAlive: number = 0
+    annualBenefitOnlyPersonAalive: number = 0
+    annualBenefitOnlyPersonBalive: number = 0
+    annualPV: number = 0
 
-    //withholdingDueToPersonAearnings: number
-    //withholdingDueToPersonBearnings: number
-    //monthsWithheld: number = 0 (This doesn't fit here. It's not for one year but rather an ongoing sum of monthsWithheld.)
-    //graceYear: boolean = false
-    //hasHadGraceYear: boolean = false (This doesn't fit here either.)
+    //Sums for table output (Assumes any parents are alive -- aside from survivor benefit amounts)
+    personAannualRetirementBenefit: number = 0
+    personAannualSpousalBenefit: number = 0
+    personAannualSurvivorBenefit: number = 0
+    personBannualRetirementBenefit: number = 0
+    personBannualSpousalBenefit: number = 0
+    personBannualSurvivorBenefit: number = 0
+    totalAnnualChildBenefits: number = 0
 
     constructor(date:MonthYearDate) {
         this.date = date
     }
+
 }
