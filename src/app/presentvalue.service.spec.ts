@@ -16,6 +16,12 @@ describe('PresentValueService using monthly loops', () => {
     })
   })
 
+      
+  it('should be created', inject([PresentValueService], (service: PresentValueService) => {
+    expect(service).toBeTruthy()
+  }))
+
+
     //Test calculateSinglePersonPVmonthlyLoop()
     it('should return appropriate PV for single person, no complicating factors', inject([PresentValueService], (service: PresentValueService) => {
       let person:Person = new Person("A")
@@ -181,20 +187,6 @@ describe('PresentValueService using monthly loops', () => {
         .toBeCloseTo(323555, 0)
     }))
 
-
-})
-
-
-describe('PresentValueService using annual loops', () => {
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
-    })
-  })
-
-  it('should be created', inject([PresentValueService], (service: PresentValueService) => {
-    expect(service).toBeTruthy()
-  }))
 
   
   //Test calculateCouplePV
