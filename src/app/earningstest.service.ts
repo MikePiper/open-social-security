@@ -62,6 +62,30 @@ export class EarningsTestService {
     return graceYear
   }
 
+  applyEarningsTestSingle(scenario:CalculationScenario, person:Person, calcYear:CalculationYear){
+    if (calcYear.annualWithholdingDueToPersonAearnings > 0){//If more withholding is necessary...
+      if (calcYear.date >= person.retirementBenefitDate  //And they've started retirement benefit...
+      && !(calcYear.personAgraceYear === true || calcYear.date >= person.quitWorkDate) //And it isn't a nonservice month in grace year...
+      && calcYear.date < person.FRA){//And they are younger than FRA...
+          //count how much is available for withholding
+          let availableForWithholding:number = person.monthlyPayment
+          for (let child of scenario.children){
+            availableForWithholding = availableForWithholding + child.monthlyPayment
+          }
+          //Set everybody's monthlyPayment to zero to reflect benefits being withheld this month
+          person.monthlyPayment = 0
+          for (let child of scenario.children){
+            child.monthlyPayment = 0
+          }
+          //Add to tally of months withheld
+          person.monthsWithheld = person.monthsWithheld + 1
+          //Reduce necessary withholding by amount that was withheld this month
+          calcYear.annualWithholdingDueToPersonAearnings = calcYear.annualWithholdingDueToPersonAearnings - availableForWithholding
+      }
+    }
+    // let earningsTestResult:any[] = [scenario, person, calcYear]
+    // return earningsTestResult
+  }
 
   earningsTestSingle(calcYear:CalculationYear, person:Person){
     let withholdingAmount: number = 0

@@ -36,12 +36,13 @@ export class CalculationYear {
             monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs: number = 0
 
 
-    personAoverWithholding: number = 0//These amounts get used as an add-back in output table
+
+    annualWithholdingDueToPersonAearnings: number
+    annualWithholdingDueToPersonBearnings: number
+    personAgraceYear: boolean = false
+    personBgraceYear: boolean = false
+    personAoverWithholding: number = 0//These amounts get used as an add-back in output table (only in table??)
     personBoverWithholding: number = 0//These amounts get used as an add-back in output table
-    //annualWithholdingDueToPersonAearnings: number
-    //annualWithholdingDueToPersonBearnings: number
-    //personAgraceYear: boolean = false
-    //personBgraceYear: boolean = false
 
     //Sums for calculating PV
     annualBenefitSinglePersonAlive: number = 0

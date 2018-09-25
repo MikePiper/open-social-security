@@ -48,16 +48,20 @@ export class PresentValueService {
       child.age = ( 12 * (calcYear.date.getFullYear() - child.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - child.SSbirthDate.getMonth()  )/12
     }
 
-    //calculate earnings test withholding for initial year, and determine if this is a grace year
-    if (isUndefined(person.quitWorkDate)) {//If nothing was input for quitWorkDate, make up a date way in the past so following check can run but returns false (and therefore earnings test gets skipped)
+    //If nothing was input for quitWorkDate, make up a date way in the past so "before/after today" check can run but returns false (and therefore earnings test gets skipped)
+    if (isUndefined(person.quitWorkDate)) {
       person.quitWorkDate = new MonthYearDate(1,0,1)
     }
-    let annualWithholding:number = this.earningsTestService.calculateWithholding(calcYear.date, person)
-    let graceYear:boolean = this.earningsTestService.isGraceYear(person, calcYear.date)
-    if (graceYear === true) {person.hasHadGraceYear = true}
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (person.age < 115) {
+
+      //If it's the beginning of a year, calculate earnings test withholding and determine if this is a grace year
+      if (calcYear.date.getMonth() == 0){
+        calcYear.annualWithholdingDueToPersonAearnings = this.earningsTestService.calculateWithholding(calcYear.date, person)
+        calcYear.personAgraceYear = this.earningsTestService.isGraceYear(person, calcYear.date)
+        if (calcYear.personAgraceYear === true) {person.hasHadGraceYear = true}
+      }
 
       //Do we have to calculate/recalculate any benefits? (Recalculate using adjusted date at FRA. Then recalculate using DRCs at endSuspensionDate) (Never have to recalculate a child's benefit amount. Will have to recalculate spousal and survivor on these dates though in married scenario?)
       if (calcYear.date.valueOf() == person.FRA.valueOf()){
@@ -96,26 +100,7 @@ export class PresentValueService {
 
             //Adjust as necessary for earnings test (and tally months withheld)
             if (person.quitWorkDate > this.today){
-              if (annualWithholding > 0){//If more withholding is necessary...
-                if (calcYear.date >= person.retirementBenefitDate  //And they've started retirement benefit...
-                && !(graceYear === true || calcYear.date >= person.quitWorkDate) //And it isn't a nonservice month in grace year...
-                && calcYear.date < person.FRA){//And they are younger than FRA...
-                    //count how much is available for withholding
-                    let availableForWithholding:number = person.monthlyPayment
-                    for (let child of scenario.children){
-                      availableForWithholding = availableForWithholding + child.monthlyPayment
-                    }
-                    //Set everybody's monthlyPayment to zero to reflect benefits being withheld this month
-                    person.monthlyPayment = 0
-                    for (let child of scenario.children){
-                      child.monthlyPayment = 0
-                    }
-                    //Add to tally of months withheld
-                    person.monthsWithheld = person.monthsWithheld + 1
-                    //Reduce necessary withholding by amount that was withheld this month
-                    annualWithholding = annualWithholding - availableForWithholding
-                }
-              }
+              this.earningsTestService.applyEarningsTestSingle(scenario, person, calcYear)
             }
 
             //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonAlive)
@@ -123,9 +108,9 @@ export class PresentValueService {
             for (let child of scenario.children){
               calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + child.monthlyPayment
             }
-            if (annualWithholding < 0) {//If annualWithholding is negative due to overwithholding, add that back to total annual benefit sum (i.e., subtract the negative amount)
-              calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive - annualWithholding
-              calcYear.personAoverWithholding = 0 - annualWithholding //Need the "personAoverWithholding" field because it gets used for table output
+            if (calcYear.annualWithholdingDueToPersonAearnings < 0) {//If annualWithholding is negative due to overwithholding, add that back to total annual benefit sum (i.e., subtract the negative amount)
+              calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive - calcYear.annualWithholdingDueToPersonAearnings
+              calcYear.personAoverWithholding = 0 - calcYear.annualWithholdingDueToPersonAearnings //Need the "personAoverWithholding" field because it gets used for table output
             }
 
             //If printOutputTable is true, add row to output table. (We do this under the "parent alive" scenario, because those are the monthly payment amounts we want for the table.)
@@ -152,7 +137,6 @@ export class PresentValueService {
               calcYear.annualBenefitSinglePersonDeceased = calcYear.annualBenefitSinglePersonDeceased + child.monthlyPayment
             }
 
-
       //After month is over:
         //reset everybody's monthlyPayment 
         //increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
@@ -161,12 +145,12 @@ export class PresentValueService {
           child.monthlyPayment = 0
           child.age = child.age + 1/12
         }
-        //increment month by 1
-        calcYear.date.setMonth(calcYear.date.getMonth()+1)
-        
 
-        //if it's now January...
-        if (calcYear.date.getMonth() == 0){
+        //if it's December...
+        if (calcYear.date.getMonth() == 11){
+          //TODO: adjust annualbenefit fields on calcYear object for future benefit cuts, if so desired (Here doesn't quite work, because we need it to affect the output table as well)
+          //if (scenario.benefitCutAssumption === true) {calcYear = this.adjustBenefitsForAssumedCut(calcYear, scenario)}
+
           //Apply probability alive to annual benefit amounts
           probabilityPersonAlive = this.mortalityService.calculateProbabilityAlive(person, person.age)
           calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * probabilityPersonAlive + calcYear.annualBenefitSinglePersonDeceased * (1 - probabilityPersonAlive)
@@ -178,14 +162,15 @@ export class PresentValueService {
           //Add discounted benefit to ongoing sum
           retirementPV = retirementPV + calcYear.annualPV
 
-          //Calculate new annual withholding amount for earnings test for this new year
-          annualWithholding = this.earningsTestService.calculateWithholding(calcYear.date, person)
-
-          //increment person's age by 1 year, and create new CalculationYear object
+          //increment person's age by 1 year
           person.age = person.age + 1
-          calcYear = new CalculationYear(calcYear.date)
         }
 
+        //increment month by 1 and create new CalculationYear object if it's now January
+        calcYear.date.setMonth(calcYear.date.getMonth()+1)
+        if (calcYear.date.getMonth() == 0){
+        calcYear = new CalculationYear(calcYear.date)
+        }
     }
 
     return retirementPV
