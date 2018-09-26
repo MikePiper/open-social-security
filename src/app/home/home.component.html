@@ -283,7 +283,8 @@
                   <option value=3>3</option>
                   <option value=4>4 or more</option>
                 </select>
-
+                <p *ngIf="scenario.numberOfChildren == 4" class="inputexplanation">As a result of the <a href="https://secure.ssa.gov/poms.nsf/lnx/0300615770" target="_blank">"combined family maximum" rule</a>,
+                  children beyond the fourth would not change the calculation in any way. Please prioritize first entering any children who are disabled, and then entering by age (youngest first).</p>
                 <app-childinputs *ngFor="let child of scenario.children" [child]="child"></app-childinputs>
               
             </div>
