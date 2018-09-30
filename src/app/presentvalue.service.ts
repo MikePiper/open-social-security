@@ -103,7 +103,7 @@ export class PresentValueService {
               this.earningsTestService.applyEarningsTestSingle(scenario, person, calcYear)
             }
 
-            //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonAlive)
+            //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitSinglePersonAlive)
             calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + person.monthlyPayment
             for (let child of scenario.children){
               calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + child.monthlyPayment
@@ -148,7 +148,7 @@ export class PresentValueService {
 
         //if it's December...
         if (calcYear.date.getMonth() == 11){
-          //TODO: adjust annualbenefit fields on calcYear object for future benefit cuts, if so desired (Here doesn't quite work, because we need it to affect the output table as well)
+          //TODO: adjust annualbenefit fields on calcYear object for future benefit cuts, if so desired (Here doesn't quite work, because we need it to affect the output table as well. Maybe it goes in the logic that determines monthlyPayment field on each Person?)
           //if (scenario.benefitCutAssumption === true) {calcYear = this.adjustBenefitsForAssumedCut(calcYear, scenario)}
 
           //Apply probability alive to annual benefit amounts
@@ -226,7 +226,7 @@ export class PresentValueService {
         probabilityAlive = this.mortalityService.calculateProbabilityAlive(person, person.age)
 
         //Calculate probability-weighted benefit
-        let annualPV = calcYear.personAannualRetirementBenefit * probabilityAlive
+        let annualPV = calcYear.tablePersonAannualRetirementBenefit * probabilityAlive
 
         //Adjust probability-weighted benefit for assumed benefit cut, if so desired
         if (scenario.benefitCutAssumption === true){
@@ -337,9 +337,9 @@ export class PresentValueService {
 
       //If user is divorced, we don't actually want to include the ex-spouse's benefit amounts in our PV sum
       if (scenario.maritalStatus == "divorced") {
-        calcYear.personBannualRetirementBenefit = 0
-        calcYear.personBannualSpousalBenefit = 0
-        calcYear.personBannualSurvivorBenefit = 0
+        calcYear.tablePersonBannualRetirementBenefit = 0
+        calcYear.tablePersonBannualSpousalBenefit = 0
+        calcYear.tablePersonBannualSurvivorBenefit = 0
       }
 
       //adjust annualbenefit fields on calcYear object for future benefit cuts, if so desired
@@ -357,9 +357,9 @@ export class PresentValueService {
 
       //Find total probability-weighted annual benefit
         let annualPV = 
-        (probabilityAalive * (1-probabilityBalive) * (calcYear.personAannualRetirementBenefit + calcYear.personAannualSurvivorBenefit)) //Scenario where A is alive, B is deceased
-        + (probabilityBalive * (1-probabilityAalive) * (calcYear.personBannualRetirementBenefit + calcYear.personBannualSurvivorBenefit)) //Scenario where B is alive, A is deceased
-        + ((probabilityAalive * probabilityBalive) * (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit + calcYear.personBannualRetirementBenefit + calcYear.personBannualSpousalBenefit)) //Scenario where both are alive
+        (probabilityAalive * (1-probabilityBalive) * (calcYear.tablePersonAannualRetirementBenefit + calcYear.tablePersonAannualSurvivorBenefit)) //Scenario where A is alive, B is deceased
+        + (probabilityBalive * (1-probabilityAalive) * (calcYear.tablePersonBannualRetirementBenefit + calcYear.tablePersonBannualSurvivorBenefit)) //Scenario where B is alive, A is deceased
+        + ((probabilityAalive * probabilityBalive) * (calcYear.tablePersonAannualRetirementBenefit + calcYear.tablePersonAannualSpousalBenefit + calcYear.tablePersonBannualRetirementBenefit + calcYear.tablePersonBannualSpousalBenefit)) //Scenario where both are alive
 
       //Discount that benefit
             //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
@@ -787,12 +787,12 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
 
   adjustBenefitsForAssumedCut(calcYear:CalculationYear, scenario:CalculationScenario){
       if (calcYear.date.getFullYear() >= scenario.benefitCutYear) {
-        calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
-        calcYear.personAannualSpousalBenefit = calcYear.personAannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)
-        calcYear.personAannualSurvivorBenefit = calcYear.personAannualSurvivorBenefit * (1 - scenario.benefitCutPercentage/100)
-        calcYear.personBannualRetirementBenefit = calcYear.personBannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
-        calcYear.personBannualSpousalBenefit = calcYear.personBannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)
-        calcYear.personBannualSurvivorBenefit = calcYear.personBannualSurvivorBenefit * (1 - scenario.benefitCutPercentage/100)
+        calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
+        calcYear.tablePersonAannualSpousalBenefit = calcYear.tablePersonAannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)
+        calcYear.tablePersonAannualSurvivorBenefit = calcYear.tablePersonAannualSurvivorBenefit * (1 - scenario.benefitCutPercentage/100)
+        calcYear.tablePersonBannualRetirementBenefit = calcYear.tablePersonBannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
+        calcYear.tablePersonBannualSpousalBenefit = calcYear.tablePersonBannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)
+        calcYear.tablePersonBannualSurvivorBenefit = calcYear.tablePersonBannualSurvivorBenefit * (1 - scenario.benefitCutPercentage/100)
       }
     return calcYear
   }

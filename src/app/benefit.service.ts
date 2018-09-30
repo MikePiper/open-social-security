@@ -155,20 +155,20 @@ export class BenefitService {
   //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
   calculateAnnualRetirementBenefit(person:Person, calcYear:CalculationYear){
     if (person.id == 'A') {
-      calcYear.personAannualRetirementBenefit =
+      calcYear.tablePersonAannualRetirementBenefit =
         calcYear.monthsOfPersonAretirementPreARF * person.initialRetirementBenefit
       + calcYear.monthsOfPersonAretirementPostARF * person.retirementBenefitAfterARF
       + calcYear.monthsOfPersonAretirementWithSuspensionDRCs * person.retirementBenefitWithDRCsfromSuspension
       //add back overwithholding
-      calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit + calcYear.personAoverWithholding
+      calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit + calcYear.personAoverWithholding
     }
     else {
-      calcYear.personBannualRetirementBenefit =
+      calcYear.tablePersonBannualRetirementBenefit =
         calcYear.monthsOfPersonBretirementPreARF * person.initialRetirementBenefit
       + calcYear.monthsOfPersonBretirementPostARF * person.retirementBenefitAfterARF
       + calcYear.monthsOfPersonBretirementWithSuspensionDRCs * person.retirementBenefitWithDRCsfromSuspension
       //add back overwithholding
-      calcYear.personBannualRetirementBenefit = calcYear.personBannualRetirementBenefit + calcYear.personBoverWithholding
+      calcYear.tablePersonBannualRetirementBenefit = calcYear.tablePersonBannualRetirementBenefit + calcYear.personBoverWithholding
     }
     return calcYear
   }
@@ -182,32 +182,32 @@ export class BenefitService {
       calcYear = this.calculateAnnualRetirementBenefit(personB, calcYear)
 
       //Calculate annual spousal benefit amounts
-      calcYear.personAannualSpousalBenefit =
+      calcYear.tablePersonAannualSpousalBenefit =
           calcYear.monthsOfPersonAspousalWithoutRetirement * personA.spousalBenefitWithoutRetirement
         + calcYear.monthsOfPersonAspousalWithRetirementPreARF * personA.spousalBenefitWithRetirementPreARF
         + calcYear.monthsOfPersonAspousalWithRetirementPostARF * personA.spousalBenefitWithRetirementAfterARF
         + calcYear.monthsOfPersonAspousalWithRetirementwithSuspensionDRCs * personA.spousalBenefitWithSuspensionDRCRetirement
 
-      calcYear.personBannualSpousalBenefit =
+      calcYear.tablePersonBannualSpousalBenefit =
           calcYear.monthsOfPersonBspousalWithoutRetirement * personB.spousalBenefitWithoutRetirement
         + calcYear.monthsOfPersonBspousalWithRetirementPreARF * personB.spousalBenefitWithRetirementPreARF
         + calcYear.monthsOfPersonBspousalWithRetirementPostARF * personB.spousalBenefitWithRetirementAfterARF
         + calcYear.monthsOfPersonBspousalWithRetirementwithSuspensionDRCs * personB.spousalBenefitWithSuspensionDRCRetirement
 
       //Survivor benefits are always with ARF since we assume it doesn't even get claimed until FRA
-      calcYear.personAannualSurvivorBenefit =
+      calcYear.tablePersonAannualSurvivorBenefit =
           calcYear.monthsOfPersonAsurvivorWithoutRetirement * personA.survivorBenefitWithoutRetirement
         + calcYear.monthsOfPersonAsurvivorWithRetirementPostARF * personA.survivorBenefitWithRetirementAfterARF
         + calcYear.monthsOfPersonAsurvivorWithRetirementwithSuspensionDRCs * personA.survivorBenefitWithSuspensionDRCRetirement
       
-      calcYear.personBannualSurvivorBenefit =
+      calcYear.tablePersonBannualSurvivorBenefit =
           calcYear.monthsOfPersonBsurvivorWithoutRetirement * personB.survivorBenefitWithoutRetirement
         + calcYear.monthsOfPersonBsurvivorWithRetirementPostARF * personB.survivorBenefitWithRetirementAfterARF
         + calcYear.monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs * personB.survivorBenefitWithSuspensionDRCRetirement
       
       if (debugTable === true) {
-        calcYear.debugTableRow = [calcYear.date.getFullYear(), Math.round(calcYear.personAannualRetirementBenefit), Math.round(calcYear.personBannualRetirementBenefit),
-          Math.round(calcYear.personAannualSpousalBenefit), Math.round(calcYear.personBannualSpousalBenefit), Math.round(calcYear.personAannualSurvivorBenefit), Math.round(calcYear.personBannualSurvivorBenefit)]
+        calcYear.debugTableRow = [calcYear.date.getFullYear(), Math.round(calcYear.tablePersonAannualRetirementBenefit), Math.round(calcYear.tablePersonBannualRetirementBenefit),
+          Math.round(calcYear.tablePersonAannualSpousalBenefit), Math.round(calcYear.tablePersonBannualSpousalBenefit), Math.round(calcYear.tablePersonAannualSurvivorBenefit), Math.round(calcYear.tablePersonBannualSurvivorBenefit)]
         }
     return calcYear
   }

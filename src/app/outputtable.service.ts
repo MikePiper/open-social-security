@@ -14,10 +14,10 @@ export class OutputTableService {
     if (calcYear.date.getFullYear() >= person.retirementBenefitDate.getFullYear()){//no need to make a table row if this year has no benefits
       //Find annual benefit amounts, and whether there is a non-disabled child under age 18
       let childUnder18:boolean = false
-      calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit + person.monthlyPayment
+      calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit + person.monthlyPayment
       if (scenario.children.length > 0) {
         for (let child of scenario.children){
-         calcYear.totalAnnualChildBenefits = calcYear.totalAnnualChildBenefits + child.monthlyPayment
+         calcYear.tableTotalAnnualChildBenefits = calcYear.tableTotalAnnualChildBenefits + child.monthlyPayment
          if (child.age < 17.99 && child.isOnDisability === false){
            childUnder18 = true
          }
@@ -27,7 +27,7 @@ export class OutputTableService {
       if (calcYear.date.getMonth() == 11){
         //Add back any overwithholding to person's annual retirement amount total
           if (calcYear.personAoverWithholding > 0) {
-            calcYear.personAannualRetirementBenefit = calcYear.personAannualRetirementBenefit + calcYear.personAoverWithholding
+            calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit + calcYear.personAoverWithholding
           }
         //Add row to table
         //need year-by year row if...
@@ -37,15 +37,15 @@ export class OutputTableService {
             if (scenario.children.length > 0){
               scenario.outputTable.push([
                 calcYear.date.getFullYear(),
-                calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-                calcYear.totalAnnualChildBenefits.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-                (calcYear.personAannualRetirementBenefit + calcYear.totalAnnualChildBenefits).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+                calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+                calcYear.tableTotalAnnualChildBenefits.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+                (calcYear.tablePersonAannualRetirementBenefit + calcYear.tableTotalAnnualChildBenefits).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
               ])
             }
             else {
               scenario.outputTable.push([
                 calcYear.date.getFullYear(),
-                calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+                calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
               ])
             }
         }
@@ -53,15 +53,15 @@ export class OutputTableService {
           if (scenario.children.length > 0){
             scenario.outputTable.push([
               calcYear.date.getFullYear().toString() + " and beyond",
-              calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-              calcYear.totalAnnualChildBenefits.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-              (calcYear.personAannualRetirementBenefit + calcYear.totalAnnualChildBenefits).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+              calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+              calcYear.tableTotalAnnualChildBenefits.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+              (calcYear.tablePersonAannualRetirementBenefit + calcYear.tableTotalAnnualChildBenefits).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
             ])
           }
           else {
             scenario.outputTable.push([
               calcYear.date.getFullYear().toString() + " and beyond",
-              calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+              calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
             ])
           }
           scenario.outputTableComplete = true
@@ -75,10 +75,10 @@ export class OutputTableService {
     //first line: no need to make a table row if this year has no benefits
     if (calcYear.date.getFullYear() >= person.retirementBenefitDate.getFullYear()){
       if (person.age <= 70 || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts at least until person is 70 (or at least until assumed benefit cut date, if one is provided)
-        scenario.outputTable.push([calcYear.date.getFullYear(), calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) ])
+        scenario.outputTable.push([calcYear.date.getFullYear(), calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) ])
       }
       else if (scenario.outputTableComplete === false) {
-        scenario.outputTable.push([calcYear.date.getFullYear().toString() + " and beyond", calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) ])
+        scenario.outputTable.push([calcYear.date.getFullYear().toString() + " and beyond", calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) ])
         scenario.outputTableComplete = true
       }
     }
@@ -91,28 +91,28 @@ export class OutputTableService {
       if (person.age <= 70 || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts at least until person is 70 (or at least until assumed benefit cut date, if one is provided)
         scenario.outputTable.push([
           calcYear.date.getFullYear(),
-          calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-          calcYear.personAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           "$0",
-          (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+          (calcYear.tablePersonAannualRetirementBenefit + calcYear.tablePersonAannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
         ])
       }
       else if ( (person.age > 70 && person.age < 71) || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() == scenario.benefitCutYear) ) {
         scenario.outputTable.push([
           calcYear.date.getFullYear().toString() + " and beyond",
-          calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-          calcYear.personAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           "$0",
-          (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+          (calcYear.tablePersonAannualRetirementBenefit + calcYear.tablePersonAannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
         ])
       }
       if (person.age > 71 && scenario.outputTableComplete === false && (scenario.benefitCutAssumption === false || calcYear.date.getFullYear() > scenario.benefitCutYear) ){
         scenario.outputTable.push([
           "If you outlive your ex-spouse",
-          calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           "$0",
-          calcYear.personAannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-          (calcYear.personAannualRetirementBenefit + calcYear.personAannualSurvivorBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+          calcYear.tablePersonAannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          (calcYear.tablePersonAannualRetirementBenefit + calcYear.tablePersonAannualSurvivorBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
       ] )
       scenario.outputTableComplete = true
       }
@@ -126,49 +126,49 @@ export class OutputTableService {
       if (personA.age <= 70 || personB.age <= 70 || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts at least until both people are 70 (or at least until assumed benefit cut date, if one is provided)
         scenario.outputTable.push([
           calcYear.date.getFullYear(),
-          calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-          calcYear.personAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           "$0",
-          calcYear.personBannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-          calcYear.personBannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonBannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonBannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           "$0",
-          (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit + calcYear.personBannualRetirementBenefit + calcYear.personBannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+          (calcYear.tablePersonAannualRetirementBenefit + calcYear.tablePersonAannualSpousalBenefit + calcYear.tablePersonBannualRetirementBenefit + calcYear.tablePersonBannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
         ])
       }
       else if ( ((personA.age > 70 && personB.age > 70) && !(personA.age > 71 && personB.age > 71)) ||
                 (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() == scenario.benefitCutYear) ){//first year in which both ages are greater than 70, or year in which assumed benefit cut takes place
         scenario.outputTable.push([
           calcYear.date.getFullYear().toString() + " and beyond",
-          calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-          calcYear.personAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           "$0",
-          calcYear.personBannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-          calcYear.personBannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonBannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonBannualSpousalBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           "$0",
-          (calcYear.personAannualRetirementBenefit + calcYear.personAannualSpousalBenefit + calcYear.personBannualRetirementBenefit + calcYear.personBannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+          (calcYear.tablePersonAannualRetirementBenefit + calcYear.tablePersonAannualSpousalBenefit + calcYear.tablePersonBannualRetirementBenefit + calcYear.tablePersonBannualSpousalBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
         ])
       }
       if (personA.age > 71 && personB.age > 71 && scenario.outputTableComplete === false &&
           (scenario.benefitCutAssumption === false || calcYear.date.getFullYear() > scenario.benefitCutYear)){
         scenario.outputTable.push([
           "If you outlive your spouse",
-          calcYear.personAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           "$0",
-          calcYear.personAannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           "$0",
           "$0",
           "$0",
-          (calcYear.personAannualRetirementBenefit + calcYear.personAannualSurvivorBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+          (calcYear.tablePersonAannualRetirementBenefit + calcYear.tablePersonAannualSurvivorBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
         ])
         scenario.outputTable.push([
           "If your spouse outlives you",
           "$0",
           "$0",
           "$0",
-          calcYear.personBannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonBannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           "$0",
-          calcYear.personBannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-          (calcYear.personBannualRetirementBenefit + calcYear.personBannualSurvivorBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})      ])
+          calcYear.tablePersonBannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          (calcYear.tablePersonBannualRetirementBenefit + calcYear.tablePersonBannualSurvivorBenefit).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})      ])
         scenario.outputTableComplete = true
       }
     }
