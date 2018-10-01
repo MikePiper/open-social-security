@@ -41,8 +41,8 @@ export class CalculationYear {
     annualWithholdingDueToPersonBearnings: number
     personAgraceYear: boolean = false
     personBgraceYear: boolean = false
-    personAoverWithholding: number = 0//These amounts get used as an add-back in output table (only in table??)
-    personBoverWithholding: number = 0//These amounts get used as an add-back in output table
+    personAoverWithholding: number = 0//These amounts no longer used in monthly PV calc
+    personBoverWithholding: number = 0//These amounts no longer used in monthly PV calc
 
     //Sums for calculating PV (lumps everybody's total benefit amount into one sum, per mortality scenario)
     annualBenefitSinglePersonAlive: number = 0

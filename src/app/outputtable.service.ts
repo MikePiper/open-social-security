@@ -12,24 +12,20 @@ export class OutputTableService {
 
   generateOutputTableSingleMonthly(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
     if (calcYear.date.getFullYear() >= person.retirementBenefitDate.getFullYear()){//no need to make a table row if this year has no benefits
-      //Find annual benefit amounts, and whether there is a non-disabled child under age 18
-      let childUnder18:boolean = false
-      calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit + person.monthlyPayment
-      if (scenario.children.length > 0) {
-        for (let child of scenario.children){
-         calcYear.tableTotalAnnualChildBenefits = calcYear.tableTotalAnnualChildBenefits + child.monthlyPayment
-         if (child.age < 17.99 && child.isOnDisability === false){
-           childUnder18 = true
-         }
-        }
-      }
-      //If it's december...
-      if (calcYear.date.getMonth() == 11){
-        //Add back any overwithholding to person's annual retirement amount total
-          if (calcYear.personAoverWithholding > 0) {
-            calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit + calcYear.personAoverWithholding
+        //Find whether there is a non-disabled child under age 18
+          let childUnder18:boolean = false
+          if (scenario.children.length > 0) {
+            for (let child of scenario.children){
+            if (child.age < 17.99 && child.isOnDisability === false){
+              childUnder18 = true
+            }
+            }
           }
-        //Add row to table
+        // //Add back any overwithholding to person's annual retirement amount total
+        //   if (calcYear.personAoverWithholding > 0) {
+        //     calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit + calcYear.personAoverWithholding
+        //   }
+      //Add row to table
         //need year-by year row if...
         if (person.age <= 70 || //person is younger than 70
           (childUnder18 === true) || //there is a child who is not disabled and they are younger than 18
@@ -66,7 +62,6 @@ export class OutputTableService {
           }
           scenario.outputTableComplete = true
         }
-      }
     }
     return scenario
   }

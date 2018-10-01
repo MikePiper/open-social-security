@@ -152,6 +152,16 @@ export class BenefitService {
     return Number(childBenefit)
   }
 
+  applyAssumedBenefitCutSingle(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
+    if (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() >= scenario.benefitCutYear){
+      person.monthlyPayment = person.monthlyPayment * (1 - scenario.benefitCutPercentage/100)
+      for (let child of scenario.children){
+        child.monthlyPayment = child.monthlyPayment * (1 - scenario.benefitCutPercentage/100)
+      }
+    }
+  }
+  
+
   //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
   calculateAnnualRetirementBenefit(person:Person, calcYear:CalculationYear){
     if (person.id == 'A') {
