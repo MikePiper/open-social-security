@@ -233,37 +233,6 @@ export class BenefitService {
   }
 
 
-  CountSingleBenefitMonths(calcYear:CalculationYear, person:Person){
-    //This function loops through individual months in a year (unless Person is over age 70, in which case it looks at the whole year at once).
-    if (person.age >= 70){
-          calcYear.monthsOfPersonAretirementWithSuspensionDRCs = 12
-    }
-    else {
-      let testMonth:MonthYearDate = new MonthYearDate(calcYear.date)
-      let endTestMonth:MonthYearDate = new MonthYearDate(calcYear.date.getFullYear(), 11, 1) //Dec of calcYear
-      while (testMonth <= endTestMonth){
-        if (testMonth >= person.retirementBenefitDate){ //if this is a retirement month...
-            if (person.beginSuspensionDate > testMonth || person.endSuspensionDate <= testMonth){//If suspension does NOT eliminate that benefit...
-              //Determine which type of retirementMonth it is and add 1 to appropriate count
-              if (testMonth < person.FRA){
-                calcYear.monthsOfPersonAretirementPreARF = calcYear.monthsOfPersonAretirementPreARF + 1
-              }
-              else if (testMonth < person.endSuspensionDate){
-                calcYear.monthsOfPersonAretirementPostARF = calcYear.monthsOfPersonAretirementPostARF + 1
-              }
-              else {
-                calcYear.monthsOfPersonAretirementWithSuspensionDRCs = calcYear.monthsOfPersonAretirementWithSuspensionDRCs + 1
-              }
-            }
-            else {//i.e., if suspension DOES eliminate the benefit for this month
-              person.DRCsViaSuspension = person.DRCsViaSuspension + 1
-            }
-        }
-        testMonth.setMonth(testMonth.getMonth()+1)
-      }
-    }
-    return calcYear
-  }
 
   CountCoupleBenefitMonths(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personB:Person){
     //This function loops through individual months in a year (unless:

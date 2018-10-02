@@ -9,7 +9,7 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
-fdescribe('PresentValueService Single', () => {
+describe('PresentValueService Single', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
@@ -31,7 +31,6 @@ fdescribe('PresentValueService Single', () => {
       person.initialAgeRounded = 58 //younger than 62 when fillling out form
       person.PIA = 1000
       person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
-      person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work prior to filing date, earnings test not relevant
       scenario.discountRate = 1 //1% discount rate
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -46,7 +45,6 @@ fdescribe('PresentValueService Single', () => {
       let scenario:CalculationScenario = new CalculationScenario
       person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
       person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
-      person.initialAgeRounded = 58 //younger than 62 when fillling out form
       person.PIA = 1000
       person.retirementBenefitDate = new MonthYearDate(2024, 3, 1) //filing at age 64
       person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work after filing date but before FRA, earnings test IS relevant
@@ -68,10 +66,8 @@ fdescribe('PresentValueService Single', () => {
       scenario.maritalStatus = "single"
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
       person.SSbirthDate = new MonthYearDate(1970, 8, 1) //Spouse A born in Sept 1970 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
-      person.initialAgeRounded = 61
       person.FRA = birthdayService.findFRA(person.SSbirthDate)
       person.PIA = 1000
-      person.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
       person.retirementBenefitDate = new MonthYearDate (person.FRA) //Filing exactly at FRA of 67
       person.beginSuspensionDate = new MonthYearDate(person.FRA)
       person.endSuspensionDate = new MonthYearDate(2040, 8, 1)//Age 70
@@ -90,10 +86,8 @@ fdescribe('PresentValueService Single', () => {
       person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
       child1.SSbirthDate = new MonthYearDate(2030, 3, 1) //child1 born in month in which retirement benefit begins
       person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
-      person.initialAgeRounded = 58 //younger than 62 when fillling out form
       person.PIA = 1000
       person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
-      person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work prior to filing date, earnings test not relevant
       scenario.discountRate = 1 //1% discount rate
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -115,10 +109,8 @@ fdescribe('PresentValueService Single', () => {
       child1.SSbirthDate = new MonthYearDate(2030, 3, 1) //child1 born in month in which retirement benefit begins (April 2030)
       child2.SSbirthDate = new MonthYearDate(2030, 3, 1) //child2 born in same month
       person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
-      person.initialAgeRounded = 58 //younger than 62 when fillling out form
       person.PIA = 1000
       person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
-      person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work prior to filing date, earnings test not relevant
       scenario.discountRate = 1 //1% discount rate
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -144,10 +136,8 @@ fdescribe('PresentValueService Single', () => {
       child2.SSbirthDate = new MonthYearDate(2030, 3, 1) //child2 born in same month
       child3.SSbirthDate = new MonthYearDate(2030, 3, 1) //child3 born in same month
       person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
-      person.initialAgeRounded = 58 //younger than 62 when fillling out form
       person.PIA = 1000
       person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
-      person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work prior to filing date, earnings test not relevant
       scenario.discountRate = 1 //1% discount rate
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -174,7 +164,6 @@ fdescribe('PresentValueService Single', () => {
       child1.isOnDisability = true
       let birthdayService:BirthdayService = new BirthdayService()
       person.FRA = birthdayService.findFRA(person.SSbirthDate)
-      person.initialAgeRounded = 58 //younger than 62 when fillling out form
       person.PIA = 1000
       person.retirementBenefitDate = new MonthYearDate(2023, 3, 1) //filing at age 63
       person.quitWorkDate = new MonthYearDate (2028, 3, 1) //Working until beyond FRA. Earnings test is relevant.
@@ -188,6 +177,65 @@ fdescribe('PresentValueService Single', () => {
       person = benefitService.calculateFamilyMaximum(person)
       expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
         .toBeCloseTo(376859, 0)
+    }))
+
+    //Integration testing -- not actually testing the calculated PV itself
+    it('should show zero retirement benefit in table when a single person files before FRA and has high enough earnings', inject([PresentValueService], (service: PresentValueService) => {
+      let scenario:CalculationScenario = new CalculationScenario
+      let birthdayService:BirthdayService = new BirthdayService()
+      let personA: Person = new Person("A")
+      let mortalityService:MortalityService = new MortalityService()
+      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      personA.SSbirthDate = new MonthYearDate(1956, 6)//Born July 1956
+      personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
+      personA.quitWorkDate = new MonthYearDate (2028, 0, 1) //quitting work after FRA
+      personA.monthlyEarnings = 10000
+      personA.PIA = 1000
+      personA.retirementBenefitDate = new MonthYearDate(2018, 9, 1) //Applying for retirement benefit October 2018 (48 months prior to FRA -> monthly benefit is 750 before ARF)
+      service.calculateSinglePersonPVmonthlyloop(personA, scenario, true)
+      expect(scenario.outputTable[0][0])
+          .toEqual(2018)
+      expect(scenario.outputTable[0][1])
+          .toEqual("$0")//First row in table should be "2018, 0"
+    }))
+
+    it('should show appropriate retirement benefit in table when a single person files before FRA and has earnings to cause some but not complete withholding', inject([PresentValueService], (service: PresentValueService) => {
+      let scenario:CalculationScenario = new CalculationScenario
+      let birthdayService:BirthdayService = new BirthdayService()
+      let personA: Person = new Person("A")
+      let mortalityService:MortalityService = new MortalityService()
+      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      personA.SSbirthDate = new MonthYearDate(1956, 5)//Born June 1956
+      personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
+      personA.quitWorkDate = new MonthYearDate (2028, 0, 1) //quitting work after FRA
+      personA.monthlyEarnings = 1500
+      personA.PIA = 1000
+      personA.retirementBenefitDate = new MonthYearDate(2018, 9, 1) //Applying for retirement benefit October 2018 (48 months prior to FRA -> monthly benefit is 750 before ARF)
+      service.calculateSinglePersonPVmonthlyloop(personA, scenario, true)
+      expect(scenario.outputTable[0][0])
+          .toEqual(2018)
+      expect(scenario.outputTable[0][1])
+          .toEqual("$1,770")//First row in table should be "2018, 1770"
+      //annual earnings is 18000. (18000 - 17040)/2 = 480 annual withholding. $750 monthly benefit means 1 months withheld, 2 months received. $270 overwithholding added back.
+    }))
+
+    it('should show appropriate adjustedRetirementBenefitDate, when a single person files before FRA and has earnings to cause some but not complete withholding', inject([PresentValueService], (service: PresentValueService) => {
+      let scenario:CalculationScenario = new CalculationScenario
+      let birthdayService:BirthdayService = new BirthdayService()
+      let personA: Person = new Person("A")
+      let mortalityService:MortalityService = new MortalityService()
+      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      personA.SSbirthDate = new MonthYearDate(1956, 5)//Born June 1956
+      personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
+      personA.quitWorkDate = new MonthYearDate (2028, 0, 1) //quitting work after FRA
+      personA.monthlyEarnings = 1500
+      personA.PIA = 1000
+      personA.retirementBenefitDate = new MonthYearDate(2018, 9, 1) //Applying for retirement benefit October 2018 (48 months prior to FRA -> monthly benefit is 750 before ARF)
+      service.calculateSinglePersonPVmonthlyloop(personA, scenario, false)
+      let expectedDate:MonthYearDate = new MonthYearDate(2019, 1)
+      expect(personA.adjustedRetirementBenefitDate)
+          .toEqual(expectedDate)
+      //Filed Oct 2018. Needs 1 month withheld each of 2018, 2019, 2020, 2021. No withholding in 2022 due to higher threshold. So adjusted date should be 4 months later. (Feb 2019)
     }))
 
   //Test maximizeSinglePersonPV()
