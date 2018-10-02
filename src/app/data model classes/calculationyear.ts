@@ -48,6 +48,7 @@ export class CalculationYear {
     annualBenefitSinglePersonAlive: number = 0
     annualBenefitSinglePersonDeceased: number = 0
     annualBenefitBothAlive: number = 0
+    annualBenefitBothDeceased: number = 0
     annualBenefitOnlyPersonAalive: number = 0
     annualBenefitOnlyPersonBalive: number = 0
     annualPV: number = 0
@@ -59,7 +60,13 @@ export class CalculationYear {
     tablePersonBannualRetirementBenefit: number = 0
     tablePersonBannualSpousalBenefit: number = 0
     tablePersonBannualSurvivorBenefit: number = 0
-    tableTotalAnnualChildBenefits: number = 0
+        //Note that these mirror the PV-related sums above, because we need a different sum for each case
+        tableTotalAnnualChildBenefitsSingleParentAlive: number = 0
+        tableTotalAnnualChildBenefitsSingleParentDeceased: number = 0
+        tableTotalAnnualChildBenefitsBothParentsAlive: number = 0
+        tableTotalAnnualChildBenefitsBothParentsDeceased: number = 0
+        tableTotalAnnualChildBenefitsOnlyPersonAalive: number = 0
+        tableTotalAnnualChildBenefitsOnlyPersonBalive: number = 0
 
     constructor(date:MonthYearDate) {
         this.date = date

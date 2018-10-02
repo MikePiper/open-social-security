@@ -167,7 +167,12 @@ export class BenefitService {
       calcYear.tablePersonBannualRetirementBenefit = calcYear.tablePersonBannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
       calcYear.tablePersonBannualSpousalBenefit = calcYear.tablePersonBannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)
       calcYear.tablePersonBannualSurvivorBenefit = calcYear.tablePersonBannualSurvivorBenefit * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tableTotalAnnualChildBenefits = calcYear.tableTotalAnnualChildBenefits * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tableTotalAnnualChildBenefitsSingleParentAlive = calcYear.tableTotalAnnualChildBenefitsSingleParentAlive * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased = calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tableTotalAnnualChildBenefitsBothParentsAlive = calcYear.tableTotalAnnualChildBenefitsBothParentsAlive * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased = calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive = calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive = calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive * (1 - scenario.benefitCutPercentage/100)
     }
   }
   

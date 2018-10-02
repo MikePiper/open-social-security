@@ -273,7 +273,7 @@ export class HomeComponent implements OnInit {
         this.customDateScenario = Object.assign({}, this.scenario)
         this.customDateScenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
     if (this.scenario.maritalStatus == "single" && this.errorCollection.hasErrors === false) {
-      this.customPV = this.presentvalueService.calculateSinglePersonPVmonthlyloop(this.personA, this.customDateScenario, true)
+      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.customDateScenario, true)
       }
     if(this.scenario.maritalStatus == "married" && this.errorCollection.hasErrors === false) {
       this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)

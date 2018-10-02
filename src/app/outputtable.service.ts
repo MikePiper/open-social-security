@@ -10,7 +10,7 @@ export class OutputTableService {
 
   constructor() { }
 
-  generateOutputTableSingleMonthly(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
+  generateOutputTableSingle(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
     if (calcYear.date.getFullYear() >= person.retirementBenefitDate.getFullYear()){//no need to make a table row if this year has no benefits
         //Find whether there is a non-disabled child under age 18
           let childUnder18:boolean = false
@@ -30,8 +30,8 @@ export class OutputTableService {
               scenario.outputTable.push([
                 calcYear.date.getFullYear(),
                 calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-                calcYear.tableTotalAnnualChildBenefits.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-                (calcYear.tablePersonAannualRetirementBenefit + calcYear.tableTotalAnnualChildBenefits).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+                calcYear.tableTotalAnnualChildBenefitsSingleParentAlive.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+                (calcYear.tablePersonAannualRetirementBenefit + calcYear.tableTotalAnnualChildBenefitsSingleParentAlive).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
               ])
             }
             else {
@@ -46,8 +46,14 @@ export class OutputTableService {
             scenario.outputTable.push([
               calcYear.date.getFullYear().toString() + " and beyond",
               calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-              calcYear.tableTotalAnnualChildBenefits.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-              (calcYear.tablePersonAannualRetirementBenefit + calcYear.tableTotalAnnualChildBenefits).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+              calcYear.tableTotalAnnualChildBenefitsSingleParentAlive.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+              (calcYear.tablePersonAannualRetirementBenefit + calcYear.tableTotalAnnualChildBenefitsSingleParentAlive).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+            ])
+            scenario.outputTable.push([
+              "After your death",
+              "$0",
+              calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+              calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
             ])
           }
           else {
@@ -62,19 +68,6 @@ export class OutputTableService {
     return scenario
   }
 
-  generateOutputTableSingle(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
-    //first line: no need to make a table row if this year has no benefits
-    if (calcYear.date.getFullYear() >= person.retirementBenefitDate.getFullYear()){
-      if (person.age <= 70 || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts at least until person is 70 (or at least until assumed benefit cut date, if one is provided)
-        scenario.outputTable.push([calcYear.date.getFullYear(), calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) ])
-      }
-      else if (scenario.outputTableComplete === false) {
-        scenario.outputTable.push([calcYear.date.getFullYear().toString() + " and beyond", calcYear.tablePersonAannualRetirementBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}) ])
-        scenario.outputTableComplete = true
-      }
-    }
-    return scenario
-  }
 
   generateOutputTableDivorced(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
     //first line: no need to make a table row if this year has no benefits

@@ -36,7 +36,7 @@ describe('PresentValueService Single', () => {
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
       let benefitService:BenefitService = new BenefitService()
       person = benefitService.calculateFamilyMaximum(person)
-      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+      expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(151765, 0)
     }))
   
@@ -54,7 +54,7 @@ describe('PresentValueService Single', () => {
       person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
       let benefitService:BenefitService = new BenefitService()
       person = benefitService.calculateFamilyMaximum(person)
-      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+      expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(201310, 0)
     }))
   
@@ -74,7 +74,7 @@ describe('PresentValueService Single', () => {
       scenario.discountRate = 1
       let benefitService:BenefitService = new BenefitService()
       person = benefitService.calculateFamilyMaximum(person)
-      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+      expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(151776, 0)//Point being, this is same PV as when somebody just waits until 70.
     }))
 
@@ -95,7 +95,7 @@ describe('PresentValueService Single', () => {
       child1.childBenefitParentAlive = benefitService.calculateChildBenefitParentLiving(person)
       child1.childBenefitParentDeceased = benefitService.calculateChildBenefitParentDeceased(person)
       person = benefitService.calculateFamilyMaximum(person)
-      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+      expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(265512, 0)
     }))
 
@@ -120,7 +120,7 @@ describe('PresentValueService Single', () => {
         child.childBenefitParentDeceased = benefitService.calculateChildBenefitParentDeceased(person)
       }
       person = benefitService.calculateFamilyMaximum(person)
-      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+      expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(323555, 0)
     }))
 
@@ -147,7 +147,7 @@ describe('PresentValueService Single', () => {
         child.childBenefitParentDeceased = benefitService.calculateChildBenefitParentDeceased(person)
       }
       person = benefitService.calculateFamilyMaximum(person)
-      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+      expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(323555, 0)
     }))
 
@@ -175,7 +175,7 @@ describe('PresentValueService Single', () => {
       child1.childBenefitParentAlive = benefitService.calculateChildBenefitParentLiving(person)
       child1.childBenefitParentDeceased = benefitService.calculateChildBenefitParentDeceased(person)
       person = benefitService.calculateFamilyMaximum(person)
-      expect(service.calculateSinglePersonPVmonthlyloop(person, scenario, false))
+      expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(376859, 0)
     }))
 
@@ -192,7 +192,7 @@ describe('PresentValueService Single', () => {
       personA.monthlyEarnings = 10000
       personA.PIA = 1000
       personA.retirementBenefitDate = new MonthYearDate(2018, 9, 1) //Applying for retirement benefit October 2018 (48 months prior to FRA -> monthly benefit is 750 before ARF)
-      service.calculateSinglePersonPVmonthlyloop(personA, scenario, true)
+      service.calculateSinglePersonPV(personA, scenario, true)
       expect(scenario.outputTable[0][0])
           .toEqual(2018)
       expect(scenario.outputTable[0][1])
@@ -211,7 +211,7 @@ describe('PresentValueService Single', () => {
       personA.monthlyEarnings = 1500
       personA.PIA = 1000
       personA.retirementBenefitDate = new MonthYearDate(2018, 9, 1) //Applying for retirement benefit October 2018 (48 months prior to FRA -> monthly benefit is 750 before ARF)
-      service.calculateSinglePersonPVmonthlyloop(personA, scenario, true)
+      service.calculateSinglePersonPV(personA, scenario, true)
       expect(scenario.outputTable[0][0])
           .toEqual(2018)
       expect(scenario.outputTable[0][1])
@@ -231,7 +231,7 @@ describe('PresentValueService Single', () => {
       personA.monthlyEarnings = 1500
       personA.PIA = 1000
       personA.retirementBenefitDate = new MonthYearDate(2018, 9, 1) //Applying for retirement benefit October 2018 (48 months prior to FRA -> monthly benefit is 750 before ARF)
-      service.calculateSinglePersonPVmonthlyloop(personA, scenario, false)
+      service.calculateSinglePersonPV(personA, scenario, false)
       let expectedDate:MonthYearDate = new MonthYearDate(2019, 1)
       expect(personA.adjustedRetirementBenefitDate)
           .toEqual(expectedDate)
