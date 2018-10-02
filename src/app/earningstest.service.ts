@@ -63,6 +63,13 @@ export class EarningsTestService {
   }
 
   applyEarningsTestSingle(scenario:CalculationScenario, person:Person, calcYear:CalculationYear){
+    //If it's the beginning of a year, calculate earnings test withholding and determine if this is a grace year
+    if (calcYear.date.getMonth() == 0){
+      calcYear.annualWithholdingDueToPersonAearnings = this.calculateWithholding(calcYear.date, person)
+      calcYear.personAgraceYear = this.isGraceYear(person, calcYear.date)
+      if (calcYear.personAgraceYear === true) {person.hasHadGraceYear = true}
+    }
+
     if (calcYear.annualWithholdingDueToPersonAearnings > 0){//If more withholding is necessary...
       if (calcYear.date >= person.retirementBenefitDate  //And they've started retirement benefit...
       && !(calcYear.personAgraceYear === true && calcYear.date >= person.quitWorkDate) //And it isn't a nonservice month in grace year...

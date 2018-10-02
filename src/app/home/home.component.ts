@@ -365,11 +365,13 @@ export class HomeComponent implements OnInit {
         this.personA.monthlyEarnings = 0
         this.personAquitWorkMonth = null
         this.personAquitWorkYear = null
+        this.personA.quitWorkDate = new MonthYearDate(1, 0, 1) //If nothing was input for quitWorkDate, make up a date way in the past so "before/after today" check can run but returns false (and therefore earnings test gets skipped)
       }
       if (this.personBworking === false) {
         this.personB.monthlyEarnings = 0
         this.personBquitWorkMonth = null
         this.personBquitWorkYear = null
+        this.personB.quitWorkDate = new MonthYearDate(1, 0, 1) //If nothing was input for quitWorkDate, make up a date way in the past so "before/after today" check can run but returns false (and therefore earnings test gets skipped)
       }
     //reset fixed retirement date inputs if person has no fixed retirement date
       if (this.personA.hasFiled === false && this.personA.isOnDisability === false) {

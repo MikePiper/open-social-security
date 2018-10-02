@@ -12,7 +12,7 @@ export class Person {
     initialAgeRounded: number
     mortalityTable: number[]
     governmentPension: number = 0
-    quitWorkDate: MonthYearDate
+    quitWorkDate: MonthYearDate = new MonthYearDate (1, 0, 1) //This also gets set as "way in past" via resetHiddenInputs(). This default value is mostly here so tests (which dont call that function) can run.
     monthlyEarnings: number = 0
     hasFiled:boolean = false
     isOnDisability: boolean = false //true only if disabled and expecting to be on disability until FRA

@@ -28,7 +28,6 @@ export class PresentValueService {
       person.DRCsViaSuspension = 0
       person.monthsWithheld = 0
       scenario.outputTable = []
-      let personSuspended:boolean
 
     //calculate initial retirement benefit
       person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
@@ -46,24 +45,9 @@ export class PresentValueService {
       child.age = ( 12 * (calcYear.date.getFullYear() - child.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - child.SSbirthDate.getMonth()  )/12
     }
 
-    //If nothing was input for quitWorkDate, make up a date way in the past so "before/after today" check can run but returns false (and therefore earnings test gets skipped)
-    if (isUndefined(person.quitWorkDate)) {
-      person.quitWorkDate = new MonthYearDate(1,0,1)
-    }
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (person.age < 115) {
-
-      //If it's the beginning of a year, calculate earnings test withholding and determine if this is a grace year
-      if (calcYear.date.getMonth() == 0){
-        calcYear.annualWithholdingDueToPersonAearnings = this.earningsTestService.calculateWithholding(calcYear.date, person)
-        calcYear.personAgraceYear = this.earningsTestService.isGraceYear(person, calcYear.date)
-        if (calcYear.personAgraceYear === true) {person.hasHadGraceYear = true}
-        if (printOutputTable === true){
-          console.log(calcYear.date.getFullYear())
-        }
-      }
-
       //Do we have to calculate/recalculate any benefits? (Recalculate using adjusted date at FRA. Then recalculate using DRCs at endSuspensionDate) (Never have to recalculate a child's benefit amount. Will have to recalculate spousal and survivor on these dates though in married scenario?)
       if (calcYear.date.valueOf() == person.FRA.valueOf()){
         person.adjustedRetirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+person.monthsWithheld)
@@ -76,27 +60,9 @@ export class PresentValueService {
       //Do we ever have to recalculate family max? (No. In family scenario might have to recalculate combined family max though. Or rather, combined family max doesn't get calculated at beginning but rather in a later year?)
       
       //Assume person is alive
-            //calculate monthlyPayment field for each person
-              if (person.beginSuspensionDate > calcYear.date || person.endSuspensionDate <= calcYear.date){personSuspended = false}
-              else {personSuspended = true}
-              if (calcYear.date >= person.retirementBenefitDate) {
-                if (personSuspended === true){
-                  person.DRCsViaSuspension = person.DRCsViaSuspension + 1
-                  person.monthlyPayment = 0
-                  for (let child of scenario.children){
-                    child.monthlyPayment = 0
-                  }
-                }
-                else {//i.e., person isn't suspended
-                  person.monthlyPayment = person.retirementBenefit
-                  for (let child of scenario.children){
-                    if (child.age < 17.99 || child.isOnDisability === true){
-                      child.monthlyPayment = child.childBenefitParentAlive
-                    }
-                  }
+            //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
+            this.benefitService.calculateMonthlyPaymentsSingle(scenario, calcYear, person, true)
 
-                }
-              }
             //Adjust each person's monthlyPayment as necessary for family max
               if (scenario.children.length > 0){
                 let amountLeftForRestOfFamiliy:number = person.familyMaximum - person.PIA
@@ -121,12 +87,9 @@ export class PresentValueService {
             }
 
       //Assume person is deceased
-            //calculate monthlyPayment field for each person
-            for (let child of scenario.children){
-              if (child.age < 17.99 || child.isOnDisability === true){//Use 17.99 as the cutoff because sometimes when child is actually 18 javascript value will be 17.9999999
-                child.monthlyPayment = child.childBenefitParentDeceased
-              }
-            }
+            //calculate monthlyPayment field for each person (sets child monthlyPayments to 75% of PIA if they are under 18 or disabled)
+            this.benefitService.calculateMonthlyPaymentsSingle(scenario, calcYear, person, false)
+
             //adjust each person's monthlyPayment as necessary for family max
             if (scenario.children.length > 0){
               let amountLeftForRestOfFamiliy:number = person.familyMaximum
@@ -155,7 +118,7 @@ export class PresentValueService {
         //if it's December...
         if (calcYear.date.getMonth() == 11){
           //Add back any overwithholding from earnings test
-            if (calcYear.annualWithholdingDueToPersonAearnings < 0) {//If annualWithholding is negative due to overwithholding, add that back to total annual benefit sum (i.e., subtract the negative amount)
+            if (calcYear.annualWithholdingDueToPersonAearnings < 0) {//If annualWithholding is negative due to overwithholding...
               calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive - calcYear.annualWithholdingDueToPersonAearnings//add back for PV-related sum
               calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit - calcYear.annualWithholdingDueToPersonAearnings//add back for table-related sum
             }

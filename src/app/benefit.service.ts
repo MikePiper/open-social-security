@@ -176,6 +176,42 @@ export class BenefitService {
     }
   }
   
+  calculateMonthlyPaymentsSingle(scenario:CalculationScenario, calcYear:CalculationYear, person:Person, personAliveBoolean:boolean){
+    let personSuspended:boolean
+    if (personAliveBoolean === true){
+      //determine if person is suspended
+      if (person.beginSuspensionDate > calcYear.date || person.endSuspensionDate <= calcYear.date){
+        personSuspended = false
+      }
+      else {
+        personSuspended = true
+      }
+      if (calcYear.date >= person.retirementBenefitDate) {//if person has filed for benefits...
+        if (personSuspended === true){
+          person.DRCsViaSuspension = person.DRCsViaSuspension + 1
+          person.monthlyPayment = 0
+          for (let child of scenario.children){
+            child.monthlyPayment = 0
+          }
+        }
+        else {//i.e., person isn't suspended
+          person.monthlyPayment = person.retirementBenefit
+          for (let child of scenario.children){
+            if (child.age < 17.99 || child.isOnDisability === true){
+              child.monthlyPayment = child.childBenefitParentAlive
+            }
+          }
+        }
+      }
+    }
+    else {//if we're assuming person is deceased
+      for (let child of scenario.children){
+        if (child.age < 17.99 || child.isOnDisability === true){//Use 17.99 as the cutoff because sometimes when child is actually 18 javascript value will be 17.9999999
+          child.monthlyPayment = child.childBenefitParentDeceased
+        }
+      }
+    }
+  }
 
   //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
   calculateAnnualRetirementBenefit(person:Person, calcYear:CalculationYear){
