@@ -21,10 +21,6 @@ export class OutputTableService {
             }
             }
           }
-        // //Add back any overwithholding to person's annual retirement amount total
-        //   if (calcYear.personAoverWithholding > 0) {
-        //     calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit + calcYear.personAoverWithholding
-        //   }
       //Add row to table
         //need year-by year row if...
         if (person.age <= 70 || //person is younger than 70

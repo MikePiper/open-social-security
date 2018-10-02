@@ -152,12 +152,22 @@ export class BenefitService {
     return Number(childBenefit)
   }
 
-  applyAssumedBenefitCutSingle(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
-    if (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() >= scenario.benefitCutYear){
-      person.monthlyPayment = person.monthlyPayment * (1 - scenario.benefitCutPercentage/100)
-      for (let child of scenario.children){
-        child.monthlyPayment = child.monthlyPayment * (1 - scenario.benefitCutPercentage/100)
-      }
+  applyAssumedBenefitCut(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
+    if (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() >= scenario.benefitCutYear) {
+      //Apply cut to sums included in PV calculation
+      calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive * (1 - scenario.benefitCutPercentage/100)
+      calcYear.annualBenefitSinglePersonDeceased = calcYear.annualBenefitSinglePersonDeceased * (1 - scenario.benefitCutPercentage/100)
+      calcYear.annualBenefitBothAlive = calcYear.annualBenefitBothAlive * (1 - scenario.benefitCutPercentage/100)
+      calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive * (1 - scenario.benefitCutPercentage/100)
+      calcYear.annualBenefitOnlyPersonBalive = calcYear.annualBenefitOnlyPersonBalive * (1 - scenario.benefitCutPercentage/100)
+      //Apply cut to sums included in output table
+      calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tablePersonAannualSpousalBenefit = calcYear.tablePersonAannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tablePersonAannualSurvivorBenefit = calcYear.tablePersonAannualSurvivorBenefit * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tablePersonBannualRetirementBenefit = calcYear.tablePersonBannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tablePersonBannualSpousalBenefit = calcYear.tablePersonBannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tablePersonBannualSurvivorBenefit = calcYear.tablePersonBannualSurvivorBenefit * (1 - scenario.benefitCutPercentage/100)
+      calcYear.tableTotalAnnualChildBenefits = calcYear.tableTotalAnnualChildBenefits * (1 - scenario.benefitCutPercentage/100)
     }
   }
   

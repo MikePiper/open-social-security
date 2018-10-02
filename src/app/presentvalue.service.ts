@@ -110,9 +110,6 @@ export class PresentValueService {
               this.earningsTestService.applyEarningsTestSingle(scenario, person, calcYear)
             }
 
-            //Apply assumed benefit cut, if applicable
-            this.benefitService.applyAssumedBenefitCutSingle(person, scenario, calcYear)
-
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
             calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + person.monthlyPayment
             for (let child of scenario.children){
@@ -140,9 +137,6 @@ export class PresentValueService {
 
             //Earnings test: not necessary in Single scenario if person is deceased
 
-            //Apply assumed benefit cut, if applicable
-            this.benefitService.applyAssumedBenefitCutSingle(person, scenario, calcYear)
-
             //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
             for (let child of scenario.children){
               calcYear.annualBenefitSinglePersonDeceased = calcYear.annualBenefitSinglePersonDeceased + child.monthlyPayment
@@ -165,6 +159,9 @@ export class PresentValueService {
               calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit - calcYear.annualWithholdingDueToPersonAearnings//add back for table-related sum
             }
 
+          //Apply assumed benefit cut, if applicable
+            this.benefitService.applyAssumedBenefitCut(person, scenario, calcYear)
+
           //If printOutputTable is true, add row to output table.
             if (printOutputTable === true){
               this.outputTableService.generateOutputTableSingleMonthly(person, scenario, calcYear)
@@ -177,13 +174,6 @@ export class PresentValueService {
           //Discount that probability-weighted annual benefit amount to age 62
           calcYear.annualPV = calcYear.annualPV / (1 + scenario.discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
           calcYear.annualPV = calcYear.annualPV / Math.pow((1 + scenario.discountRate/100),(person.age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
-
-          if (printOutputTable === true){
-            console.log("annualBenefitSinglePersonAlive: " + calcYear.annualBenefitSinglePersonAlive)
-            console.log("probabilityPersonAlive: "+ probabilityPersonAlive)
-            console.log("discount factor: " + 1 / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(person.age - 62)))
-            console.log("AnnualPV: "+ calcYear.annualPV)
-          }
 
           //Add discounted benefit to ongoing sum
           retirementPV = retirementPV + calcYear.annualPV
