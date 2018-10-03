@@ -12,19 +12,19 @@ export class OutputTableService {
 
   generateOutputTableSingle(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
     if (calcYear.date.getFullYear() >= person.retirementBenefitDate.getFullYear()){//no need to make a table row if this year has no benefits
-        //Find whether there is a non-disabled child under age 18
-          let childUnder18:boolean = false
+        //Find whether there is a non-disabled child age 18 or under (we need to include up to year after 18, because that will be first full year with no child benefits)
+          let childUnder19:boolean = false
           if (scenario.children.length > 0) {
             for (let child of scenario.children){
-            if (child.age < 17.99 && child.isOnDisability === false){
-              childUnder18 = true
+            if (child.age < 18.99 && child.isOnDisability === false){
+              childUnder19 = true
             }
             }
           }
       //Add row to table
         //need year-by year row if...
         if (person.age <= 70 || //person is younger than 70
-          (childUnder18 === true) || //there is a child who is not disabled and they are younger than 18
+          (childUnder19 === true) || //there is a child who is not disabled and they are younger than 18
           (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear)){ //person has chosen an assumed benefit cut and that year has not yet arrived
             if (scenario.children.length > 0){
               scenario.outputTable.push([
