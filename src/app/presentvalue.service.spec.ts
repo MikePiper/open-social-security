@@ -298,6 +298,52 @@ describe('PresentValueService Single', () => {
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
       .toEqual(new MonthYearDate(2022, 4, 1))
   }))
+
+  it('should tell a single person who has already filed and who has disabled child not to do anything (no suspension)', inject([PresentValueService], (service: PresentValueService) => {
+    let person:Person = new Person("A")
+    person.actualBirthDate = new Date(1960, 3, 15) //Person born April 15 1960
+    person.SSbirthDate = new MonthYearDate(1954, 3, 1)
+    person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
+    person.PIA = 1000
+    person.hasFiled = true
+    person.retirementBenefitDate = new MonthYearDate(2017, 4) //Filed May 2017
+    let child:Person = new Person("1")
+    child.SSbirthDate = new MonthYearDate(1990, 7)
+    child.isOnDisability = true
+    child.hasFiled = true
+    let scenario:CalculationScenario = new CalculationScenario
+    scenario.maritalStatus = "single"
+    scenario.children = [child]
+    scenario.discountRate = 1 //1% discount rate
+    let mortalityService:MortalityService = new MortalityService()
+    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].benefitType)
+      .toEqual("doNothing")
+  }))
+
+  it('When child is eligible for benefit now but has not yet filed, should tell child to file immediately', inject([PresentValueService], (service: PresentValueService) => {
+    let person:Person = new Person("A")
+    person.actualBirthDate = new Date(1960, 3, 15) //Person born April 15 1960
+    person.SSbirthDate = new MonthYearDate(1954, 3, 1)
+    person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
+    person.PIA = 1000
+    person.hasFiled = true
+    person.retirementBenefitDate = new MonthYearDate(2017, 4) //Filed May 2017
+    let child:Person = new Person("1")
+    child.SSbirthDate = new MonthYearDate(1990, 7)
+    child.isOnDisability = true
+    let scenario:CalculationScenario = new CalculationScenario
+    scenario.maritalStatus = "single"
+    scenario.children = [child]
+    scenario.discountRate = 1 //1% discount rate
+    let mortalityService:MortalityService = new MortalityService()
+    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    let today:MonthYearDate = new MonthYearDate()
+    expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].benefitType)
+      .toEqual("childBenefit")
+    expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
+      .toEqual(today)
+  }))
   
 })
 
