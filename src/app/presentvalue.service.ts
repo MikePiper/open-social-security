@@ -9,7 +9,6 @@ import {CalculationScenario} from './data model classes/calculationscenario'
 import {CalculationYear} from './data model classes/calculationyear'
 import {OutputTableService} from './outputtable.service'
 import {MonthYearDate} from "./data model classes/monthyearDate"
-import {isUndefined} from 'util'
 
 
 @Injectable()
@@ -33,7 +32,7 @@ export class PresentValueService {
       person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
 
     //Create initial CalculationYear object
-    let initialCalcDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
+    let initialCalcDate:MonthYearDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
     if (initialCalcDate.getFullYear() < this.today.getFullYear()){
       initialCalcDate = new MonthYearDate(this.today.getFullYear(), 0, 1)
     }
@@ -48,7 +47,7 @@ export class PresentValueService {
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (person.age < 115) {
-      //Do we have to calculate/recalculate any benefits? (Recalculate using adjusted date at FRA. Then recalculate using DRCs at endSuspensionDate) (Never have to recalculate a child's benefit amount. Will have to recalculate spousal and survivor on these dates though in married scenario?)
+      //Do we have to recalculate any benefits? (Recalculate using adjusted date at FRA. Then recalculate using DRCs at endSuspensionDate) (Never have to recalculate a child's benefit amount. Will have to recalculate spousal and survivor on these dates though in married scenario?)
       if (calcYear.date.valueOf() == person.FRA.valueOf()){
         person.adjustedRetirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+person.monthsWithheld)
         person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.adjustedRetirementBenefitDate)
@@ -156,7 +155,123 @@ export class PresentValueService {
     return retirementPV
   }
 
+  calculateCouplePVmonthlyLoop(personA:Person, personB:Person, scenario:CalculationScenario, printOutputTable:boolean) : number{
+    //reset values for new PV calc
+    let couplePV: number = 0
+      //What else needs to be reset??
 
+    //Create initial CalculationYear object
+        let initialCalcDate:MonthYearDate
+        //If divorced, set to Jan 1 of year in which personA turns 62
+          if (scenario.maritalStatus == "divorced") {
+            initialCalcDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0, 1)
+          }
+        //If married, set initialCalcDate to Jan 1 of year in which first spouse reaches age 62
+          if (scenario.maritalStatus == "married"){
+            if (personA.SSbirthDate < personB.SSbirthDate)
+              {
+                initialCalcDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0, 1)
+              }
+            else {
+              initialCalcDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+62, 0, 1)
+              }
+          }
+        //Don't let initialCalcDate be earlier than this year
+          if (initialCalcDate.getFullYear() < this.today.getFullYear()){
+            initialCalcDate = new MonthYearDate(this.today.getFullYear(), 0, 1)
+          }
+        let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
+
+    //calculate initial retirement/spousal/survivor benefits
+      personA.retirementBenefit = this.benefitService.calculateRetirementBenefit(personA, personA.retirementBenefitDate)
+      personB.retirementBenefit = this.benefitService.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
+      if (calcYear.date < personA.retirementBenefitDate){//Calculate spousal/survivor benefits with zero as current retirement benefit
+        personA.spousalBenefit = this.benefitService.calculateSpousalBenefit(personA, personB, 0, personA.spousalBenefitDate)
+        personA.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
+      }
+      else {//calculate spousal/survivor benefits using retirementBenefit amount
+        personA.spousalBenefit = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefit, personA.spousalBenefitDate)
+        personA.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personA, personA.retirementBenefit, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
+      }
+      if (calcYear.date < personB.retirementBenefitDate){//Calculate spousal/survivor benefits with zero as current retirement benefit
+        personB.spousalBenefit = this.benefitService.calculateSpousalBenefit(personB, personA, 0, personB.spousalBenefitDate)
+        personB.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
+      }
+      else {//calculate spousal/survivor benefits using retirementBenefit amount
+        personB.spousalBenefit = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefit, personB.spousalBenefitDate)
+        personB.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
+      }
+
+    //calculate ages as of initialCalcDate
+      personA.age = ( calcYear.date.getMonth() - personA.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
+      personB.age = ( calcYear.date.getMonth() - personB.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
+
+    //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
+    while (personA.age < 115 || personB.age < 115){
+      //Do we have to calculate/recalculate any benefits?
+        //Recalculate a person's spousal and survivor benefits when their own retirement benefit starts.
+        if (calcYear.date.valueOf() == personA.retirementBenefitDate.valueOf()){
+          personA.spousalBenefit = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefit, personA.spousalBenefitDate)
+          personA.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personA, personA.retirementBenefit, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
+        }
+        if (calcYear.date.valueOf() == personB.retirementBenefitDate.valueOf()){
+          personB.spousalBenefit = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefit, personB.spousalBenefitDate)
+          personB.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
+        }
+        //Recalculate retirement benefit using adjusted date at FRA. (And therefore recalculate spousal and survivor also)
+        //TODO: Check that own spousal date doesn't get adjusted from ARF. Also check if we should be recalculating OTHER person's survivor benefit when one person's ARF happens
+        if (calcYear.date.valueOf() == personA.FRA.valueOf()){
+          personA.adjustedRetirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+personA.monthsWithheld)
+          personA.retirementBenefit = this.benefitService.calculateRetirementBenefit(personA, personA.adjustedRetirementBenefitDate)
+          personA.spousalBenefit = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefit, personA.spousalBenefitDate)
+          personA.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personA, personA.retirementBenefit, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
+        }
+        if (calcYear.date.valueOf() == personB.FRA.valueOf()){
+          personB.adjustedRetirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+personB.monthsWithheld)
+          personB.retirementBenefit = this.benefitService.calculateRetirementBenefit(personB, personB.adjustedRetirementBenefitDate)
+          personB.spousalBenefit = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefit, personB.spousalBenefitDate)
+          personB.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
+        }
+        //Recalculate retirement benefit using DRCs at endSuspensionDate (And therefore recalculate spousal and survivor also)
+        //Recalculate child benefit when second spouse starts?? When it is originally calculated based on first spouse??
+ 
+
+      //Do we ever have to recalculate family max? (No. In family scenario might have to recalculate combined family max though. Or rather, combined family max doesn't get calculated at beginning but rather in a later year?)
+      //Assume personA and personB are alive
+            //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
+            //Adjust each person's monthlyPayment as necessary for family max
+            //Adjust as necessary for earnings test (and tally months withheld)
+            //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
+      //Assume personA is alive and personB is deceased
+            //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
+            //Adjust each person's monthlyPayment as necessary for family max
+            //Adjust as necessary for earnings test (and tally months withheld)
+            //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
+      //Assume personA is deceased and personB is alive
+            //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
+            //Adjust each person's monthlyPayment as necessary for family max
+            //Adjust as necessary for earnings test (and tally months withheld)
+            //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
+      //Assume personA and personB are deceased
+            //calculate monthlyPayment field for each person (sets child monthlyPayments to 75% of PIA if they are under 18 or disabled)
+            //adjust each person's monthlyPayment as necessary for family max
+            //Earnings test: not necessary
+            //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
+      //After month is over:
+            //reset everybody's monthlyPayment 
+            //increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
+      //if it's December...
+            //Add back any overwithholding from earnings test
+            //Apply assumed benefit cut, if applicable
+            //If printOutputTable is true, add row to output table.
+            //Apply probability alive to annual benefit amounts
+            //Discount that probability-weighted annual benefit amount to age 62
+            //Add discounted benefit to ongoing sum
+            //increment personA and personB ages by 1 year
+      //increment month by 1 and create new CalculationYear object if it's now January
+    }
+    return couplePV
+  }
 
   calculateCouplePV(personA:Person, personB:Person, scenario:CalculationScenario, printOutputTable:boolean) : number{
     

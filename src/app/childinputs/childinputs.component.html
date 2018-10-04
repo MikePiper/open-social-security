@@ -19,4 +19,12 @@
   <label>Yes</label>
   <input type="radio" [(ngModel)]="child.isOnDisability" name=child{{child.id}}.isOnDisability [value]="false">
   <label>No</label>
+
+  <div *ngIf="personA.hasFiled === true || personA.isOnDisability === true || personB.hasFiled === true || personB.isOnDisability === true">
+    <label>Has this child already filed for child benefits?</label>
+    <input type="radio" [(ngModel)]="child.hasFiled" name="name=child{{child.id}}.hasFiled" [value]="true">
+    <label>Yes</label>
+    <input type="radio" [(ngModel)]="child.hasFiled" name="name=child{{child.id}}.hasFiled" [value]="false">
+    <label>No</label>
+  </div>
 </span>

@@ -14,6 +14,8 @@ export class SolutionSetService {
 
   constructor(private benefitService: BenefitService) { }
 
+  today: MonthYearDate = new MonthYearDate()
+
   generateSingleSolutionSet(scenario:CalculationScenario, person:Person, savedPV:number){
     let solutionSet:SolutionSet = {
       "solutionPV":savedPV,
@@ -22,23 +24,22 @@ export class SolutionSetService {
     if (person.isOnDisability === true) {
       //create disability-converts-to-retirement solution object
       var disabilityConversionDate = new MonthYearDate(person.FRA)
-      var disabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", person, disabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
+      var disabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", person, disabilityConversionDate, 0, 0)//ageYears/ageMonths can be zero because not used in output
       solutionSet.solutionsArray.push(disabilityConversionSolution)
     }
     if (person.isOnDisability === true || person.hasFiled === true){//there may be a suspension solution
       person.DRCsViaSuspension = person.endSuspensionDate.getMonth() - person.beginSuspensionDate.getMonth() + (12 * (person.endSuspensionDate.getFullYear() - person.beginSuspensionDate.getFullYear()))
-      var savedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(person, person.fixedRetirementBenefitDate)
       var savedEndSuspensionAge: number = person.endSuspensionDate.getFullYear() - person.SSbirthDate.getFullYear() + (person.endSuspensionDate.getMonth() - person.SSbirthDate.getMonth())/12
       var savedEndSuspensionAgeYears: number = Math.floor(savedEndSuspensionAge)
       var savedEndSuspensionAgeMonths: number = Math.round((savedEndSuspensionAge%1)*12)
       //Create begin/end suspension solution objects
       if (person.beginSuspensionDate.valueOf() == person.FRA.valueOf()){
-        var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", person, person.beginSuspensionDate, savedRetirementBenefit, 0, 0)
-        var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedRetirementBenefit, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
+        var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", person, person.beginSuspensionDate, 0, 0)
+        var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
       }
       else {
-        var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", person, person.beginSuspensionDate, savedRetirementBenefit, 0, 0)
-        var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedRetirementBenefit, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
+        var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", person, person.beginSuspensionDate, 0, 0)
+        var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
       }
       if (person.beginSuspensionDate.valueOf() != person.endSuspensionDate.valueOf()){//If suspension solution, only push if begin/end suspension dates are different
         solutionSet.solutionsArray.push(beginSuspensionSolution)
@@ -49,10 +50,35 @@ export class SolutionSetService {
         let savedClaimingAge: number = person.retirementBenefitDate.getFullYear() - person.SSbirthDate.getFullYear() + (person.retirementBenefitDate.getMonth() - person.SSbirthDate.getMonth())/12
         let savedClaimingAgeYears: number = Math.floor(savedClaimingAge)
         let savedClaimingAgeMonths: number = Math.round((savedClaimingAge%1)*12)
-        let savedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
-        let retirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", person, person.retirementBenefitDate, savedRetirementBenefit, savedClaimingAgeYears, savedClaimingAgeMonths)
+        let retirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", person, person.retirementBenefitDate, savedClaimingAgeYears, savedClaimingAgeMonths)
         solutionSet.solutionsArray.push(retirementSolution)
-    }        
+    }
+    //Child Benefit Solution
+    if (scenario.children.length > 0){
+      //Determine childBenefitDate (later of person.retirementBenefitDate or today)
+      var childBenefitDate: MonthYearDate = new MonthYearDate(person.retirementBenefitDate)
+      if (childBenefitDate < this.today) {
+        childBenefitDate = new MonthYearDate(this.today)
+      }
+      //Determine if there is at least one child who is disabled or under 18 as of childBenefitDate
+      var childBenefitBoolean:boolean = false
+      for (let child of scenario.children){
+        child.age = ( 12 * (childBenefitDate.getFullYear() - child.SSbirthDate.getFullYear()) + (childBenefitDate.getMonth()) - child.SSbirthDate.getMonth()  )/12
+        if (child.age < 17.99 || child.isOnDisability === true){
+          childBenefitBoolean = true
+        }
+      }
+      //create child benefit solution object, if necessary
+      if (childBenefitBoolean === true){
+        if ((person.isOnDisability === true || person.hasFiled === true) || childBenefitDate.valueOf() == this.today.valueOf()){//If parent has already filed and child benefit should begin ASAP (if not already begun)
+          var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "childBenefitParentFiled", person, childBenefitDate, 0, 0)
+        }
+        else {
+          var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "childBenefit", person, childBenefitDate, 0, 0)
+        }
+        solutionSet.solutionsArray.push(childBenefitSolution)
+      }
+    }
     //Sort array by date
     solutionSet.solutionsArray.sort(function(a,b){
       // Turn your strings into dates, and then subtract them
@@ -78,12 +104,12 @@ export class SolutionSetService {
               var personAsavedEndSuspensionAgeMonths: number = Math.round((personAsavedEndSuspensionAge%1)*12)
               //Create begin/end suspension solution objects
               if (personA.beginSuspensionDate.valueOf() == personA.FRA.valueOf()){
-                var personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personA, personA.beginSuspensionDate, personAsavedRetirementBenefit, 0, 0)
-                var personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personA.endSuspensionDate, personAsavedRetirementBenefit, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
+                var personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personA, personA.beginSuspensionDate, 0, 0)
+                var personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personA.endSuspensionDate, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
               }
               else {
-                var personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personA, personA.beginSuspensionDate, personAsavedRetirementBenefit, 0, 0)
-                var personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personA.endSuspensionDate, personAsavedRetirementBenefit, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
+                var personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personA, personA.beginSuspensionDate, 0, 0)
+                var personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personA.endSuspensionDate, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
               }
           }
           else {//normal retirement benefit solution
@@ -93,10 +119,10 @@ export class SolutionSetService {
               var personAsavedRetirementAgeMonths: number = Math.round((personAsavedRetirementAge%1)*12)
               //Create retirement solution object
               if (personA.retirementBenefitDate > personA.spousalBenefitDate) {
-                var personAretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementReplacingSpousal", personA, personA.retirementBenefitDate, personAsavedRetirementBenefit, personAsavedRetirementAgeYears, personAsavedRetirementAgeMonths)
+                var personAretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementReplacingSpousal", personA, personA.retirementBenefitDate, personAsavedRetirementAgeYears, personAsavedRetirementAgeMonths)
               }
               else {
-                var personAretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", personA, personA.retirementBenefitDate, personAsavedRetirementBenefit, personAsavedRetirementAgeYears, personAsavedRetirementAgeMonths)
+                var personAretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", personA, personA.retirementBenefitDate, personAsavedRetirementAgeYears, personAsavedRetirementAgeMonths)
               }
           }
 
@@ -109,12 +135,12 @@ export class SolutionSetService {
               var personBsavedEndSuspensionAgeMonths: number = Math.round((personBsavedEndSuspensionAge%1)*12)
               //create begin/end suspension solution objects      
               if (personB.beginSuspensionDate.valueOf() == personB.FRA.valueOf()){
-                var personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personB, personB.beginSuspensionDate, personBsavedRetirementBenefit, 0, 0)
-                var personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personB.endSuspensionDate, personBsavedRetirementBenefit, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
+                var personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personB, personB.beginSuspensionDate, 0, 0)
+                var personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personB.endSuspensionDate, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
               }
               else {
-                var personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personB, personB.beginSuspensionDate, personBsavedRetirementBenefit, 0, 0)
-                var personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personB.endSuspensionDate, personBsavedRetirementBenefit, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
+                var personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personB, personB.beginSuspensionDate, 0, 0)
+                var personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personB.endSuspensionDate, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
               }      
           }
           else {//normal retirement benefit solution
@@ -124,10 +150,10 @@ export class SolutionSetService {
               var personBsavedRetirementAgeMonths: number = Math.round((personBsavedRetirementAge%1)*12)
               //create retirement solution object
               if (personB.retirementBenefitDate > personB.spousalBenefitDate) {
-                var personBretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementReplacingSpousal", personB, personB.retirementBenefitDate, personBsavedRetirementBenefit, personBsavedRetirementAgeYears, personBsavedRetirementAgeMonths)
+                var personBretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementReplacingSpousal", personB, personB.retirementBenefitDate, personBsavedRetirementAgeYears, personBsavedRetirementAgeMonths)
               }
               else {
-                var personBretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", personB, personB.retirementBenefitDate, personBsavedRetirementBenefit, personBsavedRetirementAgeYears, personBsavedRetirementAgeMonths)
+                var personBretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirementAlone", personB, personB.retirementBenefitDate, personBsavedRetirementAgeYears, personBsavedRetirementAgeMonths)
               }
           }
 
@@ -141,9 +167,9 @@ export class SolutionSetService {
           let personAsavedSpousalAgeMonths: number = Math.round((personAsavedSpousalAge%1)*12)
           //create spousal solution object
           if (personA.spousalBenefitDate < personA.retirementBenefitDate) {
-            var personAspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalAlone", personA, personA.spousalBenefitDate, personAsavedSpousalBenefit, personAsavedSpousalAgeYears, personAsavedSpousalAgeMonths)
+            var personAspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalAlone", personA, personA.spousalBenefitDate, personAsavedSpousalAgeYears, personAsavedSpousalAgeMonths)
           } else {
-            var personAspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalWithRetirement", personA, personA.spousalBenefitDate, personAsavedSpousalBenefit, personAsavedSpousalAgeYears, personAsavedSpousalAgeMonths)
+            var personAspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalWithRetirement", personA, personA.spousalBenefitDate, personAsavedSpousalAgeYears, personAsavedSpousalAgeMonths)
           }
 
         //personB spousal stuff
@@ -156,16 +182,16 @@ export class SolutionSetService {
           let personBsavedSpousalAgeMonths: number = Math.round((personBsavedSpousalAge%1)*12)
           //personB spousal solution object
           if (personB.spousalBenefitDate < personB.retirementBenefitDate) {
-            var personBspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalAlone", personB, personB.spousalBenefitDate, personBsavedSpousalBenefit, personBsavedSpousalAgeYears, personBsavedSpousalAgeMonths)
+            var personBspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalAlone", personB, personB.spousalBenefitDate, personBsavedSpousalAgeYears, personBsavedSpousalAgeMonths)
           } else {
-            var personBspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalWithRetirement", personB, personB.spousalBenefitDate, personBsavedSpousalBenefit, personBsavedSpousalAgeYears, personBsavedSpousalAgeMonths)
+            var personBspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousalWithRetirement", personB, personB.spousalBenefitDate, personBsavedSpousalAgeYears, personBsavedSpousalAgeMonths)
           }
 
         //personA disability stuff
           if (personA.isOnDisability === true) {
             //create disability-converts-to-retirement solution object
             var personAdisabilityConversionDate = new MonthYearDate(personA.FRA)
-            var personAdisabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", personA, personAdisabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
+            var personAdisabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", personA, personAdisabilityConversionDate, 0, 0)//ageYears/ageMonths can be zero because not used in output
             solutionSet.solutionsArray.push(personAdisabilityConversionSolution)
           }
 
@@ -173,7 +199,7 @@ export class SolutionSetService {
           if (personB.isOnDisability === true) {
             //create disability-converts-to-retirement solution object
             var personBdisabilityConversionDate = new MonthYearDate(personB.FRA)
-            var personBdisabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", personB, personBdisabilityConversionDate, 0, 0, 0)//benefit amount and ageYears/ageMonths can be zero because not used in output
+            var personBdisabilityConversionSolution = new ClaimingSolution(scenario.maritalStatus, "disabilityConversion", personB, personBdisabilityConversionDate, 0, 0)//ageYears/ageMonths can be zero because not used in output
             solutionSet.solutionsArray.push(personBdisabilityConversionSolution)
           }
 

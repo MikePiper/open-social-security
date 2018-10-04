@@ -16,6 +16,8 @@ export class ChildinputsComponent implements OnInit {
   }
 
   @Input() child: Person
+  @Input() personA: Person
+  @Input() personB: Person
   @Output() childChange: EventEmitter<Person> = new EventEmitter<Person>()
 
   inputMonths: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

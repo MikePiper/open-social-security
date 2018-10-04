@@ -5,16 +5,14 @@ import {MonthYearDate} from "./monthyearDate"
     maritalStatus: string
     benefitType: string //retirementAlone, retirementReplacingSpousal, spousalAlone, spousalWithRetirement, survivor
     date: MonthYearDate
-    benefitAmount: number
     ageYears: number
     ageMonths: number
     message: string //build one of messages below
 
-    constructor(maritalStatus: string, typeOfBenefit:string, person:Person, date:MonthYearDate, benefitAmount: number, ageYears:number, ageMonths:number){
+    constructor(maritalStatus: string, typeOfBenefit:string, person:Person, date:MonthYearDate, ageYears:number, ageMonths:number){
         this.maritalStatus = maritalStatus
         this.benefitType = typeOfBenefit
         this.date = date
-        this.benefitAmount = benefitAmount
         this.ageYears = ageYears
         this.ageMonths = ageMonths
         if (person.id == "A") {
@@ -42,6 +40,12 @@ import {MonthYearDate} from "./monthyearDate"
           if (this.benefitType == "disabilityConversion"){
             this.message = "At your full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + "), your disability benefit will automatically convert to a retirement benefit of the same amount."
           }
+          if (this.benefitType == "childBenefit"){
+            this.message = "Your child(ren) file(s) for child benefits on your work record " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
+          }
+          if (this.benefitType == "childBenefitParentFiled"){
+            this.message = "If they have not alraedy done so, your child(ren) file(s) now for child benefits on your work record."
+          }
         }
         if (person.id == "B") {
           if (this.benefitType == "retirementAlone"){
@@ -67,6 +71,12 @@ import {MonthYearDate} from "./monthyearDate"
           }
           if (this.benefitType == "disabilityConversion"){
             this.message = "At your spouse's full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + "), his/her disability benefit will automatically convert to a retirement benefit of the same amount."
+          }
+          if (this.benefitType == "childBenefit"){
+            this.message = "Your child(ren) file(s) for child benefits on your spouse's work record " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
+          }
+          if (this.benefitType == "childBenefitParentFiled"){
+            this.message = "If they have not alraedy done so, your child(ren) file(s) now for child benefits on your spouse's work record."
           }
         }
     }

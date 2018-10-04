@@ -423,6 +423,11 @@ export class HomeComponent implements OnInit {
       this.scenario.numberOfChildren = 0
       this.scenario.children = []
     }
+    if (this.personA.isOnDisability === false && this.personA.hasFiled === false && this.personB.isOnDisability === false && this.personB.hasFiled === false){
+      for (let child of this.scenario.children){
+        child.hasFiled = false
+      }
+    }
   }
 
   primaryFormInputChange(){

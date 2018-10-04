@@ -16,9 +16,9 @@ export class OutputTableService {
           let childUnder19:boolean = false
           if (scenario.children.length > 0) {
             for (let child of scenario.children){
-            if (child.age < 18.99 && child.isOnDisability === false){
-              childUnder19 = true
-            }
+              if (child.age < 18.99 && child.isOnDisability === false){
+                childUnder19 = true
+              }
             }
           }
       //Add row to table
