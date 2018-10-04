@@ -1069,10 +1069,9 @@ describe('PresentValueService Couple', () => {
     personA.quitWorkDate = new MonthYearDate(2010,3,1) //already quit working
     personB.quitWorkDate = new MonthYearDate(2010,3,1) //already quit working
     scenario.discountRate = 2
-    let emptyArray: any[] = []
-    expect(service.maximizeCouplePViterateOnePerson(scenario, personB, personA).solutionsArray)
-    .toEqual(emptyArray)
-    //Both people have already filed for retirement. B isn't going to suspend. A can't anymore since over 70. No spousal solution for A because PIA too high. No spousal solution for B because already filed for it. Array is empty.
+    expect(service.maximizeCouplePViterateOnePerson(scenario, personB, personA).solutionsArray[0].benefitType)
+    .toEqual("doNothing")
+    //Both people have already filed for retirement. B isn't going to suspend. A can't anymore since over 70. No spousal solution for A because PIA too high. No spousal solution for B because already filed for it. "doNothing" solution.
   }))
 
   it ('should tell personA to suspend from FRA to 70 in divorce scenario, if filed early, zero discount rate, very long life expectancy, and no spousal or survivor to be had from ex-spouse', inject([PresentValueService], (service: PresentValueService) => {

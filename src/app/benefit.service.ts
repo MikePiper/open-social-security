@@ -11,6 +11,8 @@ export class BenefitService {
 
   constructor() { }
 
+  today: MonthYearDate = new MonthYearDate()
+
   calculateRetirementBenefit(person:Person, benefitDate: MonthYearDate) {
     let retirementBenefit: number = 0
     let monthsWaited = benefitDate.getMonth() - person.FRA.getMonth() + 12 * (benefitDate.getFullYear() - person.FRA.getFullYear())
@@ -197,8 +199,11 @@ export class BenefitService {
         else {//i.e., person isn't suspended
           person.monthlyPayment = person.retirementBenefit
           for (let child of scenario.children){
-            if (child.age < 17.99 || child.isOnDisability === true){
-              child.monthlyPayment = child.childBenefitParentAlive
+            if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
+              //Child gets a benefit if child.hasFiled is true or calcYear.date is no earlier than today. (Point here is for sake of table output, if child hasn't filed we don't want it to be saying they get a benefit in months before today.)
+              if(child.hasFiled === true || calcYear.date >= this.today){
+                child.monthlyPayment = child.childBenefitParentAlive
+              }
             }
           }
         }
