@@ -60,22 +60,17 @@ export class SolutionSetService {
       if (childBenefitDate < this.today) {
         childBenefitDate = new MonthYearDate(this.today)
       }
-      //Determine if there is at least one child who is disabled or under 18 as of childBenefitDate
+      //Determine if there is at least one child who a) is disabled or under 18 as of childBenefitDate and b) has not yet filed for child benefits
       var childBenefitBoolean:boolean = false
       for (let child of scenario.children){
         child.age = ( 12 * (childBenefitDate.getFullYear() - child.SSbirthDate.getFullYear()) + (childBenefitDate.getMonth()) - child.SSbirthDate.getMonth()  )/12
-        if (child.age < 17.99 || child.isOnDisability === true){
+        if ( (child.age < 17.99 || child.isOnDisability === true) && child.hasFiled === false ){
           childBenefitBoolean = true
         }
       }
       //create child benefit solution object, if necessary
       if (childBenefitBoolean === true){
-        if ((person.isOnDisability === true || person.hasFiled === true) || childBenefitDate.valueOf() == this.today.valueOf()){//If parent has already filed and child benefit should begin ASAP (if not already begun)
-          var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "childBenefitParentFiled", person, childBenefitDate, 0, 0)
-        }
-        else {
-          var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "childBenefit", person, childBenefitDate, 0, 0)
-        }
+        var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "childBenefit", person, childBenefitDate, 0, 0)
         solutionSet.solutionsArray.push(childBenefitSolution)
       }
     }
@@ -85,6 +80,10 @@ export class SolutionSetService {
       // to get a value that is either negative, positive, or zero.
       return a.date.valueOf() - b.date.valueOf()
     })
+    if (solutionSet.solutionsArray.length == 0){
+      var doNothingSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "doNothing", person, this.today, 0, 0)
+      solutionSet.solutionsArray.push(doNothingSolution)
+    }
     return solutionSet
   }
 
@@ -255,6 +254,10 @@ export class SolutionSetService {
           // to get a value that is either negative, positive, or zero.
           return a.date.valueOf() - b.date.valueOf()
         })
+        if (solutionSet.solutionsArray.length == 0){
+          var doNothingSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "doNothing", personA, this.today, 0, 0)
+          solutionSet.solutionsArray.push(doNothingSolution)
+        }
         return solutionSet
   }
 

@@ -187,7 +187,7 @@ export class BenefitService {
         personSuspended = true
       }
       if (calcYear.date >= person.retirementBenefitDate) {//if person has filed for benefits...
-        if (personSuspended === true){
+        if (personSuspended === true){//if person has suspended benefits...
           person.DRCsViaSuspension = person.DRCsViaSuspension + 1
           person.monthlyPayment = 0
           for (let child of scenario.children){
