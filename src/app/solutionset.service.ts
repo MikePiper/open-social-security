@@ -70,7 +70,7 @@ export class SolutionSetService {
       }
       //create child benefit solution object, if necessary
       if (childBenefitBoolean === true){
-        var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "childBenefit", person, childBenefitDate, 0, 0)
+        var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", person, childBenefitDate, 0, 0)
         solutionSet.solutionsArray.push(childBenefitSolution)
       }
     }
