@@ -16,16 +16,10 @@ import {MonthYearDate} from "./monthyearDate"
         this.ageYears = ageYears
         this.ageMonths = ageMonths
         if (person.id == "A") {
-          if (this.benefitType == "retirementAlone"){
+          if (this.benefitType == "retirement"){
             this.message = "You file for your retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
-          if (this.benefitType == "retirementReplacingSpousal") {
-            this.message = "You file for your retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "spousalAlone") {
-            this.message = "You file for your spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "spousalWithRetirement") {
+          if (this.benefitType == "spousal") {
             this.message = "You file for your spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "suspendToday") {
@@ -45,16 +39,10 @@ import {MonthYearDate} from "./monthyearDate"
           }
         }
         if (person.id == "B") {
-          if (this.benefitType == "retirementAlone"){
+          if (this.benefitType == "retirement"){
             this.message = "Your spouse files for his/her retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
-          if (this.benefitType == "retirementReplacingSpousal") {
-            this.message = "Your spouse files for his/her retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "spousalAlone") {
-            this.message = "Your spouse files for his/her spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "spousalWithRetirement") {
+          if (this.benefitType == "spousal") {
             this.message = "Your spouse files for his/her spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "suspendToday") {
