@@ -54,7 +54,7 @@ export class Person {
     adjustedRetirementBenefitDate: MonthYearDate
     adjustedSpousalBenefitDate: MonthYearDate
 
-
+    childBenefitDate:MonthYearDate
 
     //new benefit amount fields -- for using in new system where benefit amount just gets overwritten when recalculated
     retirementBenefit:number

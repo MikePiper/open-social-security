@@ -428,14 +428,9 @@ export class PresentValueService {
       person.retirementBenefitDate.setFullYear(this.today.getFullYear())
     }
 
-    //If user is currently beyond FRA when filling out form, set testClaimingDate to earliest retroactive date (6 months ago but no earlier than FRA -- with 12 months instead of 6 in disability scenario
+    //If user is currently beyond FRA when filling out form, set testClaimingDate to earliest retroactive date (6 months ago but no earlier than FRA)
     if (this.today > person.FRA){
-      if (person.isOnDisability === false){
-        person.retirementBenefitDate.setMonth(this.today.getMonth()-6)
-      }
-      else {
-        person.retirementBenefitDate.setMonth(this.today.getMonth()-12)
-      }
+      person.retirementBenefitDate.setMonth(this.today.getMonth()-6)
       if (person.retirementBenefitDate < person.FRA){
         person.retirementBenefitDate.setMonth(person.FRA.getMonth())
         person.retirementBenefitDate.setFullYear(person.FRA.getFullYear())

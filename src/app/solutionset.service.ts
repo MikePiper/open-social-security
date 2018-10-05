@@ -50,12 +50,17 @@ export class SolutionSetService {
         let savedClaimingAge: number = person.retirementBenefitDate.getFullYear() - person.SSbirthDate.getFullYear() + (person.retirementBenefitDate.getMonth() - person.SSbirthDate.getMonth())/12
         let savedClaimingAgeYears: number = Math.floor(savedClaimingAge)
         let savedClaimingAgeMonths: number = Math.round((savedClaimingAge%1)*12)
-        let retirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirement", person, person.retirementBenefitDate, savedClaimingAgeYears, savedClaimingAgeMonths)
+        if (person.retirementBenefitDate < this.today){
+          var retirementSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveRetirement", person, person.retirementBenefitDate, savedClaimingAgeYears, savedClaimingAgeMonths)
+        }
+        else {
+          var retirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirement", person, person.retirementBenefitDate, savedClaimingAgeYears, savedClaimingAgeMonths)
+        }
         solutionSet.solutionsArray.push(retirementSolution)
     }
     //Child Benefit Solution
     if (scenario.children.length > 0){
-      //Determine childBenefitDate (later of person.retirementBenefitDate or today)
+      //Determine childBenefitDate -> later of person.retirementBenefitDate or today (But can be earlier than today in retroactive filing...)
       var childBenefitDate: MonthYearDate = new MonthYearDate(person.retirementBenefitDate)
       if (childBenefitDate < this.today) {
         childBenefitDate = new MonthYearDate(this.today)

@@ -9,7 +9,7 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
-fdescribe('PresentValueService Single', () => {
+describe('PresentValueService Single', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
@@ -281,6 +281,8 @@ fdescribe('PresentValueService Single', () => {
     person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
       .toEqual(new MonthYearDate(2018, 8))
+    expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].benefitType)
+      .toEqual("retroactiveRetirement")
   }))
 
   it('should tell a single person to suspend until 70 if filed early, long life expectancy, and zero discount rate', inject([PresentValueService], (service: PresentValueService) => {

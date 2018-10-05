@@ -154,6 +154,70 @@ export class BenefitService {
     return Number(childBenefit)
   }
 
+  determineChildBenefitDate(scenario:CalculationScenario, child:Person, personA:Person, personB?:Person):MonthYearDate{
+    let childBenefitDate:MonthYearDate
+    if (scenario.maritalStatus == "single"){
+      if (child.hasFiled === true){
+        //assume child filed as early as possible (parent retirementBenefitDate)
+        childBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
+      }
+      else {//If child hasn't filed, find earliest retroactive childBenefitDate
+        //If parent is not disabled, it's 6 months before today
+        if (personA.isOnDisability === false){
+          childBenefitDate = new MonthYearDate(this.today)
+          childBenefitDate.setMonth(childBenefitDate.getMonth()-6)
+        }
+        else {//If parent is disabled, it's 12 months before today
+        childBenefitDate = new MonthYearDate(this.today)
+        childBenefitDate.setMonth(childBenefitDate.getMonth()-12)
+        }
+        //But no earlier than parent's retirementBenefitDate
+        if (childBenefitDate < personA.retirementBenefitDate){
+          childBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
+        }
+      }
+    }
+    else {//i.e., it's a married or divorced scenario
+      if (child.hasFiled === true){
+        //assume they filed as early as possible (first retirementBenefitDate)
+        childBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
+        if (personB.retirementBenefitDate < childBenefitDate){
+          childBenefitDate = new MonthYearDate(personB.retirementBenefitDate)
+        }
+      }
+      else {//If child hasn't filed, find earliest retroactive childBenefitDate based on each parent
+        if (personA.isOnDisability === false){
+          var earliestChildBenefitDateFromPersonA:MonthYearDate = new MonthYearDate(this.today)
+          earliestChildBenefitDateFromPersonA.setMonth(earliestChildBenefitDateFromPersonA.getMonth()-6)
+        }
+        else {
+          var earliestChildBenefitDateFromPersonA:MonthYearDate = new MonthYearDate(this.today)
+          earliestChildBenefitDateFromPersonA.setMonth(earliestChildBenefitDateFromPersonA.getMonth()-12)
+        }
+        if (personB.isOnDisability === false){
+          var earliestChildBenefitDateFromPersonB:MonthYearDate = new MonthYearDate(this.today)
+          earliestChildBenefitDateFromPersonB.setMonth(earliestChildBenefitDateFromPersonB.getMonth()-6)
+        }
+        else {
+          var earliestChildBenefitDateFromPersonB:MonthYearDate = new MonthYearDate(this.today)
+          earliestChildBenefitDateFromPersonB.setMonth(earliestChildBenefitDateFromPersonB.getMonth()-12)
+        }
+        //childBenefitDate is earlier of those two dates
+        if (earliestChildBenefitDateFromPersonA < earliestChildBenefitDateFromPersonB){
+          childBenefitDate = new MonthYearDate(earliestChildBenefitDateFromPersonA)
+        }
+        else {
+          childBenefitDate = new MonthYearDate(earliestChildBenefitDateFromPersonB)
+        }
+      }
+    }
+    //Don't let childBenefitDate be earlier than child's SSbirthDate
+      if (childBenefitDate < child.SSbirthDate){
+        childBenefitDate = new MonthYearDate(child.SSbirthDate)
+      }
+    return childBenefitDate
+  }
+
   applyAssumedBenefitCut(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
     if (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() >= scenario.benefitCutYear) {
       //Apply cut to sums included in PV calculation
@@ -200,7 +264,8 @@ export class BenefitService {
           person.monthlyPayment = person.retirementBenefit
           for (let child of scenario.children){
             if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
-              //Child gets a benefit if child.hasFiled is true or calcYear.date is no earlier than today. (Point here is for sake of table output, if child hasn't filed we don't want it to be saying they get a benefit in months before today.)
+              //Child gets a benefit if child.hasFiled is true or calcYear.date is no earlier than today.
+                //Point here is for sake of table output, if child hasn't filed we don't want it to be saying they get a benefit in months before today.
               if(child.hasFiled === true || calcYear.date >= this.today){
                 child.monthlyPayment = child.childBenefitParentAlive
               }
