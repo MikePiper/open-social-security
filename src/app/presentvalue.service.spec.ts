@@ -9,7 +9,7 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
-describe('PresentValueService Single', () => {
+fdescribe('PresentValueService Single', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
@@ -34,10 +34,25 @@ describe('PresentValueService Single', () => {
       scenario.discountRate = 1 //1% discount rate
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-      let benefitService:BenefitService = new BenefitService()
-      person = benefitService.calculateFamilyMaximum(person)
       expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(151765, 0)
+    }))
+
+    it('should return appropriate PV for single person who files retroactive application as of their FRA', inject([PresentValueService], (service: PresentValueService) => {
+      let person:Person = new Person("A")
+      let birthdayService:BirthdayService = new BirthdayService
+      person.SSbirthDate = new MonthYearDate(1952, 3, 1) //Person born April 1952
+      person.initialAgeRounded = 67
+      person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA is age 66, so April 2018
+      person.PIA = 1000
+      person.retirementBenefitDate = new MonthYearDate(person.FRA) //filing at FRA, which is retroactive
+      let mortalityService:MortalityService = new MortalityService()
+      person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      let scenario:CalculationScenario = new CalculationScenario
+      scenario.discountRate = 1 //1% discount rate
+      console.log(person)
+      expect(service.calculateSinglePersonPV(person, scenario, false))
+        .toBeCloseTo(175977, 0)
     }))
   
     it('should return appropriate PV for single person, but with "still working" inputs and a different mortality table', inject([PresentValueService], (service: PresentValueService) => { 
@@ -52,8 +67,6 @@ describe('PresentValueService Single', () => {
       scenario.discountRate = 1 //1% discount rate
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
-      let benefitService:BenefitService = new BenefitService()
-      person = benefitService.calculateFamilyMaximum(person)
       expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(201310, 0)
     }))
@@ -72,8 +85,6 @@ describe('PresentValueService Single', () => {
       person.beginSuspensionDate = new MonthYearDate(person.FRA)
       person.endSuspensionDate = new MonthYearDate(2040, 8, 1)//Age 70
       scenario.discountRate = 1
-      let benefitService:BenefitService = new BenefitService()
-      person = benefitService.calculateFamilyMaximum(person)
       expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(151776, 0)//Point being, this is same PV as when somebody just waits until 70.
     }))
@@ -255,6 +266,23 @@ describe('PresentValueService Single', () => {
       .toEqual(new MonthYearDate(2022, 4, 1))
   }))
 
+  it('should tell a single person slightly past FRA to file retroactively at FRA with very high discount rate', inject([PresentValueService], (service: PresentValueService) => {
+    //This test is important, but unfortunately every 6 months it'll fail because the "no more than 6 months retroactive window" will have moved
+    let person:Person = new Person("A")
+    person.actualBirthDate = new Date(1952, 8, 15)
+    person.SSbirthDate = new MonthYearDate(1952, 8) //SSBirthdate Sept 1952
+    let birthdayService:BirthdayService = new BirthdayService
+    person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA age 66 -> Sept 2018
+    person.PIA = 1000
+    let scenario:CalculationScenario = new CalculationScenario
+    scenario.maritalStatus = "single"
+    scenario.discountRate = 9 //9% discount rate
+    let mortalityService:MortalityService = new MortalityService()
+    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
+      .toEqual(new MonthYearDate(2018, 8))
+  }))
+
   it('should tell a single person to suspend until 70 if filed early, long life expectancy, and zero discount rate', inject([PresentValueService], (service: PresentValueService) => {
     let person:Person = new Person("A")
     let scenario:CalculationScenario = new CalculationScenario
@@ -340,7 +368,7 @@ describe('PresentValueService Single', () => {
     person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
     let today:MonthYearDate = new MonthYearDate()
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].benefitType)
-      .toEqual("childBenefit")
+      .toEqual("child")
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
       .toEqual(today)
   }))
