@@ -32,9 +32,13 @@ export class PresentValueService {
       person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
 
     //Create initial CalculationYear object
+    //initialCalcDate is Jan 1 of year they turn 62, but no earlier than Jan 1 of this year -- unless it's a retroactive application in prior year, in which case it's Jan 1 of that year)
     let initialCalcDate:MonthYearDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
     if (initialCalcDate.getFullYear() < this.today.getFullYear()){
       initialCalcDate = new MonthYearDate(this.today.getFullYear(), 0, 1)
+    }
+    if (person.retirementBenefitDate.getFullYear() < this.today.getFullYear()){
+      initialCalcDate.setFullYear(person.retirementBenefitDate.getFullYear())
     }
     let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
 
@@ -422,6 +426,20 @@ export class PresentValueService {
     if (ageToday > 62){
       person.retirementBenefitDate.setMonth(this.today.getMonth())
       person.retirementBenefitDate.setFullYear(this.today.getFullYear())
+    }
+
+    //If user is currently beyond FRA when filling out form, set testClaimingDate to earliest retroactive date (6 months ago but no earlier than FRA -- with 12 months instead of 6 in disability scenario
+    if (this.today > person.FRA){
+      if (person.isOnDisability === false){
+        person.retirementBenefitDate.setMonth(this.today.getMonth()-6)
+      }
+      else {
+        person.retirementBenefitDate.setMonth(this.today.getMonth()-12)
+      }
+      if (person.retirementBenefitDate < person.FRA){
+        person.retirementBenefitDate.setMonth(person.FRA.getMonth())
+        person.retirementBenefitDate.setFullYear(person.FRA.getFullYear())
+      }
     }
 
     //If user has already filed or is on disability, initialize begin/end suspension dates as their FRA (but no earlier than this month), and set person's retirementBenefitDate using fixedRetirementBenefitDate field 
