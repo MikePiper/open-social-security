@@ -60,23 +60,40 @@ export class SolutionSetService {
     }
     //Child Benefit Solution
     if (scenario.children.length > 0){
-      //Determine childBenefitDate -> later of person.retirementBenefitDate or today (But can be earlier than today in retroactive filing...)
-      var childBenefitDate: MonthYearDate = new MonthYearDate(person.retirementBenefitDate)
-      if (childBenefitDate < this.today) {
-        childBenefitDate = new MonthYearDate(this.today)
-      }
-      //Determine if there is at least one child who a) is disabled or under 18 as of childBenefitDate and b) has not yet filed for child benefits
-      var childBenefitBoolean:boolean = false
+      // //Determine childBenefitFilingDate -> later of person.retirementBenefitDate or today (Note this is the date on which child actually files. Effective benefit date can be earlier in retroactive filing.)
+      // var childBenefitFilingDate: MonthYearDate = new MonthYearDate(person.retirementBenefitDate)
+      // if (childBenefitFilingDate < this.today) {
+      //   childBenefitFilingDate = new MonthYearDate(this.today)
+      // }
+      //Determine if there is at least one child who a) is disabled or under 18 as of childBenefitFilingDate and b) has not yet filed for child benefits
+
+      //Determine if there are any children who have not yet filed and who are under 18 or disabled as of their childBenefitDate
+      var childWhoNeedsToFile:boolean = false
       for (let child of scenario.children){
-        child.age = ( 12 * (childBenefitDate.getFullYear() - child.SSbirthDate.getFullYear()) + (childBenefitDate.getMonth()) - child.SSbirthDate.getMonth()  )/12
-        if ( (child.age < 17.99 || child.isOnDisability === true) && child.hasFiled === false ){
-          childBenefitBoolean = true
+        let ageOnChildBenefitDate:number = ( 12 * (child.childBenefitDate.getFullYear() - child.SSbirthDate.getFullYear()) + (child.childBenefitDate.getMonth()) - child.SSbirthDate.getMonth()  )/12
+        if ( (ageOnChildBenefitDate < 17.99 || child.isOnDisability === true) && child.hasFiled === false ){
+          childWhoNeedsToFile = true
         }
       }
-      //create child benefit solution object, if necessary
-      if (childBenefitBoolean === true){
-        var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", person, childBenefitDate, 0, 0)
+      //If there's a child who needs to file, find earliest childBenefitDate (of children who haven't filed) and find whether it is prior to today
+      if (childWhoNeedsToFile === true){
+        let childBenefitDates:MonthYearDate[] = []
+        for (let child of scenario.children){
+          if (child.hasFiled === false){
+            childBenefitDates.push(child.childBenefitDate)
+          }
+          childBenefitDates.sort(function(a,b){
+            return a.valueOf() - b.valueOf()
+          })
+        //now we have an array of the childBenefitDates of the children who haven't filed, and it's sorted earliest to latest
+        if (childBenefitDates[0] < this.today){
+          var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveChild", person, childBenefitDates[0], 0, 0)
+        }
+        else {
+          var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", person, childBenefitDates[0], 0, 0)
+        }
         solutionSet.solutionsArray.push(childBenefitSolution)
+        }
       }
     }
     //Sort array by date

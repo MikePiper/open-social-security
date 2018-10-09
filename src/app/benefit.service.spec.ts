@@ -7,7 +7,7 @@ import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
 
-fdescribe('BenefitService', () => {
+describe('BenefitService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [BenefitService, BirthdayService]

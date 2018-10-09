@@ -31,6 +31,11 @@ export class PresentValueService {
     //calculate initial retirement benefit
       person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
 
+    //Find childBenefitDate for any children
+    for (let child of scenario.children){
+      child.childBenefitDate = this.benefitService.determineChildBenefitDate(scenario, child, person)
+    }
+
     //Create initial CalculationYear object
     //initialCalcDate is Jan 1 of year they turn 62, but no earlier than Jan 1 of this year -- unless it's a retroactive application in prior year, in which case it's Jan 1 of that year)
     let initialCalcDate:MonthYearDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
