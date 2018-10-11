@@ -37,13 +37,10 @@ export class PresentValueService {
     }
 
     //Create initial CalculationYear object
-    //initialCalcDate is Jan 1 of year they turn 62, but no earlier than Jan 1 of this year -- unless it's a retroactive application in prior year, in which case it's Jan 1 of that year)
+    //initialCalcDate is Jan 1 of year they turn 62, but no later than retirementBenefitDate (point being, if they are on disability prior to 62, we want calc to start now so we can get table beginning now)
     let initialCalcDate:MonthYearDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
-    if (initialCalcDate.getFullYear() < this.today.getFullYear()){
-      initialCalcDate = new MonthYearDate(this.today.getFullYear(), 0, 1)
-    }
-    if (person.retirementBenefitDate.getFullYear() < this.today.getFullYear()){
-      initialCalcDate.setFullYear(person.retirementBenefitDate.getFullYear())
+    if (initialCalcDate.getFullYear() > person.retirementBenefitDate.getFullYear()){
+      initialCalcDate = new MonthYearDate(person.retirementBenefitDate)
     }
     let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
 
@@ -52,7 +49,6 @@ export class PresentValueService {
     for (let child of scenario.children){
       child.age = ( 12 * (calcYear.date.getFullYear() - child.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - child.SSbirthDate.getMonth()  )/12
     }
-
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (person.age < 115) {
@@ -83,9 +79,13 @@ export class PresentValueService {
             }
 
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
-            calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + person.monthlyPayment
+            if (calcYear.date >= this.today || (person.hasFiled === false && person.isOnDisability === false) ){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
+              calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + person.monthlyPayment
+            }
             for (let child of scenario.children){
-              calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + child.monthlyPayment
+              if (calcYear.date >= this.today || child.hasFiled === false){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
+                calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + child.monthlyPayment
+              }
             }
             if (printOutputTable === true){
               calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit + person.monthlyPayment
@@ -108,7 +108,9 @@ export class PresentValueService {
 
             //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
             for (let child of scenario.children){
-              calcYear.annualBenefitSinglePersonDeceased = calcYear.annualBenefitSinglePersonDeceased + child.monthlyPayment
+              if (calcYear.date >= this.today){//only want to include child survivor benefit in PV calc if it is not from a month in the past (would never have a retroactive child survivor application, since if parent is already deceased calculator doesn't run)
+                calcYear.annualBenefitSinglePersonDeceased = calcYear.annualBenefitSinglePersonDeceased + child.monthlyPayment
+              }
               if (printOutputTable === true){
                 calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased = calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased + child.monthlyPayment
               }
@@ -191,6 +193,11 @@ export class PresentValueService {
           }
         let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
 
+    //Find childBenefitDate for any children
+    for (let child of scenario.children){
+      child.childBenefitDate = this.benefitService.determineChildBenefitDate(scenario, child, personA, personB)
+    }
+
     //calculate initial retirement/spousal/survivor benefits
       personA.retirementBenefit = this.benefitService.calculateRetirementBenefit(personA, personA.retirementBenefitDate)
       personB.retirementBenefit = this.benefitService.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
@@ -242,7 +249,9 @@ export class PresentValueService {
           personB.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
         }
         //Recalculate retirement benefit using DRCs at endSuspensionDate (And therefore recalculate spousal and survivor also)
-        //Recalculate child benefit when second spouse starts?? When it is originally calculated based on first spouse??
+        //Calculate child benefit when first spouse files
+        //Recalculate child benefit when second spouse files
+        //When should "parentDeceased" child benefits be calculated and recalculated?
  
 
       //Do we ever have to recalculate family max? (No. In family scenario might have to recalculate combined family max though. Or rather, combined family max doesn't get calculated at beginning but rather in a later year?)
@@ -271,7 +280,7 @@ export class PresentValueService {
             //increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
       //if it's December...
             //Add back any overwithholding from earnings test
-            //Apply assumed benefit cut, if applicable
+            //Apply assumed benefit cut, if applicable (use function from BenefitService, not from PVservice)
             //If printOutputTable is true, add row to output table.
             //Apply probability alive to annual benefit amounts
             //Discount that probability-weighted annual benefit amount to age 62
@@ -838,6 +847,5 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       }
     return calcYear
   }
-
 
 }
