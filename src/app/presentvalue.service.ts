@@ -175,21 +175,24 @@ export class PresentValueService {
         let initialCalcDate:MonthYearDate
         //If divorced, set to Jan 1 of year in which personA turns 62
           if (scenario.maritalStatus == "divorced") {
-            initialCalcDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0, 1)
+            initialCalcDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0)
           }
         //If married, set initialCalcDate to Jan 1 of year in which first spouse reaches age 62
           if (scenario.maritalStatus == "married"){
             if (personA.SSbirthDate < personB.SSbirthDate)
               {
-                initialCalcDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0, 1)
+                initialCalcDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0)
               }
             else {
-              initialCalcDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+62, 0, 1)
+              initialCalcDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+62, 0)
               }
           }
-        //Don't let initialCalcDate be earlier than this year
-          if (initialCalcDate.getFullYear() < this.today.getFullYear()){
-            initialCalcDate = new MonthYearDate(this.today.getFullYear(), 0, 1)
+        //Don't let initialCalcDate be later than the earlier retirementBenefitDate (point being, if a person is on disability prior to 62, we want calc to start now so we can get table beginning now)
+          if (personA.retirementBenefitDate < personB.retirementBenefitDate && initialCalcDate > personA.retirementBenefitDate){
+            initialCalcDate = new MonthYearDate(personA.retirementBenefitDate.getFullYear(), 0)
+          }
+          if (personB.retirementBenefitDate < personA.retirementBenefitDate && initialCalcDate > personB.retirementBenefitDate){
+            initialCalcDate = new MonthYearDate(personB.retirementBenefitDate.getFullYear(), 0)
           }
         let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
 
@@ -249,12 +252,14 @@ export class PresentValueService {
           personB.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
         }
         //Recalculate retirement benefit using DRCs at endSuspensionDate (And therefore recalculate spousal and survivor also)
-        //Calculate child benefit when first spouse files
-        //Recalculate child benefit when second spouse files
-        //When should "parentDeceased" child benefits be calculated and recalculated?
- 
 
-      //Do we ever have to recalculate family max? (No. In family scenario might have to recalculate combined family max though. Or rather, combined family max doesn't get calculated at beginning but rather in a later year?)
+        //Calculate child benefit when first spouse files, recalculatewhen second spouse files if second spouse's PIA is higher
+        scenario = this.benefitService.calculateChildBenefitsParentsLiving(scenario, calcYear.date, personA, personB)
+
+
+        //calculate combined family maximum (We need to know "simultaneous entitlement year" so we can't do this in HomeComponent or maximize function. But can do it anywhere at beginning of PV calc.)
+          //this.benefitService.calculateCombinedFamilyMaximum(personA, personB, ???) //simultaneousentitlementyear is later of two retirementBenefitDates -- or child's DoB if child is born after both...
+
       //Assume personA and personB are alive
             //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
             //Adjust each person's monthlyPayment as necessary for family max
@@ -467,9 +472,9 @@ export class PresentValueService {
     //Calculate child benefit amounts (if applicable) and family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
     if (scenario.children.length > 0) {
       for (let child of scenario.children){
-        child.childBenefitParentAlive = this.benefitService.calculateChildBenefitParentLiving(person)
-        child.childBenefitParentDeceased = this.benefitService.calculateChildBenefitParentDeceased(person)
+        child.childBenefitParentsAlive = person.PIA * 0.5
       }
+      //child survivor benefits are calculated in Home Component's getPrimaryFormInputs() method
     }
     person = this.benefitService.calculateFamilyMaximum(person)
 

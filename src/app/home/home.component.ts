@@ -10,6 +10,7 @@ import {CalculationScenario} from '../data model classes/calculationscenario'
 import {ErrorCollection} from '../data model classes/errorcollection'
 import {InputValidationService} from '../inputvalidation.service'
 import {MonthYearDate} from "../data model classes/monthyearDate"
+import { BenefitService } from '../benefit.service'
 
 
 @Component({
@@ -19,8 +20,8 @@ import {MonthYearDate} from "../data model classes/monthyearDate"
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private inputValidationService:InputValidationService, private birthdayService: BirthdayService, private presentvalueService: PresentValueService, private mortalityService: MortalityService,
-    private http: HttpClient) { }
+  constructor(private inputValidationService:InputValidationService, private birthdayService: BirthdayService, private presentvalueService: PresentValueService,
+    private mortalityService: MortalityService, private benefitService: BenefitService, private http: HttpClient) { }
 
   ngOnInit() {
     this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")
@@ -338,6 +339,8 @@ export class HomeComponent implements OnInit {
       for (let i = 0; i < this.scenario.numberOfChildren; i++) { 
         this.scenario.children.push(this.childrenObjectsArray[i])
       }
+      //Calculate child survivor benefits (do it here rather than in PV calc because it only has to be done once)
+        this.scenario = this.benefitService.calculateChildSurvivorBenefits(this.scenario, this.personA, this.personB)
       //Reset conditionally-hidden inputs as necessary, based on changes to other inputs. (If a hidden input should be null/false based on status of other inputs, make sure it is null/false.)
       this.resetHiddenInputs()
     }

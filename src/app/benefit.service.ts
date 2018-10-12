@@ -4,6 +4,7 @@ import { CalculationYear } from './data model classes/calculationyear';
 import { CalculationScenario } from './data model classes/calculationscenario';
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import { ClaimingSolution } from './data model classes/claimingsolution';
+import { ChildActivationEnd } from '@angular/router';
 
 
 @Injectable()
@@ -144,14 +145,34 @@ export class BenefitService {
     return Number(survivorBenefit)
   }
 
-  calculateChildBenefitParentLiving(parent:Person):number{
-    let childBenefit:number = parent.PIA * 0.5
-    return Number(childBenefit)
+  calculateChildBenefitsParentsLiving(scenario:CalculationScenario, date:MonthYearDate, parentA:Person, parentB:Person):CalculationScenario{
+    if (date < parentA.retirementBenefitDate && date < parentB.retirementBenefitDate){//if before both retirementBenefitDates
+      for (let child of scenario.children) {child.childBenefitParentsAlive = 0}
+    }
+    else if (date >= parentA.retirementBenefitDate && date >= parentB.retirementBenefitDate){//if after both retirementBenefitDates
+      if (parentA.PIA > parentB.PIA) {
+        for (let child of scenario.children) {child.childBenefitParentsAlive = parentA.PIA * 0.5}
+      }
+      else {
+        for (let child of scenario.children) {child.childBenefitParentsAlive = parentB.PIA * 0.5}
+      }
+    }
+    else if (date < parentB.retirementBenefitDate) {//i.e., we have reached parentA.retirementBenefitDate but not parentB.retirementBenefitDate (we know we have reached at least 1, because first "IF" did not get triggered)
+      for (let child of scenario.children) {child.childBenefitParentsAlive = parentA.PIA * 0.5}
+    }
+    else {
+      for (let child of scenario.children) {child.childBenefitParentsAlive = parentB.PIA * 0.5}
+    }
+    return scenario
   }
 
-  calculateChildBenefitParentDeceased(parent:Person):number{
-    let childBenefit:number = parent.PIA * 0.75
-    return Number(childBenefit)
+
+  calculateChildSurvivorBenefits(scenario:CalculationScenario, parentA:Person, parentB?:Person):CalculationScenario{
+    for (let child of scenario.children){
+      child.childSurvivorBenefitParentAdeceased = parentA.PIA * 0.75
+      if (parentB) {child.childSurvivorBenefitParentBdeceased = parentB.PIA * 0.75}
+    }
+    return scenario
   }
 
   determineChildBenefitDate(scenario:CalculationScenario, child:Person, personA:Person, personB?:Person):MonthYearDate{
@@ -266,7 +287,7 @@ export class BenefitService {
           for (let child of scenario.children){
             if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
               if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                child.monthlyPayment = child.childBenefitParentAlive
+                child.monthlyPayment = child.childBenefitParentsAlive
               }
             }
           }
@@ -276,7 +297,7 @@ export class BenefitService {
     else {//if we're assuming person is deceased
       for (let child of scenario.children){
         if (child.age < 17.99 || child.isOnDisability === true){//Use 17.99 as the cutoff because sometimes when child is actually 18 javascript value will be 17.9999999
-          child.monthlyPayment = child.childBenefitParentDeceased
+          child.monthlyPayment = child.childSurvivorBenefitParentAdeceased
         }
       }
     }
@@ -577,7 +598,7 @@ export class BenefitService {
   }
 
   //calculates family maximum on one person's work record
-  calculateFamilyMaximum(person:Person){
+  calculateFamilyMaximum(person:Person):Person{
     if (person.isOnDisability === true){
       /* https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615742
       family maximum is lesser of:
