@@ -60,9 +60,6 @@ export class Person {
     retirementBenefit:number
     spousalBenefit:number
     survivorBenefit:number
-    childBenefitParentsAlive:number //used in single scenarios also for when single parent still alive
-    childSurvivorBenefitParentAdeceased:number//used in "single" scenarios also for when single parent has died
-    childSurvivorBenefitParentBdeceased:number
     monthlyPayment:number = 0
     monthsRetirementWithheld:number = 0 //for earnings test
     monthsSpousalWithheld:number = 0 //for earnings test

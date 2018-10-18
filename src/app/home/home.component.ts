@@ -339,8 +339,7 @@ export class HomeComponent implements OnInit {
       for (let i = 0; i < this.scenario.numberOfChildren; i++) { 
         this.scenario.children.push(this.childrenObjectsArray[i])
       }
-      //Calculate child survivor benefits (do it here rather than in PV calc because it only has to be done once)
-        this.scenario = this.benefitService.calculateChildSurvivorBenefits(this.scenario, this.personA, this.personB)
+
       //Reset conditionally-hidden inputs as necessary, based on changes to other inputs. (If a hidden input should be null/false based on status of other inputs, make sure it is null/false.)
       this.resetHiddenInputs()
     }

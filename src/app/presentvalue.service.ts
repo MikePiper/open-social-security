@@ -241,9 +241,6 @@ export class PresentValueService {
       //Do we have to calculate/recalculate any benefits for personA or personB?
         this.benefitService.monthlyCheckForBenefitRecalculationsCouple(personA, personB, calcYear)
 
-      //Calculate child benefit when first spouse files, recalculate when second spouse files if second spouse's PIA is higher
-        scenario = this.benefitService.calculateChildBenefitsParentsLiving(scenario, calcYear.date, personA, personB)
-
       //Assume personA and personB are alive
             //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
             //Adjust each person's monthlyPayment as necessary for family max
@@ -483,13 +480,7 @@ export class PresentValueService {
       person.retirementBenefitDate = new MonthYearDate(person.fixedRetirementBenefitDate)
     }
 
-    //Calculate child benefit amounts (if applicable) and family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
-    if (scenario.children.length > 0) {
-      for (let child of scenario.children){
-        child.childBenefitParentsAlive = person.PIA * 0.5
-      }
-      //child survivor benefits are calculated in Home Component's getPrimaryFormInputs() method
-    }
+    //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
     person = this.benefitService.calculateFamilyMaximum(person)
 
     //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.

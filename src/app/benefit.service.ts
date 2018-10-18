@@ -145,34 +145,6 @@ export class BenefitService {
     return Number(survivorBenefit)
   }
 
-  calculateChildBenefitsParentsLiving(scenario:CalculationScenario, date:MonthYearDate, parentA:Person, parentB:Person):CalculationScenario{
-    if (date <= parentA.retirementBenefitDate || date <= parentB.retirementBenefitDate){//After both dates have passed, no need to keep doing this math.
-            if (date < parentB.retirementBenefitDate && date >= parentA.retirementBenefitDate) {//i.e., we have reached parentA.retirementBenefitDate but not parentB.retirementBenefitDate
-              for (let child of scenario.children) {child.childBenefitParentsAlive = parentA.PIA * 0.5}
-            }
-            else if (date < parentA.retirementBenefitDate && date >= parentB.retirementBenefitDate) {//i.e., we have reached parentB.retirementBenefitDate but not parentA.retirementBenefitDate
-              for (let child of scenario.children) {child.childBenefitParentsAlive = parentB.PIA * 0.5}
-            }
-            else if (date >= parentA.retirementBenefitDate && date >= parentB.retirementBenefitDate){//once both retirementBenefitDates have been reached
-              if (parentA.PIA > parentB.PIA) {
-                for (let child of scenario.children) {child.childBenefitParentsAlive = parentA.PIA * 0.5}
-              }
-              else {
-                for (let child of scenario.children) {child.childBenefitParentsAlive = parentB.PIA * 0.5}
-              }
-            }
-    }
-    return scenario
-  }
-
-
-  calculateChildSurvivorBenefits(scenario:CalculationScenario, parentA:Person, parentB?:Person):CalculationScenario{
-    for (let child of scenario.children){
-      child.childSurvivorBenefitParentAdeceased = parentA.PIA * 0.75
-      if (parentB) {child.childSurvivorBenefitParentBdeceased = parentB.PIA * 0.75}
-    }
-    return scenario
-  }
 
   determineChildBenefitDate(scenario:CalculationScenario, child:Person, personA:Person, personB?:Person):MonthYearDate{
     let childBenefitDate:MonthYearDate
@@ -286,7 +258,7 @@ export class BenefitService {
           for (let child of scenario.children){
             if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
               if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                child.monthlyPayment = child.childBenefitParentsAlive
+                child.monthlyPayment = person.PIA * 0.5
               }
             }
           }
@@ -296,7 +268,7 @@ export class BenefitService {
     else {//if we're assuming person is deceased
       for (let child of scenario.children){
         if (child.age < 17.99 || child.isOnDisability === true){//Use 17.99 as the cutoff because sometimes when child is actually 18 javascript value will be 17.9999999
-          child.monthlyPayment = child.childSurvivorBenefitParentAdeceased
+          child.monthlyPayment = person.PIA * 0.75
         }
       }
     }
@@ -334,7 +306,7 @@ export class BenefitService {
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                    //TODO: child.monthlyPayment = what field reflects this?
+                    child.monthlyPayment = personB.PIA * 0.5
                   }
                 }
               }
@@ -348,7 +320,7 @@ export class BenefitService {
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                    //TODO: child.monthlyPayment = what field reflects this?
+                    child.monthlyPayment = personA.PIA * 0.5
                   }
                 }
               }

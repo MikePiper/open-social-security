@@ -103,8 +103,6 @@ describe('PresentValueService Single', () => {
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
       let benefitService:BenefitService = new BenefitService()
-      child1.childBenefitParentsAlive = person.PIA * 0.5
-      scenario = benefitService.calculateChildSurvivorBenefits(scenario, person)
       person = benefitService.calculateFamilyMaximum(person)
       expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(265512, 0)
@@ -126,10 +124,6 @@ describe('PresentValueService Single', () => {
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
       let benefitService:BenefitService = new BenefitService()
-      for (let child of scenario.children){
-        child.childBenefitParentsAlive = person.PIA * 0.5
-      }
-      scenario = benefitService.calculateChildSurvivorBenefits(scenario, person)
       person = benefitService.calculateFamilyMaximum(person)
       expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(323555, 0)
@@ -153,10 +147,6 @@ describe('PresentValueService Single', () => {
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
       let benefitService:BenefitService = new BenefitService()
-      for (let child of scenario.children){
-        child.childBenefitParentsAlive = person.PIA * 0.5
-      }
-      scenario = benefitService.calculateChildSurvivorBenefits(scenario, person)
       person = benefitService.calculateFamilyMaximum(person)
       expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(323555, 0)
@@ -183,8 +173,6 @@ describe('PresentValueService Single', () => {
       let mortalityService:MortalityService = new MortalityService()
       person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
       let benefitService:BenefitService = new BenefitService()
-      child1.childBenefitParentsAlive = person.PIA * 0.5
-      scenario = benefitService.calculateChildSurvivorBenefits(scenario, person)
       person = benefitService.calculateFamilyMaximum(person)
       expect(service.calculateSinglePersonPV(person, scenario, false))
         .toBeCloseTo(376859, 0)
