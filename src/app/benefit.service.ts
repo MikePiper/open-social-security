@@ -302,6 +302,157 @@ export class BenefitService {
     }
   }
 
+  calculateMonthlyPaymentsCouple(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB:Person, personBaliveBoolean:boolean){
+    //TODO: have to think about whether it's divorce or married scenario?
+    //Set all benefits to zero to begin
+      personA.monthlyPayment = 0
+      personB.monthlyPayment = 0
+      for (let child of scenario.children){child.monthlyPayment = 0}
+
+
+    //determine if personA and/or personB are suspended
+      let personAsuspended:boolean
+      let personBsuspended:boolean
+      if (personA.beginSuspensionDate > calcYear.date || personA.endSuspensionDate <= calcYear.date) {personAsuspended = false}
+        else {personAsuspended = true}
+      if (personB.beginSuspensionDate > calcYear.date || personB.endSuspensionDate <= calcYear.date) {personBsuspended = false}
+        else {personBsuspended = true}
+
+    //calculate payments
+      //both personA and personB alive
+      if (personAaliveBoolean === true && personBaliveBoolean === true){
+          if (personAsuspended === true && personBsuspended === true){//if both people are suspended
+              personA.DRCsViaSuspension = personA.DRCsViaSuspension + 1//We only add to this field in the "assuming both are alive" section. Could do it in any of the mortality assumption sections, but we only want to do it once for a given month.
+              personB.DRCsViaSuspension = personB.DRCsViaSuspension + 1//We only add to this field in the "assuming both are alive" section. Could do it in any of the mortality assumption sections, but we only want to do it once for a given month.
+              //Nobody gets any payments. Don't have to set to zero though because that's already done.
+          }
+          else if (personAsuspended === true && personBsuspended === false){//if only personA is suspended
+            personA.DRCsViaSuspension = personA.DRCsViaSuspension + 1
+            //if entitled to benefits in question: personB gets retirement benefit, children each get child benefit on personB (personA gets nothing)
+            if (calcYear.date >= personB.retirementBenefitDate){
+              personB.monthlyPayment = personB.retirementBenefit
+              for (let child of scenario.children){
+                if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
+                  if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
+                    //TODO: child.monthlyPayment = what field reflects this?
+                  }
+                }
+              }
+            }
+          }
+          else if (personAsuspended === false && personBsuspended === true){//if only personB is suspended
+            personB.DRCsViaSuspension = personB.DRCsViaSuspension + 1
+            //if entitled to benefits in question: personA gets retirement benefit, children each get child benefit on personA (personB gets nothing)
+            if (calcYear.date >= personA.retirementBenefitDate){
+              personA.monthlyPayment = personA.retirementBenefit
+              for (let child of scenario.children){
+                if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
+                  if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
+                    //TODO: child.monthlyPayment = what field reflects this?
+                  }
+                }
+              }
+            }
+          }
+          else {//if neither person is suspended
+            //if entitled to benefits in question: personA gets retirement and spousal, personB gets retirement and spousal (right? we have them get spousal, but spousal is just zero in appropriate cases) and children each get benefit on personA or personB
+            if (calcYear.date >= personA.retirementBenefitDate){
+              personA.monthlyPayment = personA.monthlyPayment + personA.retirementBenefit
+            }
+            if (calcYear.date >= personA.spousalBenefitDate){
+              personA.monthlyPayment = personA.monthlyPayment + personA.spousalBenefit
+            }
+            if (calcYear.date >= personB.retirementBenefitDate){
+              personB.monthlyPayment = personB.monthlyPayment + personB.retirementBenefit
+            }
+            if (calcYear.date >= personB.spousalBenefitDate){
+              personB.monthlyPayment = personB.monthlyPayment + personB.spousalBenefit
+            }
+            for (let child of scenario.children){
+              if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
+                if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
+                  //TODO: child.monthlyPayment = what field reflects this?
+                  //TODO: Also, do we have to do some date checking other than childBenefitDate? (i.e., checking involving on parent claiming dates)
+                }
+              }
+            }
+          }
+      }
+      //personA alive, personB deceased
+      else if (personAaliveBoolean === true && personBaliveBoolean === false){
+          if (personAsuspended === true){//if personA is suspended
+              //if entitled to benefits in question: children get survivor benefit on personB (personA gets nothing)
+              for (let child of scenario.children){
+                if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
+                  if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
+                    //TODO: child.monthlyPayment = what field reflects this?
+                    //TODO: Also, do we have to do a check based on personB dates?
+                  }
+                }
+              }
+          }
+          else {//if personA is not suspended
+              //if entitled to benefits in question: personA gets retirement and survivor, children get benefit on personA or survivor benefit on personB
+              if (calcYear.date >= personA.retirementBenefitDate){
+                personA.monthlyPayment = personA.monthlyPayment + personA.retirementBenefit
+              }
+              if (calcYear.date >= personA.survivorFRA){
+                personA.monthlyPayment = personA.monthlyPayment + personA.survivorBenefit
+              }
+              for (let child of scenario.children){
+                if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
+                  if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
+                    //TODO: child.monthlyPayment = what field reflects this?
+                    //TODO: Also, do we have to do checks based on personA and personB dates?
+                  }
+                }
+              }
+          }
+      }
+      //personA deceased, personB alive
+      else if (personAaliveBoolean === false && personBaliveBoolean === true){
+          if (personBsuspended === true){//if personB is suspended
+              //if entitled to benefits in question: children get survivor benefit on personA (personB gets nothing)
+              for (let child of scenario.children){
+                if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
+                  if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
+                    //TODO: child.monthlyPayment = what field reflects this?
+                    //TODO: Also, do we have to do a check based on personA dates?  
+                  }
+                }
+              }
+          }
+          else{//if personB is not suspended
+              //if entitled to benefits in question: personB gets retirement and survivor, children get benefit on personB or survivor benefit on personA
+              if (calcYear.date >= personB.retirementBenefitDate){
+                personB.monthlyPayment = personB.monthlyPayment + personB.retirementBenefit
+              }
+              if (calcYear.date >= personB.survivorFRA){
+                personB.monthlyPayment = personB.monthlyPayment + personB.survivorBenefit
+              }
+              for (let child of scenario.children){
+                if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
+                  if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
+                    //TODO: child.monthlyPayment = what field reflects this?
+                    //TODO: Also, do we have to do checks based on personA and personB dates?
+                  }
+                }
+              }
+          }
+        }
+      else {//both deceased
+          //if entitled to benefits in question: children get survivor benefit on personA or personB
+          for (let child of scenario.children){
+            if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
+              if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
+                //TODO: child.monthlyPayment = what field reflects this?
+                //TODO: And do we have to do checks based on personA/personB dates?
+              }
+            }
+          }
+      }
+  }
+
   monthlyCheckForBenefitRecalculationsSingle(person:Person, calcYear:CalculationYear){
     //Recalculate using adjusted date at FRA. Then recalculate using DRCs at endSuspensionDate
     if (calcYear.date.valueOf() == person.FRA.valueOf()){
