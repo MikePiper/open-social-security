@@ -302,6 +302,64 @@ export class BenefitService {
     }
   }
 
+  monthlyCheckForBenefitRecalculationsSingle(person:Person, calcYear:CalculationYear){
+    //Recalculate using adjusted date at FRA. Then recalculate using DRCs at endSuspensionDate
+    if (calcYear.date.valueOf() == person.FRA.valueOf()){
+      person.adjustedRetirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+person.monthsRetirementWithheld)
+      person.retirementBenefit = this.calculateRetirementBenefit(person, person.adjustedRetirementBenefitDate)
+    }
+    if (calcYear.date.valueOf() == person.endSuspensionDate.valueOf()){
+      person.retirementBenefit = this.calculateRetirementBenefit(person, person.adjustedRetirementBenefitDate)
+    }
+  }
+
+
+  monthlyCheckForBenefitRecalculationsCouple(personA:Person, personB:Person, calcYear:CalculationYear){
+        //Recalculate a person's spousal and survivor benefits when their own retirement benefit starts.
+        if (calcYear.date.valueOf() == personA.retirementBenefitDate.valueOf()){
+          personA.spousalBenefit = this.calculateSpousalBenefit(personA, personB, personA.retirementBenefit, personA.spousalBenefitDate)
+          personA.survivorBenefit = this.calculateSurvivorBenefit(personA, personA.retirementBenefit, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
+        }
+        if (calcYear.date.valueOf() == personB.retirementBenefitDate.valueOf()){
+          personB.spousalBenefit = this.calculateSpousalBenefit(personB, personA, personB.retirementBenefit, personB.spousalBenefitDate)
+          personB.survivorBenefit = this.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
+        }
+        //Recalculate person's own retirement and spousal benefits using adjusted date at FRA. (Spousal benefit also affected by retirement benefit being larger, and both people's survivor benefits must be recalculated for same reason.)
+        if (calcYear.date.valueOf() == personA.FRA.valueOf()){
+          personA.adjustedRetirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+personA.monthsRetirementWithheld)
+          personA.adjustedSpousalBenefitDate.setMonth(personA.adjustedSpousalBenefitDate.getMonth()+personA.monthsSpousalWithheld)
+          personA.retirementBenefit = this.calculateRetirementBenefit(personA, personA.adjustedRetirementBenefitDate)
+          personA.spousalBenefit = this.calculateSpousalBenefit(personA, personB, personA.retirementBenefit, personA.adjustedSpousalBenefitDate)
+            //Should line below involve personB's adjustedRetirementBenefitDate instead of retirementBenefitDate? Yes, I think. Reasoning below. (Same question applied when personB reaches FRA and when end suspension dates are reached.)
+              //survivor benefit calculation uses deceased claiming date to calculate amount of deceased's retirement benefit. So it does have to be the adjusted version.
+              //adjustedRetirementBenefitDate is initialized as same value as retirementBenefitDate. Then it gets set a few lines above here, at the person's own FRA.
+              //So using adjustedRetirementBenefitDate won't be wrong, even if this calculation happens before the person's FRA, because then the value is just their initial retirementBenefitDate
+          personA.survivorBenefit = this.calculateSurvivorBenefit(personA, personA.retirementBenefit, personA.survivorFRA, personB, personB.adjustedRetirementBenefitDate, personB.adjustedRetirementBenefitDate)
+          personB.survivorBenefit = this.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.adjustedRetirementBenefitDate, personA.adjustedRetirementBenefitDate) //Have to recalculate personB survivor benefit to account for personA's ARF-adjusted retirement benefit date
+        }
+        if (calcYear.date.valueOf() == personB.FRA.valueOf()){
+          personB.adjustedRetirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+personB.monthsRetirementWithheld)
+          personB.adjustedSpousalBenefitDate.setMonth(personB.adjustedSpousalBenefitDate.getMonth()+personB.monthsSpousalWithheld)
+          personB.retirementBenefit = this.calculateRetirementBenefit(personB, personB.adjustedRetirementBenefitDate)
+          personB.spousalBenefit = this.calculateSpousalBenefit(personB, personA, personB.retirementBenefit, personB.adjustedSpousalBenefitDate)
+          personB.survivorBenefit = this.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.adjustedRetirementBenefitDate, personA.adjustedRetirementBenefitDate)
+          personA.survivorBenefit = this.calculateSurvivorBenefit(personA, personA.retirementBenefit, personA.survivorFRA, personB, personB.adjustedRetirementBenefitDate, personB.adjustedRetirementBenefitDate)//Have to recalculate personA survivor benefit to account for personB's ARF-adjusted retirement benefit date
+        }
+        //Recalculate retirement benefit using DRCs at endSuspensionDate (And therefore recalculate own spousal benefit and both people's survivor benefits as well.)
+        if (calcYear.date.valueOf() == personA.endSuspensionDate.valueOf()){
+          personA.retirementBenefit = this.calculateRetirementBenefit(personA, personA.adjustedRetirementBenefitDate)
+          personA.spousalBenefit = this.calculateSpousalBenefit(personA, personB, personA.retirementBenefit, personA.spousalBenefitDate)
+          personA.survivorBenefit = this.calculateSurvivorBenefit(personA, personA.retirementBenefit, personA.survivorFRA, personB, personB.adjustedRetirementBenefitDate, personB.adjustedRetirementBenefitDate)
+          personB.survivorBenefit = this.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.adjustedRetirementBenefitDate, personA.adjustedRetirementBenefitDate)
+        }
+        if (calcYear.date.valueOf() == personB.endSuspensionDate.valueOf()){
+          personB.retirementBenefit = this.calculateRetirementBenefit(personB, personB.adjustedRetirementBenefitDate)
+          personB.spousalBenefit = this.calculateSpousalBenefit(personB, personA, personB.retirementBenefit, personB.spousalBenefitDate)
+          personB.survivorBenefit = this.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.adjustedRetirementBenefitDate, personA.adjustedRetirementBenefitDate)
+          personA.survivorBenefit = this.calculateSurvivorBenefit(personA, personA.retirementBenefit, personA.survivorFRA, personB, personB.adjustedRetirementBenefitDate, personB.adjustedRetirementBenefitDate)
+        }
+  }
+
   //Calculates annual benefit (including withholding for earnings test and including Adjustment Reduction Factor, but before probability-weighting and discounting)
   calculateAnnualRetirementBenefit(person:Person, calcYear:CalculationYear){
     if (person.id == 'A') {
