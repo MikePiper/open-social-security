@@ -85,7 +85,7 @@ export class EarningsTestService {
             child.monthlyPayment = 0
           }
           //Add to tally of months withheld
-          person.monthsWithheld = person.monthsWithheld + 1
+          person.monthsRetirementWithheld = person.monthsRetirementWithheld + 1
           //Reduce necessary withholding by amount that was withheld this month
           calcYear.annualWithholdingDueToPersonAearnings = calcYear.annualWithholdingDueToPersonAearnings - availableForWithholding
       }

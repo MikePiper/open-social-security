@@ -64,7 +64,8 @@ export class Person {
     childSurvivorBenefitParentAdeceased:number//used in "single" scenarios also for when single parent has died
     childSurvivorBenefitParentBdeceased:number
     monthlyPayment:number = 0
-    monthsWithheld:number = 0 //for earnings test
+    monthsRetirementWithheld:number = 0 //for earnings test
+    monthsSpousalWithheld:number = 0 //for earnings test
 
     constructor(id:string){
         this.id = id

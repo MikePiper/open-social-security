@@ -92,7 +92,7 @@ export class BenefitService {
         survivorBenefit = 0.825 * deceasedPerson.PIA
        }
       }
-    else { //i.e., if deceased sposue had NOT filed as of date of death...
+    else { //i.e., if deceased spouse had NOT filed as of date of death...
         //if deceased spouse was younger than FRA, survivor benefit = deceasedPIA
         if (dateOfDeath < deceasedPerson.FRA){
           survivorBenefit = deceasedPerson.PIA
@@ -146,22 +146,21 @@ export class BenefitService {
   }
 
   calculateChildBenefitsParentsLiving(scenario:CalculationScenario, date:MonthYearDate, parentA:Person, parentB:Person):CalculationScenario{
-    if (date < parentA.retirementBenefitDate && date < parentB.retirementBenefitDate){//if before both retirementBenefitDates
-      for (let child of scenario.children) {child.childBenefitParentsAlive = 0}
-    }
-    else if (date >= parentA.retirementBenefitDate && date >= parentB.retirementBenefitDate){//if after both retirementBenefitDates
-      if (parentA.PIA > parentB.PIA) {
-        for (let child of scenario.children) {child.childBenefitParentsAlive = parentA.PIA * 0.5}
-      }
-      else {
-        for (let child of scenario.children) {child.childBenefitParentsAlive = parentB.PIA * 0.5}
-      }
-    }
-    else if (date < parentB.retirementBenefitDate) {//i.e., we have reached parentA.retirementBenefitDate but not parentB.retirementBenefitDate (we know we have reached at least 1, because first "IF" did not get triggered)
-      for (let child of scenario.children) {child.childBenefitParentsAlive = parentA.PIA * 0.5}
-    }
-    else {
-      for (let child of scenario.children) {child.childBenefitParentsAlive = parentB.PIA * 0.5}
+    if (date <= parentA.retirementBenefitDate || date <= parentB.retirementBenefitDate){//After both dates have passed, no need to keep doing this math.
+            if (date < parentB.retirementBenefitDate && date >= parentA.retirementBenefitDate) {//i.e., we have reached parentA.retirementBenefitDate but not parentB.retirementBenefitDate
+              for (let child of scenario.children) {child.childBenefitParentsAlive = parentA.PIA * 0.5}
+            }
+            else if (date < parentA.retirementBenefitDate && date >= parentB.retirementBenefitDate) {//i.e., we have reached parentB.retirementBenefitDate but not parentA.retirementBenefitDate
+              for (let child of scenario.children) {child.childBenefitParentsAlive = parentB.PIA * 0.5}
+            }
+            else if (date >= parentA.retirementBenefitDate && date >= parentB.retirementBenefitDate){//once both retirementBenefitDates have been reached
+              if (parentA.PIA > parentB.PIA) {
+                for (let child of scenario.children) {child.childBenefitParentsAlive = parentA.PIA * 0.5}
+              }
+              else {
+                for (let child of scenario.children) {child.childBenefitParentsAlive = parentB.PIA * 0.5}
+              }
+            }
     }
     return scenario
   }
@@ -239,7 +238,7 @@ export class BenefitService {
     return childBenefitDate
   }
 
-  applyAssumedBenefitCut(person:Person, scenario:CalculationScenario, calcYear:CalculationYear){
+  applyAssumedBenefitCut(scenario:CalculationScenario, calcYear:CalculationYear){
     if (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() >= scenario.benefitCutYear) {
       //Apply cut to sums included in PV calculation
       calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive * (1 - scenario.benefitCutPercentage/100)
@@ -671,7 +670,7 @@ export class BenefitService {
     return person
   }
 
-  calculateCombinedFamilyMaximum(personA:Person, personB:Person, simultaneousEntitlementYear:number){//simultaneousEntitlementDate is date on which a child first becomes eligible on two work records
+  calculateCombinedFamilyMaximum(personA:Person, personB:Person, simultaneousEntitlementYear:number):number{//simultaneousEntitlementDate is date on which a child first becomes eligible on two work records
     let combinedFamilyMaximum:number
     let sumOfIndividualFamilyMaximums:number = personA.familyMaximum + personB.familyMaximum
     let limitForCombinedFamilyMaximum:number = 1.75 * this.calculatePIAfromAIME(this.annualIndexedValuesArray[simultaneousEntitlementYear - 1979].MaxTaxableWages / 12, simultaneousEntitlementYear)
