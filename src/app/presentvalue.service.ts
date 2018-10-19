@@ -242,22 +242,26 @@ export class PresentValueService {
         this.benefitService.monthlyCheckForBenefitRecalculationsCouple(personA, personB, calcYear)
 
       //Assume personA and personB are alive
-            //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
+            //calculate monthlyPayment field for each person
+            this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, true)
             //Adjust each person's monthlyPayment as necessary for family max
             //Adjust as necessary for earnings test (and tally months withheld)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
       //Assume personA is alive and personB is deceased
-            //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
+            //calculate monthlyPayment field for each person
+            this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, false)
             //Adjust each person's monthlyPayment as necessary for family max
             //Adjust as necessary for earnings test (and tally months withheld)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
       //Assume personA is deceased and personB is alive
-            //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
+            //calculate monthlyPayment field for each person
+            this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, true)
             //Adjust each person's monthlyPayment as necessary for family max
             //Adjust as necessary for earnings test (and tally months withheld)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
       //Assume personA and personB are deceased
-            //calculate monthlyPayment field for each person (sets child monthlyPayments to 75% of PIA if they are under 18 or disabled)
+            //calculate monthlyPayment field for each person
+            this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, false)
             //adjust each person's monthlyPayment as necessary for family max
             //Earnings test: not necessary
             //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
@@ -273,17 +277,24 @@ export class PresentValueService {
       //if it's December...
       if (calcYear.date.getMonth() == 11){
             //TODO: Add back any overwithholding from earnings test
+
             //Apply assumed benefit cut, if applicable (use function from BenefitService, not from PVservice)
             this.benefitService.applyAssumedBenefitCut(scenario, calcYear)
+
             //TODO: If printOutputTable is true, add row to output table.
+                //Do we have to do anything special if divorced?
+
             //Calculate each person's probability of being alive at end of age in question
               let probabilityAalive:number = this.mortalityService.calculateProbabilityAlive(personA, personA.age)
               let probabilityBalive:number = this.mortalityService.calculateProbabilityAlive(personB, personB.age)
+
             //Apply probability alive to annual benefit amounts
               let annualPV:number =
                 probabilityAalive * probabilityBalive * calcYear.annualBenefitBothAlive +
                 probabilityAalive * (1 - probabilityBalive) * calcYear.annualBenefitOnlyPersonAalive +
                 probabilityBalive * (1 - probabilityAalive) * calcYear.annualBenefitOnlyPersonBalive
+                //TODO: Some adjustment here if divorced??
+
             //Discount that probability-weighted annual benefit amount to age 62
                 //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
                 let olderAge: number
@@ -292,8 +303,10 @@ export class PresentValueService {
                 } else {olderAge = personB.age}
                 //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
                 annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
+
             //Add discounted benefit to ongoing sum
               couplePV = couplePV + annualPV
+
             //increment personA and personB ages by 1 year
               personA.age = personA.age + 1
               personB.age = personB.age + 1
