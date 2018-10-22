@@ -75,14 +75,14 @@ export class EarningsTestService {
       && !(calcYear.personAgraceYear === true && calcYear.date >= person.quitWorkDate) //And it isn't a nonservice month in grace year...
       && calcYear.date < person.FRA){//And they are younger than FRA...
           //count how much is available for withholding
-          let availableForWithholding:number = person.monthlyPayment
+          let availableForWithholding:number = person.monthlyRetirementPayment
           for (let child of scenario.children){
-            availableForWithholding = availableForWithholding + child.monthlyPayment
+            availableForWithholding = availableForWithholding + child.monthlyChildPayment
           }
           //Set everybody's monthlyPayment to zero to reflect benefits being withheld this month
-          person.monthlyPayment = 0
+          person.monthlyRetirementPayment = 0
           for (let child of scenario.children){
-            child.monthlyPayment = 0
+            child.monthlyChildPayment = 0
           }
           //Add to tally of months withheld
           person.monthsRetirementWithheld = person.monthsRetirementWithheld + 1

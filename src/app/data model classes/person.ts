@@ -21,29 +21,25 @@ export class Person {
     declineSpousal: boolean = false
     declineSuspension:boolean = false
 
-
-
-    //ageRounded: number
-    //ageLastBirthday: number
-
     //Everything below has to get reset or recalculated for each PV calc
-    age: number //as in, "age as of current calculation year"
-    hasHadGraceYear:boolean = false
+        age: number //as in, "age as of current calculation year"
+        hasHadGraceYear:boolean = false
 
-    initialRetirementBenefit: number = 0 //Can be calculated immediately in PV calc.
-    retirementBenefitAfterARF: number = 0 //Can be calculated after we know Person's earnings test results (i.e., once they reach their FRA)
-    retirementBenefitWithDRCsfromSuspension: number = 0 //Can be calculated after we know person's earnings test results and after endSuspension date has been reached.
+        //These are all the fields that will get eliminated
+            initialRetirementBenefit: number = 0 //Can be calculated immediately in PV calc.
+            retirementBenefitAfterARF: number = 0 //Can be calculated after we know Person's earnings test results (i.e., once they reach their FRA)
+            retirementBenefitWithDRCsfromSuspension: number = 0 //Can be calculated after we know person's earnings test results and after endSuspension date has been reached.
 
-    spousalBenefitWithoutRetirement: number = 0 //By definition this is after-ARF. Can be calculated immediately.
-    spousalBenefitWithRetirementPreARF: number = 0 //Can be calculated immediately.
-    spousalBenefitWithRetirementAfterARF: number = 0 //Can be calculated after we know Person's earnings test results (i.e., once they reach their FRA)
-    spousalBenefitWithSuspensionDRCRetirement: number = 0 //Can be calculated after we know person's earnings test results and after endSuspension date has been reached.
+            spousalBenefitWithoutRetirement: number = 0 //By definition this is after-ARF. Can be calculated immediately.
+            spousalBenefitWithRetirementPreARF: number = 0 //Can be calculated immediately.
+            spousalBenefitWithRetirementAfterARF: number = 0 //Can be calculated after we know Person's earnings test results (i.e., once they reach their FRA)
+            spousalBenefitWithSuspensionDRCRetirement: number = 0 //Can be calculated after we know person's earnings test results and after endSuspension date has been reached.
 
-    //Survivor benefit amounts have to get recalculated when *either* person reaches their FRA or end suspension date
-    survivorBenefitWithoutRetirement: number = 0 //This is after ARF also, since we're assuming survivor benefits aren't claimed until FRA.
-    survivorBenefitWithRetirementPreARF: number = 0
-    survivorBenefitWithRetirementAfterARF: number = 0
-    survivorBenefitWithSuspensionDRCRetirement: number = 0
+            //Survivor benefit amounts have to get recalculated when *either* person reaches their FRA or end suspension date
+            survivorBenefitWithoutRetirement: number = 0 //This is after ARF also, since we're assuming survivor benefits aren't claimed until FRA.
+            survivorBenefitWithRetirementPreARF: number = 0
+            survivorBenefitWithRetirementAfterARF: number = 0
+            survivorBenefitWithSuspensionDRCRetirement: number = 0
 
     fixedRetirementBenefitDate: MonthYearDate //if they have already filed or are on disability and will be until FRA
     retirementBenefitDate: MonthYearDate //date for which we test various choices, if no fixed date
@@ -60,7 +56,10 @@ export class Person {
     retirementBenefit:number
     spousalBenefit:number
     survivorBenefit:number
-    monthlyPayment:number = 0
+    monthlyRetirementPayment:number = 0
+    monthlySpousalPayment:number = 0
+    monthlySurvivorPayment:number = 0
+    monthlyChildPayment:number = 0
     monthsRetirementWithheld:number = 0 //for earnings test
     monthsSpousalWithheld:number = 0 //for earnings test
 

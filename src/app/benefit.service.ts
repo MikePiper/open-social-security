@@ -234,7 +234,14 @@ export class BenefitService {
 
   
   calculateMonthlyPaymentsSingle(scenario:CalculationScenario, calcYear:CalculationYear, person:Person, personAliveBoolean:boolean){
+    //Reset monthlyPayment fields
+    person.monthlyRetirementPayment = 0
+    for (let child of scenario.children){
+      child.monthlyChildPayment = 0
+    }
+
     let personSuspended:boolean
+
     if (personAliveBoolean === true){
       //determine if person is suspended
       if (person.beginSuspensionDate > calcYear.date || person.endSuspensionDate <= calcYear.date){
@@ -246,17 +253,17 @@ export class BenefitService {
       if (calcYear.date >= person.retirementBenefitDate) {//if person has filed for benefits...
         if (personSuspended === true){//if person has suspended benefits...
           person.DRCsViaSuspension = person.DRCsViaSuspension + 1
-          person.monthlyPayment = 0
+          person.monthlyRetirementPayment = 0
           for (let child of scenario.children){
-            child.monthlyPayment = 0
+            child.monthlyChildPayment = 0
           }
         }
         else {//i.e., person isn't suspended
-          person.monthlyPayment = person.retirementBenefit
+          person.monthlyRetirementPayment = person.retirementBenefit
           for (let child of scenario.children){
             if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
               if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                child.monthlyPayment = person.PIA * 0.5
+                child.monthlyChildPayment = person.PIA * 0.5
               }
             }
           }
@@ -266,7 +273,7 @@ export class BenefitService {
     else {//if we're assuming person is deceased
       for (let child of scenario.children){
         if (child.age < 17.99 || child.isOnDisability === true){//Use 17.99 as the cutoff because sometimes when child is actually 18 javascript value will be 17.9999999
-          child.monthlyPayment = person.PIA * 0.75
+          child.monthlyChildPayment = person.PIA * 0.75
         }
       }
     }
@@ -276,9 +283,13 @@ export class BenefitService {
     //Note that we're making no distinction in this function for whether it's a married or divorced scenario.
 
     //Set all benefits to zero to begin
-      personA.monthlyPayment = 0
-      personB.monthlyPayment = 0
-      for (let child of scenario.children){child.monthlyPayment = 0}
+      personA.monthlyRetirementPayment = 0
+      personA.monthlySpousalPayment = 0
+      personA.monthlySurvivorPayment = 0
+      personB.monthlyRetirementPayment = 0
+      personB.monthlySpousalPayment = 0
+      personB.monthlySurvivorPayment = 0
+      for (let child of scenario.children){child.monthlyChildPayment = 0}
 
     //determine if personA and/or personB are suspended
       let personAsuspended:boolean
@@ -300,11 +311,11 @@ export class BenefitService {
             personA.DRCsViaSuspension = personA.DRCsViaSuspension + 1
             //if entitled to benefits in question: personB gets retirement benefit, children each get child benefit on personB (personA gets nothing)
             if (calcYear.date >= personB.retirementBenefitDate){
-              personB.monthlyPayment = personB.retirementBenefit
+              personB.monthlyRetirementPayment = personB.retirementBenefit
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                    child.monthlyPayment = personB.PIA * 0.5
+                    child.monthlyChildPayment = personB.PIA * 0.5
                   }
                 }
               }
@@ -314,11 +325,11 @@ export class BenefitService {
             personB.DRCsViaSuspension = personB.DRCsViaSuspension + 1
             //if entitled to benefits in question: personA gets retirement benefit, children each get child benefit on personA (personB gets nothing)
             if (calcYear.date >= personA.retirementBenefitDate){
-              personA.monthlyPayment = personA.retirementBenefit
+              personA.monthlyRetirementPayment = personA.retirementBenefit
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                    child.monthlyPayment = personA.PIA * 0.5
+                    child.monthlyChildPayment = personA.PIA * 0.5
                   }
                 }
               }
@@ -327,28 +338,28 @@ export class BenefitService {
           else {//if neither person is suspended
             //if entitled to benefits in question: personA gets retirement and spousal, personB gets retirement and spousal and children each get benefit on personA or personB
             if (calcYear.date >= personA.retirementBenefitDate){
-              personA.monthlyPayment = personA.monthlyPayment + personA.retirementBenefit
+              personA.monthlyRetirementPayment = personA.retirementBenefit
             }
             if (calcYear.date >= personA.spousalBenefitDate){
-              personA.monthlyPayment = personA.monthlyPayment + personA.spousalBenefit
+              personA.monthlySpousalPayment = personA.spousalBenefit
             }
             if (calcYear.date >= personB.retirementBenefitDate){
-              personB.monthlyPayment = personB.monthlyPayment + personB.retirementBenefit
+              personB.monthlyRetirementPayment = personB.retirementBenefit
             }
             if (calcYear.date >= personB.spousalBenefitDate){
-              personB.monthlyPayment = personB.monthlyPayment + personB.spousalBenefit
+              personB.monthlySpousalPayment = personB.spousalBenefit
             }
             for (let child of scenario.children){
               if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                 if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
                     if (calcYear.date >= personA.retirementBenefitDate && calcYear.date >= personB.retirementBenefitDate){//If both spouses have started benefits, it's 50% of higher PIA
-                      child.monthlyPayment = (personA.PIA > personB.PIA) ? personA.PIA * 0.5 : personB.PIA * 0.5
+                      child.monthlyChildPayment = (personA.PIA > personB.PIA) ? personA.PIA * 0.5 : personB.PIA * 0.5
                     }
                     else if (calcYear.date >= personA.retirementBenefitDate){//both hadn't been met, but personA's date has been met
-                      child.monthlyPayment = personA.PIA * 0.5
+                      child.monthlyChildPayment = personA.PIA * 0.5
                     }
                     else {//i.e., childBenefitDate has been met (which means at least one spouse's retirementBenefitDate has been met, but it wasn't personA's date)
-                      child.monthlyPayment = personB.PIA * 0.5
+                      child.monthlyChildPayment = personB.PIA * 0.5
                     }
                 }
               }
@@ -362,7 +373,7 @@ export class BenefitService {
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                    child.monthlyPayment = personB.PIA * 0.75//No need to do any check based on personB dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                    child.monthlyChildPayment = personB.PIA * 0.75//No need to do any check based on personB dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
                   }
                 }
               }
@@ -370,19 +381,19 @@ export class BenefitService {
           else {//if personA is not suspended
               //if entitled to benefits in question: personA gets retirement and survivor, children get benefit on personA or survivor benefit on personB
               if (calcYear.date >= personA.retirementBenefitDate){
-                personA.monthlyPayment = personA.monthlyPayment + personA.retirementBenefit
+                personA.monthlyRetirementPayment = personA.retirementBenefit
               }
               if (calcYear.date >= personA.survivorFRA){
-                personA.monthlyPayment = personA.monthlyPayment + personA.survivorBenefit
+                personA.monthlySurvivorPayment = personA.survivorBenefit
               }
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
                     if (calcYear.date >= personA.retirementBenefitDate){
-                      child.monthlyPayment = (personA.PIA * 0.5 > personB.PIA * 0.75) ? personA.PIA * 0.5 : personB.PIA * 0.75
+                      child.monthlyChildPayment = (personA.PIA * 0.5 > personB.PIA * 0.75) ? personA.PIA * 0.5 : personB.PIA * 0.75
                     }
                     else {
-                      child.monthlyPayment = personB.PIA * 0.75//No need to do any check based on personB dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                      child.monthlyChildPayment = personB.PIA * 0.75//No need to do any check based on personB dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
                     }
                   }
                 }
@@ -396,7 +407,7 @@ export class BenefitService {
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                    child.monthlyPayment = personA.PIA * 0.75//No need to do any check based on personA dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                    child.monthlyChildPayment = personA.PIA * 0.75//No need to do any check based on personA dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
                   }
                 }
               }
@@ -404,19 +415,19 @@ export class BenefitService {
           else{//if personB is not suspended
               //if entitled to benefits in question: personB gets retirement and survivor, children get benefit on personB or survivor benefit on personA
               if (calcYear.date >= personB.retirementBenefitDate){
-                personB.monthlyPayment = personB.monthlyPayment + personB.retirementBenefit
+                personB.monthlyRetirementPayment = personB.retirementBenefit
               }
               if (calcYear.date >= personB.survivorFRA){
-                personB.monthlyPayment = personB.monthlyPayment + personB.survivorBenefit
+                personB.monthlySurvivorPayment = personB.survivorBenefit
               }
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
                     if (calcYear.date >= personB.retirementBenefitDate){
-                      child.monthlyPayment = (personA.PIA * 0.75 > personB.PIA * 0.5) ? personA.PIA * 0.75 : personB.PIA * 0.5
+                      child.monthlyChildPayment = (personA.PIA * 0.75 > personB.PIA * 0.5) ? personA.PIA * 0.75 : personB.PIA * 0.5
                     }
                     else {
-                      child.monthlyPayment = personA.PIA * 0.75//No need to do any check based on personA dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                      child.monthlyChildPayment = personA.PIA * 0.75//No need to do any check based on personA dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
                     }
                   }
                 }
@@ -428,7 +439,7 @@ export class BenefitService {
           for (let child of scenario.children){
             if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
               if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                child.monthlyPayment = (personA.PIA > personB.PIA) ? personA.PIA * 0.75 : personB.PIA * 0.75
+                child.monthlyChildPayment = (personA.PIA > personB.PIA) ? personA.PIA * 0.75 : personB.PIA * 0.75
                 //No need to do any check based on parent dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
               }
             }
@@ -900,8 +911,8 @@ export class BenefitService {
       }
       let maxAuxilliaryBenefitPerAuxilliary:number = amountLeftForRestOfFamiliy / numberOfAxilliaries
       for (let child of scenario.children){
-        if (child.monthlyPayment > maxAuxilliaryBenefitPerAuxilliary){
-          child.monthlyPayment = maxAuxilliaryBenefitPerAuxilliary
+        if (child.monthlyChildPayment > maxAuxilliaryBenefitPerAuxilliary){
+          child.monthlyChildPayment = maxAuxilliaryBenefitPerAuxilliary
         }
       }
     return scenario

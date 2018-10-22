@@ -565,8 +565,8 @@ describe('BenefitService', () => {
         let child2:Person = new Person("2")
         child1.age = 10
         child2.age = 10
-        child1.monthlyPayment = 500 //Considering a still-alive scenario here
-        child2.monthlyPayment = 500
+        child1.monthlyChildPayment = 500 //Considering a still-alive scenario here
+        child2.monthlyChildPayment = 500
         let scenario:CalculationScenario = new CalculationScenario()
         scenario.children = [child1, child2]
         person.PIA = 1000
@@ -574,7 +574,7 @@ describe('BenefitService', () => {
         person = service.calculateFamilyMaximum(person)
         let amountLeftForRestOfFamily = person.familyMaximum - person.PIA
         scenario = service.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamily)
-        expect(scenario.children[0].monthlyPayment)
+        expect(scenario.children[0].monthlyChildPayment)
             .toEqual(250)
         //Family max is 1500. 500 will be split among 2 kids
         }))
