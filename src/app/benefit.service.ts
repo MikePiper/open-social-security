@@ -876,6 +876,9 @@ export class BenefitService {
   calculateCombinedFamilyMaximum(personA:Person, personB:Person, simultaneousEntitlementYear:number):number{//simultaneousEntitlementDate is date on which a child first becomes eligible on two work records
     let combinedFamilyMaximum:number
     let sumOfIndividualFamilyMaximums:number = personA.familyMaximum + personB.familyMaximum
+    if (simultaneousEntitlementYear > this.today.getFullYear()){//if simultaneousEntitlementYear is in the future (which it usually will be) we won't have MaxTaxableWage figure for that year. So we have to use this year's.
+      simultaneousEntitlementYear = this.today.getFullYear()
+    }
     let limitForCombinedFamilyMaximum:number = 1.75 * this.calculatePIAfromAIME(this.annualIndexedValuesArray[simultaneousEntitlementYear - 1979].MaxTaxableWages / 12, simultaneousEntitlementYear)
     if (sumOfIndividualFamilyMaximums <= limitForCombinedFamilyMaximum){
       combinedFamilyMaximum = sumOfIndividualFamilyMaximums

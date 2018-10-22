@@ -373,7 +373,7 @@ describe('PresentValueService Couple', () => {
   })
 
   //Test calculateCouplePV
-  it('should return appropriate PV for married couple, basic inputs', inject([PresentValueService], (service: PresentValueService) => { 
+  fit('should return appropriate PV for married couple, basic inputs', inject([PresentValueService], (service: PresentValueService) => { 
     let personA:Person = new Person("A")
     let personB:Person = new Person("B")
     let scenario:CalculationScenario = new CalculationScenario()
@@ -400,7 +400,7 @@ describe('PresentValueService Couple', () => {
     personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
     personB.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
     scenario.discountRate = 1
-    expect(service.calculateCouplePV(personA, personB, scenario, false))
+    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, false))
       .toBeCloseTo(578594, 0)
   }))
 
