@@ -208,26 +208,6 @@ export class PresentValueService {
       child.childBenefitDate = this.benefitService.determineChildBenefitDate(scenario, child, personA, personB)
     }
 
-    //calculate initial retirement/spousal/survivor benefits
-      personA.retirementBenefit = this.benefitService.calculateRetirementBenefit(personA, personA.retirementBenefitDate)
-      personB.retirementBenefit = this.benefitService.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
-      if (calcYear.date < personA.retirementBenefitDate){//Calculate spousal/survivor benefits with zero as current retirement benefit
-        personA.spousalBenefit = this.benefitService.calculateSpousalBenefit(personA, personB, 0, personA.spousalBenefitDate)
-        personA.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personA, 0, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
-      }
-      else {//calculate spousal/survivor benefits using retirementBenefit amount
-        personA.spousalBenefit = this.benefitService.calculateSpousalBenefit(personA, personB, personA.retirementBenefit, personA.spousalBenefitDate)
-        personA.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personA, personA.retirementBenefit, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
-      }
-      if (calcYear.date < personB.retirementBenefitDate){//Calculate spousal/survivor benefits with zero as current retirement benefit
-        personB.spousalBenefit = this.benefitService.calculateSpousalBenefit(personB, personA, 0, personB.spousalBenefitDate)
-        personB.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personB, 0, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
-      }
-      else {//calculate spousal/survivor benefits using retirementBenefit amount
-        personB.spousalBenefit = this.benefitService.calculateSpousalBenefit(personB, personA, personB.retirementBenefit, personB.spousalBenefitDate)
-        personB.survivorBenefit = this.benefitService.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
-      }
-
     //calculate ages as of initialCalcDate
       personA.age = ( calcYear.date.getMonth() - personA.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
       personB.age = ( calcYear.date.getMonth() - personB.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
@@ -294,6 +274,17 @@ export class PresentValueService {
                 probabilityAalive * (1 - probabilityBalive) * calcYear.annualBenefitOnlyPersonAalive +
                 probabilityBalive * (1 - probabilityAalive) * calcYear.annualBenefitOnlyPersonBalive
 
+                if (printOutputTable === true){
+                  console.log("monthly loop" + calcYear.date.getFullYear())
+                  console.log("personA retirement: " + calcYear.tablePersonAannualRetirementBenefit)
+                  console.log("personB retirement: " + calcYear.tablePersonBannualRetirementBenefit)
+                  console.log("personA spousal: " + calcYear.tablePersonAannualSpousalBenefit)
+                  console.log("personB spousal: " + calcYear.tablePersonBannualSpousalBenefit)
+                  console.log("personA survivor: " + calcYear.tablePersonAannualSurvivorBenefit)
+                  console.log("personB survivor: " + calcYear.tablePersonBannualSurvivorBenefit)
+                  console.log("undiscounted annualPV: " + annualPV)
+                }
+
             //Discount that probability-weighted annual benefit amount to age 62
                 //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
                 let olderAge: number
@@ -302,6 +293,10 @@ export class PresentValueService {
                 } else {olderAge = personB.age}
                 //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
                 annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
+
+                if (printOutputTable === true){
+                  console.log("discounted annual PV: "+ annualPV)
+                }
 
             //Add discounted benefit to ongoing sum
               couplePV = couplePV + annualPV
@@ -427,6 +422,17 @@ export class PresentValueService {
         + (probabilityBalive * (1-probabilityAalive) * (calcYear.tablePersonBannualRetirementBenefit + calcYear.tablePersonBannualSurvivorBenefit)) //Scenario where B is alive, A is deceased
         + ((probabilityAalive * probabilityBalive) * (calcYear.tablePersonAannualRetirementBenefit + calcYear.tablePersonAannualSpousalBenefit + calcYear.tablePersonBannualRetirementBenefit + calcYear.tablePersonBannualSpousalBenefit)) //Scenario where both are alive
 
+        if (printOutputTable === true){
+          console.log("annual loop" + calcYear.date.getFullYear())
+          console.log("personA retirement: " + calcYear.tablePersonAannualRetirementBenefit)
+          console.log("personB retirement: " + calcYear.tablePersonBannualRetirementBenefit)
+          console.log("personA spousal: " + calcYear.tablePersonAannualSpousalBenefit)
+          console.log("personB spousal: " + calcYear.tablePersonBannualSpousalBenefit)
+          console.log("personA survivor: " + calcYear.tablePersonAannualSurvivorBenefit)
+          console.log("personB survivor: " + calcYear.tablePersonBannualSurvivorBenefit)
+          console.log("undiscounted annualPV: " + annualPV)
+        }
+
       //Discount that benefit
             //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
             let olderAge: number
@@ -436,6 +442,9 @@ export class PresentValueService {
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
+            if (printOutputTable === true){
+              console.log("discounted annual PV: "+ annualPV)
+            }
 
       //Add discounted benefit to ongoing count of retirementPV, add 1 to each age, add 1 year to currentCalculationDate, and start loop over
         couplePV = couplePV + annualPV
