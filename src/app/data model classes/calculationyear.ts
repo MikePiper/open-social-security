@@ -36,9 +36,11 @@ export class CalculationYear {
             monthsOfPersonBsurvivorWithRetirementwithSuspensionDRCs: number = 0
 
 
-
-    annualWithholdingDueToPersonAearnings: number
-    annualWithholdingDueToPersonBearnings: number
+    annualWithholdingDuetoSinglePersonEarnings: number
+    annualWithholdingDueToPersonAearningsBothAlive: number
+        annuannualWithholdingDueToPersonAearningsOnlyAalive:number //calculated the same as the field above. But needs to be a separate total so we can subtract from it separately as amounts get withheld in such scenarios.
+    annualWithholdingDueToPersonBearningsBothAlive: number
+        annuannualWithholdingDueToPersonBearningsOnlyBalive:number //calculated the same as the field above. But needs to be a separate total so we can subtract from it separately as amounts get withheld in such scenarios.
     personAgraceYear: boolean = false
     personBgraceYear: boolean = false
     personAoverWithholding: number = 0//These amounts no longer used in monthly PV calc

@@ -1,7 +1,5 @@
 https://secure.ssa.gov/poms.nsf/lnx/0302501021
-^ Says child on childhood disability benefit does not have benefit withheld due to earnings test.
-
-What it actually means is that child's benefit as child won't be withheld due to their OWN earnings. Can still be withheld due to parent's earnings.
+^ Says child on childhood disability benefit does not have benefit withheld due to earnings test. What it actually means is that child's benefit as child won't be withheld due to their OWN earnings. Can still be withheld due to parent's earnings.
  See here: https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501140 (Social Security Act also pretty clear on this in 203(f)(1).)
 
 
@@ -16,3 +14,34 @@ https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501140
 
 
 Social Security Act 203(f)(1)(F) might be saying that a person entitled to spousal benefits solely due to having child in care doesn't have benefits reduced by earnings test if they are earning less than 1/12 threshold amount per month.
+
+
+When a child is entitled to child benefits on two work records, and both parents are working while younger than FRA: does child's benefit get used for withholding due to high-PIA spouse's record?
+Or is it split between the two? Don't see anything in Social Security Act 203(b) or 203(f) about such situation. Nor do I see anything in CFR about such situation.
+Conclusion: Doesn't matter.
+    TOTAL amount of withholding necessary over course of year is clear. And total amount of benefit that *could* be withheld over course of year is clear.
+    Question is basically, does PersonA or PersonB have more of their own benefit withheld (because the child's benefit is being withheld against the other person's excess earnings).
+    In PV calc we're only concerned with "What is TOTAL annual benefit if [mortality assumption]?" And in this case it's clear what that total annual benefit would be.
+    So we might end up with a situation where in the table PersonB's benefit is overstated and PersonA's is understated, but it wouldn't affect PV for the year at all.
+
+
+
+***Earnings Test Applied Before Or After Application of Family Max?****
+        SS Act notes:
+        203(a)(1) is family max
+        203(a)(3)(A) is combined family max
+        203(b) and 203(f) are earnings test
+
+        203(b)(1)(B)(i) (and half-sentence immediately beforehand) appear to indicate that family max is applied before earnings test.
+
+        CFR 404.437 says that "We will further reduce your benefits (other than a disability insurance benefit) because of your excess earnings (see § 404.430), after your benefits may have been reduced because of the following: (a) The family maximum (see §§ 404.403 and 404.404)"
+
+        POMS is pretty clear that family maximum happens first
+        https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501155
+            "Charge excess earnings to auxiliary or survivor benefits after adjusting the benefits for the maximum"
+        https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501095
+            "The amount of benefits we use to charge the excess is the amount after any reduction for the maximum (without first making any annual earnings test deduction)"
+
+        Conversely CFR 404.402(a) states "Deductions because of earnings or work (see §§ 404.415 and 404.417) [...] are made (1) Before making any reductions because of the maximum (see § 404.403)"
+
+        So that's 4 places (Act, 2 POMS, 1 CFR) saying family max happens first. And 1 saying earnings test happens first.

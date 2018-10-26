@@ -65,12 +65,12 @@ export class EarningsTestService {
   applyEarningsTestSingle(scenario:CalculationScenario, person:Person, calcYear:CalculationYear){
     //If it's the beginning of a year, calculate earnings test withholding and determine if this is a grace year
     if (calcYear.date.getMonth() == 0){
-      calcYear.annualWithholdingDueToPersonAearnings = this.calculateWithholding(calcYear.date, person)
+      calcYear.annualWithholdingDuetoSinglePersonEarnings = this.calculateWithholding(calcYear.date, person)
       calcYear.personAgraceYear = this.isGraceYear(person, calcYear.date)
       if (calcYear.personAgraceYear === true) {person.hasHadGraceYear = true}
     }
 
-    if (calcYear.annualWithholdingDueToPersonAearnings > 0){//If more withholding is necessary...
+    if (calcYear.annualWithholdingDuetoSinglePersonEarnings > 0){//If more withholding is necessary...
       if (calcYear.date >= person.retirementBenefitDate  //And they've started retirement benefit...
       && !(calcYear.personAgraceYear === true && calcYear.date >= person.quitWorkDate) //And it isn't a nonservice month in grace year...
       && calcYear.date < person.FRA){//And they are younger than FRA...
@@ -87,20 +87,23 @@ export class EarningsTestService {
           //Add to tally of months withheld
           person.monthsRetirementWithheld = person.monthsRetirementWithheld + 1
           //Reduce necessary withholding by amount that was withheld this month
-          calcYear.annualWithholdingDueToPersonAearnings = calcYear.annualWithholdingDueToPersonAearnings - availableForWithholding
+          calcYear.annualWithholdingDuetoSinglePersonEarnings = calcYear.annualWithholdingDuetoSinglePersonEarnings - availableForWithholding
       }
     }
   }
 
-  applyEarningsTestCouple(scenario:CalculationScenario, personA:Person, personB:Person, calcYear:CalculationYear){
+  applyEarningsTestCouple(scenario:CalculationScenario, personA:Person, personAaliveBoolean:Boolean, personB:Person, personBaliveBoolean:Boolean, calcYear:CalculationYear){
     let availableForWithholding:number = 0
+
         //If it's the beginning of a year, calculate earnings test withholding and determine if this is a grace year
         if (calcYear.date.getMonth() == 0){
-          calcYear.annualWithholdingDueToPersonAearnings = this.calculateWithholding(calcYear.date, personA)
-          calcYear.annualWithholdingDueToPersonBearnings = this.calculateWithholding(calcYear.date, personB)
+          calcYear.annualWithholdingDueToPersonAearningsBothAlive = this.calculateWithholding(calcYear.date, personA)
+          calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive = calcYear.annualWithholdingDueToPersonAearningsBothAlive
+          calcYear.annualWithholdingDueToPersonBearningsBothAlive = this.calculateWithholding(calcYear.date, personB)
+          calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive = calcYear.annualWithholdingDueToPersonBearningsBothAlive
           //If divorced, withholding due to spouseB's earnings is zero
           if (scenario.maritalStatus == "divorced"){
-            calcYear.annualWithholdingDueToPersonBearnings = 0
+            calcYear.annualWithholdingDueToPersonBearningsBothAlive = 0
           }
           calcYear.personAgraceYear = this.isGraceYear(personA, calcYear.date)
           if (calcYear.personAgraceYear === true) {personA.hasHadGraceYear = true}
@@ -109,9 +112,9 @@ export class EarningsTestService {
         }
 
         //Key point with all of the below is that A's earnings first reduce A's retirement benefit and B's spousal benefit. *Then* B's earnings reduce B's spousal benefit. See CFR 404.434
-
+        if (personAaliveBoolean === true && personBaliveBoolean === true){
           //Counting A's excess earnings against A's retirement and B's benefit as spouse
-          if (calcYear.annualWithholdingDueToPersonAearnings > 0){//If more withholding is necessary...
+          if (calcYear.annualWithholdingDueToPersonAearningsBothAlive > 0){//If more withholding is necessary...
             if (calcYear.date >= personA.retirementBenefitDate  //And they've started retirement benefit...
             && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate) //And it isn't a nonservice month in grace year...
             && calcYear.date < personA.FRA){//And they are younger than FRA...
@@ -128,19 +131,107 @@ export class EarningsTestService {
                   }   
                   for (let child of scenario.children){
                       if ((child.age < 17.99 || child.isOnDisability === true) && calcYear.date >= child.childBenefitDate ){//if child is entitled to a child's benefit
-                        //TODO: going to need some logic so that this benefit doesn't get counted as withheld twice if dually entitled...
+                        availableForWithholding = availableForWithholding + child.monthlyChildPayment
+                        child.monthlyChildPayment = 0
+                        //If child is entitled on both parents' work records, their benefit will get used toward A's excess earnings until those are satisfied. Then counted toward B's. This could potentially throw off the table (with personA receiving more than personA), but it won't throw off PV calc.
+                      }
+                  }
+                //Reduce necessary withholding by amount that was withheld this month
+                calcYear.annualWithholdingDueToPersonAearningsBothAlive = calcYear.annualWithholdingDueToPersonAearningsBothAlive - availableForWithholding
+            }
+          }
+
+          //Counting B's excess earnings against B's retirement and A's benefit as spouse
+          if (calcYear.annualWithholdingDueToPersonBearningsBothAlive > 0){//If more withholding is necessary...
+            if (calcYear.date >= personB.retirementBenefitDate  //And they've started retirement benefit...
+            && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate) //And it isn't a nonservice month in grace year...
+            && calcYear.date < personB.FRA){//And they are younger than FRA...
+                //Go through each person to see what can be withheld on personA's record. Add that amount to availableForWithholding, set applicable monthlyPayment to zero, and add 1 to monthsWithheld tally
+                  availableForWithholding = personB.monthlyRetirementPayment
+                  personB.monthlyRetirementPayment = 0
+                  personB.monthsRetirementWithheld = personB.monthsRetirementWithheld + 1
+                  if (calcYear.date >= personA.spousalBenefitDate && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate)){//If it's a spousalBenefit month, and not a nonservice month in grace year for personA
+                      availableForWithholding = availableForWithholding + personA.monthlySpousalPayment
+                      personA.monthlySpousalPayment = 0
+                      personA.monthsSpousalWithheld = personA.monthsSpousalWithheld + 1
+                  }       
+                  for (let child of scenario.children){
+                      if ((child.age < 17.99 || child.isOnDisability === true) && calcYear.date >= child.childBenefitDate ){//if child is entitled to a child's benefit
                         availableForWithholding = availableForWithholding + child.monthlyChildPayment
                         child.monthlyChildPayment = 0
                       }
                   }
                 //Reduce necessary withholding by amount that was withheld this month
-                calcYear.annualWithholdingDueToPersonAearnings = calcYear.annualWithholdingDueToPersonAearnings - availableForWithholding
+                calcYear.annualWithholdingDueToPersonBearningsBothAlive = calcYear.annualWithholdingDueToPersonBearningsBothAlive - availableForWithholding
             }
           }
 
-          //Counting B's excess earnings against B's retirement and A's benefit as spouse
           //If A still has excess earnings, count those against A's benefit as a spouse. (Don't have to check for withholding against benefit as survivor, because we assume no survivor application until survivorFRA.)
+            if (calcYear.annualWithholdingDueToPersonAearningsBothAlive > 0) {
+                //Check if personA gets spousal benefit this month
+                if (calcYear.date >= personA.spousalBenefitDate && calcYear.date >= personA.retirementBenefitDate
+                    //^^why are we checking retirementBenefitDate also? No harm in it, because we're by definition talking about an application for spousal prior to FRA, so retirementBenefitDate is same date...
+                  && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate) //Make sure it's not a nonservice month in a grace year
+                  && (calcYear.date < personA.FRA) //Make sure current month is prior to FRA
+                ) {
+                calcYear.annualWithholdingDueToPersonAearningsBothAlive = calcYear.annualWithholdingDueToPersonAearningsBothAlive - personA.monthlySpousalPayment
+                personA.monthlySpousalPayment = 0
+                personA.monthsSpousalWithheld = personA.monthsSpousalWithheld + 1
+                }
+            }
+            
           //If B still has excess earnings, count those against B's benefit as a spouse. (Don't have to check for withholding against benefit as survivor, because we assume no survivor application until survivorFRA.)
+            if (calcYear.annualWithholdingDueToPersonBearningsBothAlive > 0) {
+              //Check if personB gets spousal benefit this month
+              if (calcYear.date >= personB.spousalBenefitDate && calcYear.date >= personB.retirementBenefitDate
+                  //^^why are we checking retirementBenefitDate also? No harm in it, because we're by definition talking about an application for spousal prior to FRA, so retirementBenefitDate is same date...
+                && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate) //Make sure it's not a nonservice month in a grace year
+                && (calcYear.date < personB.FRA) //Make sure current month is prior to FRA
+              ) {
+              calcYear.annualWithholdingDueToPersonBearningsBothAlive = calcYear.annualWithholdingDueToPersonBearningsBothAlive - personB.monthlySpousalPayment
+              personB.monthlySpousalPayment = 0
+              personB.monthsSpousalWithheld = personB.monthsSpousalWithheld + 1
+              }
+          }
+        }
+        else if (personAaliveBoolean === true && personBaliveBoolean === false){
+          if (calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive> 0){//If more withholding is necessary...
+            if (calcYear.date >= personA.retirementBenefitDate  //And they've started retirement benefit...
+            && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate) //And it isn't a nonservice month in grace year...
+            && calcYear.date < personA.FRA){//And they are younger than FRA...
+              //withhold A's excess earnings from A's retirement benefit and any child benefits
+              availableForWithholding = personA.monthlyRetirementPayment
+              personA.monthlyRetirementPayment = 0
+              //Don't need to add to tally of months withheld, because we're doing that in the "both alive" calculation, and we don't want to double count.
+              for (let child of scenario.children){
+                if ((child.age < 17.99 || child.isOnDisability === true) && calcYear.date >= child.childBenefitDate ){//if child is entitled to a child's benefit
+                  availableForWithholding = availableForWithholding + child.monthlyChildPayment
+                  child.monthlyChildPayment = 0
+                }
+              }
+              calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive = calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive - availableForWithholding
+            }
+          }
+        }
+        else if (personAaliveBoolean === false && personBaliveBoolean === true){
+          if (calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive> 0){//If more withholding is necessary...
+            if (calcYear.date >= personB.retirementBenefitDate  //And they've started retirement benefit...
+            && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate) //And it isn't a nonservice month in grace year...
+            && calcYear.date < personB.FRA){//And they are younger than FRA...
+              //withhold B's excess earnings from B's retirement benefit and any child benefits
+              availableForWithholding = personB.monthlyRetirementPayment
+              personB.monthlyRetirementPayment = 0
+              //Don't need to add to tally of months withheld, because we're doing that in the "both alive" calculation, and we don't want to double count.
+              for (let child of scenario.children){
+                if ((child.age < 17.99 || child.isOnDisability === true) && calcYear.date >= child.childBenefitDate ){//if child is entitled to a child's benefit
+                  availableForWithholding = availableForWithholding + child.monthlyChildPayment
+                  child.monthlyChildPayment = 0
+                }
+              }
+              calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive = calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive - availableForWithholding
+            }
+          }
+        }
   }
 
 

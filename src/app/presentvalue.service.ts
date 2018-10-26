@@ -118,9 +118,9 @@ export class PresentValueService {
         //if it's December...
         if (calcYear.date.getMonth() == 11){
           //Add back any overwithholding from earnings test
-            if (calcYear.annualWithholdingDueToPersonAearnings < 0) {//If annualWithholding is negative due to overwithholding...
-              calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive - calcYear.annualWithholdingDueToPersonAearnings//add back for PV-related sum
-              calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit - calcYear.annualWithholdingDueToPersonAearnings//add back for table-related sum
+            if (calcYear.annualWithholdingDuetoSinglePersonEarnings < 0) {//If annualWithholding is negative due to overwithholding...
+              calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive - calcYear.annualWithholdingDuetoSinglePersonEarnings//add back for PV-related sum
+              calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit - calcYear.annualWithholdingDuetoSinglePersonEarnings//add back for table-related sum
             }
 
           //Apply assumed benefit cut, if applicable
@@ -228,21 +228,24 @@ export class PresentValueService {
             //calculate monthlyPayment field for each person
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, true)
             //TODO: Adjust each person's monthlyPayment as necessary for family max
-            //TODO: Adjust as necessary for earnings test (and tally months withheld)
+            //Adjust as necessary for earnings test (and tally months withheld)
+              this.earningsTestService.applyEarningsTestCouple(scenario, personA, true, personB, true, calcYear)
             //add everybody's monthlyPayment fields to appropriate annual totals (annualBenefitBothAlive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, true, personB, true, printOutputTable)
       //Assume personA is alive and personB is deceased
             //calculate monthlyPayment field for each person
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, false)
             //TODO: Adjust each person's monthlyPayment as necessary for family max
-            //TODO: Adjust as necessary for earnings test (and tally months withheld)
+            //Adjust as necessary for earnings test (and tally months withheld)
+              this.earningsTestService.applyEarningsTestCouple(scenario, personA, true, personB, false, calcYear)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitOnlyPersonAalive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, true, personB, false, printOutputTable)
       //Assume personA is deceased and personB is alive
             //calculate monthlyPayment field for each person
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, true)
             //TODO: Adjust each person's monthlyPayment as necessary for family max
-            //TODO: Adjust as necessary for earnings test (and tally months withheld)
+            //Adjust as necessary for earnings test (and tally months withheld)
+              this.earningsTestService.applyEarningsTestCouple(scenario, personA, false, personB, true, calcYear)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitOnlyPersonBalive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, true, printOutputTable)
       //Assume personA and personB are deceased
@@ -293,11 +296,31 @@ export class PresentValueService {
                 //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
                 annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
+                if (printOutputTable === true){
+                  console.log("monthly loop year: " + calcYear.date.getFullYear())
+                  console.log("probability onlyB alive" + (1-probabilityAalive)*probabilityBalive)
+                  console.log("discounted annualPV: " + annualPV)
+                  console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
+                  console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
+                  console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
+                  console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
+                  console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
+                  console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
+                  console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
+                  console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
+                  console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
+                  console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
+                  console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
+                  console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
+                  console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
+                  console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
+                }
+
             //Add discounted benefit to ongoing sum
               couplePV = couplePV + annualPV
 
-            //Created saved CalculationYear object if we can do so
-            if (this.readyForSavedCalculationYearForFasterLoop(scenario, calcYear, personA, personB) === true){
+            //Created saved CalculationYear object if we can do so and haven't yet created one
+            if (savedCalculationYear.annualBenefitBothAlive = 0 && this.readyForSavedCalculationYearForFasterLoop(scenario, calcYear, personA, personB) === true){
               savedCalculationYear = this.createSavedCalculationYearForFasterLoop(calcYear)
             }
 
@@ -431,6 +454,10 @@ export class PresentValueService {
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
+            if (printOutputTable === true){
+              console.log("anuual loop year: " + calcYear.date.getFullYear())
+              console.log("discounted annualPV: " + annualPV)
+            }
 
       //Add discounted benefit to ongoing count of retirementPV, add 1 to each age, add 1 year to currentCalculationDate, and start loop over
         couplePV = couplePV + annualPV

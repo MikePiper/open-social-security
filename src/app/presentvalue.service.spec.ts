@@ -9,7 +9,7 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
-fdescribe('PresentValueService Single', () => {
+describe('PresentValueService Single', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
@@ -428,7 +428,7 @@ describe('PresentValueService Couple', () => {
     personA.monthlyEarnings = 5000
     personB.monthlyEarnings = 9000
     scenario.discountRate = 1
-    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, false))
+    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, true))
       .toBeCloseTo(570824, 0)
   }))
 
@@ -653,7 +653,7 @@ describe('PresentValueService Couple', () => {
     personA.PIA = 700
     personB.PIA = 1900
     personA.retirementBenefitDate = new MonthYearDate (2032, 8, 1) //At age 68 (Sept 2032)
-    personB.retirementBenefitDate = new MonthYearDate (2027, 8, 1) //At age 64 and 2 months (Sept 2029) -- Earnings test IS relevant
+    personB.retirementBenefitDate = new MonthYearDate (2027, 8, 1) //At age 64 and 2 months (Sept 2027) -- Earnings test IS relevant
     personA.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
     personB.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
     personA.quitWorkDate = new MonthYearDate(2028,3,1) //planning to quit work at age 64 (April 2028)
@@ -661,7 +661,7 @@ describe('PresentValueService Couple', () => {
     personA.monthlyEarnings = 5000
     personB.monthlyEarnings = 9000
     scenario.discountRate = 1
-    expect(service.calculateCouplePV(personA, personB, scenario, false))
+    expect(service.calculateCouplePV(personA, personB, scenario, true))
       .toBeCloseTo(570824, 0)
   }))
 
