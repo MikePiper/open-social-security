@@ -159,6 +159,7 @@ export class PresentValueService {
   calculateCouplePVmonthlyLoop(personA:Person, personB:Person, scenario:CalculationScenario, printOutputTable:boolean) : number{
     //reset values for new PV calc
     let couplePV: number = 0
+    let savedCalculationYear: CalculationYear = new CalculationYear(this.today)
     personA.hasHadGraceYear = false
     personB.hasHadGraceYear = false
     personA.adjustedRetirementBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
@@ -214,14 +215,20 @@ export class PresentValueService {
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (personA.age < 115 || personB.age < 115){
+
+      //Use savedCalculationYear sums if parents over 70, children over 18 or disabled, and assumed benfit cut year (if applicable) has been reached
+      if (savedCalculationYear.annualBenefitBothAlive > 0){
+        this.useSavedCalculationYearForFasterLoop(calcYear, savedCalculationYear)
+      }
+      else {
       //Do we have to calculate/recalculate any benefits for personA or personB?
-        this.benefitService.monthlyCheckForBenefitRecalculationsCouple(personA, personB, calcYear)
+      this.benefitService.monthlyCheckForBenefitRecalculationsCouple(personA, personB, calcYear)
 
       //Assume personA and personB are alive
             //calculate monthlyPayment field for each person
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, true)
             //TODO: Adjust each person's monthlyPayment as necessary for family max
-            //Adjust as necessary for earnings test (and tally months withheld)
+            //TODO: Adjust as necessary for earnings test (and tally months withheld)
             //add everybody's monthlyPayment fields to appropriate annual totals (annualBenefitBothAlive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, true, personB, true, printOutputTable)
       //Assume personA is alive and personB is deceased
@@ -245,6 +252,8 @@ export class PresentValueService {
             //Earnings test: not necessary
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitBothDeceased)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, true, printOutputTable)
+      }
+
       //After month is over increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
             for (let child of scenario.children){
               child.age = child.age + 1/12
@@ -274,16 +283,6 @@ export class PresentValueService {
                 probabilityAalive * (1 - probabilityBalive) * calcYear.annualBenefitOnlyPersonAalive +
                 probabilityBalive * (1 - probabilityAalive) * calcYear.annualBenefitOnlyPersonBalive
 
-                if (printOutputTable === true){
-                  console.log("monthly loop" + calcYear.date.getFullYear())
-                  console.log("personA retirement: " + calcYear.tablePersonAannualRetirementBenefit)
-                  console.log("personB retirement: " + calcYear.tablePersonBannualRetirementBenefit)
-                  console.log("personA spousal: " + calcYear.tablePersonAannualSpousalBenefit)
-                  console.log("personB spousal: " + calcYear.tablePersonBannualSpousalBenefit)
-                  console.log("personA survivor: " + calcYear.tablePersonAannualSurvivorBenefit)
-                  console.log("personB survivor: " + calcYear.tablePersonBannualSurvivorBenefit)
-                  console.log("undiscounted annualPV: " + annualPV)
-                }
 
             //Discount that probability-weighted annual benefit amount to age 62
                 //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
@@ -294,12 +293,13 @@ export class PresentValueService {
                 //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
                 annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
-                if (printOutputTable === true){
-                  console.log("discounted annual PV: "+ annualPV)
-                }
-
             //Add discounted benefit to ongoing sum
               couplePV = couplePV + annualPV
+
+            //Created saved CalculationYear object if we can do so
+            if (this.readyForSavedCalculationYearForFasterLoop(scenario, calcYear, personA, personB) === true){
+              savedCalculationYear = this.createSavedCalculationYearForFasterLoop(calcYear)
+            }
 
             //increment personA and personB ages by 1 year
               personA.age = personA.age + 1
@@ -422,17 +422,6 @@ export class PresentValueService {
         + (probabilityBalive * (1-probabilityAalive) * (calcYear.tablePersonBannualRetirementBenefit + calcYear.tablePersonBannualSurvivorBenefit)) //Scenario where B is alive, A is deceased
         + ((probabilityAalive * probabilityBalive) * (calcYear.tablePersonAannualRetirementBenefit + calcYear.tablePersonAannualSpousalBenefit + calcYear.tablePersonBannualRetirementBenefit + calcYear.tablePersonBannualSpousalBenefit)) //Scenario where both are alive
 
-        if (printOutputTable === true){
-          console.log("annual loop" + calcYear.date.getFullYear())
-          console.log("personA retirement: " + calcYear.tablePersonAannualRetirementBenefit)
-          console.log("personB retirement: " + calcYear.tablePersonBannualRetirementBenefit)
-          console.log("personA spousal: " + calcYear.tablePersonAannualSpousalBenefit)
-          console.log("personB spousal: " + calcYear.tablePersonBannualSpousalBenefit)
-          console.log("personA survivor: " + calcYear.tablePersonAannualSurvivorBenefit)
-          console.log("personB survivor: " + calcYear.tablePersonBannualSurvivorBenefit)
-          console.log("undiscounted annualPV: " + annualPV)
-        }
-
       //Discount that benefit
             //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
             let olderAge: number
@@ -442,9 +431,6 @@ export class PresentValueService {
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
-            if (printOutputTable === true){
-              console.log("discounted annual PV: "+ annualPV)
-            }
 
       //Add discounted benefit to ongoing count of retirementPV, add 1 to each age, add 1 year to currentCalculationDate, and start loop over
         couplePV = couplePV + annualPV
@@ -962,5 +948,58 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
           }
         }
       }
+  }
+
+  readyForSavedCalculationYearForFasterLoop(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personB:Person):boolean{
+    if (personA.age < 70 || personB.age < 70){
+      return false
+    }
+    for (let child of scenario.children){
+      if (child.age < 18.1 && child.isOnDisability === false){//use 18.1 because we've already added 1 month to child's age at point where this is called. And we want to make sure they were 18 right *before* that happened
+        return false
+      }
+    }
+    if (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear){
+      return false
+    }
+    return true
+  }
+
+  createSavedCalculationYearForFasterLoop(calcYear:CalculationYear):CalculationYear{
+      let savedCalculationYear:CalculationYear = new CalculationYear(this.today)
+      savedCalculationYear.annualBenefitBothAlive = calcYear.annualBenefitBothAlive
+      savedCalculationYear.annualBenefitBothDeceased = calcYear.annualBenefitBothDeceased
+      savedCalculationYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive
+      savedCalculationYear.annualBenefitOnlyPersonBalive = calcYear.annualBenefitOnlyPersonBalive
+      savedCalculationYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit
+      savedCalculationYear.tablePersonAannualSpousalBenefit = calcYear.tablePersonAannualSpousalBenefit
+      savedCalculationYear.tablePersonAannualSurvivorBenefit = calcYear.tablePersonAannualSurvivorBenefit
+      savedCalculationYear.tablePersonBannualRetirementBenefit = calcYear.tablePersonBannualRetirementBenefit
+      savedCalculationYear.tablePersonBannualSpousalBenefit = calcYear.tablePersonBannualSpousalBenefit
+      savedCalculationYear.tablePersonBannualSurvivorBenefit = calcYear.tablePersonBannualSurvivorBenefit
+      savedCalculationYear.tableTotalAnnualChildBenefitsBothParentsAlive = calcYear.tableTotalAnnualChildBenefitsBothParentsAlive
+      savedCalculationYear.tableTotalAnnualChildBenefitsBothParentsDeceased = calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased
+      savedCalculationYear.tableTotalAnnualChildBenefitsOnlyPersonAalive = calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive
+      savedCalculationYear.tableTotalAnnualChildBenefitsOnlyPersonBalive = calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive
+
+      return savedCalculationYear
+    
+  }
+
+  useSavedCalculationYearForFasterLoop(calcYear:CalculationYear, savedCalculationYear:CalculationYear){
+    calcYear.annualBenefitBothAlive = savedCalculationYear.annualBenefitBothAlive
+    calcYear.annualBenefitBothDeceased = savedCalculationYear.annualBenefitBothDeceased
+    calcYear.annualBenefitOnlyPersonAalive = savedCalculationYear.annualBenefitOnlyPersonAalive
+    calcYear.annualBenefitOnlyPersonBalive = savedCalculationYear.annualBenefitOnlyPersonBalive
+    calcYear.tablePersonAannualRetirementBenefit = savedCalculationYear.tablePersonAannualRetirementBenefit
+    calcYear.tablePersonAannualSpousalBenefit = savedCalculationYear.tablePersonAannualSpousalBenefit
+    calcYear.tablePersonAannualSurvivorBenefit = savedCalculationYear.tablePersonAannualSurvivorBenefit
+    calcYear.tablePersonBannualRetirementBenefit = savedCalculationYear.tablePersonBannualRetirementBenefit
+    calcYear.tablePersonBannualSpousalBenefit = savedCalculationYear.tablePersonBannualSpousalBenefit
+    calcYear.tablePersonBannualSurvivorBenefit = savedCalculationYear.tablePersonBannualSurvivorBenefit
+    calcYear.tableTotalAnnualChildBenefitsBothParentsAlive = savedCalculationYear.tableTotalAnnualChildBenefitsBothParentsAlive
+    calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased = savedCalculationYear.tableTotalAnnualChildBenefitsBothParentsDeceased
+    calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive = savedCalculationYear.tableTotalAnnualChildBenefitsOnlyPersonAalive
+    calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive = savedCalculationYear.tableTotalAnnualChildBenefitsOnlyPersonBalive
   }
 }

@@ -9,7 +9,7 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
-describe('PresentValueService Single', () => {
+fdescribe('PresentValueService Single', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
@@ -365,7 +365,7 @@ describe('PresentValueService Single', () => {
   
 })
 
-fdescribe('PresentValueService Couple', () => {
+describe('PresentValueService Couple', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]

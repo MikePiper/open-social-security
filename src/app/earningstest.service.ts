@@ -92,6 +92,57 @@ export class EarningsTestService {
     }
   }
 
+  applyEarningsTestCouple(scenario:CalculationScenario, personA:Person, personB:Person, calcYear:CalculationYear){
+    let availableForWithholding:number = 0
+        //If it's the beginning of a year, calculate earnings test withholding and determine if this is a grace year
+        if (calcYear.date.getMonth() == 0){
+          calcYear.annualWithholdingDueToPersonAearnings = this.calculateWithholding(calcYear.date, personA)
+          calcYear.annualWithholdingDueToPersonBearnings = this.calculateWithholding(calcYear.date, personB)
+          //If divorced, withholding due to spouseB's earnings is zero
+          if (scenario.maritalStatus == "divorced"){
+            calcYear.annualWithholdingDueToPersonBearnings = 0
+          }
+          calcYear.personAgraceYear = this.isGraceYear(personA, calcYear.date)
+          if (calcYear.personAgraceYear === true) {personA.hasHadGraceYear = true}
+          calcYear.personBgraceYear = this.isGraceYear(personB, calcYear.date)
+          if (calcYear.personBgraceYear === true) {personB.hasHadGraceYear = true}
+        }
+
+        //Key point with all of the below is that A's earnings first reduce A's retirement benefit and B's spousal benefit. *Then* B's earnings reduce B's spousal benefit. See CFR 404.434
+
+          //Counting A's excess earnings against A's retirement and B's benefit as spouse
+          if (calcYear.annualWithholdingDueToPersonAearnings > 0){//If more withholding is necessary...
+            if (calcYear.date >= personA.retirementBenefitDate  //And they've started retirement benefit...
+            && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate) //And it isn't a nonservice month in grace year...
+            && calcYear.date < personA.FRA){//And they are younger than FRA...
+                //Go through each person to see what can be withheld on personA's record. Add that amount to availableForWithholding, set applicable monthlyPayment to zero, and add 1 to monthsWithheld tally
+                  availableForWithholding = personA.monthlyRetirementPayment
+                  personA.monthlyRetirementPayment = 0
+                  personA.monthsRetirementWithheld = personA.monthsRetirementWithheld + 1
+                  if (scenario.maritalStatus == "married"){//Only make spouse B's benefit as a spouse available for withholding if they're currently married (as opposed to divorced)
+                    if (calcYear.date >= personB.spousalBenefitDate && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate)){//If it's a spousalBenefit month, and not a nonservice month in grace year for personB
+                        availableForWithholding = availableForWithholding + personB.monthlySpousalPayment
+                        personB.monthlySpousalPayment = 0
+                        personB.monthsSpousalWithheld = personB.monthsSpousalWithheld + 1
+                    }       
+                  }   
+                  for (let child of scenario.children){
+                      if ((child.age < 17.99 || child.isOnDisability === true) && calcYear.date >= child.childBenefitDate ){//if child is entitled to a child's benefit
+                        //TODO: going to need some logic so that this benefit doesn't get counted as withheld twice if dually entitled...
+                        availableForWithholding = availableForWithholding + child.monthlyChildPayment
+                        child.monthlyChildPayment = 0
+                      }
+                  }
+                //Reduce necessary withholding by amount that was withheld this month
+                calcYear.annualWithholdingDueToPersonAearnings = calcYear.annualWithholdingDueToPersonAearnings - availableForWithholding
+            }
+          }
+
+          //Counting B's excess earnings against B's retirement and A's benefit as spouse
+          //If A still has excess earnings, count those against A's benefit as a spouse. (Don't have to check for withholding against benefit as survivor, because we assume no survivor application until survivorFRA.)
+          //If B still has excess earnings, count those against B's benefit as a spouse. (Don't have to check for withholding against benefit as survivor, because we assume no survivor application until survivorFRA.)
+  }
+
 
   earningsTestCouple(calcYear:CalculationYear, scenario:CalculationScenario, personA:Person, personB:Person){
     let withholdingDueToSpouseAearnings: number = 0

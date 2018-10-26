@@ -1,0 +1,18 @@
+https://secure.ssa.gov/poms.nsf/lnx/0302501021
+^ Says child on childhood disability benefit does not have benefit withheld due to earnings test.
+
+What it actually means is that child's benefit as child won't be withheld due to their OWN earnings. Can still be withheld due to parent's earnings.
+ See here: https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501140 (Social Security Act also pretty clear on this in 203(f)(1).)
+
+
+Key point in married scenario: A's earnings first reduce A's retirement benefit and B's spousal benefit. *Then* B's earnings reduce B's spousal benefit. See CFR 404.434
+    So we first use A's earnings to reduce A's retirement and B's spousal. And we use B's earnings to reduce B's retirement and A's spousal.
+    Then if further withholding is necessary we have their own earnings reduce their own spousal.
+
+
+https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501140
+    Says that if a child of personA is entitled on personB's record, deem child to be entitled on personA's record as well for the sake of withholding due to A's earnings.
+
+
+
+Social Security Act 203(f)(1)(F) might be saying that a person entitled to spousal benefits solely due to having child in care doesn't have benefits reduced by earnings test if they are earning less than 1/12 threshold amount per month.
