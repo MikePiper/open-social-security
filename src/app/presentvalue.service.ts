@@ -160,6 +160,7 @@ export class PresentValueService {
     //reset values for new PV calc
     let couplePV: number = 0
     let savedCalculationYear: CalculationYear = new CalculationYear(this.today)
+    scenario.outputTable = []
     personA.hasHadGraceYear = false
     personB.hasHadGraceYear = false
     personA.adjustedRetirementBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
@@ -252,7 +253,7 @@ export class PresentValueService {
             //calculate monthlyPayment field for each person
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, false)
             //TODO: adjust each person's monthlyPayment as necessary for family max
-            //Earnings test: not necessary
+            //Earnings test not necessary
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitBothDeceased)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, true, printOutputTable)
       }
@@ -296,31 +297,31 @@ export class PresentValueService {
                 //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
                 annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
-                if (printOutputTable === true){
-                  console.log("monthly loop year: " + calcYear.date.getFullYear())
-                  console.log("probability onlyB alive" + (1-probabilityAalive)*probabilityBalive)
-                  console.log("discounted annualPV: " + annualPV)
-                  console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
-                  console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
-                  console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
-                  console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
-                  console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
-                  console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
-                  console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
-                  console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
-                  console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
-                  console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
-                  console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
-                  console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
-                  console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
-                  console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
-                }
+                // if (printOutputTable === true){
+                //   console.log("monthly loop year: " + calcYear.date.getFullYear())
+                //   console.log("probability onlyB alive" + (1-probabilityAalive)*probabilityBalive)
+                //   console.log("discounted annualPV: " + annualPV)
+                //   console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
+                //   console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
+                //   console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
+                //   console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
+                //   console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
+                //   console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
+                //   console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
+                //   console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
+                //   console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
+                //   console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
+                //   console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
+                //   console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
+                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
+                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
+                // }
 
             //Add discounted benefit to ongoing sum
               couplePV = couplePV + annualPV
 
-            //Created saved CalculationYear object if we can do so and haven't yet created one
-            if (savedCalculationYear.annualBenefitBothAlive = 0 && this.readyForSavedCalculationYearForFasterLoop(scenario, calcYear, personA, personB) === true){
+            //Created saved CalculationYear object if we can do so
+            if (this.readyForSavedCalculationYearForFasterLoop(scenario, calcYear, personA, personB) === true){
               savedCalculationYear = this.createSavedCalculationYearForFasterLoop(calcYear)
             }
 
@@ -657,7 +658,7 @@ export class PresentValueService {
 
         while (personB.retirementBenefitDate <= spouseBendTestDate && personB.endSuspensionDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(personA, personB, scenario, false)
+            let currentTestPV: number = this.calculateCouplePVmonthlyLoop(personA, personB, scenario, false)
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTestPV >= savedPV) {
               savedPV = currentTestPV
@@ -693,7 +694,7 @@ export class PresentValueService {
       personB.beginSuspensionDate = new MonthYearDate(personBsavedBeginSuspensionDate)
       personB.endSuspensionDate = new MonthYearDate(personBsavedEndSuspensionDate)
 
-      let outputTablePVcalc: number = this.calculateCouplePV(personA, personB, scenario, true)
+      let outputTablePVcalc: number = this.calculateCouplePVmonthlyLoop(personA, personB, scenario, true)
 
       //Generate solution set (for sake of output) from saved values
       let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, personA, personB, Number(savedPV))
@@ -762,10 +763,10 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     while (flexibleSpouse.retirementBenefitDate <= endTestDate && flexibleSpouse.endSuspensionDate <= endTestDate) {
       //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
       if (flexibleSpouse.id == "A"){
-        var currentTestPV: number = this.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario, false)
+        var currentTestPV: number = this.calculateCouplePVmonthlyLoop(flexibleSpouse, fixedSpouse, scenario, false)
       }
       else {
-        var currentTestPV: number = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, false)
+        var currentTestPV: number = this.calculateCouplePVmonthlyLoop(fixedSpouse, flexibleSpouse, scenario, false)
       }
 
       //If PV is greater than or equal to saved PV, save new PV and save new testDates
@@ -792,10 +793,10 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       flexibleSpouse.endSuspensionDate = new MonthYearDate(flexibleSpouseSavedEndSuspensionDate)
       fixedSpouse.spousalBenefitDate = new MonthYearDate(fixedSpouseSavedSpousalDate)
       if (flexibleSpouse.id == "A"){
-      let outputTablePVcalc: number = this.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario, true)
+      let outputTablePVcalc: number = this.calculateCouplePVmonthlyLoop(flexibleSpouse, fixedSpouse, scenario, true)
       }
       else {
-      let outputTablePVcalc: number = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, true)
+      let outputTablePVcalc: number = this.calculateCouplePVmonthlyLoop(fixedSpouse, flexibleSpouse, scenario, true)
       }
   
       //generate solutionSet

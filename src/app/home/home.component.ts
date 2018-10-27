@@ -277,10 +277,10 @@ export class HomeComponent implements OnInit {
       this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.customDateScenario, true)
       }
     if(this.scenario.maritalStatus == "married" && this.errorCollection.hasErrors === false) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
+      this.customPV = this.presentvalueService.calculateCouplePVmonthlyLoop(this.personA, this.personB, this.customDateScenario, true)
       }
     if(this.scenario.maritalStatus == "divorced" && this.errorCollection.hasErrors === false) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
+      this.customPV = this.presentvalueService.calculateCouplePVmonthlyLoop(this.personA, this.personB, this.customDateScenario, true)
     }
     this.differenceInPV = this.solutionSet.solutionPV - this.customPV
   }
