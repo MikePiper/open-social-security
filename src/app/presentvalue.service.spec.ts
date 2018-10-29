@@ -8,6 +8,7 @@ import {BirthdayService} from './birthday.service'
 import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
+import { SolutionSet } from './data model classes/solutionset';
 
 describe('PresentValueService Single', () => {
   beforeEach(() => {
@@ -417,40 +418,14 @@ describe('PresentValueService Couple', () => {
     personA.PIA = 1000
     personB.PIA = 1000
     personA.retirementBenefitDate = new MonthYearDate (2030, 3) //At age 70
-    personB.retirementBenefitDate = new MonthYearDate (2022, 4) //At age 62 and 1 month
+    personB.retirementBenefitDate = new MonthYearDate (2022, 5) //At age 62 and 2 months
     personA.spousalBenefitDate = new MonthYearDate (2030, 3) //Later of two retirement benefit dates
     personB.spousalBenefitDate = new MonthYearDate (2030, 3) //Later of two retirement benefit dates
     scenario.discountRate = 1
     expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, true))
-      .toBeCloseTo(353848, 0)//$353,848 is PV for those dates from current live version of site
+      .toBeCloseTo(353854, 0)//$353,854 is PV for those dates from current live version of site
   }))
 
-  it('should return appropriate PV for married couple, basic inputs, one filing early one late', inject([PresentValueService], (service: PresentValueService) => { 
-    let personA:Person = new Person("A")
-    let personB:Person = new Person("B")
-    let scenario:CalculationScenario = new CalculationScenario()
-    scenario.initialCalcDate = new MonthYearDate(2022, 0)
-    scenario.maritalStatus = "married"
-    let mortalityService:MortalityService = new MortalityService()
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0) //Using male nonsmoker2 mortality table
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) //Using female nonsmoker1 mortality table
-    personA.SSbirthDate = new MonthYearDate(1960, 3, 1) //Spouse A born in April 1960
-    personB.SSbirthDate = new MonthYearDate(1960, 3, 1) //Spouse B born in April 1960
-    let birthdayService:BirthdayService = new BirthdayService()
-    personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //April 2027
-    personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //April 2027
-    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
-    personA.PIA = 1000
-    personB.PIA = 1000
-    personA.retirementBenefitDate = new MonthYearDate (2030, 3) //At age 70
-    personB.retirementBenefitDate = new MonthYearDate (2022, 4) //At age 62 and 1 month
-    personA.spousalBenefitDate = new MonthYearDate (2030, 3) //Later of two retirement benefit dates
-    personB.spousalBenefitDate = new MonthYearDate (2030, 3) //Later of two retirement benefit dates
-    scenario.discountRate = 1
-    expect(service.calculateCouplePV(personA, personB, scenario, true))
-      .toBeCloseTo(353848, 0)//$353,848 is PV for those dates from current live version of site
-  }))
 
   it('should return appropriate PV for married couple, still working', inject([PresentValueService], (service: PresentValueService) => { 
     let personA:Person = new Person("A")

@@ -163,6 +163,12 @@ export class PresentValueService {
     scenario.outputTable = []
     personA.hasHadGraceYear = false
     personB.hasHadGraceYear = false
+    personA.retirementBenefit = 0
+    personA.spousalBenefit = 0
+    personA.survivorBenefit = 0
+    personB.retirementBenefit = 0
+    personB.spousalBenefit = 0
+    personB.survivorBenefit = 0
     personA.adjustedRetirementBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
     personA.adjustedSpousalBenefitDate = new MonthYearDate(personA.spousalBenefitDate)
     personB.adjustedRetirementBenefitDate = new MonthYearDate(personB.retirementBenefitDate)
@@ -455,10 +461,10 @@ export class PresentValueService {
             //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
             annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
-            if (printOutputTable === true){
-              console.log("anuual loop year: " + calcYear.date.getFullYear())
-              console.log("discounted annualPV: " + annualPV)
-            }
+            // if (printOutputTable === true){
+            //   console.log("anuual loop year: " + calcYear.date.getFullYear())
+            //   console.log("discounted annualPV: " + annualPV)
+            // }
 
       //Add discounted benefit to ongoing count of retirementPV, add 1 to each age, add 1 year to currentCalculationDate, and start loop over
         couplePV = couplePV + annualPV

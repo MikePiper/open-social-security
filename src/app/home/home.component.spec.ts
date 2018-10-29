@@ -1,4 +1,4 @@
-import {TestBed, inject, ComponentFixture} from '@angular/core/testing'
+import {TestBed, ComponentFixture} from '@angular/core/testing'
 import {HomeComponent} from './home.component'
 import {BirthdayService} from '../birthday.service'
 import {PresentValueService} from '../presentvalue.service'
@@ -20,7 +20,7 @@ import { APP_BASE_HREF } from '@angular/common'
 
 
 
-fdescribe('HomeComponent', () => {
+describe('HomeComponent', () => {
   let component: HomeComponent
   let fixture: ComponentFixture<HomeComponent>
   let HttpClientStub: Partial<HttpClient>
@@ -62,6 +62,7 @@ fdescribe('HomeComponent', () => {
       component.personA.survivorFRA = birthdayService.findSurvivorFRA(component.personA.SSbirthDate)
       component.personB.survivorFRA = birthdayService.findSurvivorFRA(component.personB.SSbirthDate)
       component.onSubmit()
-      setTimeout( () => {expect(component.solutionSet.solutionPV).toBeGreaterThan(0)}, 4000)
+      expect(component.solutionSet.solutionPV).toEqual(10)
+
   })
 })

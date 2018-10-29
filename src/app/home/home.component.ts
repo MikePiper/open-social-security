@@ -140,7 +140,16 @@ export class HomeComponent implements OnInit {
   }
 
 
-  onSubmit() {
+   returnTrueAsync() {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(true);
+      }, 1000);
+    });
+  }
+
+
+   onSubmit() {//"async" takes the normal return value and wraps it in a promise
     this.waitCursor()
     setTimeout( () => {//whole rest of this function is in a setTimeout statement, to have 10 millisecond delay, to give DOM time to update with status message from waitCursor()
     let startTime = performance.now() //for testing performance
