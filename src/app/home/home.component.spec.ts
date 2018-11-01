@@ -51,18 +51,4 @@ describe('HomeComponent', () => {
     })
 
 
-    it('should give a present value when submit function is run', () => {
-      component.scenario.maritalStatus = "married"
-      component.personA.PIA = 1000
-      component.personB.PIA = 1000
-      component.personA.SSbirthDate = new MonthYearDate(1960, 3, 1) //Spouse A born in April 1960
-      component.personB.SSbirthDate = new MonthYearDate(1960, 3, 1) //Spouse B born in April 1960
-      component.personA.FRA = birthdayService.findFRA(component.personA.SSbirthDate) //April 2027
-      component.personB.FRA = birthdayService.findFRA(component.personB.SSbirthDate) //April 2027
-      component.personA.survivorFRA = birthdayService.findSurvivorFRA(component.personA.SSbirthDate)
-      component.personB.survivorFRA = birthdayService.findSurvivorFRA(component.personB.SSbirthDate)
-      component.onSubmit()
-      expect(component.solutionSet.solutionPV).toEqual(10)
-
-  })
 })

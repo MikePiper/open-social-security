@@ -92,11 +92,11 @@ export class EarningsTestService {
     }
   }
 
-  applyEarningsTestCouple(scenario:CalculationScenario, personA:Person, personAaliveBoolean:Boolean, personB:Person, personBaliveBoolean:Boolean, calcYear:CalculationYear){
+  applyEarningsTestCouple(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:Boolean, personB:Person, personBaliveBoolean:Boolean){
     let availableForWithholding:number = 0
 
         //If it's the beginning of a year, calculate earnings test withholding and determine if this is a grace year
-        if (calcYear.date.getMonth() == 0){
+        if (calcYear.date.getMonth() == 0 && personAaliveBoolean === true && personBaliveBoolean === true){//Check for "alive booleans" to be true because we only want to do this once each January.
           calcYear.annualWithholdingDueToPersonAearningsBothAlive = this.calculateWithholding(calcYear.date, personA)
           calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive = calcYear.annualWithholdingDueToPersonAearningsBothAlive
           calcYear.annualWithholdingDueToPersonBearningsBothAlive = this.calculateWithholding(calcYear.date, personB)
@@ -195,7 +195,7 @@ export class EarningsTestService {
           }
         }
         else if (personAaliveBoolean === true && personBaliveBoolean === false){
-          if (calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive> 0){//If more withholding is necessary...
+          if (calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive > 0){//If more withholding is necessary...
             if (calcYear.date >= personA.retirementBenefitDate  //And they've started retirement benefit...
             && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate) //And it isn't a nonservice month in grace year...
             && calcYear.date < personA.FRA){//And they are younger than FRA...
@@ -214,7 +214,7 @@ export class EarningsTestService {
           }
         }
         else if (personAaliveBoolean === false && personBaliveBoolean === true){
-          if (calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive> 0){//If more withholding is necessary...
+          if (calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive > 0){//If more withholding is necessary...
             if (calcYear.date >= personB.retirementBenefitDate  //And they've started retirement benefit...
             && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate) //And it isn't a nonservice month in grace year...
             && calcYear.date < personB.FRA){//And they are younger than FRA...
@@ -458,4 +458,30 @@ export class EarningsTestService {
           
           return earningsTestResult
   }
+
+  addBackOverwithholding(calcYear:CalculationYear, scenario:CalculationScenario){
+    if (scenario.maritalStatus == "single"){
+      if (calcYear.annualWithholdingDuetoSinglePersonEarnings < 0) {//If annualWithholding is negative due to overwithholding...
+        calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive - calcYear.annualWithholdingDuetoSinglePersonEarnings//add back for PV-related sum
+        calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit - calcYear.annualWithholdingDuetoSinglePersonEarnings//add back for table-related sum
+      }
+    }
+    else {
+      if (calcYear.annualWithholdingDueToPersonAearningsBothAlive < 0){
+        calcYear.annualBenefitBothAlive = calcYear.annualBenefitBothAlive - calcYear.annualWithholdingDueToPersonAearningsBothAlive //add back for PV-related sum
+        calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit - calcYear.annualWithholdingDueToPersonAearningsBothAlive //add back for table-related sum
+      }
+      if (calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive < 0){
+        calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive - calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive //add back for PV-related sum
+      }
+      if (calcYear.annualWithholdingDueToPersonBearningsBothAlive < 0){
+        calcYear.annualBenefitBothAlive = calcYear.annualBenefitBothAlive - calcYear.annualWithholdingDueToPersonBearningsBothAlive //add back for PV-related sum
+        calcYear.tablePersonBannualRetirementBenefit = calcYear.tablePersonBannualRetirementBenefit - calcYear.annualWithholdingDueToPersonBearningsBothAlive //add back for table-related sum
+      }
+      if (calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive < 0){
+        calcYear.annualBenefitOnlyPersonBalive = calcYear.annualBenefitOnlyPersonBalive - calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive //add back for PV-related sum
+      }
+    }
+  }
+
 }
