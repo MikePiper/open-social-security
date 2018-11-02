@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Person } from '../data model classes/person';
 import { BirthdayService } from '../birthday.service';
+import { MonthYearDate } from '../data model classes/monthyearDate';
 
 @Component({
   selector: 'app-childinputs',
@@ -19,6 +20,8 @@ export class ChildinputsComponent implements OnInit {
   @Input() personA: Person
   @Input() personB: Person
   @Output() childChange: EventEmitter<Person> = new EventEmitter<Person>()
+
+  today:MonthYearDate = new MonthYearDate()
 
   inputMonths: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
   inputDays: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,

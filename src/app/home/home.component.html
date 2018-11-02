@@ -171,7 +171,7 @@
 
         <!--Disability Inputs for personB-->
           <span *ngIf="advanced === true">
-            <label>Disability: is your spouse currently receiving Social Security disability <em>and</em> expecting to stay on disability until his/her full retirement age?</label>
+            <label>Disability: is your spouse currently receiving Social Security disability <em>and</em> expecting to stay on disability until full retirement age?</label>
             <input type="radio" id="personBdisabled" [(ngModel)]="personB.isOnDisability" name="personB.isOnDisability" [value]="true">
             <label for="personBdisabled">Yes</label>
             <input type="radio" id="personBnotDisabled" [(ngModel)]="personB.isOnDisability" name="personB.isOnDisability" [value]="false">
