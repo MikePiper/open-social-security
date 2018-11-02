@@ -217,7 +217,7 @@ export class PresentValueService {
       personA.age = ( calcYear.date.getMonth() - personA.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
       personB.age = ( calcYear.date.getMonth() - personB.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
       for (let child of scenario.children){
-        child.age = ( 12 * (calcYear.date.getFullYear() - child.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - child.SSbirthDate.getMonth()  )/12
+        child.age = ( calcYear.date.getMonth() - child.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - child.SSbirthDate.getFullYear()) )/12
       }
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
@@ -990,7 +990,9 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       return false
     }
     for (let child of scenario.children){
-      if (child.age < 18.1 && child.isOnDisability === false){//use 18.1 because we've already added 1 month to child's age at point where this is called. And we want to make sure they were 18 right *before* that happened
+      if (child.age < 19.1 && child.isOnDisability === false){
+        //We call this function in december. We have already added 1 month to child's age at point where this function is called though.
+        //and we want to make sure they were 18 for the ENTIRE year. So they need to be 19 and 1 month by this point basically.
         return false
       }
     }
