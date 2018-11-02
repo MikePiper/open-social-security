@@ -129,7 +129,7 @@ export class PresentValueService {
             }
 
           //Apply probability alive to annual benefit amounts
-          let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(person, person.age)
+          let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(scenario, person, person.age)
           calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * probabilityPersonAlive + calcYear.annualBenefitSinglePersonDeceased * (1 - probabilityPersonAlive)
 
           //Discount that probability-weighted annual benefit amount to age 62
@@ -283,8 +283,8 @@ export class PresentValueService {
               }
 
             //Calculate each person's probability of being alive at end of age in question
-              let probabilityAalive:number = this.mortalityService.calculateProbabilityAlive(personA, personA.age)
-              let probabilityBalive:number = this.mortalityService.calculateProbabilityAlive(personB, personB.age)
+              let probabilityAalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personA, personA.age, personB)
+              let probabilityBalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personB, personB.age, personA)
 
             //Apply probability alive to annual benefit amounts
               let annualPV:number =
@@ -302,24 +302,24 @@ export class PresentValueService {
                 //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
                 annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
-                // if (printOutputTable === true){
-                //   console.log("monthly loop year: " + calcYear.date.getFullYear())
-                //   console.log("discounted annualPV: " + annualPV)
-                //   console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
-                //   console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
-                //   console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
-                //   console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
-                //   console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
-                //   console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
-                //   console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
-                //   console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
-                //   console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
-                //   console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
-                //   console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
-                //   console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
-                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
-                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
-                // }
+                if (printOutputTable === true){
+                  console.log("monthly loop year: " + calcYear.date.getFullYear())
+                  console.log("discounted annualPV: " + annualPV)
+                  console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
+                  console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
+                  console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
+                  console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
+                  console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
+                  console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
+                  console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
+                  console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
+                  console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
+                  console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
+                  console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
+                  console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
+                  console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
+                  console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
+                }
 
             //Add discounted benefit to ongoing sum
               couplePV = couplePV + annualPV
@@ -441,8 +441,8 @@ export class PresentValueService {
         }
 
       //Calculate each person's probability of being alive at end of age in question
-        probabilityAalive = this.mortalityService.calculateProbabilityAlive(personA, personA.age)
-        probabilityBalive = this.mortalityService.calculateProbabilityAlive(personB, personB.age)
+        probabilityAalive = this.mortalityService.calculateProbabilityAlive(scenario, personA, personA.age, personB)
+        probabilityBalive = this.mortalityService.calculateProbabilityAlive(scenario, personB, personB.age, personA)
 
       //Find total probability-weighted annual benefit
         let annualPV = 

@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core'
 import {Person} from './data model classes/person'
+import { CalculationScenario } from './data model classes/calculationscenario';
 
 @Injectable({
   providedIn: 'root'
@@ -8,14 +9,17 @@ export class MortalityService {
 
   constructor() { }
 
-  calculateProbabilityAlive(person:Person, age:number){//"age" here is age as of beginning of year in question. person.initialAgeRounded is rounded age as of date filling out form
+  calculateProbabilityAlive(scenario:CalculationScenario, person:Person, age:number, otherPerson?:Person){//"age" here is age as of beginning of year in question. person.initialAgeRounded is rounded age as of date filling out form
     //Calculate probability of being alive at end of age in question
-    //If user is older than 62 when filling out form, denominator is lives remaining at age when filling out form. Otherwise it's lives remaining at age 62
-    if (person.initialAgeRounded > 62) {
-      var denominatorAge = person.initialAgeRounded
+    //Denominator age is age today, unless user (and user's spouse if married) is younger than 62 and not disabled, in which case we start it at 62 (i.e., assume they live at least until 62)
+    let denominatorAge: number = person.initialAgeRounded
+    if (scenario.maritalStatus == "single" || scenario.maritalStatus == "divorced") {
+      if (person.initialAgeRounded < 62 && person.isOnDisability === false) {
+        denominatorAge = 62
+      }
     }
-    else {
-      var denominatorAge = 62
+    else if (person.initialAgeRounded < 62 && person.isOnDisability === false && otherPerson.initialAgeRounded < 62 && otherPerson.isOnDisability === false){
+      denominatorAge = 62
     }
     let ageLastBirthday = Math.floor(age)
     let probabilityAlive = //need probability of being alive at end of "currentCalculationDate" year
