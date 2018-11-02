@@ -213,9 +213,12 @@ export class PresentValueService {
       child.childBenefitDate = this.benefitService.determineChildBenefitDate(scenario, child, personA, personB)
     }
 
-    //calculate ages as of initialCalcDate
+    //calculate ages as of initial calcYear.date
       personA.age = ( calcYear.date.getMonth() - personA.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
       personB.age = ( calcYear.date.getMonth() - personB.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
+      for (let child of scenario.children){
+        child.age = ( 12 * (calcYear.date.getFullYear() - child.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - child.SSbirthDate.getMonth()  )/12
+      }
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (personA.age < 115 || personB.age < 115){
@@ -302,24 +305,24 @@ export class PresentValueService {
                 //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
                 annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
-                if (printOutputTable === true){
-                  console.log("monthly loop year: " + calcYear.date.getFullYear())
-                  console.log("discounted annualPV: " + annualPV)
-                  console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
-                  console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
-                  console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
-                  console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
-                  console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
-                  console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
-                  console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
-                  console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
-                  console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
-                  console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
-                  console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
-                  console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
-                  console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
-                  console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
-                }
+                // if (printOutputTable === true){
+                //   console.log("monthly loop year: " + calcYear.date.getFullYear())
+                //   console.log("discounted annualPV: " + annualPV)
+                //   console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
+                //   console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
+                //   console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
+                //   console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
+                //   console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
+                //   console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
+                //   console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
+                //   console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
+                //   console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
+                //   console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
+                //   console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
+                //   console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
+                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
+                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
+                // }
 
             //Add discounted benefit to ongoing sum
               couplePV = couplePV + annualPV

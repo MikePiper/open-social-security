@@ -267,9 +267,8 @@
       </span>
 
         <!--Begin Child Inputs -->
-        <span *ngIf="this.advanced && scenario.maritalStatus == 'single'">
+        <span *ngIf="this.advanced">
             <h2>Children</h2>
-            <p><em>Note: child-related functionality is only currently available for "single" marital status. Similar functionality is in the works for married/divorced users.</em></p>
             <label>Do you have any children who are under age 19 or permanently disabled?</label>
             <input type="radio" id="childrenYes" [(ngModel)]="qualifyingChildrenBoolean" name="qualifyingChildrenBoolean" [value]="true">
             <label for="childrenYes">Yes</label>
