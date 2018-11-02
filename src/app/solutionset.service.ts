@@ -60,13 +60,6 @@ export class SolutionSetService {
     }
     //Child Benefit Solution
     if (scenario.children.length > 0){
-      // //Determine childBenefitFilingDate -> later of person.retirementBenefitDate or today (Note this is the date on which child actually files. Effective benefit date can be earlier in retroactive filing.)
-      // var childBenefitFilingDate: MonthYearDate = new MonthYearDate(person.retirementBenefitDate)
-      // if (childBenefitFilingDate < this.today) {
-      //   childBenefitFilingDate = new MonthYearDate(this.today)
-      // }
-      //Determine if there is at least one child who a) is disabled or under 18 as of childBenefitFilingDate and b) has not yet filed for child benefits
-
       //Determine if there are any children who have not yet filed and who are under 18 or disabled as of their childBenefitDate
       var childWhoNeedsToFile:boolean = false
       for (let child of scenario.children){
@@ -82,6 +75,7 @@ export class SolutionSetService {
           if (child.hasFiled === false){
             childBenefitDates.push(child.childBenefitDate)
           }
+        }
           childBenefitDates.sort(function(a,b){
             return a.valueOf() - b.valueOf()
           })
@@ -93,7 +87,6 @@ export class SolutionSetService {
           var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", person, childBenefitDates[0], 0, 0)
         }
         solutionSet.solutionsArray.push(childBenefitSolution)
-        }
       }
     }
     //Sort array by date
@@ -250,7 +243,73 @@ export class SolutionSetService {
                 if (personBsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(personBspousalSolution)}
               }
             }
-    
+
+        //Child Benefit Solution
+        if (scenario.children.length > 0){
+          //Determine if there are any children who have not yet filed and who are under 18 or disabled as of their childBenefitDate
+          var childWhoNeedsToFile:boolean = false
+          for (let child of scenario.children){
+            let ageOnChildBenefitDate:number = ( 12 * (child.childBenefitDate.getFullYear() - child.SSbirthDate.getFullYear()) + (child.childBenefitDate.getMonth()) - child.SSbirthDate.getMonth()  )/12
+            if ( (ageOnChildBenefitDate < 17.99 || child.isOnDisability === true) && child.hasFiled === false ){
+              childWhoNeedsToFile = true
+            }
+          }
+          //If there's a child who needs to file, find earliest childBenefitDate (of children who haven't filed) and find whether it is prior to today
+          if (childWhoNeedsToFile === true){
+            let childBenefitDates:MonthYearDate[] = []
+            for (let child of scenario.children){
+              if (child.hasFiled === false){
+                childBenefitDates.push(child.childBenefitDate)
+              }
+            }
+              childBenefitDates.sort(function(a,b){
+                return a.valueOf() - b.valueOf()
+              })
+            //now we have an array of the childBenefitDates of the children who haven't filed, and it's sorted earliest to latest
+            if (childBenefitDates[0] < this.today){//if there's a retroactive application for child benefits (meaning at least one parent has been entitled for some time now)
+              if ( (personA.hasFiled === true || personA.isOnDisability === true) && (personB.hasFiled === false && personB.isOnDisability === false) ){//if personA is currently entitled and personB isn't
+                var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveChild", personA, childBenefitDates[0], 0, 0)
+              }
+              else if ( (personB.hasFiled === true || personB.isOnDisability === true) && (personA.hasFiled === false && personA.isOnDisability === false) ){//if personB is currently entitled and personA isn't
+                var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveChild", personB, childBenefitDates[0], 0, 0)
+              }
+              else {//i.e., if both are entitled
+                if (personA.PIA > personB.PIA){
+                  var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveChild", personA, childBenefitDates[0], 0, 0)
+                }
+                else {
+                  var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveChild", personB, childBenefitDates[0], 0, 0)
+                }
+              }
+            }
+            else {//i.e., no retroactive application for child benefits (meaning neither parent is already entitled when using calculator)
+              if (personA.retirementBenefitDate < personB.retirementBenefitDate){
+                var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", personA, childBenefitDates[0], 0, 0)
+              }
+              else if (personB.retirementBenefitDate < personA.retirementBenefitDate){
+                var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", personB, childBenefitDates[0], 0, 0)
+              }
+              else {//i.e., they have same retirement benefit date
+                if (personA.PIA > personB.PIA){
+                  var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", personA, childBenefitDates[0], 0, 0)
+                }
+                else {
+                  var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", personB, childBenefitDates[0], 0, 0)
+                }
+              }
+            }
+            solutionSet.solutionsArray.push(childBenefitSolution)
+            //Do we need a second child benefit solution? (i.e., because entitlement on second parent begins at later date?)
+            if (personA.retirementBenefitDate > childBenefitSolution.date && personA.PIA > personB.PIA){
+              let secondChildBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", personA, personA.retirementBenefitDate, 0, 0)
+              solutionSet.solutionsArray.push(secondChildBenefitSolution)
+            }
+            else if (personB.retirementBenefitDate > childBenefitSolution.date && personB.PIA > personA.PIA){
+              let secondChildBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", personB, personB.retirementBenefitDate, 0, 0)
+              solutionSet.solutionsArray.push(secondChildBenefitSolution)
+            }
+          }
+        }
 
         //Sort array by date
         solutionSet.solutionsArray.sort(function(a,b){

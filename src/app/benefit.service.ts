@@ -176,29 +176,43 @@ export class BenefitService {
         }
       }
       else {//If child hasn't filed, find earliest retroactive childBenefitDate based on each parent
-        if (personA.isOnDisability === false){
-          var earliestChildBenefitDateFromPersonA:MonthYearDate = new MonthYearDate(this.today)
-          earliestChildBenefitDateFromPersonA.setMonth(earliestChildBenefitDateFromPersonA.getMonth()-6)
-        }
-        else {
-          var earliestChildBenefitDateFromPersonA:MonthYearDate = new MonthYearDate(this.today)
-          earliestChildBenefitDateFromPersonA.setMonth(earliestChildBenefitDateFromPersonA.getMonth()-12)
-        }
-        if (personB.isOnDisability === false){
-          var earliestChildBenefitDateFromPersonB:MonthYearDate = new MonthYearDate(this.today)
-          earliestChildBenefitDateFromPersonB.setMonth(earliestChildBenefitDateFromPersonB.getMonth()-6)
-        }
-        else {
-          var earliestChildBenefitDateFromPersonB:MonthYearDate = new MonthYearDate(this.today)
-          earliestChildBenefitDateFromPersonB.setMonth(earliestChildBenefitDateFromPersonB.getMonth()-12)
-        }
+        //find earliest date based on parentA
+          if (personA.isOnDisability === false){//if personA is not disabled, it's 6 months ago. But no earlier than personA's retirementBenefitDate
+            var earliestChildBenefitDateFromPersonA:MonthYearDate = new MonthYearDate(this.today)
+            earliestChildBenefitDateFromPersonA.setMonth(earliestChildBenefitDateFromPersonA.getMonth()-6)
+            if (earliestChildBenefitDateFromPersonA < personA.retirementBenefitDate){
+              earliestChildBenefitDateFromPersonA = new MonthYearDate(personA.retirementBenefitDate)
+            }
+          }
+          else {//if personA is disabled, it's 12 months ago. But no earlier than personA's fixedRetirementBenefitDate (i.e., their disability date)
+            var earliestChildBenefitDateFromPersonA:MonthYearDate = new MonthYearDate(this.today)
+            earliestChildBenefitDateFromPersonA.setMonth(earliestChildBenefitDateFromPersonA.getMonth()-12)
+            if (earliestChildBenefitDateFromPersonA < personA.fixedRetirementBenefitDate){
+              earliestChildBenefitDateFromPersonA = new MonthYearDate(personA.fixedRetirementBenefitDate)
+            }
+          }
+        //find earliest date based on parentB
+          if (personB.isOnDisability === false){//if personB is not disabled, it's 6 months ago. But no earlier than personB's retirementBenefitDate
+            var earliestChildBenefitDateFromPersonB:MonthYearDate = new MonthYearDate(this.today)
+            earliestChildBenefitDateFromPersonB.setMonth(earliestChildBenefitDateFromPersonB.getMonth()-6)
+            if (earliestChildBenefitDateFromPersonB < personB.retirementBenefitDate){
+              earliestChildBenefitDateFromPersonB = new MonthYearDate(personB.retirementBenefitDate)
+            }
+          }
+          else {//if personB is disabled, it's 12 months ago. But no earlier than personB's fixedRetirementBenefitDate (i.e., their disability date)
+            var earliestChildBenefitDateFromPersonB:MonthYearDate = new MonthYearDate(this.today)
+            earliestChildBenefitDateFromPersonB.setMonth(earliestChildBenefitDateFromPersonB.getMonth()-12)
+            if (earliestChildBenefitDateFromPersonB < personB.fixedRetirementBenefitDate){
+              earliestChildBenefitDateFromPersonB = new MonthYearDate(personB.fixedRetirementBenefitDate)
+            }
+          }
         //childBenefitDate is earlier of those two dates
-        if (earliestChildBenefitDateFromPersonA < earliestChildBenefitDateFromPersonB){
-          childBenefitDate = new MonthYearDate(earliestChildBenefitDateFromPersonA)
-        }
-        else {
-          childBenefitDate = new MonthYearDate(earliestChildBenefitDateFromPersonB)
-        }
+          if (earliestChildBenefitDateFromPersonA < earliestChildBenefitDateFromPersonB){
+            childBenefitDate = new MonthYearDate(earliestChildBenefitDateFromPersonA)
+          }
+          else {
+            childBenefitDate = new MonthYearDate(earliestChildBenefitDateFromPersonB)
+          }
       }
     }
     //Don't let childBenefitDate be earlier than child's SSbirthDate
