@@ -37,11 +37,7 @@ export class PresentValueService {
     }
 
     //Create initial CalculationYear object
-    //initialCalcDate is Jan 1 of year they turn 62, but no later than retirementBenefitDate (point being, if they are on disability prior to 62, we want calc to start now so we can get table beginning now)
-    let initialCalcDate:MonthYearDate = new MonthYearDate(person.SSbirthDate.getFullYear()+62, 0, 1)
-    if (initialCalcDate.getFullYear() > person.retirementBenefitDate.getFullYear()){
-      initialCalcDate = new MonthYearDate(person.retirementBenefitDate)
-    }
+    let initialCalcDate:MonthYearDate = this.whenShouldPVcalculationStart(scenario, person)
     let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
 
     //calculate age(s) as of that date
@@ -73,20 +69,8 @@ export class PresentValueService {
             }
 
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
-            if (calcYear.date >= this.today || (person.hasFiled === false && person.isOnDisability === false) ){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
-              calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + person.monthlyRetirementPayment
-            }
-            for (let child of scenario.children){
-              if (calcYear.date >= this.today || child.hasFiled === false){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
-                calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + child.monthlyChildPayment
-              }
-            }
-            if (printOutputTable === true){
-              calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit + person.monthlyRetirementPayment
-              for (let child of scenario.children){
-                calcYear.tableTotalAnnualChildBenefitsSingleParentAlive = calcYear.tableTotalAnnualChildBenefitsSingleParentAlive + child.monthlyChildPayment
-              }
-            }
+            this.addMonthlyPaymentAmountsToApplicableSumsSingle(scenario, calcYear, person, true, printOutputTable)
+
 
       //Assume person is deceased
             //calculate monthlyPayment field for each person (sets child monthlyPayments to 75% of PIA if they are under 18 or disabled)
@@ -101,14 +85,8 @@ export class PresentValueService {
             //Earnings test: not necessary in Single scenario if person is deceased
 
             //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
-            for (let child of scenario.children){
-              if (calcYear.date >= this.today){//only want to include child survivor benefit in PV calc if it is not from a month in the past (would never have a retroactive child survivor application, since if parent is already deceased calculator doesn't run)
-                calcYear.annualBenefitSinglePersonDeceased = calcYear.annualBenefitSinglePersonDeceased + child.monthlyChildPayment
-              }
-              if (printOutputTable === true){
-                calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased = calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased + child.monthlyChildPayment
-              }
-            }
+            this.addMonthlyPaymentAmountsToApplicableSumsSingle(scenario, calcYear, person, false, printOutputTable)
+
 
       //After month is over increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
         for (let child of scenario.children){
@@ -184,28 +162,7 @@ export class PresentValueService {
           }
 
     //Create initial CalculationYear object
-        let initialCalcDate:MonthYearDate
-        //If divorced, set to Jan 1 of year in which personA turns 62
-          if (scenario.maritalStatus == "divorced") {
-            initialCalcDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0)
-          }
-        //If married, set initialCalcDate to Jan 1 of year in which first spouse reaches age 62
-          if (scenario.maritalStatus == "married"){
-            if (personA.SSbirthDate < personB.SSbirthDate)
-              {
-                initialCalcDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0)
-              }
-            else {
-              initialCalcDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+62, 0)
-              }
-          }
-        //Don't let initialCalcDate be later than the earlier retirementBenefitDate (point being, if a person is on disability prior to 62, we want calc to start now so we can get table beginning now)
-          if (personA.retirementBenefitDate < personB.retirementBenefitDate && initialCalcDate > personA.retirementBenefitDate){
-            initialCalcDate = new MonthYearDate(personA.retirementBenefitDate.getFullYear(), 0)
-          }
-          if (personB.retirementBenefitDate < personA.retirementBenefitDate && initialCalcDate > personB.retirementBenefitDate){
-            initialCalcDate = new MonthYearDate(personB.retirementBenefitDate.getFullYear(), 0)
-          }
+        let initialCalcDate:MonthYearDate = this.whenShouldPVcalculationStart(scenario, personA, personB)
         let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
 
     //Find childBenefitDate for any children
@@ -302,11 +259,18 @@ export class PresentValueService {
                 if (personA.age > personB.age) {
                   olderAge = personA.age
                 } else {olderAge = personB.age}
+
+                // if (printOutputTable === true){
+                //   console.log("monthly loop year: " + calcYear.date.getFullYear())
+                //   console.log("probability A alive: " + probabilityAalive)
+                //   console.log("probability B alive: " + probabilityBalive)
+                //   console.log("undiscounted annualPV: " + annualPV)
+                // }
+
                 //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
                 annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
                 // if (printOutputTable === true){
-                //   console.log("monthly loop year: " + calcYear.date.getFullYear())
                 //   console.log("discounted annualPV: " + annualPV)
                 //   console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
                 //   console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
@@ -483,7 +447,7 @@ export class PresentValueService {
 
   maximizeSinglePersonPV(person:Person, scenario:CalculationScenario) : SolutionSet{
 
-    //find initial testClaimingDate for age 62
+    //find initial testClaimingDate for age 62 (or, more often, 62 and 1 month)
     person.retirementBenefitDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
     if (person.actualBirthDate.getDate() > 2){
       person.retirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+1)
@@ -569,6 +533,15 @@ export class PresentValueService {
       personA.retirementBenefitDate.setMonth(this.today.getMonth())
       personA.retirementBenefitDate.setFullYear(this.today.getFullYear())
     }
+    //If personA is currently beyond FRA when filling out form, set testClaimingDate to earliest retroactive date (6 months ago but no earlier than FRA)
+    if (this.today > personA.FRA){
+      personA.retirementBenefitDate.setMonth(this.today.getMonth()-6)
+      if (personA.retirementBenefitDate < personA.FRA){
+        personA.retirementBenefitDate.setMonth(personA.FRA.getMonth())
+        personA.retirementBenefitDate.setFullYear(personA.FRA.getFullYear())
+      }
+    }
+
     //Do all of the same, but for personB.
     personB.retirementBenefitDate = new MonthYearDate(personB.actualBirthDate.getFullYear()+62, personB.actualBirthDate.getMonth(), 1)
     if (personB.actualBirthDate.getDate() > 2){
@@ -578,6 +551,13 @@ export class PresentValueService {
     if (spouseBageToday > 62){
       personB.retirementBenefitDate.setMonth(this.today.getMonth())
       personB.retirementBenefitDate.setFullYear(this.today.getFullYear())
+    }
+    if (this.today > personB.FRA){
+      personB.retirementBenefitDate.setMonth(this.today.getMonth()-6)
+      if (personB.retirementBenefitDate < personB.FRA){
+        personB.retirementBenefitDate.setMonth(personB.FRA.getMonth())
+        personB.retirementBenefitDate.setFullYear(personB.FRA.getFullYear())
+      }
     }
 
     //If either person has already filed or is on disability, initialize that person's begin&end suspension date as their FRA (but no earlier than this month), and set that person's retirementBenefitDate using fixedRetirementBenefitDate field 
@@ -636,16 +616,25 @@ export class PresentValueService {
     personB = this.benefitService.calculateFamilyMaximum(personB)
 
     while (personA.retirementBenefitDate <= spouseAendTestDate && personA.endSuspensionDate <= spouseAendTestDate) {
-        //Reset personB.retirementBenefitDate to earliest possible (i.e., their "age 62 for whole month" month or today's month if they're currently older than 62)
+        //Reset personB.retirementBenefitDate to earliest possible (i.e., their "age 62 for whole month" month, or today's month if they're currently older than 62, or earliest retroactive date if they're older than FRA)
         if (spouseBageToday > 62){
           personB.retirementBenefitDate.setMonth(this.today.getMonth())
           personB.retirementBenefitDate.setFullYear(this.today.getFullYear())
-        } else {
+        }
+        else {
           personB.retirementBenefitDate = new MonthYearDate(personB.actualBirthDate.getFullYear()+62, personB.actualBirthDate.getMonth(), 1)
           if (personB.actualBirthDate.getDate() > 2){
             personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
           }
         }
+        if (this.today > personB.FRA){
+          personB.retirementBenefitDate.setMonth(this.today.getMonth()-6)
+          if (personB.retirementBenefitDate < personB.FRA){
+            personB.retirementBenefitDate.setMonth(personB.FRA.getMonth())
+            personB.retirementBenefitDate.setFullYear(personB.FRA.getFullYear())
+          }
+        }
+
         //If personB is disabled or already filed, reset suspension begin/end dates, and set retirementBenefitDate using fixedRetirementBenefitDate field
           if (personB.isOnDisability === true || personB.hasFiled === true) {
             if (this.today > personB.FRA){
@@ -728,6 +717,14 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     if (flexibleSpouseAgeToday > 62){
       flexibleSpouse.retirementBenefitDate.setMonth(this.today.getMonth())
       flexibleSpouse.retirementBenefitDate.setFullYear(this.today.getFullYear())
+    }
+    //If flexibleSpouse is currently beyond FRA when filling out form, set testClaimingDate to earliest retroactive date (6 months ago but no earlier than FRA)
+    if (this.today > flexibleSpouse.FRA){
+      flexibleSpouse.retirementBenefitDate.setMonth(this.today.getMonth()-6)
+      if (flexibleSpouse.retirementBenefitDate < flexibleSpouse.FRA){
+        flexibleSpouse.retirementBenefitDate.setMonth(flexibleSpouse.FRA.getMonth())
+        flexibleSpouse.retirementBenefitDate.setFullYear(flexibleSpouse.FRA.getFullYear())
+      }
     }
 
     //If flexibleSpouse has already filed or is on disability, initialize their begin&end suspension date as their FRA (but no earlier than this month). And set retirementBenefitDate to fixedRetirementBenefitDate
@@ -819,33 +816,36 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
   }
 
   //Adjusts spousal date as necessary. Is used after new retirement date is selected for either person.
+  //Regarding retroactive applications, they are generally handled by the fact that person's retirementBenefitDate could be a retroactive date, with appropriate limitations.
+    //In case of restricted application though (where person's spousalBenefitDate is set without regard to person's retirementBenefitDate) we have to check and make sure it's no more than 6 (or 12) months ago
   adjustSpousalBenefitDate(person:Person, otherPerson:Person, scenario:CalculationScenario) : Person {
     let deemedFilingCutoff: Date = new Date(1954, 0, 1)
     let otherPersonsLimitingDate: MonthYearDate
 
     //Determine "otherPerson's Limiting Date" (i.e., the date -- based on otherPerson -- before which "Person" cannot file a spousal benefit)
-    if (scenario.maritalStatus == "married") {
-      otherPersonsLimitingDate = otherPerson.retirementBenefitDate
-    }
-    if (scenario.maritalStatus == "divorced"){//If divorced, otherPersonsLimitingDate is first month for which otherPerson is age 62 all month
-      otherPersonsLimitingDate = new MonthYearDate(otherPerson.actualBirthDate.getFullYear()+62, otherPerson.actualBirthDate.getMonth(), 1)
-      if (otherPerson.actualBirthDate.getDate() > 2) {
-        otherPersonsLimitingDate.setMonth(otherPersonsLimitingDate.getMonth()+1)
+      if (scenario.maritalStatus == "married") {
+        otherPersonsLimitingDate = new MonthYearDate(otherPerson.retirementBenefitDate)
       }
-    }
-    if (otherPerson.isOnDisability === true){//If otherPerson is disabled, there is no "otherPersonsLimitingDate." So just make this own "age 62 all month" month
-    //Also, this check has to come last since it overrides others.
-      otherPersonsLimitingDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
-      if (person.actualBirthDate.getDate() > 2){
-        otherPersonsLimitingDate.setMonth(otherPersonsLimitingDate.getMonth()+1)
+      else if (scenario.maritalStatus == "divorced"){//If divorced, otherPersonsLimitingDate is first month for which otherPerson is age 62 all month
+        otherPersonsLimitingDate = new MonthYearDate(otherPerson.actualBirthDate.getFullYear()+62, otherPerson.actualBirthDate.getMonth(), 1)
+        if (otherPerson.actualBirthDate.getDate() > 2) {
+          otherPersonsLimitingDate.setMonth(otherPersonsLimitingDate.getMonth()+1)
+        }
       }
-    }
+      if (otherPerson.isOnDisability === true){//If otherPerson is disabled, there is no "otherPersonsLimitingDate." So just make this own "age 62 all month" month
+      //Also, this check has to come last since it overrides others.
+        otherPersonsLimitingDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
+        if (person.actualBirthDate.getDate() > 2){
+          otherPersonsLimitingDate.setMonth(otherPersonsLimitingDate.getMonth()+1)
+        }
+      }
 
     if (person.actualBirthDate > deemedFilingCutoff) {//i.e., if person has new deemed filing rules
       //set spousalBenefitDate to own retirementBenefitDate, but no earlier than otherPersonsLimitingDate
       if (person.retirementBenefitDate > otherPersonsLimitingDate) {
         person.spousalBenefitDate = new MonthYearDate(person.retirementBenefitDate)
-      } else {
+      }
+      else {
         person.spousalBenefitDate = new MonthYearDate(otherPersonsLimitingDate)
       }
     }
@@ -854,26 +854,35 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         //set spousalBenefitDate to own retirementBenefitDate, but no earlier than otherPersonsLimitingDate
         if (person.retirementBenefitDate > otherPersonsLimitingDate) {
           person.spousalBenefitDate = new MonthYearDate(person.retirementBenefitDate)
-        } else {
+        }
+        else {
           person.spousalBenefitDate = new MonthYearDate(otherPersonsLimitingDate)
         }
       }
       else {//i.e., if person's retirementBenefitDate currently after his/her FRA
-        //Set person's spousalBenefitlDate to earliest possible restricted application date (i.e., later of FRA or otherPersonsLimitingDate)
+        //Set person's spousalBenefitlDate to earliest possible restricted application date (i.e., later of FRA or otherPersonsLimitingDate)...but no earlier than 6 months ago (or 12 months ago if otherPerson is disabled)
         if (person.FRA > otherPersonsLimitingDate) {
           person.spousalBenefitDate = new MonthYearDate(person.FRA)
-        } else {
+        }
+        else {
           person.spousalBenefitDate = new MonthYearDate(otherPersonsLimitingDate)
         }
-      }
-    }
+        if (otherPerson.isOnDisability === false){
+          let sixMonthsAgo:MonthYearDate = new MonthYearDate()
+          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6)
+          if (person.spousalBenefitDate < sixMonthsAgo){
+            person.spousalBenefitDate = new MonthYearDate(sixMonthsAgo)
+          }
+        }
+        else {//i.e., otherPerson is on disability
+          let twelveMonthsAgo:MonthYearDate = new MonthYearDate()
+          twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth()-12)
+          if (person.spousalBenefitDate < twelveMonthsAgo){
+            person.spousalBenefitDate = new MonthYearDate(twelveMonthsAgo)
+          }
+        }
 
-    //Don't let spousalBenefitDate be earlier than this month unless "person" has already filed for spousal benefits -- that is, unless (person is older than 70 or person has filed) AND (otherPerson is over 70, otherPerson has filed, or otherPerson is on disability)
-    if (  (person.initialAge >= 70 || person.hasFiled === true) && (otherPerson.initialAge >= 70 || otherPerson.hasFiled === true || otherPerson.isOnDisability === true)  ){
-      //don't check whether spousalBenefitDate is in the past
-    }
-    else if (person.spousalBenefitDate < this.today){
-      person.spousalBenefitDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth(), 1)
+      }
     }
     
     return person
@@ -904,6 +913,38 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     return calcYear
   }
 
+  addMonthlyPaymentAmountsToApplicableSumsSingle(scenario:CalculationScenario, calcYear:CalculationYear, person:Person, personAliveBoolean:boolean, printOutputTable:Boolean){
+    if (personAliveBoolean === true){
+      //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
+      if (calcYear.date >= this.today || (person.hasFiled === false && person.isOnDisability === false) ){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
+      calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + person.monthlyRetirementPayment
+      }
+      for (let child of scenario.children){
+        if (calcYear.date >= this.today || child.hasFiled === false){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
+          calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive + child.monthlyChildPayment
+        }
+      }
+      if (printOutputTable === true){
+        calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit + person.monthlyRetirementPayment
+        for (let child of scenario.children){
+          calcYear.tableTotalAnnualChildBenefitsSingleParentAlive = calcYear.tableTotalAnnualChildBenefitsSingleParentAlive + child.monthlyChildPayment
+        }
+      }
+    }
+    else {//i.e., "person is deceased"
+      //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
+      for (let child of scenario.children){
+        if (calcYear.date >= this.today){//only want to include child survivor benefit in PV calc if it is not from a month in the past (would never have a retroactive child survivor application, since if parent is already deceased calculator doesn't run)
+          calcYear.annualBenefitSinglePersonDeceased = calcYear.annualBenefitSinglePersonDeceased + child.monthlyChildPayment
+        }
+        if (printOutputTable === true){
+          calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased = calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased + child.monthlyChildPayment
+        }
+      }
+    }
+  }
+
+
   addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB:Person, personBaliveBoolean:boolean, printOutputTable:Boolean){
       //if both parents alive, add monthlyPayment fields to annualBenefitBothAlive
         if (personAaliveBoolean === true && personBaliveBoolean === true){
@@ -924,10 +965,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       //if personA alive and personB deceased, add monthlyPayment fields to annualBenefitOnlyPersonAalive
         if (personAaliveBoolean === true && personBaliveBoolean === false){
           if (calcYear.date >= this.today){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
-          calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive + personA.monthlyRetirementPayment + personA.monthlySurvivorPayment
-          }
-          for (let child of scenario.children){
-            if (calcYear.date >= this.today){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
+            calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive + personA.monthlyRetirementPayment + personA.monthlySurvivorPayment
+            for (let child of scenario.children){
               calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive + child.monthlyChildPayment
             }
           }
@@ -938,17 +977,15 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
             if (scenario.maritalStatus == "married"){//only want to include personB's monthlyPayment fields in PV if married rather than divorced
               calcYear.annualBenefitOnlyPersonBalive = calcYear.annualBenefitOnlyPersonBalive + personB.monthlyRetirementPayment + personB.monthlySurvivorPayment
             }
-          }
-          for (let child of scenario.children){
-            if (calcYear.date >= this.today){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
-              calcYear.annualBenefitOnlyPersonBalive = calcYear.annualBenefitOnlyPersonBalive + child.monthlyChildPayment
+            for (let child of scenario.children){
+              calcYear.annualBenefitOnlyPersonBalive = calcYear.annualBenefitOnlyPersonBalive + child.monthlyChildPayment            
             }
           }
         }
       //if personA deceased and personB deceased, add monthlyPayment fields to annualBenefitBothDeceased
         if (personAaliveBoolean === false && personBaliveBoolean === false){
-          for (let child of scenario.children){
-            if (calcYear.date >= this.today){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
+          if (calcYear.date >= this.today){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
+            for (let child of scenario.children){
               calcYear.annualBenefitBothDeceased = calcYear.annualBenefitBothDeceased + child.monthlyChildPayment
             }
           }
@@ -1038,5 +1075,102 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased = savedCalculationYear.tableTotalAnnualChildBenefitsBothParentsDeceased
     calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive = savedCalculationYear.tableTotalAnnualChildBenefitsOnlyPersonAalive
     calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive = savedCalculationYear.tableTotalAnnualChildBenefitsOnlyPersonBalive
+  }
+
+  whenShouldPVcalculationStart(scenario:CalculationScenario, personA:Person, personB?:Person):MonthYearDate{
+    let startDate:MonthYearDate
+    //Determine if there is a child who has not yet filed. (This is important because it might open possibility of retroactive application.)
+        let childWhoHasntFiled:boolean = false
+        for (let child of scenario.children){
+          if (child.hasFiled === false){
+            childWhoHasntFiled = true
+          }
+        }
+
+    if (scenario.maritalStatus == "single"){
+      if (personA.initialAge < 62 && personA.isOnDisability === false){
+          if (scenario.children.length > 0){
+            startDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0) //Jan 1 of age-62 year (because we have to include same number of child-survivor benefit years regardless of when retirement benefit starts).
+          }
+          else {//(i.e., no children) 
+            startDate = new MonthYearDate(personA.retirementBenefitDate.getFullYear(), 0) //Jan1 of retirementBenefit year.
+          }
+      }
+      else {//(i.e., person is disabled and/or over 62)
+        if (childWhoHasntFiled === true || (this.today > personA.FRA && personA.hasFiled === false) ){
+          startDate = new MonthYearDate(this.today.getFullYear()-1, 0) //Jan1 of last year due to retroactive app possibility
+        }
+        else {//i.e., no retroactive application possibility
+          startDate = new MonthYearDate(this.today.getFullYear(), 0) //Jan 1 of this year
+        }
+      }
+    }
+    else if (scenario.maritalStatus == "married"){
+      if (personA.initialAge < 62 && personA.isOnDisability === false && personB.initialAge < 62 && personB.isOnDisability === false){
+        if (scenario.children.length > 0){
+          //Jan 1 of older spouse's age-62 year (because we have to include same number of child-survivor benefit years regardless of when retirement benefit starts)
+          if (personA.SSbirthDate < personB.SSbirthDate){
+            startDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0)
+          }
+          else {
+            startDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+62, 0)
+          }
+        }
+        else {//i.e., no children
+          //Jan 1 of earlier retirementBenefit year
+            if (personA.retirementBenefitDate < personB.retirementBenefitDate){
+              startDate = new MonthYearDate(personA.retirementBenefitDate.getFullYear(), 0)
+            }
+            else {
+              startDate = new MonthYearDate(personB.retirementBenefitDate.getFullYear(), 0)
+            }
+          //...but not later than Jan1 of older person's survivorFRA year (because we have to include same number of survivor benefit years in every calc regardless of retirementBenefitDates)
+            if (personA.SSbirthDate < personB.SSbirthDate && startDate > new MonthYearDate(personA.survivorFRA.getFullYear(),0) ){
+              startDate = new MonthYearDate(personA.survivorFRA.getFullYear(), 0)
+            }
+            else if (personB.SSbirthDate < personA.SSbirthDate && startDate > new MonthYearDate(personB.survivorFRA.getFullYear(),0) ){
+              startDate = new MonthYearDate(personB.survivorFRA.getFullYear(), 0)
+            }
+        } 
+      }
+      else {//(i.e., if personA or personB is disabled or over 62)
+          if (childWhoHasntFiled === true || (this.today > personA.FRA && personA.hasFiled === false) || (this.today > personB.FRA && personB.hasFiled === false) ){
+            startDate = new MonthYearDate(this.today.getFullYear()-1, 0) //Jan1 of last year due to retroactive app possibility
+          }
+          else {//i.e., no retroactive application possibility
+            startDate = new MonthYearDate(this.today.getFullYear(), 0) //Jan 1 of this year
+          }
+      }
+    }
+    else if (scenario.maritalStatus == "divorced"){
+      if (personA.initialAge < 62 && personA.isOnDisability === false && personB.initialAge < 62 && personB.isOnDisability === false){
+        if (scenario.children.length > 0){
+          //Jan 1 of older spouse's age-62 year (because we have to include same number of child and child-survivor benefit years regardless of when retirement benefit starts)
+          if (personA.SSbirthDate < personB.SSbirthDate){
+            startDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+62, 0)
+          }
+          else {
+            startDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+62, 0)
+          }
+        }
+        else {//i.e., no children
+          //Jan 1 of personA's retirementBenefit year
+            startDate = new MonthYearDate(personA.retirementBenefitDate.getFullYear(), 0)
+          //...but not later than Jan1 of personA's survivorFRA year (because we have to include same number of survivor benefit years in every calc regardless of retirementBenefitDate).
+            if (startDate > new MonthYearDate(personA.survivorFRA.getFullYear(),0) ){
+              startDate = new MonthYearDate(personA.survivorFRA.getFullYear(),0)
+            }
+        }
+      }
+      else {//(i.e., if personA or personB is disabled or over 62)
+        if (childWhoHasntFiled === true || (this.today > personA.FRA && personA.hasFiled === false)){
+          startDate = new MonthYearDate(this.today.getFullYear()-1, 0) //Jan1 of last year due to retroactive app possibility
+        }
+        else {//i.e., no retroactive application possibility
+          startDate = new MonthYearDate(this.today.getFullYear(), 0) //Jan 1 of this year
+        }
+      }
+    }  
+    return startDate
   }
 }

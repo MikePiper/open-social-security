@@ -132,7 +132,12 @@ export class SolutionSetService {
               var personAsavedRetirementAgeYears: number = Math.floor(personAsavedRetirementAge)
               var personAsavedRetirementAgeMonths: number = Math.round((personAsavedRetirementAge%1)*12)
               //Create retirement solution object
+              if (personA.retirementBenefitDate < this.today){
+                var personAretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveRetirement", personA, personA.retirementBenefitDate, personAsavedRetirementAgeYears, personAsavedRetirementAgeMonths)
+              }
+              else {
                 var personAretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirement", personA, personA.retirementBenefitDate, personAsavedRetirementAgeYears, personAsavedRetirementAgeMonths)
+              }
           }
 
         //personB retirement stuff
@@ -158,7 +163,12 @@ export class SolutionSetService {
               var personBsavedRetirementAgeYears: number = Math.floor(personBsavedRetirementAge)
               var personBsavedRetirementAgeMonths: number = Math.round((personBsavedRetirementAge%1)*12)
               //create retirement solution object
+              if (personB.retirementBenefitDate < this.today){
+                var personBretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveRetirement", personB, personB.retirementBenefitDate, personBsavedRetirementAgeYears, personBsavedRetirementAgeMonths)
+              }
+              else {
                 var personBretirementSolution = new ClaimingSolution(scenario.maritalStatus, "retirement", personB, personB.retirementBenefitDate, personBsavedRetirementAgeYears, personBsavedRetirementAgeMonths)
+              }
           }
 
         //personA spousal stuff
@@ -170,7 +180,12 @@ export class SolutionSetService {
           let personAsavedSpousalAgeYears: number = Math.floor(personAsavedSpousalAge)
           let personAsavedSpousalAgeMonths: number = Math.round((personAsavedSpousalAge%1)*12)
           //create spousal solution object
+          if (personA.spousalBenefitDate < this.today){
+            var personAspousalSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveSpousal", personA, personA.spousalBenefitDate, personAsavedSpousalAgeYears, personAsavedSpousalAgeMonths)
+          }
+          else {
             var personAspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousal", personA, personA.spousalBenefitDate, personAsavedSpousalAgeYears, personAsavedSpousalAgeMonths)
+          }
 
         //personB spousal stuff
           let personBsavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(personB, personA, personBsavedRetirementBenefit, personB.spousalBenefitDate)
@@ -181,7 +196,12 @@ export class SolutionSetService {
           let personBsavedSpousalAgeYears: number = Math.floor(personBsavedSpousalAge)
           let personBsavedSpousalAgeMonths: number = Math.round((personBsavedSpousalAge%1)*12)
           //personB spousal solution object
+          if (personB.spousalBenefitDate < this.today){
+            var personBspousalSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveSpousal", personB, personB.spousalBenefitDate, personBsavedSpousalAgeYears, personBsavedSpousalAgeMonths)
+          }
+          else {
             var personBspousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousal", personB, personB.spousalBenefitDate, personBsavedSpousalAgeYears, personBsavedSpousalAgeMonths)
+          }
 
         //personA disability stuff
           if (personA.isOnDisability === true) {
@@ -267,10 +287,10 @@ export class SolutionSetService {
               })
             //now we have an array of the childBenefitDates of the children who haven't filed, and it's sorted earliest to latest
             if (childBenefitDates[0] < this.today){//if there's a retroactive application for child benefits (meaning at least one parent has been entitled for some time now)
-              if ( (personA.hasFiled === true || personA.isOnDisability === true) && (personB.hasFiled === false && personB.isOnDisability === false) ){//if personA is currently entitled and personB isn't
+              if ( (personA.retirementBenefitDate < this.today || personA.isOnDisability === true) && (personB.retirementBenefitDate >= this.today && personB.isOnDisability === false) ){//if personA is currently entitled and personB isn't
                 var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveChild", personA, childBenefitDates[0], 0, 0)
               }
-              else if ( (personB.hasFiled === true || personB.isOnDisability === true) && (personA.hasFiled === false && personA.isOnDisability === false) ){//if personB is currently entitled and personA isn't
+              else if ( (personB.retirementBenefitDate < this.today || personB.isOnDisability === true) && (personA.retirementBenefitDate >= this.today && personA.isOnDisability === false) ){//if personB is currently entitled and personA isn't
                 var childBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveChild", personB, childBenefitDates[0], 0, 0)
               }
               else {//i.e., if both are entitled

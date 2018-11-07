@@ -20,13 +20,13 @@ import {MonthYearDate} from "./monthyearDate"
             this.message = "You file for your retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "retroactiveRetirement"){
-            this.message = "You file for your retirement benefit to begin (retroactively), as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+            this.message = "You file for your retirement benefit to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "spousal") {
             this.message = "You file for your spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "retroactiveSpousal") {
-            this.message = "You file for your spousal benefit to begin (retroactively), as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+            this.message = "You file for your spousal benefit to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "suspendToday") {
             this.message = "You suspend your retirement benefit today."
@@ -44,7 +44,7 @@ import {MonthYearDate} from "./monthyearDate"
             this.message = "Your child(ren) file(s) for child benefits on your work record " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
           }
           if (this.benefitType == "retroactiveChild"){
-            this.message = "Your child(ren) file(s) for child benefits on your work record to begin (retroactively), as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
+            this.message = "Your child(ren) file(s) for child benefits on your work record to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
           }
         }
         if (person.id == "B") {
@@ -52,13 +52,13 @@ import {MonthYearDate} from "./monthyearDate"
             this.message = "Your spouse files for his/her retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "retroactiveRetirement"){
-            this.message = "Your spouse files for his/her retirement benefit to begin (retroactively), as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+            this.message = "Your spouse files for his/her retirement benefit to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "spousal") {
             this.message = "Your spouse files for his/her spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "retroactiveSpousal") {
-            this.message = "Your sposue files for his/her spousal benefit to begin (retroactively), as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+            this.message = "Your spouse files for his/her spousal benefit to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "suspendToday") {
             this.message = "Your spouse suspends his/her retirement benefit today."
@@ -76,7 +76,7 @@ import {MonthYearDate} from "./monthyearDate"
             this.message = "Your child(ren) file(s) for child benefits on your spouse's work record " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
           }
           if (this.benefitType == "retroactiveChild"){
-            this.message = "Your child(ren) file(s) for child benefits on your spouse's work record to begin (retroactively), as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
+            this.message = "Your child(ren) file(s) for child benefits on your spouse's work record to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
           }
         }
         if (this.benefitType == "doNothing"){

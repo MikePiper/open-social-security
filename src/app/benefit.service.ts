@@ -488,13 +488,13 @@ export class BenefitService {
           personB.survivorBenefit = this.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
         }
 
-        //Calculate a person's retirement benefit when it starts, and recalculate their spousal and survivor benefits
-        if (calcYear.date.valueOf() == personA.retirementBenefitDate.valueOf()){
+        //Calculate a person's retirement benefit when it starts, and recalculate their spousal and survivor benefits. (Use >= rather than == to handle situation in which person started benefit in year in past, so PV calc never actually includes the year in which they start benefit.)
+        if (calcYear.date.valueOf() >= personA.retirementBenefitDate.valueOf() && personA.retirementBenefit == 0){
           personA.retirementBenefit = this.calculateRetirementBenefit(personA, personA.retirementBenefitDate)
           personA.spousalBenefit = this.calculateSpousalBenefit(personA, personB, personA.retirementBenefit, personA.spousalBenefitDate)
           personA.survivorBenefit = this.calculateSurvivorBenefit(personA, personA.retirementBenefit, personA.survivorFRA, personB, personB.retirementBenefitDate, personB.retirementBenefitDate)
         }
-        if (calcYear.date.valueOf() == personB.retirementBenefitDate.valueOf()){
+        if (calcYear.date.valueOf() >= personB.retirementBenefitDate.valueOf() && personB.retirementBenefit == 0){
           personB.retirementBenefit = this.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
           personB.spousalBenefit = this.calculateSpousalBenefit(personB, personA, personB.retirementBenefit, personB.spousalBenefitDate)
           personB.survivorBenefit = this.calculateSurvivorBenefit(personB, personB.retirementBenefit, personB.survivorFRA, personA, personA.retirementBenefitDate, personA.retirementBenefitDate)
