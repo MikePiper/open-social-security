@@ -417,7 +417,7 @@
         </span>
 
     <span *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">
-        <div class="form-inline" *ngIf="(personA.PIA < 0.5 * personB.PIA || personA.actualBirthDate < this.deemedFilingCutoff) && personA.declineSpousal === false">
+        <div class="form-inline" *ngIf="(personA.PIA < 0.5 * personB.PIA || personA.actualBirthDate <= this.deemedFilingCutoff) && personA.declineSpousal === false">
           <label>Your month/year to claim spousal benefit:</label>
           <select class="form-control" [(ngModel)]="customPersonAspousalBenefitMonth" name="customPersonAspousalBenefitMonth" id="customPersonAspousalBenefitMonth" required>
             <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
@@ -427,7 +427,7 @@
           </select>
           <span *ngIf="errorCollection.customPersonAspousalDateError" class="alert alert-danger">{{errorCollection.customPersonAspousalDateError}}</span>
         </div>
-        <span *ngIf="personA.PIA > 0.5 * personB.PIA && personA.actualBirthDate < this.deemedFilingCutoff">
+        <span *ngIf="personA.PIA > 0.5 * personB.PIA && personA.actualBirthDate <= this.deemedFilingCutoff">
           <label>Check this box to test a scenario in which you do not file for a spousal benefit:</label>
           <input id="personAdeclineSpousal" [(ngModel)]="personA.declineSpousal" name="personA.declineSpousal" value="true" type="checkbox">
         </span>
@@ -470,7 +470,7 @@
           <input id="personBdeclineSuspension" [(ngModel)]="personB.declineSuspension" name="personB.declineSuspension" value="true" type="checkbox">
         </span>
 
-        <div class="form-inline" *ngIf="(personB.PIA < 0.5 * personA.PIA || personB.actualBirthDate < this.deemedFilingCutoff) && personB.declineSpousal === false">
+        <div class="form-inline" *ngIf="(personB.PIA < 0.5 * personA.PIA || personB.actualBirthDate <= this.deemedFilingCutoff) && personB.declineSpousal === false">
           <span *ngIf="scenario.maritalStatus == 'married'">
           <label>Your spouse's month/year to claim spousal benefit:</label>
           <select class="form-control" [(ngModel)]="customPersonBspousalBenefitMonth" name="customPersonBspousalBenefitMonth" id="customPersonBspousalBenefitMonth" required>
@@ -482,13 +482,17 @@
           </span>
           <span *ngIf="errorCollection.customPersonBspousalDateError" class="alert alert-danger">{{errorCollection.customPersonBspousalDateError}}</span>
         </div>
-          <span *ngIf="scenario.maritalStatus == 'married' && personB.PIA > 0.5 * personA.PIA && personB.actualBirthDate < this.deemedFilingCutoff">
+          <span *ngIf="scenario.maritalStatus == 'married' && personB.PIA > 0.5 * personA.PIA && personB.actualBirthDate <= this.deemedFilingCutoff">
             <label>Check this box to test a scenario in which your spouse does not file for a spousal benefit:</label>
             <input id="personBdeclineSpousal" [(ngModel)]="personB.declineSpousal" name="personB.declineSpousal" value="true" type="checkbox">
           </span>
         <!--End PersonB Custom Date Inputs -->
-
       </span>
+
+      <!--Child Custom Date Tooltip -->
+      <p *ngIf="scenario.children.length > 0">There is no need to input dates related to your child(ren). The calculator assumes that a child will always file for child benefits as soon as they are eligible, given that there is no drawback to doing so.</p>
+     <!--Child Custom Date Tooltip -->
+
     <div>
         <button type="submit" class="btn btn-primary no-print">Submit</button>
     </div>
