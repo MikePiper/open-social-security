@@ -296,11 +296,11 @@ export class HomeComponent implements OnInit {
 
   //Use inputs to calculate ages, SSbirthdates, FRAs, etc. Happens every time an input in the primary form is changed.
   getPrimaryFormInputs() {
-    this.personA.actualBirthDate = new Date (this.personAinputYear, this.personAinputMonth-1, this.personAinputDay)
+    this.personA.actualBirthDate = new Date (this.personAinputYear, this.personAinputMonth-1, this.personAinputDay-1)
     this.personA.SSbirthDate = this.birthdayService.findSSbirthdate(this.personAinputMonth, this.personAinputDay, this.personAinputYear)
     this.personA.FRA = this.birthdayService.findFRA(this.personA.SSbirthDate)
     this.personA.survivorFRA = this.birthdayService.findSurvivorFRA(this.personA.SSbirthDate)
-    this.personB.actualBirthDate = new Date (this.personBinputYear, this.personBinputMonth-1, this.personBinputDay)
+    this.personB.actualBirthDate = new Date (this.personBinputYear, this.personBinputMonth-1, this.personBinputDay-1)
     this.personB.SSbirthDate = this.birthdayService.findSSbirthdate(this.personBinputMonth, this.personBinputDay, this.personBinputYear)
     this.personB.FRA = this.birthdayService.findFRA(this.personB.SSbirthDate)
     this.personB.survivorFRA = this.birthdayService.findSurvivorFRA(this.personB.SSbirthDate)
