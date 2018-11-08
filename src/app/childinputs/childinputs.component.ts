@@ -41,7 +41,7 @@ export class ChildinputsComponent implements OnInit {
 
 
   getInputs(){
-    this.child.actualBirthDate = new Date (this.DoBinputYear, this.DoBinputMonth-1, this.DoBinputDay)
+    this.child.actualBirthDate = new Date (this.DoBinputYear, this.DoBinputMonth-1, this.DoBinputDay-1)
     this.child.SSbirthDate = this.birthdayService.findSSbirthdate(this.DoBinputMonth, this.DoBinputDay, this.DoBinputYear)
     this.childChange.emit(this.child)
   }

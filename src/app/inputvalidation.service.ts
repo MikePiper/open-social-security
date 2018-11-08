@@ -117,8 +117,8 @@ export class InputValidationService {
     }
 
     //Validation in case they try to start retirement benefit earlier first 62-all-month month or after 70
-    let earliestDate: MonthYearDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
-    if (person.actualBirthDate.getDate() > 2) {
+    let earliestDate: MonthYearDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth())
+    if (person.actualBirthDate.getDate() > 1) {//i.e., if they are born after 2nd of month ("1" is second of month)
       earliestDate.setMonth(earliestDate.getMonth()+1)
     }
     if (person.isOnDisability === false && retirementBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for retirement benefits before the first month in which they are 62 for the entire month."}
@@ -160,8 +160,8 @@ export class InputValidationService {
         //If otherPerson is already on disability benefits, "second start date" is just own retirement benefit date
         //Of note: entitlement to own disability benefit + eligibility for spousal benefit does NOT cause deemed filing
         if(scenario.maritalStatus == "divorced") {
-          let exSpouse62Date = new MonthYearDate(otherPerson.actualBirthDate.getFullYear()+62, otherPerson.actualBirthDate.getMonth(), 1)
-          if (otherPerson.actualBirthDate.getDate() > 2){
+          let exSpouse62Date = new MonthYearDate(otherPerson.actualBirthDate.getFullYear()+62, otherPerson.actualBirthDate.getMonth())
+          if (otherPerson.actualBirthDate.getDate() > 1){//i.e., if they are born after 2nd of month ("1" is second of month)
             exSpouse62Date.setMonth(exSpouse62Date.getMonth()+1)
           }
           if (ownRetirementBenefitDate < exSpouse62Date && otherPerson.isOnDisability === false) {//ie, if own retirement benefit date comes before otherPerson is 62, and otherPerson is not disabled
@@ -177,8 +177,8 @@ export class InputValidationService {
     }
 
     //Validation in case they try to start benefit earlier than own "62 all month" month.
-    let earliestDate: MonthYearDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
-    if (person.actualBirthDate.getDate() > 2) {
+    let earliestDate: MonthYearDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth())
+    if (person.actualBirthDate.getDate() > 1) {//i.e., if they are born after 2nd of month ("1" is second of month)
       earliestDate.setMonth(earliestDate.getMonth()+1)
     }
     if (spousalBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for spousal benefits before the first month in which they are 62 for the entire month."}

@@ -448,8 +448,8 @@ export class PresentValueService {
   maximizeSinglePersonPV(person:Person, scenario:CalculationScenario) : SolutionSet{
 
     //find initial testClaimingDate for age 62 (or, more often, 62 and 1 month)
-    person.retirementBenefitDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
-    if (person.actualBirthDate.getDate() > 2){
+    person.retirementBenefitDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth())
+    if (person.actualBirthDate.getDate() > 1){//i.e., if they are born after 2nd of month ("1" is second of month)
       person.retirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+1)
     }
 
@@ -523,8 +523,8 @@ export class PresentValueService {
   maximizeCouplePViterateBothPeople(personA:Person, personB:Person, scenario:CalculationScenario) : SolutionSet{
 
     //find initial retirementBenefitDate for personA (first month for which they are considered 62 for entire month)
-    personA.retirementBenefitDate = new MonthYearDate(personA.actualBirthDate.getFullYear()+62, personA.actualBirthDate.getMonth(), 1)
-    if (personA.actualBirthDate.getDate() > 2){
+    personA.retirementBenefitDate = new MonthYearDate(personA.actualBirthDate.getFullYear()+62, personA.actualBirthDate.getMonth())
+    if (personA.actualBirthDate.getDate() > 1){//i.e., if they are born after 2nd of month ("1" is second of month)
       personA.retirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+1)
     }
     //If personA is currently over age 62 when filling out form, adjust their initial retirementBenefitDate to today's month/year instead of their age 62 month/year.
@@ -543,8 +543,8 @@ export class PresentValueService {
     }
 
     //Do all of the same, but for personB.
-    personB.retirementBenefitDate = new MonthYearDate(personB.actualBirthDate.getFullYear()+62, personB.actualBirthDate.getMonth(), 1)
-    if (personB.actualBirthDate.getDate() > 2){
+    personB.retirementBenefitDate = new MonthYearDate(personB.actualBirthDate.getFullYear()+62, personB.actualBirthDate.getMonth())
+    if (personB.actualBirthDate.getDate() > 1){//i.e., if they are born after 2nd of month ("1" is second of month)
       personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
     }
     let spouseBageToday: number = this.today.getFullYear() - personB.SSbirthDate.getFullYear() + (this.today.getMonth() - personB.SSbirthDate.getMonth()) /12
@@ -622,8 +622,8 @@ export class PresentValueService {
           personB.retirementBenefitDate.setFullYear(this.today.getFullYear())
         }
         else {
-          personB.retirementBenefitDate = new MonthYearDate(personB.actualBirthDate.getFullYear()+62, personB.actualBirthDate.getMonth(), 1)
-          if (personB.actualBirthDate.getDate() > 2){
+          personB.retirementBenefitDate = new MonthYearDate(personB.actualBirthDate.getFullYear()+62, personB.actualBirthDate.getMonth())
+          if (personB.actualBirthDate.getDate() > 1){//i.e., if they are born after 2nd of month ("1" is second of month)
             personB.retirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+1)
           }
         }
@@ -708,8 +708,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     fixedSpouse.retirementBenefitDate = new MonthYearDate(fixedSpouse.fixedRetirementBenefitDate)
 
     //find initial retirementBenefitDate for flexibleSpouse (first month for which flexibleSpouse is considered 62 for entire month)
-    flexibleSpouse.retirementBenefitDate = new MonthYearDate(flexibleSpouse.actualBirthDate.getFullYear()+62, flexibleSpouse.actualBirthDate.getMonth(), 1)
-    if (flexibleSpouse.actualBirthDate.getDate() > 2){
+    flexibleSpouse.retirementBenefitDate = new MonthYearDate(flexibleSpouse.actualBirthDate.getFullYear()+62, flexibleSpouse.actualBirthDate.getMonth())
+    if (flexibleSpouse.actualBirthDate.getDate() > 1){//i.e., if they are born after 2nd of month ("1" is second of month)
       flexibleSpouse.retirementBenefitDate.setMonth(flexibleSpouse.retirementBenefitDate.getMonth()+1)
     }
     //If flexibleSpouse is currently over age 62 when filling out form, adjust their initial retirementBenefitDate to today's month/year instead of their age 62 month/year.
@@ -827,20 +827,20 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         otherPersonsLimitingDate = new MonthYearDate(otherPerson.retirementBenefitDate)
       }
       else if (scenario.maritalStatus == "divorced"){//If divorced, otherPersonsLimitingDate is first month for which otherPerson is age 62 all month
-        otherPersonsLimitingDate = new MonthYearDate(otherPerson.actualBirthDate.getFullYear()+62, otherPerson.actualBirthDate.getMonth(), 1)
-        if (otherPerson.actualBirthDate.getDate() > 2) {
+        otherPersonsLimitingDate = new MonthYearDate(otherPerson.actualBirthDate.getFullYear()+62, otherPerson.actualBirthDate.getMonth())
+        if (otherPerson.actualBirthDate.getDate() > 1) {//i.e., if they are born after 2nd of month ("1" is second of month)
           otherPersonsLimitingDate.setMonth(otherPersonsLimitingDate.getMonth()+1)
         }
       }
       if (otherPerson.isOnDisability === true){//If otherPerson is disabled, there is no "otherPersonsLimitingDate." So just make this own "age 62 all month" month
       //Also, this check has to come last since it overrides others.
-        otherPersonsLimitingDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth(), 1)
-        if (person.actualBirthDate.getDate() > 2){
+        otherPersonsLimitingDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth())
+        if (person.actualBirthDate.getDate() > 1){//i.e., if they are born after 2nd of month ("1" is second of month)
           otherPersonsLimitingDate.setMonth(otherPersonsLimitingDate.getMonth()+1)
         }
       }
 
-    if (person.actualBirthDate > deemedFilingCutoff) {//i.e., if person has new deemed filing rules
+    if (person.actualBirthDate >= deemedFilingCutoff) {//i.e., if person has new deemed filing rules
       //set spousalBenefitDate to own retirementBenefitDate, but no earlier than otherPersonsLimitingDate
       if (person.retirementBenefitDate > otherPersonsLimitingDate) {
         person.spousalBenefitDate = new MonthYearDate(person.retirementBenefitDate)

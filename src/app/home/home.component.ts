@@ -247,7 +247,7 @@ export class HomeComponent implements OnInit {
 
 
     //Get spousal benefit dates if there were no inputs from user (i.e. if personA won't actually file for a spousal benefit at any time, get the input that makes function run appropriately)
-    if ( (this.personA.PIA > 0.5 * this.personB.PIA && this.personA.actualBirthDate > this.deemedFilingCutoff) || this.personA.declineSpousal === true ) {
+    if ( (this.personA.PIA > 0.5 * this.personB.PIA && this.personA.actualBirthDate >= this.deemedFilingCutoff) || this.personA.declineSpousal === true ) {
       //If married, personA spousal date is later of retirement dates
       if (this.scenario.maritalStatus == "married") {
         if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
@@ -263,7 +263,7 @@ export class HomeComponent implements OnInit {
       }
     }
     //Ditto, for personB
-    if ( (this.personB.PIA > 0.5 * this.personA.PIA && this.personB.actualBirthDate > this.deemedFilingCutoff) || this.personB.declineSpousal === true ) {
+    if ( (this.personB.PIA > 0.5 * this.personA.PIA && this.personB.actualBirthDate >= this.deemedFilingCutoff) || this.personB.declineSpousal === true ) {
       //personB spousal date is later of retirement dates
       if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
         this.personB.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
