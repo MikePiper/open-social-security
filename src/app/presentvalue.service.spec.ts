@@ -417,7 +417,7 @@ describe('PresentValueService Couple', () => {
     personA.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
     personB.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
     scenario.discountRate = 1
-    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, false))
+    expect(service.calculateCouplePV(personA, personB, scenario, false))
       .toBeCloseTo(578594, 0)
   })
 
@@ -445,7 +445,7 @@ describe('PresentValueService Couple', () => {
     personA.spousalBenefitDate = new MonthYearDate (2030, 3) //Later of two retirement benefit dates
     personB.spousalBenefitDate = new MonthYearDate (2030, 3) //Later of two retirement benefit dates
     scenario.discountRate = 1
-    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, false))
+    expect(service.calculateCouplePV(personA, personB, scenario, false))
       .toBeCloseTo(353854, 0)//$353,854 is PV for those dates from current live version of site
   })
 
@@ -479,7 +479,7 @@ describe('PresentValueService Couple', () => {
     personA.monthlyEarnings = 5000
     personB.monthlyEarnings = 9000
     scenario.discountRate = 1
-    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, false))
+    expect(service.calculateCouplePV(personA, personB, scenario, false))
       .toBeCloseTo(570824, 0)
   })
 
@@ -512,7 +512,7 @@ describe('PresentValueService Couple', () => {
     personA.monthlyEarnings = 2000
     personB.monthlyEarnings = 2000
     scenario.discountRate = 1
-    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, false))
+    expect(service.calculateCouplePV(personA, personB, scenario, false))
       .toBeCloseTo(510675, 0)
   })
 
@@ -544,7 +544,7 @@ describe('PresentValueService Couple', () => {
     personB.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
     personA.governmentPension = 900
     scenario.discountRate = 1
-    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, false))
+    expect(service.calculateCouplePV(personA, personB, scenario, false))
       .toBeCloseTo(531263, 0)
   })
 
@@ -577,7 +577,7 @@ describe('PresentValueService Couple', () => {
     personB.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
     personA.governmentPension = 300
     scenario.discountRate = 1
-    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, false))
+    expect(service.calculateCouplePV(personA, personB, scenario, false))
       .toBeCloseTo(161095, 0)
   })
 
@@ -613,7 +613,7 @@ describe('PresentValueService Couple', () => {
     personB.endSuspensionDate = new MonthYearDate(2040, 8, 1)//Age 70
     scenario.discountRate = 1
     personA.hasFiled = true //Doing this just so that it triggers the monthly "count benefit" loop
-    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, false))
+    expect(service.calculateCouplePV(personA, personB, scenario, false))
       .toBeCloseTo(303551, 0)//151775.60 is PV for a single person just filing at 70. Figure here is twice that
   })
 
@@ -649,7 +649,7 @@ describe('PresentValueService Couple', () => {
     personB.endSuspensionDate = new MonthYearDate(2040, 0, 1)//Age 70
     scenario.discountRate = 1
     personA.hasFiled = true //Doing this just so that it triggers the monthly "count benefit" loop
-    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, false))
+    expect(service.calculateCouplePV(personA, personB, scenario, false))
       .toBeCloseTo(487328, 0)//See "present value service" spreadsheet for a calculation of this figure
   })
 
@@ -681,10 +681,51 @@ describe('PresentValueService Couple', () => {
     personA.spousalBenefitDate = new MonthYearDate (2040, 0, 1) //Later of two retirement benefit dates
     personB.spousalBenefitDate = new MonthYearDate (2040, 0, 1) //Later of two retirement benefit dates
     scenario.discountRate = 1
-    expect(service.calculateCouplePVmonthlyLoop(personA, personB, scenario, true))
+    expect(service.calculateCouplePV(personA, personB, scenario, true))
       .toBeCloseTo(712879, 0)//Went year-by-year checking benefit amounts. They're good. There is a question of how to calculate PV though (i.e., to what point do we discount everything. See todo.txt)
   })
 
+    //tests for calculateCouplePVmonthlyLoop() that don't focus on ending PV
+    it('should appropriately reflect personB spousal benefit being partially withheld based on personA excess earnings', () => {
+      let birthdayService:BirthdayService = new BirthdayService()
+      let personA: Person = new Person("A")
+      personA.actualBirthDate = new Date(1956, 5, 10) //born June 1956
+      personA.SSbirthDate = birthdayService.findSSbirthdate(6, 10, 1956)
+      personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
+      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+      personA.quitWorkDate = new MonthYearDate (2028, 0, 1) //quitting work after FRA
+      personA.monthlyEarnings = 1900
+      personA.PIA = 1800
+      personA.retirementBenefitDate = new MonthYearDate(2019, 9, 1) //Applying for retirement benefit October 2019 (36 months prior to FRA -> monthly benefit is 80% of PIA)
+      personA.spousalBenefitDate = new MonthYearDate(2019, 9, 1) //later of two retirementBenefitDates
+      let personB: Person = new Person("B")
+      personB.actualBirthDate = new Date(1956, 5, 10) //born June 1956
+      personB.SSbirthDate = birthdayService.findSSbirthdate(6, 10, 1956)
+      personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
+      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      personB.quitWorkDate = new MonthYearDate (2016, 0, 1) //Already quit working
+      personB.monthlyEarnings = 0
+      personB.PIA = 500
+      personB.retirementBenefitDate = new MonthYearDate(2018, 9, 1) //Applying for retirement benefit October 2018 (48 months prior to FRA -> monthly benefit is 75% of PIA)
+      personB.spousalBenefitDate = new MonthYearDate(2019, 9, 1) //later of two retirement benefit dates
+      let scenario:CalculationScenario = new CalculationScenario()
+      scenario.maritalStatus = "married"
+      let mortalityService:MortalityService = new MortalityService()
+      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+      service.calculateCouplePV(personA, personB, scenario, true)
+      /*calc by hand for 2019...
+      personA's retirement benefit is $1440 (80% of PIA)
+      personA's spousal benefit is $0
+      personB's retirement benefit is $375 (75% of PIA)
+      personB's spousal benefit (36 months early) = 0.75 x (1800/2 - 500) = $300
+      PersonA has 22800 annual earnings -> (22800 - 17040)/2 = 2880 annual withholding
+      monthly amount available for withholding = 1440 + 300 = 1740
+      2 months of retirement withheld from A and 2 months of spousal withheld from B, and some overwithholding
+      personB should actually *get* one month of spousal benefit (personA filed in October, 2 months withheld)
+      */
+      expect(scenario.outputTable[1][5]).toEqual("$300")//First row is 2018. We want 2019, so second row. Spousal benefit for personB is 6th column.
+    })
 
   //Test maximizeCouplePViterateBothPeople()
   it ('should tell a high-PIA spouse to wait until 70, with low discount rate and long lifespans', () => {
@@ -1074,7 +1115,7 @@ describe('PresentValueService Couple', () => {
     //We're looking at item [0] in the array. This array should have 1 item in it: retirement benefit date for spouseA.
   })
 
-  fit ('should tell personB to wait until 70 if personA is over 70 and filed early, personB has the much higher PIA, both have long life expectancies, and low discount rate', () => {
+  it ('should tell personB to wait until 70 if personA is over 70 and filed early, personB has the much higher PIA, both have long life expectancies, and low discount rate', () => {
     let personA:Person = new Person("A")
     let personB:Person = new Person("B")
     let scenario:CalculationScenario = new CalculationScenario()
