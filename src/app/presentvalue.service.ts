@@ -150,6 +150,10 @@ export class PresentValueService {
     personB.adjustedSpousalBenefitDate = new MonthYearDate(personB.spousalBenefitDate)
     personA.DRCsViaSuspension = 0
     personB.DRCsViaSuspension = 0
+    personA.monthsRetirementWithheld = 0
+    personA.monthsSpousalWithheld = 0
+    personB.monthsRetirementWithheld = 0
+    personB.monthsSpousalWithheld = 0
 
 
     //calculate combined family maximum (We need to know "simultaneous entitlement year" so we can't do this in HomeComponent or maximize function. But can do it anywhere at beginning of PV calc.)
