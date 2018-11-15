@@ -8,7 +8,6 @@ export class CalculationScenario {
     maritalStatus: string = "single"
     numberOfChildren:number = 0
     children:Person[] = []
-    initialCalcDate: MonthYearDate
     benefitCutAssumption: boolean = false
         benefitCutYear: number = 2034
         benefitCutPercentage: number = 23
