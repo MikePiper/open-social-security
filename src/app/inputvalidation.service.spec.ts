@@ -58,6 +58,44 @@ describe('InputvalidationService', () => {
       .toEqual("Please enter an earlier date. You do not want to wait beyond age 70.")
   }))
 
+  it('should allow retroactive retirementBenefitDate if after FRA and no more than 6 months ago', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let scenario:CalculationScenario = new CalculationScenario()
+    let person:Person = new Person("A")
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when writing test) so that it doesn't fail in future
+    person.actualBirthDate = new Date (1952, 8, 29) //Sept 30, 1952
+    person.SSbirthDate = new MonthYearDate (1952, 8)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    let retirementBenefitDate:MonthYearDate = new MonthYearDate (2018, 9) //only 1 month in the past, after FRA
+    expect(service.checkValidRetirementInput(scenario, person, retirementBenefitDate))
+      .toEqual(undefined)
+  }))
+
+  it('should reject retirementBenefitDate that is more than 6 months ago, even if after FRA', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let scenario:CalculationScenario = new CalculationScenario()
+    let person:Person = new Person("A")
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when writing test)
+    person.actualBirthDate = new Date (1952, 2, 29) //March 30, 1952
+    person.SSbirthDate = new MonthYearDate (1952, 2)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    let retirementBenefitDate:MonthYearDate = new MonthYearDate (2018, 3) //after FRA, but more than 6 months ago
+    expect(service.checkValidRetirementInput(scenario, person, retirementBenefitDate))
+      .toEqual("The effective date for a retroactive application for retirement benefits must be no earlier than your full retirement age and no more than 6 months before today.")
+  }))
+
+  it('should reject retirementBenefitDate that prior to FRA, even if no more than 6 months ago', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let scenario:CalculationScenario = new CalculationScenario()
+    let person:Person = new Person("A")
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when writing test)
+    person.actualBirthDate = new Date (1952, 8, 29) //Sept 30, 1952
+    person.SSbirthDate = new MonthYearDate (1952, 8)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    let retirementBenefitDate:MonthYearDate = new MonthYearDate (2018, 7) //only 3 months ago, but before FRA
+    expect(service.checkValidRetirementInput(scenario, person, retirementBenefitDate))
+      .toEqual("The effective date for a retroactive application for retirement benefits must be no earlier than your full retirement age and no more than 6 months before today.")
+  }))
 
   //Check checkValidSpousalInputs()
   it('should give no error message when input dates are good', inject([InputValidationService], (service: InputValidationService) => {
@@ -160,6 +198,87 @@ describe('InputvalidationService', () => {
     let otherSpouseRetirementBenefitDate:MonthYearDate = new MonthYearDate(2017, 3, 1) //Prior to attempted ownSpousalBenefitDate, so that *this* isn't the problem
     expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
       .toEqual("A person cannot file a restricted application (i.e., application for spousal-only) prior to their FRA.")
+  }))
+
+  it('should allow retroactive spousal date if after FRA and no more than 6 months ago', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let scenario:CalculationScenario = new CalculationScenario()
+    scenario.maritalStatus = "married"
+    let person:Person = new Person("A")
+    let otherPerson:Person = new Person("B")
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when writing test) so that it doesn't fail in future
+    person.actualBirthDate = new Date (1952, 8, 29) //Sept 30, 1952
+    person.SSbirthDate = new MonthYearDate (1952, 8)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    otherPerson.actualBirthDate = new Date (1952, 8, 29) //Sept 30, 1952
+    otherPerson.SSbirthDate = new MonthYearDate (1952, 8)
+    otherPerson.FRA = birthdayService.findFRA(otherPerson.SSbirthDate)
+    let retirementBenefitDate:MonthYearDate = new MonthYearDate (2018, 9) //only 1 month in the past, after FRA
+    let spousalBenefitDate:MonthYearDate = new MonthYearDate (2018, 9) //only 1 month in the past, after FRA
+    let otherPersonRetirementBenefitDate:MonthYearDate = new MonthYearDate (2016, 9) //filed Oct 2016
+    expect(service.checkValidSpousalInput(scenario, person, otherPerson, retirementBenefitDate, spousalBenefitDate, otherPersonRetirementBenefitDate))
+      .toEqual(undefined)
+  }))
+
+  it('should allow retroactive spousal date if after FRA and 8 months ago because other person is disabled', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let scenario:CalculationScenario = new CalculationScenario()
+    scenario.maritalStatus = "married"
+    let person:Person = new Person("A")
+    let otherPerson:Person = new Person("B")
+    otherPerson.isOnDisability = true
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when writing test) so that it doesn't fail in future
+    person.actualBirthDate = new Date (1952, 1, 29) //Feb 30, 1952
+    person.SSbirthDate = new MonthYearDate (1952, 1)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    otherPerson.actualBirthDate = new Date (1952, 8, 29) //Sept 30, 1952
+    otherPerson.SSbirthDate = new MonthYearDate (1952, 8)
+    otherPerson.FRA = birthdayService.findFRA(otherPerson.SSbirthDate)
+    let retirementBenefitDate:MonthYearDate = new MonthYearDate (2018, 2) //8 months in the past, after FRA
+    let spousalBenefitDate:MonthYearDate = new MonthYearDate (2018, 2) //8 months in the past, after FRA
+    let otherPersonRetirementBenefitDate:MonthYearDate = new MonthYearDate (2016, 9) //filed Oct 2016
+    expect(service.checkValidSpousalInput(scenario, person, otherPerson, retirementBenefitDate, spousalBenefitDate, otherPersonRetirementBenefitDate))
+      .toEqual(undefined)
+  }))
+
+  it('should reject retroactive spousal date if after FRA but more than 6 months ago', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let scenario:CalculationScenario = new CalculationScenario()
+    scenario.maritalStatus = "married"
+    let person:Person = new Person("A")
+    let otherPerson:Person = new Person("B")
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when writing test) so that it doesn't fail in future
+    person.actualBirthDate = new Date (1952, 2, 29) //March 30, 1952
+    person.SSbirthDate = new MonthYearDate (1952, 2)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    otherPerson.actualBirthDate = new Date (1952, 8, 29) //Sept 30, 1952
+    otherPerson.SSbirthDate = new MonthYearDate (1952, 8)
+    otherPerson.FRA = birthdayService.findFRA(otherPerson.SSbirthDate)
+    let retirementBenefitDate:MonthYearDate = new MonthYearDate (2018, 3)
+    let spousalBenefitDate:MonthYearDate = new MonthYearDate (2018, 3) //after FRA, but 7 months ago
+    let otherPersonRetirementBenefitDate:MonthYearDate = new MonthYearDate (2016, 9) //filed Oct 2016
+    expect(service.checkValidSpousalInput(scenario, person, otherPerson, retirementBenefitDate, spousalBenefitDate, otherPersonRetirementBenefitDate))
+      .toEqual("The effective date for a retroactive application for spousal benefits must be no earlier than your full retirement age and no more than 6 months before today (12 months if your spouse/ex-spouse is disabled).")
+  }))
+
+  it('should reject retroactive spousal date if less than 6 months ago but before FRA', inject([InputValidationService], (service: InputValidationService) => {
+    let birthdayService:BirthdayService = new BirthdayService()
+    let scenario:CalculationScenario = new CalculationScenario()
+    scenario.maritalStatus = "married"
+    let person:Person = new Person("A")
+    let otherPerson:Person = new Person("B")
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when writing test) so that it doesn't fail in future
+    person.actualBirthDate = new Date (1952, 8, 29) //Sept 30, 1952
+    person.SSbirthDate = new MonthYearDate (1952, 8)
+    person.FRA = birthdayService.findFRA(person.SSbirthDate)
+    otherPerson.actualBirthDate = new Date (1952, 8, 29) //Sept 30, 1952
+    otherPerson.SSbirthDate = new MonthYearDate (1952, 8)
+    otherPerson.FRA = birthdayService.findFRA(otherPerson.SSbirthDate)
+    let retirementBenefitDate:MonthYearDate = new MonthYearDate (2018, 7)
+    let spousalBenefitDate:MonthYearDate = new MonthYearDate (2018, 7) //only 3 months ago, but before FRA
+    let otherPersonRetirementBenefitDate:MonthYearDate = new MonthYearDate (2016, 9) //filed Oct 2016
+    expect(service.checkValidSpousalInput(scenario, person, otherPerson, retirementBenefitDate, spousalBenefitDate, otherPersonRetirementBenefitDate))
+      .toEqual("The effective date for a retroactive application for spousal benefits must be no earlier than your full retirement age and no more than 6 months before today (12 months if your spouse/ex-spouse is disabled).")
   }))
 
   //Testing checkValidBeginSuspensionInput()

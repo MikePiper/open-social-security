@@ -124,20 +124,56 @@ export class InputValidationService {
     if (person.isOnDisability === false && retirementBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for retirement benefits before the first month in which they are 62 for the entire month."}
     let latestDate: MonthYearDate = new MonthYearDate (person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth(), 1)
     if (retirementBenefitDate > latestDate) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
+
+    //If retirement benefit input date is in the past, make sure it's for a legitimate reason
+    if (retirementBenefitDate < this.today){
+      let sixMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6)
+      if (person.fixedRetirementBenefitDate) {//i.e., because they already filed, are disabled, or they are personB in a divorce scenario)
+        //no error
+      }
+      else if (retirementBenefitDate >= person.FRA && retirementBenefitDate >= sixMonthsAgo){
+        //no error
+      }
+      else {
+        error = "The effective date for a retroactive application for retirement benefits must be no earlier than your full retirement age and no more than 6 months before today."
+      }
+    }
+
     return error
   }
 
   checkValidSpousalInput(scenario:CalculationScenario, person:Person, otherPerson:Person, ownRetirementBenefitDate:MonthYearDate, spousalBenefitDate:MonthYearDate, otherPersonRetirementBenefitDate:MonthYearDate) {
     let error = undefined
     let secondStartDate:MonthYearDate = new MonthYearDate(1,1,1)
-    //Make sure there is an input (Note that this will get overrode in the customDates function after the error check, in cases where there isn't supposed to be a user input)
+    //Make sure there is an input (Note that this will get overridden in the customDates function after the error check, in cases where there isn't supposed to be a user input)
     if ( isNaN(spousalBenefitDate.getFullYear()) || isNaN(spousalBenefitDate.getMonth()) ) {
       error = "Please enter a date."
     }
 
+    //If spousal input date is in the past, make sure it's for a legitimate reason
+    if (spousalBenefitDate < this.today){
+      let sixMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6)
+      let twelveMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
+      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth()-12)
+      if (person.fixedRetirementBenefitDate) {//i.e., person is disabled, has filed, or is personB in a divorce scenario
+        //no error, because retirement date is in the past, and validation function already checks to make sure spousal input date is valid with respect to both people's retirement dates)
+      }
+      else if (spousalBenefitDate >= person.FRA && spousalBenefitDate >= sixMonthsAgo && otherPerson.isOnDisability === false){
+        //no error
+      }
+      else if (spousalBenefitDate >= person.FRA && spousalBenefitDate >= twelveMonthsAgo && otherPerson.isOnDisability === true){
+        //no error
+      }
+      else {
+        error = "The effective date for a retroactive application for spousal benefits must be no earlier than your full retirement age and no more than 6 months before today (12 months if your spouse/ex-spouse is disabled)."
+      }
+    }
+
     //Deemed filing validation
     if (person.actualBirthDate < this.deemedFilingCutoff) {//old deemed filing rules apply: If spousalBenefitDate < FRA, it must not be before own retirementBenefitDate
-        if ( spousalBenefitDate < person.FRA && spousalBenefitDate < ownRetirementBenefitDate )
+        if (spousalBenefitDate < person.FRA && spousalBenefitDate < ownRetirementBenefitDate)
         {
         error = "A person cannot file a restricted application (i.e., application for spousal-only) prior to their FRA."
         }
@@ -185,7 +221,7 @@ export class InputValidationService {
 
     //Validation in case they try to start spousal benefit before other spouse's retirement benefit.
     if (spousalBenefitDate < otherPersonRetirementBenefitDate && scenario.maritalStatus == "married") {error = "A person cannot start spousal benefits before the other spouse has filed for his/her own retirement benefit."}
-
+   
     return error
   }
 
