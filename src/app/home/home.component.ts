@@ -42,7 +42,7 @@ export class HomeComponent implements OnInit {
   customDateScenario:CalculationScenario
   errorCollection:ErrorCollection = new ErrorCollection()
   today:MonthYearDate = new MonthYearDate()
-  deemedFilingCutoff: Date = new Date(1954, 0, 1)
+  deemedFilingCutoff: Date = new Date(1954, 0, 1)//January 2, 1954. If date is LESS than cutoff, old rules. If greater than OR EQUAL TO cutoff, new rules.
   statusMessage:string = ""
   primaryFormHasChanged: boolean = false
         /*
@@ -247,7 +247,12 @@ export class HomeComponent implements OnInit {
 
 
     //Get spousal benefit dates if there were no inputs from user (i.e. if personA won't actually file for a spousal benefit at any time, get the input that makes function run appropriately)
-    if ( (this.personA.PIA > 0.5 * this.personB.PIA && this.personA.actualBirthDate >= this.deemedFilingCutoff) || this.personA.declineSpousal === true ) {
+    if (
+          this.personA.declineSpousal === true || //choosing not to file for spousal
+          (this.personA.PIA >= 0.5 * this.personB.PIA && this.personA.actualBirthDate >= this.deemedFilingCutoff) || //can't file for spousal due to new deemed filing and size of PIA
+          (this.personA.PIA >= 0.5 * this.personB.PIA && (this.personA.hasFiled === true || this.personA.isOnDisability === true)) || //can't file for spousal due to size of PIA and because already filed for retirement/disability
+          ( (this.personA.hasFiled === true || this.personA.isOnDisability === true) && (this.personB.hasFiled === true || this.personB.isOnDisability === true) ) //both have already started retirement or disability and therefore have already started spousal so there will be no spousal input
+        ) {
       //If married, personA spousal date is later of retirement dates
       if (this.scenario.maritalStatus == "married") {
         if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
@@ -263,7 +268,13 @@ export class HomeComponent implements OnInit {
       }
     }
     //Ditto, for personB
-    if ( (this.personB.PIA > 0.5 * this.personA.PIA && this.personB.actualBirthDate >= this.deemedFilingCutoff) || this.personB.declineSpousal === true ) {
+    if (
+        this.personB.declineSpousal === true || //choosing not to file for spousal
+        (this.personB.PIA >= 0.5 * this.personA.PIA && this.personB.actualBirthDate >= this.deemedFilingCutoff) || //can't file for spousal due to new deemed filing and size of PIA
+        (this.personB.PIA >= 0.5 * this.personA.PIA && (this.personB.hasFiled === true || this.personB.isOnDisability === true)) || //can't file for spousal due to size of PIA and because already filed for retirement/disability
+        ( (this.personA.hasFiled === true || this.personA.isOnDisability === true) && (this.personB.hasFiled === true || this.personB.isOnDisability === true) ) || //both have already started retirement or disability and therefore have already started spousal so there will be no spousal input
+        this.scenario.maritalStatus == "divorced"
+        ) {
       //personB spousal date is later of retirement dates
       if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
         this.personB.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)

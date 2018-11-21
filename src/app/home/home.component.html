@@ -417,7 +417,10 @@
         </span>
 
     <span *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">
-        <div class="form-inline" *ngIf="(personA.PIA < 0.5 * personB.PIA || personA.actualBirthDate < this.deemedFilingCutoff) && personA.declineSpousal === false">
+        <!--Show spousal date input for personA if they are not declining spousal AND they have not yet filed for spousal AND they are eligible for spousal-->
+        <div class="form-inline" *ngIf="personA.declineSpousal === false &&
+        !( (personA.hasFiled === true || personA.isOnDisability === true) && (personB.hasFiled === true || personB.isOnDisability === true) ) &&
+        (personA.PIA < 0.5 * personB.PIA || (personA.actualBirthDate < this.deemedFilingCutoff && personA.hasFiled === false && personA.isOnDisability === false))">
           <label>Your month/year to claim spousal benefit:</label>
           <select class="form-control" [(ngModel)]="customPersonAspousalBenefitMonth" name="customPersonAspousalBenefitMonth" id="customPersonAspousalBenefitMonth" required>
             <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
@@ -427,7 +430,14 @@
           </select>
           <span *ngIf="errorCollection.customPersonAspousalDateError" class="alert alert-danger">{{errorCollection.customPersonAspousalDateError}}</span>
         </div>
-        <span *ngIf="personA.PIA > 0.5 * personB.PIA && personA.actualBirthDate < this.deemedFilingCutoff">
+        <!--Show "decline spousal" checkbox for personA if they COULD get spousal but also might never get it. In other words:
+        They have PIA >= 50% of other PIA (otherwise they will for sure get spousal)
+        AND they must be under old deemed filing rules (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
+        AND they must not have already started retirement or disability (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
+        -->
+        <span *ngIf="personA.PIA >= 0.5 * personB.PIA &&
+          personA.actualBirthDate < this.deemedFilingCutoff &&
+          personA.hasFiled === false && personA.isOnDisability === false">
           <label>Check this box to test a scenario in which you do not file for a spousal benefit:</label>
           <input id="personAdeclineSpousal" [(ngModel)]="personA.declineSpousal" name="personA.declineSpousal" value="true" type="checkbox">
         </span>
@@ -469,9 +479,11 @@
           <label>Check this box to test a scenario in which your spouse does not suspend his/her benefit:</label>
           <input id="personBdeclineSuspension" [(ngModel)]="personB.declineSuspension" name="personB.declineSuspension" value="true" type="checkbox">
         </span>
-
-        <div class="form-inline" *ngIf="(personB.PIA < 0.5 * personA.PIA || personB.actualBirthDate < this.deemedFilingCutoff) && personB.declineSpousal === false">
-          <span *ngIf="scenario.maritalStatus == 'married'">
+        <!--Show spousal date input for personB if they are not declining spousal AND they have not yet filed for spousal AND they are eligible for spousal AND it is a married scenario-->
+        <div class="form-inline" *ngIf="personB.declineSpousal === false &&
+        !( (personB.hasFiled === true || personB.isOnDisability === true) && (personA.hasFiled === true || personA.isOnDisability === true) ) &&
+        (personB.PIA < 0.5 * personA.PIA || (personB.actualBirthDate < this.deemedFilingCutoff && personB.hasFiled === false && personB.isOnDisability === false)) &&
+        scenario.maritalStatus == 'married'">
           <label>Your spouse's month/year to claim spousal benefit:</label>
           <select class="form-control" [(ngModel)]="customPersonBspousalBenefitMonth" name="customPersonBspousalBenefitMonth" id="customPersonBspousalBenefitMonth" required>
             <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
@@ -479,10 +491,19 @@
           <select class="form-control" [(ngModel)]="customPersonBspousalBenefitYear" name="customPersonBspousalBenefitYear" required>
             <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
           </select>
-          </span>
+
           <span *ngIf="errorCollection.customPersonBspousalDateError" class="alert alert-danger">{{errorCollection.customPersonBspousalDateError}}</span>
         </div>
-          <span *ngIf="scenario.maritalStatus == 'married' && personB.PIA > 0.5 * personA.PIA && personB.actualBirthDate < this.deemedFilingCutoff">
+        <!--Show "decline spousal" checkbox for personB if they COULD get spousal but also might never get it. In other words:
+        They have PIA >= 50% of other PIA (otherwise they will for sure get spousal)
+        AND they must be under old deemed filing rules (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
+        AND they must not have already started retirement or disability (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
+        AND only show if it's a married scenario (as opposed to divorce)
+        -->
+        <span *ngIf="personB.PIA >= 0.5 * personA.PIA &&
+            personB.actualBirthDate < this.deemedFilingCutoff &&
+            personB.hasFiled === false && personB.isOnDisability === false &&
+            scenario.maritalStatus == 'married'">
             <label>Check this box to test a scenario in which your spouse does not file for a spousal benefit:</label>
             <input id="personBdeclineSpousal" [(ngModel)]="personB.declineSpousal" name="personB.declineSpousal" value="true" type="checkbox">
           </span>

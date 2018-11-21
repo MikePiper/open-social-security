@@ -729,7 +729,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         }
       }
       else {//i.e., if person's retirementBenefitDate currently after his/her FRA
-        //Set person's spousalBenefitlDate to earliest possible restricted application date (i.e., later of FRA or otherPersonsLimitingDate)...but no earlier than 6 months ago (or 12 months ago if otherPerson is disabled)
+        //Set person's spousalBenefitDate to earliest possible restricted application date (i.e., later of FRA or otherPersonsLimitingDate)
+          //...but no earlier than 6 months ago (or 12 months ago if otherPerson is disabled)
         if (person.FRA > otherPersonsLimitingDate) {
           person.spousalBenefitDate = new MonthYearDate(person.FRA)
         }
@@ -750,10 +751,12 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
             person.spousalBenefitDate = new MonthYearDate(twelveMonthsAgo)
           }
         }
-
       }
     }
-    
+    //If person has already filed for retirement or is on disability, don't let spousalBenefitDate be before retirementBenefitDate (otherwise it will try retroactive spousal appplications in some cases where they can't actually happen)
+      if ( (person.hasFiled === true || person.isOnDisability) && person.spousalBenefitDate < person.retirementBenefitDate){
+        person.spousalBenefitDate = new MonthYearDate(person.retirementBenefitDate)
+      }
     return person
   }
 
