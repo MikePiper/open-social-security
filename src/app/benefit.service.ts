@@ -38,10 +38,25 @@ export class BenefitService {
     return Number(retirementBenefit)
   }
 
+  //calculates "original benefit" for use in family max formula (i.e., before reduction for family max, before reduction for own entitlement, before reduction for age, before reduction for GPO)
+  calculateSpousalOriginalBenefit(otherPerson:Person):Number{
+    let spousalOriginalBenefit:Number = otherPerson.PIA / 2
+    return spousalOriginalBenefit
+  }
+
+  //calculates "original benefit" for use in family max formula (i.e., before reduction for family max, before reduction for own entitlement, before reduction for age, before reduction for GPO)
+    //App assumes that for calculation of survivor benefit amount people do not die until planned filing date -> (no need to check about age at death, just checking planned retirementBenefitDate)
+    //App assumes that survivor does not file for survivor benefits until survivorFRA -> no need for reduction for age (wouldn't be needed here anyway)
+  calculateSurvivorOriginalBenefit(deceasedPerson:Person):Number{
+    let survivorOriginalBenefit:Number = deceasedPerson.retirementBenefit
+    if (survivorOriginalBenefit < deceasedPerson.PIA * 0.825) {
+      survivorOriginalBenefit = deceasedPerson.PIA * 0.825
+    }
+    return survivorOriginalBenefit
+  }
+
   calculateSpousalBenefit(person:Person, otherPerson:Person, retirementBenefit: number, spousalStartDate: MonthYearDate)
   {
-    //no need to check for filing prior to 62, because we're already checking for that in the input form component.
-
     //Initial calculation
     let spousalBenefit = otherPerson.PIA / 2
 
@@ -142,6 +157,43 @@ export class BenefitService {
       
     return Number(survivorBenefit)
   }
+
+  calculateAuxillaryBenefits(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB?:Person, personBaliveBoolean?:boolean) {
+    let auxBenefitsOnPersonAworkRecord:number = 0
+    let auxBenefitsOnPersonBworkRecord:number = 0
+
+    //calculate everybody’s aux benefits before reduction for own retirement/disability, before reduction for age, before reduction for family max
+      //Have to see who is entitled on what record (both parents and kids)
+        //is this personB and children on personA's record?
+        //is this personA and children on personB's record?
+        //is this dually entitled children as well as personB on personA's record?
+        //is this dually entitled children as well as personA on personB's record?
+    //Does this all just get bundled into "calculateMonthlyPayments" function? It's starting to feel a lot like that one.
+        //Maybe that's the answer, but first we make a new spousal function that doesn't calc a benefit but rather just calculates reduction factor for early entitlement
+        //Right now we do benefit recalculations at beginning of every month (when necessary)
+          //instead that seems that might have to become part of "calculate monthly payment" -- with family max happening first?
+            //Also will have to start recalculating everything any time a child reaches age 17.99 as well
+    for (let child of scenario.children){
+    }
+
+    //sum the above amounts
+    
+    //calculate family max and combined family max
+    
+    //count how many people are receiving aux benefits on record in question
+    
+    //find “amount for rest of family divided by number of aux beneficiaries”
+    
+    //adjust everybody’s aux benefit based on above number
+    
+    //adjust each person’s aux benefit based on own retirement/disability
+      //don't let aux benefit be below zero
+      //then recalc “amount left for everybody else” and recalc everybody else’s aux benefits?
+    
+    //then reduce each person’s aux benefit for age
+    
+    //Will need different version for single/married/divoced and for each person alive/deceased
+    }
 
 
   determineChildBenefitDate(scenario:CalculationScenario, child:Person, personA:Person, personB?:Person):MonthYearDate{
@@ -372,7 +424,7 @@ export class BenefitService {
                     else if (calcYear.date >= personA.retirementBenefitDate){//both hadn't been met, but personA's date has been met
                       child.monthlyChildPayment = personA.PIA * 0.5
                     }
-                    else {//i.e., childBenefitDate has been met (which means at least one spouse's retirementBenefitDate has been met, but it wasn't personA's date)
+                    else {//i.e., childBenefitDate has been met (which means at least one spouse's retirementBenefitDate has been met), but it wasn't personA's date
                       child.monthlyChildPayment = personB.PIA * 0.5
                     }
                 }
