@@ -6,17 +6,36 @@ Benefits are first adjusted for the maximum and then reduced for age.
 
 
 FAMILY MAX FOR PERSON ON DISABILITY
-
-    https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615742
+https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615742
     family maximum is lesser of:
     85% of the AIME (but not less than the PIA before COLAs), or
     150% of the worker's PIA before COLAs.
     ...then you add all the COLAs back.
 
 
-COMBINED FAMILY MAXIMUM (CFM)
+REDUCING BENEFITS FOR FAMILY MAX (INCLUDING COMBINED FAMILY MAX)
+https://secure.ssa.gov/poms.nsf/lnx/0300615756
+https://secure.ssa.gov/poms.nsf/lnx/0300615768 (combined family max)
 
-Rules:
+1) Find family max
+    *If this is a combined family max situation, calculate CFM. And family max is combined on record of higher earner. Proceed as normal from there.
+2) Find each person's "original benefit" on work record of person whose family max we're conerned with
+    a) For worker him/herself, this is PIA
+    b) For everybody else, this is spousal/widow(er)/child benefit, prior to reduction for age, for own retirement/disability benefit, and for GPO
+        *Benefit is reduced for age before reduction for GPO, so family max reduction obviously happens before GPO reduction. (CFR 404.408a(d)(3))
+    c) When figuring a widow's "original benefit" amount, ignore DRCs. (e.g., deceased worker had 1000 PIA but retirement benefit of 1320; widow has "original benefit" of 1000 rather than 1320)
+3) Total all "original benefits" and see if total exceeds family max
+4) If it does, find percentage that we can pay (family max / total of original benefits). If it doesn't, consider percentage to be 100% rather than > 100%. (That is, don't let anybody's aux benefit exceed "original benefit.")
+5) Multiply each person's original benefit by that percentage. We should now be at (rather than in excess of) family max
+6) Then, check to see if anybody is getting their own retirement/disability benefit. If so, reduce current aux benefit by that amount (but not below zero). So now each person's aux benefit is "original benefit, multiplied by fraction for FamilyMax as necessary, reduced for entitlement on own work record"
+    *Check rules: what if own retirement/disability benefit is greater/less than PIA? Are we reducing by PIA? By greater of PIA or retirement benefit? By retirement benefit?)
+    *In our case, this will only be for spouse/widow, as children are assumed not to be working
+7) Re-total aux benefits on work record in question. Total will now be below family max if spouse/widow is entitled on own record. Divide extra additional amount (i.e., amount by which family max exceeds current sum of aux benefits) among children.
+8) Make sure nobody's benefit exceeds original benefit.
+9) Reduce spouse/widow(er) benefit for age, if applicable
+
+
+CALCULATING COMBINED FAMILY MAXIMUM (CFM)
 https://secure.ssa.gov/poms.nsf/lnx/0300615770
 
     When a child is entitled on two different records, combined family max gets calculated (in year in which simultaneous entitlement first occurs)
@@ -33,28 +52,5 @@ https://secure.ssa.gov/poms.nsf/lnx/0300615770
         3041.59 x 1.75 = 5322, which is maximum possible CFM for 2018
     
     
-
-APPLICATION OF FAMILY MAXIMUM (INCLUDING COMBINED FAMILY MAX)
-
-Rules and examples:
-https://secure.ssa.gov/poms.nsf/lnx/0300615768
-
-    1) If combined family max situation, calculate CFM. And family max is combined on record of higher earner.
-
-    2) Back out that worker's PIA to get amount left for rest of family.
-
-    3) Divide "amount left for rest of family" by number of other people entitled on that work record.
-
-    4) If any person in family is entitled on their own record in addition to being entitled on record of worker in question:
-        4a) Compare their own entitlement amount to their share of "amount left for rest of family"
-        4b) Their total benefit is now the greater of the two. But their benefit as spouse/child is now only the amount needed to bring total up to their share of "amount for rest of family"
-        4c) So now we calculate a new "amount left for *rest* of family" (i.e., family other than worker and other than this child/spouse). So it's original "amount for rest of family" minus amount that this person is actually getting as child/spouse.
-            (In effect, if a child/spouse is getting their own retirement/disability benefit, it leaves more to rest of family, because part of that person's total benefit isn't coming on record of worker.)
-
-    5) For each person, compare amount that they'd get under family max calculation above to the amount they'd get without regard to faxily max (e.g., 50% of worker's PIA). Then they get lesser of the two.
-
-    Example: Worker's PIA is $1,000 with family max of $1,600. Spouse and two children entitled on worker's record.
-                $600 available for rest of family. Divided by 3 people gives $200 per person (which does not exceed the $500 they'd each get without family max. So max is indeed relevant.)
-                If spouse also has own retirement benefit of $150, now only $50 counts toward family max. So it's $550 now that gets divided between two children.
-                    (Assuming here that combined family max isn't relevant -- kids aren't entitled on spouse's record for some reason. If they were, we'd calc combined family max and use that from beginning instead.)
+œ
 
