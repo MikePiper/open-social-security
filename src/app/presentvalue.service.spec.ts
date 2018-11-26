@@ -638,6 +638,34 @@ describe('tests calculateCouplePV', () => {
         .toBeCloseTo(445800, 0)
     })
 
+    it('should return appropriate PV for married couple, both currently age 63, filed already, not suspending, spousal benefit relevant.', () => { 
+      service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
+      scenario.maritalStatus = "married"
+      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+      personA.SSbirthDate = new MonthYearDate(1955, 10) //Nov 1955
+      personB.SSbirthDate = new MonthYearDate(1955, 10)  //Nov 1955
+      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      personA.PIA = 700
+      personB.PIA = 1500
+      personA.initialAge =  ( service.today.getMonth() - personA.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
+      personA.initialAgeRounded = Math.round(personA.initialAge)
+      personB.initialAge =  ( service.today.getMonth() - personB.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
+      personB.initialAgeRounded = Math.round(personB.initialAge)
+      personA.hasFiled = true
+      personB.hasFiled = true
+      personA.retirementBenefitDate = new MonthYearDate (2017, 11) //Filed ASAP, 62 and 1 month
+      personB.retirementBenefitDate = new MonthYearDate (2017, 11) //Filed ASAP, 62 and 1 month
+      personA.spousalBenefitDate = new MonthYearDate (2017, 11) //Later of two retirement benefit dates
+      personB.spousalBenefitDate = new MonthYearDate (2017, 11) //Later of two retirement benefit dates
+      scenario.discountRate = 1
+      expect(service.calculateCouplePV(personA, personB, scenario, true))
+        .toBeCloseTo(389682, 0)
+    })
+
       //tests for calculateCouplePV() that don't focus on ending PV
       it('should appropriately reflect personB spousal benefit being partially withheld based on personA excess earnings', () => {
         personA.actualBirthDate = new Date(1956, 5, 10) //born June 1956
