@@ -54,8 +54,6 @@ export class Person {
 
     //new benefit amount fields -- for using in new system where benefit amount just gets overwritten when recalculated
     retirementBenefit:number = 0
-    spousalBenefit:number = 0
-    survivorBenefit:number = 0
     monthlyRetirementPayment:number = 0
     monthlySpousalPayment:number = 0
     monthlySurvivorPayment:number = 0

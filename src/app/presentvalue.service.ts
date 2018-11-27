@@ -9,13 +9,14 @@ import {CalculationScenario} from './data model classes/calculationscenario'
 import {CalculationYear} from './data model classes/calculationyear'
 import {OutputTableService} from './outputtable.service'
 import {MonthYearDate} from "./data model classes/monthyearDate"
+import {FamilyMaximumService} from './familymaximum.service'
 
 
 @Injectable()
 export class PresentValueService {
 
-  constructor(private benefitService: BenefitService, private mortalityService:MortalityService, private earningsTestService: EarningsTestService, private solutionSetService: SolutionSetService,
-  private outputTableService: OutputTableService) { }
+  constructor(private benefitService: BenefitService, private mortalityService:MortalityService, private earningsTestService: EarningsTestService, private familyMaximumService:FamilyMaximumService,
+    private solutionSetService: SolutionSetService, private outputTableService: OutputTableService) { }
 
   today: MonthYearDate = new MonthYearDate()
 
@@ -60,7 +61,7 @@ export class PresentValueService {
             //Adjust each person's monthlyPayment as necessary for family max
               if (scenario.children.length > 0){
                 let amountLeftForRestOfFamiliy:number = person.familyMaximum - person.PIA
-                scenario = this.benefitService.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamiliy)
+                scenario = this.familyMaximumService.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamiliy)
               }
 
             //Adjust as necessary for earnings test (and tally months withheld)
@@ -79,7 +80,7 @@ export class PresentValueService {
             //adjust each person's monthlyPayment as necessary for family max
             if (scenario.children.length > 0){
               let amountLeftForRestOfFamiliy:number = person.familyMaximum
-              scenario = this.benefitService.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamiliy)
+              scenario = this.familyMaximumService.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamiliy)
             }
 
             //Earnings test: not necessary in Single scenario if person is deceased
@@ -139,11 +140,7 @@ export class PresentValueService {
     personA.hasHadGraceYear = false
     personB.hasHadGraceYear = false
     personA.retirementBenefit = 0
-    personA.spousalBenefit = 0
-    personA.survivorBenefit = 0
     personB.retirementBenefit = 0
-    personB.spousalBenefit = 0
-    personB.survivorBenefit = 0
     personA.adjustedRetirementBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
     personA.adjustedSpousalBenefitDate = new MonthYearDate(personA.spousalBenefitDate)
     personB.adjustedRetirementBenefitDate = new MonthYearDate(personB.retirementBenefitDate)
@@ -159,10 +156,10 @@ export class PresentValueService {
     //calculate combined family maximum (We need to know "simultaneous entitlement year" so we can't do this in HomeComponent or maximize function. But can do it anywhere at beginning of PV calc.)
         //simultaneousentitlementyear is later of two retirementBenefitDates (simplification: ignoring the possibility of it being a child's DoB, which could happen if child is born AFTER both retirementBenefitDates)
           if (personA.retirementBenefitDate < personB.retirementBenefitDate){
-            this.benefitService.calculateCombinedFamilyMaximum(personA, personB, personB.retirementBenefitDate.getFullYear())
+            this.familyMaximumService.calculateCombinedFamilyMaximum(personA, personB, personB.retirementBenefitDate.getFullYear())
           }
           else {
-            this.benefitService.calculateCombinedFamilyMaximum(personA, personB, personA.retirementBenefitDate.getFullYear())
+            this.familyMaximumService.calculateCombinedFamilyMaximum(personA, personB, personA.retirementBenefitDate.getFullYear())
           }
 
     //Create initial CalculationYear object
@@ -193,33 +190,54 @@ export class PresentValueService {
       this.benefitService.monthlyCheckForBenefitRecalculationsCouple(personA, personB, calcYear)
 
       //Assume personA and personB are alive
-            //calculate monthlyPayment field for each person
+            //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, true)
             //TODO: Adjust each person's monthlyPayment as necessary for family max
+            //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
+              this.benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
+            //TODO: Redo family max application
+            //Adjust spousal monthlyPayment fields as necessary for age
+              this.benefitService.adjustSpousalBenefitsForAge(personA, personB)
+            //Adjust spousal/survivor monthlyPayment fields for GPO
+              this.benefitService.adjustSpousalAndSurvivorBenefitsForGPO(personA, personB)
             //Adjust as necessary for earnings test (and tally months withheld)
               this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, true, personB, true)
             //add everybody's monthlyPayment fields to appropriate annual totals (annualBenefitBothAlive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, true, personB, true, printOutputTable)
       //Assume personA is alive and personB is deceased
-            //calculate monthlyPayment field for each person
+            //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, false)
             //TODO: Adjust each person's monthlyPayment as necessary for family max
+            //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
+              this.benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
+            //TODO: Redo family max application
+            //Adjust spousal monthlyPayment fields as necessary for age
+              this.benefitService.adjustSpousalBenefitsForAge(personA, personB)
+            //Adjust spousal/survivor monthlyPayment fields for GPO
+              this.benefitService.adjustSpousalAndSurvivorBenefitsForGPO(personA, personB)
             //Adjust as necessary for earnings test (and tally months withheld)
               this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, true, personB, false)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitOnlyPersonAalive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, true, personB, false, printOutputTable)
       //Assume personA is deceased and personB is alive
-            //calculate monthlyPayment field for each person
+            //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, true)
             //TODO: Adjust each person's monthlyPayment as necessary for family max
+            //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
+              this.benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
+            //TODO: Redo family max application
+            //Adjust spousal monthlyPayment fields as necessary for age
+              this.benefitService.adjustSpousalBenefitsForAge(personA, personB)
+            //Adjust spousal/survivor monthlyPayment fields for GPO
+              this.benefitService.adjustSpousalAndSurvivorBenefitsForGPO(personA, personB)
             //Adjust as necessary for earnings test (and tally months withheld)
               this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, false, personB, true)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitOnlyPersonBalive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, true, printOutputTable)
       //Assume personA and personB are deceased
-            //calculate monthlyPayment field for each person
+            //calculate "original benefit" amounts for each person
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, false)
-            //TODO: adjust each person's monthlyPayment as necessary for family max
+            //TODO: Adjust each person's monthlyPayment as necessary for family max
             //Earnings test not necessary
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitBothDeceased)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, false, printOutputTable)
@@ -264,33 +282,33 @@ export class PresentValueService {
                   olderAge = personA.age
                 } else {olderAge = personB.age}
 
-                // if (printOutputTable === true){
-                //   console.log("monthly loop year: " + calcYear.date.getFullYear())
-                //   console.log("probability A alive: " + probabilityAalive)
-                //   console.log("probability B alive: " + probabilityBalive)
-                //   console.log("undiscounted annualPV: " + annualPV)
-                // }
+                if (printOutputTable === true){
+                  console.log("monthly loop year: " + calcYear.date.getFullYear())
+                  console.log("probability A alive: " + probabilityAalive)
+                  console.log("probability B alive: " + probabilityBalive)
+                  console.log("undiscounted annualPV: " + annualPV)
+                }
 
                 //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
                 annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
-                // if (printOutputTable === true){
-                //   console.log("discounted annualPV: " + annualPV)
-                //   console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
-                //   console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
-                //   console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
-                //   console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
-                //   console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
-                //   console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
-                //   console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
-                //   console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
-                //   console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
-                //   console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
-                //   console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
-                //   console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
-                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
-                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
-                // }
+                if (printOutputTable === true){
+                  console.log("discounted annualPV: " + annualPV)
+                  console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
+                  console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
+                  console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
+                  console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
+                  console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
+                  console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
+                  console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
+                  console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
+                  console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
+                  console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
+                  console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
+                  console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
+                  console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
+                  console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
+                }
 
             //Add discounted benefit to ongoing sum
               couplePV = couplePV + annualPV
@@ -352,7 +370,7 @@ export class PresentValueService {
     }
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
-    person = this.benefitService.calculateFamilyMaximum(person)
+    person = this.familyMaximumService.calculateFamilyMaximum(person)
 
     //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
     let savedPV: number = this.calculateSinglePersonPV(person, scenario, false)
@@ -481,8 +499,8 @@ export class PresentValueService {
     }
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
-    personA = this.benefitService.calculateFamilyMaximum(personA)
-    personB = this.benefitService.calculateFamilyMaximum(personB)
+    personA = this.familyMaximumService.calculateFamilyMaximum(personA)
+    personB = this.familyMaximumService.calculateFamilyMaximum(personB)
 
     while (personA.retirementBenefitDate <= spouseAendTestDate && personA.endSuspensionDate <= spouseAendTestDate) {
         //Reset personB.retirementBenefitDate to earliest possible (i.e., their "age 62 for whole month" month, or today's month if they're currently older than 62, or earliest retroactive date if they're older than FRA)
@@ -630,8 +648,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     }
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
-      flexibleSpouse = this.benefitService.calculateFamilyMaximum(flexibleSpouse)
-      fixedSpouse = this.benefitService.calculateFamilyMaximum(fixedSpouse)
+      flexibleSpouse = this.familyMaximumService.calculateFamilyMaximum(flexibleSpouse)
+      fixedSpouse = this.familyMaximumService.calculateFamilyMaximum(fixedSpouse)
 
     while (flexibleSpouse.retirementBenefitDate <= endTestDate && flexibleSpouse.endSuspensionDate <= endTestDate) {
       //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
