@@ -5,12 +5,13 @@ import {SolutionSet} from './data model classes/solutionset'
 import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
+import { BirthdayService } from './birthday.service';
 
 
 describe('SolutionSetService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [SolutionSetService, SolutionSet, BenefitService]
+      providers: [SolutionSetService, SolutionSet, BenefitService, BirthdayService]
     })
   })
 

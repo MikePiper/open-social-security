@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {MonthYearDate} from "./data model classes/monthyearDate"
+import { Person } from './data model classes/person';
 
 @Injectable()
 export class BirthdayService {
@@ -90,7 +91,7 @@ findFRA(SSbirthDate:MonthYearDate){
       {FRAdate.setMonth(FRAdate.getMonth() + 67*12)}
 
   return FRAdate
-   }
+  }
 
    findSurvivorFRA (SSbirthDate:MonthYearDate){
     let madeUpDate: MonthYearDate = new MonthYearDate(SSbirthDate.getFullYear()-2, SSbirthDate.getMonth(), 1)
@@ -98,4 +99,9 @@ findFRA(SSbirthDate:MonthYearDate){
     survivorFRA.setFullYear(survivorFRA.getFullYear()+2)
     return survivorFRA
    }
+
+  findAgeOnDate (person:Person, date:MonthYearDate):number{
+    let age:number = (date.getMonth() - person.SSbirthDate.getMonth() + 12 * (date.getFullYear() - person.SSbirthDate.getFullYear()) )/12
+    return age
+  }
 }

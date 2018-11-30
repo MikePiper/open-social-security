@@ -3,12 +3,13 @@ import {Person} from './data model classes/person';
 import { CalculationYear } from './data model classes/calculationyear';
 import { CalculationScenario } from './data model classes/calculationscenario';
 import {MonthYearDate} from "./data model classes/monthyearDate"
+import { BirthdayService } from './birthday.service';
 
 
 @Injectable()
 export class BenefitService {
 
-  constructor() { }
+  constructor(private birthdayService: BirthdayService) { }
 
   today: MonthYearDate = new MonthYearDate()
 
@@ -59,40 +60,47 @@ export class BenefitService {
   }
 
 
-  adjustSpousalBenefitsForAge(personA:Person, personB:Person){
+  adjustSpousalBenefitsForAge(scenario:CalculationScenario, personA:Person, personB:Person){
     let monthsOfPersonAearlySpousalEntitlement:number
     let monthsOfPersonBearlySpousalEntitlement:number
-    //TODO: If there's a disabled child, spousal benefits should never be reduced.
-    //If there's a child under 18 (use 17.99 because of Javascript rounding) as of spousal benefit date...
-      //don't reduce spousal benefits during time that child is under 17.99
-      //months of early entitlement should only begin counting from time child reaches age 17.99 (rather than spousal benefit date)
-    //personA
-      if (personA.adjustedSpousalBenefitDate > personA.spousalBenefitDate){//if ARF has happened, use adjusted date
-        monthsOfPersonAearlySpousalEntitlement = personA.FRA.getMonth() - personA.adjustedSpousalBenefitDate.getMonth() + 12 * (personA.FRA.getFullYear() - personA.adjustedSpousalBenefitDate.getFullYear())
-      }
-      else {
-        monthsOfPersonAearlySpousalEntitlement = personA.FRA.getMonth() - personA.spousalBenefitDate.getMonth() + 12 * (personA.FRA.getFullYear() - personA.spousalBenefitDate.getFullYear())
-      }
-      if (monthsOfPersonAearlySpousalEntitlement > 0 && monthsOfPersonAearlySpousalEntitlement <= 36) {
-        personA.monthlySpousalPayment = personA.monthlySpousalPayment - (personA.monthlySpousalPayment * 25/36/100 * monthsOfPersonAearlySpousalEntitlement)
-      }
-      if (monthsOfPersonAearlySpousalEntitlement > 36) {
-        personA.monthlySpousalPayment = personA.monthlySpousalPayment - (personA.monthlySpousalPayment * 25/36/100 * 36) - (personA.monthlySpousalPayment * 5/12/100 * (monthsOfPersonAearlySpousalEntitlement-36))
-      }
+    //CFR 404.410: spousal benefits not reduced for month in which there is a child in care who is entitled to child benefits on worker's record.
 
-    //personB
-      if (personB.adjustedSpousalBenefitDate > personB.spousalBenefitDate){//if ARF has happened, use adjusted date
-        monthsOfPersonBearlySpousalEntitlement = personB.FRA.getMonth() - personB.adjustedSpousalBenefitDate.getMonth() + 12 * (personB.FRA.getFullYear() - personB.adjustedSpousalBenefitDate.getFullYear())
-      }
-      else {
-        monthsOfPersonBearlySpousalEntitlement = personB.FRA.getMonth() - personB.spousalBenefitDate.getMonth() + 12 * (personB.FRA.getFullYear() - personB.spousalBenefitDate.getFullYear())
-      }
-      if (monthsOfPersonBearlySpousalEntitlement > 0 && monthsOfPersonBearlySpousalEntitlement <= 36) {
-        personB.monthlySpousalPayment = personB.monthlySpousalPayment - (personB.monthlySpousalPayment * 25/36/100 * monthsOfPersonBearlySpousalEntitlement)
-      }
-      if (monthsOfPersonBearlySpousalEntitlement > 36) {
-        personB.monthlySpousalPayment = personB.monthlySpousalPayment - (personB.monthlySpousalPayment * 25/36/100 * 36) - (personB.monthlySpousalPayment * 5/12/100 * (monthsOfPersonBearlySpousalEntitlement-36))
-      }
+    //Check if there is *currently* a child under 18 or disabled
+    let childUnder18orDisabled:boolean = this.checkForChildUnder18orDisabled(scenario)
+
+    //TODO: Check if there *was* a child under 18 as of spousal benefit date. (This could happen up in PV calc function, so it only happens once per PV calc rather than every month.)
+
+    //TODO: If there WAS a child under 17.99 as of spousal benefit date, months of early entitlement should only begin counting from time child reaches age 17.99 (rather than spousal benefit date)
+
+    if (childUnder18orDisabled === false){//Only reduce spousal benefits for age if there is no child who is disabled and/or *currently* under 18.
+        //personA
+        if (personA.adjustedSpousalBenefitDate > personA.spousalBenefitDate){//if ARF has happened, use adjusted date
+          monthsOfPersonAearlySpousalEntitlement = personA.FRA.getMonth() - personA.adjustedSpousalBenefitDate.getMonth() + 12 * (personA.FRA.getFullYear() - personA.adjustedSpousalBenefitDate.getFullYear())
+        }
+        else {
+          monthsOfPersonAearlySpousalEntitlement = personA.FRA.getMonth() - personA.spousalBenefitDate.getMonth() + 12 * (personA.FRA.getFullYear() - personA.spousalBenefitDate.getFullYear())
+        }
+        if (monthsOfPersonAearlySpousalEntitlement > 0 && monthsOfPersonAearlySpousalEntitlement <= 36) {
+          personA.monthlySpousalPayment = personA.monthlySpousalPayment - (personA.monthlySpousalPayment * 25/36/100 * monthsOfPersonAearlySpousalEntitlement)
+        }
+        if (monthsOfPersonAearlySpousalEntitlement > 36) {
+          personA.monthlySpousalPayment = personA.monthlySpousalPayment - (personA.monthlySpousalPayment * 25/36/100 * 36) - (personA.monthlySpousalPayment * 5/12/100 * (monthsOfPersonAearlySpousalEntitlement-36))
+        }
+
+      //personB
+        if (personB.adjustedSpousalBenefitDate > personB.spousalBenefitDate){//if ARF has happened, use adjusted date
+          monthsOfPersonBearlySpousalEntitlement = personB.FRA.getMonth() - personB.adjustedSpousalBenefitDate.getMonth() + 12 * (personB.FRA.getFullYear() - personB.adjustedSpousalBenefitDate.getFullYear())
+        }
+        else {
+          monthsOfPersonBearlySpousalEntitlement = personB.FRA.getMonth() - personB.spousalBenefitDate.getMonth() + 12 * (personB.FRA.getFullYear() - personB.spousalBenefitDate.getFullYear())
+        }
+        if (monthsOfPersonBearlySpousalEntitlement > 0 && monthsOfPersonBearlySpousalEntitlement <= 36) {
+          personB.monthlySpousalPayment = personB.monthlySpousalPayment - (personB.monthlySpousalPayment * 25/36/100 * monthsOfPersonBearlySpousalEntitlement)
+        }
+        if (monthsOfPersonBearlySpousalEntitlement > 36) {
+          personB.monthlySpousalPayment = personB.monthlySpousalPayment - (personB.monthlySpousalPayment * 25/36/100 * 36) - (personB.monthlySpousalPayment * 5/12/100 * (monthsOfPersonBearlySpousalEntitlement-36))
+        }
+    }
   }
 
   adjustSurvivorBenefitsForRIB_LIM(livingPerson:Person, deceasedPerson:Person){
@@ -623,5 +631,27 @@ export class BenefitService {
     }
   }
 
+  //Checks list of children to see if there is currently one under 18 or disabled
+  checkForChildUnder18orDisabled(scenario:CalculationScenario):boolean{
+    let entitledChild:boolean = false
+    for (let child of scenario.children){
+      if (child.age < 17.99 || child.isOnDisability === true){
+        entitledChild = true
+      }
+    }
+    return entitledChild
+  }
+
+  //Checks if there was a child under 18 as of given date.
+  checkForChildUnder18onGivenDate(scenario:CalculationScenario, date:MonthYearDate):boolean{
+    let childUnder18onGivenDate:boolean = false
+    for (let child of scenario.children){
+      let childAgeOnDate:number = this.birthdayService.findAgeOnDate(child, date)
+      if (childAgeOnDate < 17.99){
+        childUnder18onGivenDate = true
+      }
+    }
+    return childUnder18onGivenDate
+  }
 
 }

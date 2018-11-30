@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core'
 import {CalculationYear} from './data model classes/calculationyear'
 import {Person} from './data model classes/person'
-import {BenefitService} from './benefit.service'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
@@ -10,7 +9,7 @@ import {MonthYearDate} from "./data model classes/monthyearDate"
 })
 export class EarningsTestService {
 
-  constructor(private benefitService: BenefitService) { }
+  constructor() { }
   today: MonthYearDate = new MonthYearDate()
 
 

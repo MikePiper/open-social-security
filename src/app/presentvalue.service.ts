@@ -10,12 +10,13 @@ import {CalculationYear} from './data model classes/calculationyear'
 import {OutputTableService} from './outputtable.service'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import {FamilyMaximumService} from './familymaximum.service'
+import {BirthdayService} from './birthday.service'
 
 
 @Injectable()
 export class PresentValueService {
 
-  constructor(private benefitService: BenefitService, private mortalityService:MortalityService, private earningsTestService: EarningsTestService, private familyMaximumService:FamilyMaximumService,
+  constructor(private birthdayService:BirthdayService, private benefitService: BenefitService, private mortalityService:MortalityService, private earningsTestService: EarningsTestService, private familyMaximumService:FamilyMaximumService,
     private solutionSetService: SolutionSetService, private outputTableService: OutputTableService) { }
 
   today: MonthYearDate = new MonthYearDate()
@@ -42,9 +43,9 @@ export class PresentValueService {
     let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
 
     //calculate age(s) as of that date
-    person.age = ( 12 * (calcYear.date.getFullYear() - person.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - person.SSbirthDate.getMonth()  )/12
+    person.age = this.birthdayService.findAgeOnDate(person, calcYear.date)
     for (let child of scenario.children){
-      child.age = ( 12 * (calcYear.date.getFullYear() - child.SSbirthDate.getFullYear()) + (calcYear.date.getMonth()) - child.SSbirthDate.getMonth()  )/12
+      child.age = this.birthdayService.findAgeOnDate(child, calcYear.date)
     }
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
@@ -172,10 +173,10 @@ export class PresentValueService {
     }
 
     //calculate ages as of initial calcYear.date
-      personA.age = ( calcYear.date.getMonth() - personA.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
-      personB.age = ( calcYear.date.getMonth() - personB.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
+      personA.age = this.birthdayService.findAgeOnDate(personA, calcYear.date)
+      personB.age = this.birthdayService.findAgeOnDate(personB, calcYear.date)
       for (let child of scenario.children){
-        child.age = ( calcYear.date.getMonth() - child.SSbirthDate.getMonth() + 12 * (calcYear.date.getFullYear() - child.SSbirthDate.getFullYear()) )/12
+        child.age = this.birthdayService.findAgeOnDate(child, calcYear.date)
       }
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
@@ -199,7 +200,7 @@ export class PresentValueService {
             //Redo family max application
               this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, true)
             //Adjust spousal monthlyPayment fields as necessary for age
-              this.benefitService.adjustSpousalBenefitsForAge(personA, personB)
+              this.benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
             //Adjust spousal/survivor monthlyPayment fields for GPO
               this.benefitService.adjustSpousalAndSurvivorBenefitsForGPO(personA, personB)
             //Adjust as necessary for earnings test (and tally months withheld)
@@ -216,7 +217,7 @@ export class PresentValueService {
             //Redo family max application
               this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, false)
             //Adjust spousal monthlyPayment fields as necessary for age
-              this.benefitService.adjustSpousalBenefitsForAge(personA, personB)
+              this.benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
             //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
               this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personA, personB)
             //Adjust spousal/survivor monthlyPayment fields for GPO
@@ -235,7 +236,7 @@ export class PresentValueService {
             //Redo family max application
               this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, false, personB, true)
             //Adjust spousal monthlyPayment fields as necessary for age
-              this.benefitService.adjustSpousalBenefitsForAge(personA, personB)
+              this.benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
             //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
               this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
             //Adjust spousal/survivor monthlyPayment fields for GPO

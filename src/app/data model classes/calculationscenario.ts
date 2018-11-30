@@ -1,4 +1,3 @@
-import {MonthYearDate} from "./monthyearDate"
 import { Person } from "./person";
 
 export class CalculationScenario {
@@ -13,6 +12,7 @@ export class CalculationScenario {
         benefitCutPercentage: number = 23
     outputTable: any[][] = []
     outputTableComplete:boolean = false
+
 }
 
 

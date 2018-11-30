@@ -3,13 +3,14 @@ import { Person } from './data model classes/person';
 import { MonthYearDate } from './data model classes/monthyearDate';
 import { CalculationScenario } from './data model classes/calculationscenario';
 import { CalculationYear } from './data model classes/calculationyear';
+import { BenefitService } from './benefit.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FamilyMaximumService {
 
-  constructor() { }
+  constructor(private benefitService: BenefitService) { }
   
   today:MonthYearDate = new MonthYearDate()
 
@@ -144,12 +145,7 @@ export class FamilyMaximumService {
       let sumOfAuxBenefits:number = 0
 
       //Check if there's at least one child under 18 or disabled
-      let entitledChild:boolean = false
-      for (let child of scenario.children){
-        if (child.age < 17.99 || child.isOnDisability === true){
-          entitledChild = true
-        }
-      }
+      let entitledChild:boolean = this.benefitService.checkForChildUnder18orDisabled(scenario)
 
       //Find out who is entitled as aux beneficiaries
         if (personA.monthlySpousalPayment > 0 || personA.monthlySurvivorPayment > 0){//if personA is entitled on personB's record
