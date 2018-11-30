@@ -137,13 +137,93 @@ export class FamilyMaximumService {
     return scenario
   }
 
-  applyFamilyMaximumCouple(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB:Person, personBaliveBoolean:boolean) {
-    //Will need different version for married/divoced and for each person alive/deceased
+  applyFamilyMaximumCouple(familyMaxRunNumber:number, scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB:Person, personBaliveBoolean:boolean) {
+    if (scenario.children.length > 0 || personA.isOnDisability === true || personB.isOnDisability === true){//Only bother with all this if we know familymax might be applicable (because of kids or a person being disabled)
+
+      let familyMaximum:number = 0
+      let sumOfAuxBenefits:number = 0
+
+      //Check if there's at least one child under 18 or disabled
+      let entitledChild:boolean = false
+      for (let child of scenario.children){
+        if (child.age < 17.99 || child.isOnDisability === true){
+          entitledChild = true
+        }
+      }
+
+      //Find out who is entitled as aux beneficiaries
+        if (personA.monthlySpousalPayment > 0 || personA.monthlySurvivorPayment > 0){//if personA is entitled on personB's record
+          familyMaximum = personB.familyMaximum
+        }
+        if (personB.monthlySpousalPayment > 0 || personB.monthlySurvivorPayment > 0){//if personB is entitled on personA's record
+          familyMaximum = personA.familyMaximum
+        }
+        if(calcYear.date >= personA.retirementBenefitDate && calcYear.date >= personB.retirementBenefitDate && entitledChild === true){//if there is a child entitled on both personA and personB
+          if (personA.retirementBenefitDate > this.today && personB.retirementBenefitDate > this.today){//if both retirementBenefitDates are in the future, use this year as simultaneous entitlement year (becuase we don't know future year's bend points)
+            familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, this.today.getFullYear())
+          }
+          else if (personA.retirementBenefitDate >= personB.retirementBenefitDate && personA.retirementBenefitDate < this.today){//if personA's entitlement date happens second and is in the past, use that as simultaneous entitlement year
+            familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, personA.retirementBenefitDate.getFullYear())
+          }
+          else if (personB.retirementBenefitDate >= personA.retirementBenefitDate && personB.retirementBenefitDate < this.today){//if personB's entitlement date happens second and is in the past, use that as simultaneous entitlement year
+            familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, personB.retirementBenefitDate.getFullYear())
+          }
+        }
+
+      //Sum aux benefit amounts ("original benefits" first time through)
+        for (let child of scenario.children){
+          sumOfAuxBenefits = sumOfAuxBenefits + child.monthlyChildPayment
+        }
+        if (scenario.maritalStatus == "married"){//Don't include spousal or survivor benefits if it's divorce scenario
+          sumOfAuxBenefits = sumOfAuxBenefits + personA.monthlySpousalPayment + personB.monthlySpousalPayment + personA.monthlySurvivorPayment + personB.monthlySurvivorPayment
+          //Can add both personA's and personB's spousal amounts here, because monthlySpousalPayment will be zero if person not eligible. And will be zero if either person is deceased.
+          //personA.monthlySurvivorPayment will be zero in cases where personB is alive (and vice versa)
+          //if personB is considered deceased, first time through this function personA.monthlySurvivorPayment is "original benefit" amount for personA (which is deceased's PIA, plus any DRCs)
+          //if personB is considered deceased, second time through this function personA.monthlySurvivorPayment will be that same amount, reduced for familyMax and for own entitlement
+        }
+      //Find family max to be split among auxilliary beneficiaries (i.e., reduce by worker's own PIA in worker-alive scenario)
+        let familyMaxForAuxBeneficiaries:number = familyMaximum
+        if (personAaliveBoolean === true && personBaliveBoolean === true && calcYear.date >= personA.spousalBenefitDate && (personA.PIA < 0.5 * personB.PIA || calcYear.date < personA.retirementBenefitDate)){//i.e., personA is entitled on personB's record in both-alive scenario
+        familyMaxForAuxBeneficiaries = familyMaxForAuxBeneficiaries - personB.PIA
+        }
+        if (personAaliveBoolean === true && personBaliveBoolean === true && calcYear.date >= personB.spousalBenefitDate && (personB.PIA < 0.5 * personA.PIA || calcYear.date < personB.retirementBenefitDate)){//i.e., personB is entitled on personA's record in both-alive scenario
+        familyMaxForAuxBeneficiaries = familyMaxForAuxBeneficiaries - personA.PIA
+        }
+      //First run of family max exists only to adjust benefits downward. Second run exists only to adjust benefits upward (after reducing some people's aux benefits for own entitlement).
+        if (sumOfAuxBenefits == 0){
+          //no need to do anything, since nobody is getting aux benefits anyway, even before family max adjustment. Need this here though so that we can avoid "divide by zero" below.
+        }
+        else if (sumOfAuxBenefits > familyMaxForAuxBeneficiaries && familyMaxRunNumber == 1){
+          //find percentage that we can pay
+            let percentageAvailable:number = familyMaxForAuxBeneficiaries / sumOfAuxBenefits
+          //multiply each child's child benefit by that percentage
+            for (let child of scenario.children){
+              child.monthlyChildPayment = child.monthlyChildPayment * percentageAvailable
+            }
+          //multiply spouse/survivor benefits in a married scenario
+            if (scenario.maritalStatus == "married"){
+              personA.monthlySpousalPayment = personA.monthlySpousalPayment * percentageAvailable
+              personB.monthlySpousalPayment = personB.monthlySpousalPayment * percentageAvailable
+              personA.monthlySurvivorPayment = personA.monthlySurvivorPayment * percentageAvailable
+              personB.monthlySurvivorPayment = personB.monthlySurvivorPayment * percentageAvailable
+            }
+        }
+        else if (sumOfAuxBenefits < familyMaxForAuxBeneficiaries && familyMaxRunNumber == 2){
+          //find percentage that we can pay
+          let percentageAvailable:number = familyMaxForAuxBeneficiaries / sumOfAuxBenefits
+          //multiply each child's child benefit by that percentage, but don't let benefit exceed "original benefit"
+            for (let child of scenario.children){
+              child.monthlyChildPayment = child.monthlyChildPayment * percentageAvailable
+              if (child.monthlyChildPayment > child.originalBenefit) {
+                child.monthlyChildPayment = child.originalBenefit
+              }
+            }
+        }
+    }
   }
 
 
-
-    //access by, eg this.annualIndexedValuesArray[entitlementYear - 1979].secondPIAbendPoint
+  //access by, eg this.annualIndexedValuesArray[entitlementYear - 1979].secondPIAbendPoint
   //Note that these are the COLAs FOR a given year (effective January of next year)
       //https://www.ssa.gov/oact/cola/colaseries.html as compared to https://www.ssa.gov/cola/
       annualIndexedValuesArray = [
