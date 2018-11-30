@@ -44,16 +44,20 @@ export class BenefitService {
     return spousalOriginalBenefit
   }
 
-  //calculates "original benefit" for use in family max formula (i.e., before reduction for family max, before reduction for own entitlement, before reduction for age, before reduction for GPO)
-    //App assumes that for calculation of survivor benefit amount people do not die until planned filing date -> (no need to check about age at death, just checking planned retirementBenefitDate)
-    //App assumes that survivor does not file for survivor benefits until survivorFRA -> no need for reduction for age (wouldn't be needed here anyway)
+  //calculates "original benefit" for use in family max formula (i.e., before reduction for family max, before reduction for own entitlement...
+    //before reduction for age, before reduction for deceased's early entitlement, before reduction for GPO)
+    //See FamilyMax.txt for more information.
   calculateSurvivorOriginalBenefit(deceasedPerson:Person):number{
-    let survivorOriginalBenefit:number = deceasedPerson.retirementBenefit
-    if (survivorOriginalBenefit < deceasedPerson.PIA * 0.825) {
-      survivorOriginalBenefit = deceasedPerson.PIA * 0.825
+    let survivorOriginalBenefit:number
+    if (deceasedPerson.retirementBenefit > deceasedPerson.PIA){
+      survivorOriginalBenefit = deceasedPerson.retirementBenefit
+    }
+    else {
+      survivorOriginalBenefit = deceasedPerson.PIA
     }
     return survivorOriginalBenefit
   }
+
 
   adjustSpousalBenefitsForAge(personA:Person, personB:Person){
     let monthsPersonAwaited:number
@@ -84,6 +88,25 @@ export class BenefitService {
       }
       if (monthsPersonBwaited < -36) {
         personB.monthlySpousalPayment = personB.monthlySpousalPayment - (personB.monthlySpousalPayment * 25/36/100 * 36) + (personB.monthlySpousalPayment * 5/12/100 * (monthsPersonBwaited+36))
+      }
+  }
+
+  adjustSurvivorBenefitsForRIB_LIM(livingPerson:Person, deceasedPerson:Person){
+    //Determine whether RIB-LIM limit is 82.5% of deceased's PIA or amount deceased was receiving
+      let RIB_LIMlimit:number = 0
+      if (deceasedPerson.retirementBenefit > 0.825 * deceasedPerson.PIA){
+        RIB_LIMlimit = deceasedPerson.retirementBenefit
+      }
+      else {
+        RIB_LIMlimit = 0.825 * deceasedPerson.PIA
+      }
+    //Limit sum of survivor's monthlySurvivorPayment and monthlyRetirementPayment to RIB-LIM limit
+      if (livingPerson.monthlySurvivorPayment + livingPerson.monthlyRetirementPayment > RIB_LIMlimit){
+        livingPerson.monthlySurvivorPayment = RIB_LIMlimit - livingPerson.monthlyRetirementPayment
+      }
+    //But don't let monthlySurvivorPayment be below zero
+      if (livingPerson.monthlySurvivorPayment < 0) {
+        livingPerson.monthlySurvivorPayment = 0
       }
   }
 
@@ -127,6 +150,8 @@ export class BenefitService {
     if (personB.monthlySurvivorPayment < 0) {personB.monthlySurvivorPayment = 0}
   }
 
+  
+  //This function is now only used in solutionset.service
   calculateSpousalBenefit(person:Person, otherPerson:Person, retirementBenefit: number, spousalStartDate: MonthYearDate)
   {
     //Initial calculation
@@ -163,6 +188,7 @@ export class BenefitService {
     return Number(spousalBenefit)
   }
 
+  //This function is no longer used for anything. Keeping it though in case that changes.
   calculateSurvivorBenefit(survivingPerson:Person, survivorRetirementBenefit: number,  survivorSurvivorBenefitDate: MonthYearDate,
     deceasedPerson:Person, dateOfDeath: MonthYearDate, deceasedClaimingDate: MonthYearDate)
   {
@@ -442,13 +468,13 @@ export class BenefitService {
             if (calcYear.date >= personA.retirementBenefitDate){
               personA.monthlyRetirementPayment = personA.retirementBenefit
             }
-            if (calcYear.date >= personA.spousalBenefitDate){
+            if (calcYear.date >= personA.spousalBenefitDate && (personA.PIA < 0.5 * personB.PIA || calcYear.date < personA.retirementBenefitDate)){
               personA.monthlySpousalPayment = this.calculateSpousalOriginalBenefit(personB)
             }
             if (calcYear.date >= personB.retirementBenefitDate){
               personB.monthlyRetirementPayment = personB.retirementBenefit
             }
-            if (calcYear.date >= personB.spousalBenefitDate){
+            if (calcYear.date >= personB.spousalBenefitDate && (personB.PIA < 0.5 * personA.PIA || calcYear.date < personB.retirementBenefitDate)){
               personB.monthlySpousalPayment = this.calculateSpousalOriginalBenefit(personA)
             }
             for (let child of scenario.children){
@@ -546,6 +572,10 @@ export class BenefitService {
               }
             }
           }
+      }
+      //Save currently payment amounts as child.originalBenefit field, for sake of making sure family max never results in benefit greater than original benefit
+      for (let child of scenario.children){
+        child.originalBenefit = child.monthlyChildPayment
       }
   }
 

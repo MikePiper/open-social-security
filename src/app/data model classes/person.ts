@@ -58,6 +58,7 @@ export class Person {
     monthlySpousalPayment:number = 0
     monthlySurvivorPayment:number = 0
     monthlyChildPayment:number = 0
+        originalBenefit:number = 0 //"original benefit" in the sense as used in family max application. (That is, this is a number that can change from one month to the next.)
     monthsRetirementWithheld:number = 0 //for earnings test
     monthsSpousalWithheld:number = 0 //for earnings test
 

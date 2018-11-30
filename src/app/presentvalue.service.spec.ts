@@ -16,7 +16,6 @@ describe('test calculateSinglePersonPV', () => {
   let service:PresentValueService
   let birthdayService:BirthdayService
   let mortalityService:MortalityService
-  let benefitService:BenefitService
   let familyMaximumService:FamilyMaximumService
   let scenario:CalculationScenario
   let person:Person
@@ -27,7 +26,6 @@ describe('test calculateSinglePersonPV', () => {
     service = TestBed.get(PresentValueService)
     birthdayService = TestBed.get(BirthdayService)
     mortalityService = TestBed.get(MortalityService)
-    benefitService = TestBed.get(BenefitService)
     familyMaximumService = TestBed.get(FamilyMaximumService)
     scenario = new CalculationScenario()
     person = new Person("A")
@@ -354,6 +352,7 @@ describe('tests calculateCouplePV', () => {
   let service:PresentValueService
   let birthdayService:BirthdayService
   let mortalityService:MortalityService
+  let familyMaximumService:FamilyMaximumService
   let scenario:CalculationScenario
   let personA:Person
   let personB:Person
@@ -365,6 +364,7 @@ describe('tests calculateCouplePV', () => {
     service = TestBed.get(PresentValueService)
     birthdayService = TestBed.get(BirthdayService)
     mortalityService = TestBed.get(MortalityService)
+    familyMaximumService = TestBed.get(FamilyMaximumService)
     scenario = new CalculationScenario()
     personA = new Person("A")
     personB = new Person("B")
@@ -390,7 +390,7 @@ describe('tests calculateCouplePV', () => {
       personA.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
       personB.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
       scenario.discountRate = 1
-      expect(service.calculateCouplePV(personA, personB, scenario, false))
+      expect(service.calculateCouplePV(personA, personB, scenario, true))
         .toBeCloseTo(578594, 0)
     })
   
@@ -614,7 +614,7 @@ describe('tests calculateCouplePV', () => {
       expect(service.calculateCouplePV(personA, personB, scenario, true))
         .toBeCloseTo(712879, 0)//Went year-by-year checking benefit amounts. They're good. There is a question of how to calculate PV though (i.e., to what point do we discount everything. See todo.txt)
     })
-  
+
     it('should return appropriate PV for married couple, personB recently started retirement benefit, suspends 3 months from now until 70. personA filed two years ago.', () => { 
       service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
       scenario.maritalStatus = "married"
@@ -1082,8 +1082,8 @@ describe('tests calculateCouplePV', () => {
   
     it('should tell personB to file for spousal benefits ASAP (even though personA is younger than 62 at the time), if personA is disabled, personA has much higher PIA, one has a short life expectancy, and high-ish discount rate. Should also tell personA to suspend at FRA', () => {
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0) //originally SM2
+      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) //originally SSA
       personA.actualBirthDate = new Date(1964, 3, 11) //personA born in April 1964
       personA.SSbirthDate = new MonthYearDate(1964, 3, 1)
       personB.actualBirthDate = new Date(1960, 3, 15) //personB born in April 1960
@@ -1104,14 +1104,16 @@ describe('tests calculateCouplePV', () => {
       personB.quitWorkDate = new MonthYearDate(2010,3,1) //already quit working
       scenario.discountRate = 2
       let results = service.maximizeCouplePViterateBothPeople(personA, personB, scenario)
+      console.log(results.solutionsArray)
       expect(results.solutionsArray[0].date)
       .toEqual(new MonthYearDate(2022, 4, 1))//personB should file for retirement at 62 and 1 month
       expect(results.solutionsArray[1].date)
       .toEqual(new MonthYearDate(2022, 4, 1))//personB should file for spousal at 62 and 1 month
       expect(results.solutionsArray[3].date)
       .toEqual(new MonthYearDate(personA.FRA))//personA should suspend at FRA
-      //This array should have 5 items in it: retirement date for personB, spousal date for personB, conversiontoDisability for personA, begin suspension for personA, end suspension for personA
+      //This array should have 5 items in it: retirement date for personB, spousal date for personB, disabilityConversion for personA, begin suspension for personA, end suspension for personA
     })
+
 
     it('should tell a low-PIA spouse to file a retroactive application and high-PIA spouse to file retroactive restricted application if already past FRA with short life expectancies and high discount rate', () => {
       service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
