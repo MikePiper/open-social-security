@@ -60,34 +60,38 @@ export class BenefitService {
 
 
   adjustSpousalBenefitsForAge(personA:Person, personB:Person){
-    let monthsPersonAwaited:number
-    let monthsPersonBwaited:number
+    let monthsOfPersonAearlySpousalEntitlement:number
+    let monthsOfPersonBearlySpousalEntitlement:number
+    //TODO: If there's a disabled child, spousal benefits should never be reduced.
+    //If there's a child under 18 (use 17.99 because of Javascript rounding) as of spousal benefit date...
+      //don't reduce spousal benefits during time that child is under 17.99
+      //months of early entitlement should only begin counting from time child reaches age 17.99 (rather than spousal benefit date)
     //personA
       if (personA.adjustedSpousalBenefitDate > personA.spousalBenefitDate){//if ARF has happened, use adjusted date
-        monthsPersonAwaited = personA.adjustedSpousalBenefitDate.getMonth() - personA.FRA.getMonth() + 12 * (personA.adjustedSpousalBenefitDate.getFullYear() - personA.FRA.getFullYear())
+        monthsOfPersonAearlySpousalEntitlement = personA.FRA.getMonth() - personA.adjustedSpousalBenefitDate.getMonth() + 12 * (personA.FRA.getFullYear() - personA.adjustedSpousalBenefitDate.getFullYear())
       }
       else {
-        monthsPersonAwaited = personA.spousalBenefitDate.getMonth() - personA.FRA.getMonth() + 12 * (personA.spousalBenefitDate.getFullYear() - personA.FRA.getFullYear())
+        monthsOfPersonAearlySpousalEntitlement = personA.FRA.getMonth() - personA.spousalBenefitDate.getMonth() + 12 * (personA.FRA.getFullYear() - personA.spousalBenefitDate.getFullYear())
       }
-      if (monthsPersonAwaited >= -36 && monthsPersonAwaited < 0) {
-        personA.monthlySpousalPayment = personA.monthlySpousalPayment + (personA.monthlySpousalPayment * 25/36/100 * monthsPersonAwaited)
+      if (monthsOfPersonAearlySpousalEntitlement > 0 && monthsOfPersonAearlySpousalEntitlement <= 36) {
+        personA.monthlySpousalPayment = personA.monthlySpousalPayment - (personA.monthlySpousalPayment * 25/36/100 * monthsOfPersonAearlySpousalEntitlement)
       }
-      if (monthsPersonAwaited < -36) {
-        personA.monthlySpousalPayment = personA.monthlySpousalPayment - (personA.monthlySpousalPayment * 25/36/100 * 36) + (personA.monthlySpousalPayment * 5/12/100 * (monthsPersonAwaited+36))
+      if (monthsOfPersonAearlySpousalEntitlement > 36) {
+        personA.monthlySpousalPayment = personA.monthlySpousalPayment - (personA.monthlySpousalPayment * 25/36/100 * 36) - (personA.monthlySpousalPayment * 5/12/100 * (monthsOfPersonAearlySpousalEntitlement-36))
       }
 
     //personB
       if (personB.adjustedSpousalBenefitDate > personB.spousalBenefitDate){//if ARF has happened, use adjusted date
-        monthsPersonBwaited = personB.adjustedSpousalBenefitDate.getMonth() - personB.FRA.getMonth() + 12 * (personB.adjustedSpousalBenefitDate.getFullYear() - personB.FRA.getFullYear())
+        monthsOfPersonBearlySpousalEntitlement = personB.FRA.getMonth() - personB.adjustedSpousalBenefitDate.getMonth() + 12 * (personB.FRA.getFullYear() - personB.adjustedSpousalBenefitDate.getFullYear())
       }
       else {
-        monthsPersonBwaited = personB.spousalBenefitDate.getMonth() - personB.FRA.getMonth() + 12 * (personB.spousalBenefitDate.getFullYear() - personB.FRA.getFullYear())
+        monthsOfPersonBearlySpousalEntitlement = personB.FRA.getMonth() - personB.spousalBenefitDate.getMonth() + 12 * (personB.FRA.getFullYear() - personB.spousalBenefitDate.getFullYear())
       }
-      if (monthsPersonBwaited >= -36 && monthsPersonBwaited < 0) {
-        personB.monthlySpousalPayment = personB.monthlySpousalPayment + (personB.monthlySpousalPayment * 25/36/100 * monthsPersonBwaited)
+      if (monthsOfPersonBearlySpousalEntitlement > 0 && monthsOfPersonBearlySpousalEntitlement <= 36) {
+        personB.monthlySpousalPayment = personB.monthlySpousalPayment - (personB.monthlySpousalPayment * 25/36/100 * monthsOfPersonBearlySpousalEntitlement)
       }
-      if (monthsPersonBwaited < -36) {
-        personB.monthlySpousalPayment = personB.monthlySpousalPayment - (personB.monthlySpousalPayment * 25/36/100 * 36) + (personB.monthlySpousalPayment * 5/12/100 * (monthsPersonBwaited+36))
+      if (monthsOfPersonBearlySpousalEntitlement > 36) {
+        personB.monthlySpousalPayment = personB.monthlySpousalPayment - (personB.monthlySpousalPayment * 25/36/100 * 36) - (personB.monthlySpousalPayment * 5/12/100 * (monthsOfPersonBearlySpousalEntitlement-36))
       }
   }
 
