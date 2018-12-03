@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import { Person } from './data model classes/person';
+import { CalculationScenario } from './data model classes/calculationscenario';
 
 @Injectable()
 export class BirthdayService {
@@ -103,5 +104,28 @@ findFRA(SSbirthDate:MonthYearDate){
   findAgeOnDate (person:Person, date:MonthYearDate):number{
     let age:number = (date.getMonth() - person.SSbirthDate.getMonth() + 12 * (date.getFullYear() - person.SSbirthDate.getFullYear()) )/12
     return age
+  }
+
+  //Checks list of children to see if there is currently one under 18 or disabled
+  checkForChildUnder18orDisabled(scenario:CalculationScenario):boolean{
+    let entitledChild:boolean = false
+    for (let child of scenario.children){
+      if (child.age < 17.99 || child.isOnDisability === true){
+        entitledChild = true
+      }
+    }
+    return entitledChild
+  }
+
+  //Checks if there was a child under 18 as of given date.
+  checkForChildUnder18onGivenDate(scenario:CalculationScenario, date:MonthYearDate):boolean{
+    let childUnder18onGivenDate:boolean = false
+    for (let child of scenario.children){
+      let childAgeOnDate:number = this.findAgeOnDate(child, date)
+      if (childAgeOnDate < 17.99){
+        childUnder18onGivenDate = true
+      }
+    }
+    return childUnder18onGivenDate
   }
 }

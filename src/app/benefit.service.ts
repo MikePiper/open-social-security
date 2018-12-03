@@ -60,40 +60,47 @@ export class BenefitService {
   }
 
 
-  adjustSpousalBenefitsForAge(scenario:CalculationScenario, personA:Person, personB:Person){
+  adjustSpousalBenefitsForAge(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personB:Person){
+  //Key point via CFR 404.410: spousal benefits not reduced for month in which there is a child in care who is entitled to child benefits on worker's record.
+    //So if this is a month with a child in care, spousal should not be reduced.
+    //But also, months with child in care are counted as ARF crediting months (i.e., like months that get withheld due to earnings test, they do not count toward total of months of early entitlement).
+    //So we just count up total number of spousalARFcreditingMonths, and upon hitting FRA, we adjust accordingly. (adjustedSpousalBenefitDate is calculated in monthlyCheckForBenefitRecalculationsCouple(). )
     let monthsOfPersonAearlySpousalEntitlement:number
     let monthsOfPersonBearlySpousalEntitlement:number
-    //CFR 404.410: spousal benefits not reduced for month in which there is a child in care who is entitled to child benefits on worker's record.
+    let dateForCountingPersonAearlyEntitlement:MonthYearDate = new MonthYearDate(personA.spousalBenefitDate)
+    let dateForCountingPersonBearlyEntitlement:MonthYearDate = new MonthYearDate(personB.spousalBenefitDate)
+
+    if (personA.adjustedSpousalBenefitDate > personA.spousalBenefitDate){//if ARF has happened, use adjusted date
+      dateForCountingPersonAearlyEntitlement = new MonthYearDate(personA.adjustedSpousalBenefitDate)
+    }
+    if (personB.adjustedSpousalBenefitDate > personB.spousalBenefitDate){//if ARF has happened, use adjusted date
+      dateForCountingPersonBearlyEntitlement = new MonthYearDate(personB.adjustedSpousalBenefitDate)
+    }
 
     //Check if there is *currently* a child under 18 or disabled
-    let childUnder18orDisabled:boolean = this.checkForChildUnder18orDisabled(scenario)
+    let childUnder18orDisabled:boolean = this.birthdayService.checkForChildUnder18orDisabled(scenario)
 
-    //TODO: Check if there *was* a child under 18 as of spousal benefit date. (This could happen up in PV calc function, so it only happens once per PV calc rather than every month.)
-
-    //TODO: If there WAS a child under 17.99 as of spousal benefit date, months of early entitlement should only begin counting from time child reaches age 17.99 (rather than spousal benefit date)
-
-    if (childUnder18orDisabled === false){//Only reduce spousal benefits for age if there is no child who is disabled and/or *currently* under 18.
-        //personA
-        if (personA.adjustedSpousalBenefitDate > personA.spousalBenefitDate){//if ARF has happened, use adjusted date
-          monthsOfPersonAearlySpousalEntitlement = personA.FRA.getMonth() - personA.adjustedSpousalBenefitDate.getMonth() + 12 * (personA.FRA.getFullYear() - personA.adjustedSpousalBenefitDate.getFullYear())
-        }
-        else {
-          monthsOfPersonAearlySpousalEntitlement = personA.FRA.getMonth() - personA.spousalBenefitDate.getMonth() + 12 * (personA.FRA.getFullYear() - personA.spousalBenefitDate.getFullYear())
-        }
+    if (childUnder18orDisabled === true){
+      //if personA is entitled to spousal, give them a spousalARFcreditingMonth
+      if (calcYear.date >= personA.spousalBenefitDate){
+        personA.spousalARFcreditingMonths = personA.spousalARFcreditingMonths + 1
+      }
+      //if personB is entitled to spousal, give them a spousalARFcreditingMonth
+      if (calcYear.date >= personB.spousalBenefitDate){
+        personB.spousalARFcreditingMonths = personB.spousalARFcreditingMonths + 1
+      }
+    }
+    else {//Reduce spousal benefits for age if there is no child who is disabled and/or *currently* under 18.
+      //personA
+        monthsOfPersonAearlySpousalEntitlement = personA.FRA.getMonth() - dateForCountingPersonAearlyEntitlement.getMonth() + 12 * (personA.FRA.getFullYear() - dateForCountingPersonAearlyEntitlement.getFullYear())
         if (monthsOfPersonAearlySpousalEntitlement > 0 && monthsOfPersonAearlySpousalEntitlement <= 36) {
           personA.monthlySpousalPayment = personA.monthlySpousalPayment - (personA.monthlySpousalPayment * 25/36/100 * monthsOfPersonAearlySpousalEntitlement)
         }
         if (monthsOfPersonAearlySpousalEntitlement > 36) {
           personA.monthlySpousalPayment = personA.monthlySpousalPayment - (personA.monthlySpousalPayment * 25/36/100 * 36) - (personA.monthlySpousalPayment * 5/12/100 * (monthsOfPersonAearlySpousalEntitlement-36))
         }
-
       //personB
-        if (personB.adjustedSpousalBenefitDate > personB.spousalBenefitDate){//if ARF has happened, use adjusted date
-          monthsOfPersonBearlySpousalEntitlement = personB.FRA.getMonth() - personB.adjustedSpousalBenefitDate.getMonth() + 12 * (personB.FRA.getFullYear() - personB.adjustedSpousalBenefitDate.getFullYear())
-        }
-        else {
-          monthsOfPersonBearlySpousalEntitlement = personB.FRA.getMonth() - personB.spousalBenefitDate.getMonth() + 12 * (personB.FRA.getFullYear() - personB.spousalBenefitDate.getFullYear())
-        }
+        monthsOfPersonBearlySpousalEntitlement = personB.FRA.getMonth() - dateForCountingPersonBearlyEntitlement.getMonth() + 12 * (personB.FRA.getFullYear() - dateForCountingPersonBearlyEntitlement.getFullYear())
         if (monthsOfPersonBearlySpousalEntitlement > 0 && monthsOfPersonBearlySpousalEntitlement <= 36) {
           personB.monthlySpousalPayment = personB.monthlySpousalPayment - (personB.monthlySpousalPayment * 25/36/100 * monthsOfPersonBearlySpousalEntitlement)
         }
@@ -594,7 +601,7 @@ export class BenefitService {
   monthlyCheckForBenefitRecalculationsSingle(person:Person, calcYear:CalculationYear){
     //Recalculate using adjusted date at FRA. Then recalculate using DRCs at endSuspensionDate
     if (calcYear.date.valueOf() == person.FRA.valueOf()){
-      person.adjustedRetirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+person.monthsRetirementWithheld)
+      person.adjustedRetirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+person.retirementARFcreditingMonths)
       person.retirementBenefit = this.calculateRetirementBenefit(person, person.adjustedRetirementBenefitDate)
     }
     if (calcYear.date.valueOf() == person.endSuspensionDate.valueOf()){
@@ -613,13 +620,13 @@ export class BenefitService {
     }
     //Recalculate person's own retirement benefit using adjusted date at FRA. Also set adjustedSpousalBenefitDate field.
     if (calcYear.date.valueOf() == personA.FRA.valueOf() && personA.retirementBenefitDate < personA.FRA){//Second conditional is because we only want to calculate these things at FRA if person filed prior to FRA. If person hasn't hit retirementBenefitDate yet, we don't want to calculate it yet.
-      personA.adjustedRetirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+personA.monthsRetirementWithheld)
-      personA.adjustedSpousalBenefitDate.setMonth(personA.adjustedSpousalBenefitDate.getMonth()+personA.monthsSpousalWithheld)
+      personA.adjustedRetirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+personA.retirementARFcreditingMonths)
+      personA.adjustedSpousalBenefitDate.setMonth(personA.adjustedSpousalBenefitDate.getMonth()+personA.spousalARFcreditingMonths)
       personA.retirementBenefit = this.calculateRetirementBenefit(personA, personA.adjustedRetirementBenefitDate)
     }
     if (calcYear.date.valueOf() == personB.FRA.valueOf() && personB.retirementBenefitDate < personB.FRA){//Second conditional is because we only want to calculate these things at FRA if person filed prior to FRA. If person hasn't hit retirementBenefitDate yet, we don't want to calculate it yet.
-      personB.adjustedRetirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+personB.monthsRetirementWithheld)
-      personB.adjustedSpousalBenefitDate.setMonth(personB.adjustedSpousalBenefitDate.getMonth()+personB.monthsSpousalWithheld)
+      personB.adjustedRetirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+personB.retirementARFcreditingMonths)
+      personB.adjustedSpousalBenefitDate.setMonth(personB.adjustedSpousalBenefitDate.getMonth()+personB.spousalARFcreditingMonths)
       personB.retirementBenefit = this.calculateRetirementBenefit(personB, personB.adjustedRetirementBenefitDate)
     }
     //Recalculate retirement benefit using DRCs at endSuspensionDate\
@@ -629,29 +636,6 @@ export class BenefitService {
     if (calcYear.date.valueOf() == personB.endSuspensionDate.valueOf()){
       personB.retirementBenefit = this.calculateRetirementBenefit(personB, personB.adjustedRetirementBenefitDate)
     }
-  }
-
-  //Checks list of children to see if there is currently one under 18 or disabled
-  checkForChildUnder18orDisabled(scenario:CalculationScenario):boolean{
-    let entitledChild:boolean = false
-    for (let child of scenario.children){
-      if (child.age < 17.99 || child.isOnDisability === true){
-        entitledChild = true
-      }
-    }
-    return entitledChild
-  }
-
-  //Checks if there was a child under 18 as of given date.
-  checkForChildUnder18onGivenDate(scenario:CalculationScenario, date:MonthYearDate):boolean{
-    let childUnder18onGivenDate:boolean = false
-    for (let child of scenario.children){
-      let childAgeOnDate:number = this.birthdayService.findAgeOnDate(child, date)
-      if (childAgeOnDate < 17.99){
-        childUnder18onGivenDate = true
-      }
-    }
-    return childUnder18onGivenDate
   }
 
 }

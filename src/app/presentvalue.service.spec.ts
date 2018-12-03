@@ -589,13 +589,16 @@ describe('tests calculateCouplePV', () => {
     })
   
     it('should return appropriate PV for married couple (where spousal benefits are relevant). PersonB is disabled prior to 62. He suspends FRA to 70. Person A files at 70 for retirement and spousal.', () => { 
+      service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
-      personA.SSbirthDate = new MonthYearDate(1970, 0, 1) //Spouse A born in Jan 1970 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
+      personA.SSbirthDate = new MonthYearDate(1970, 0, 1) //Spouse A born in Jan 1970
       personB.SSbirthDate = new MonthYearDate(1970, 0, 1) //Spouse B born in Jan 1970
-      personA.initialAgeRounded = 49
-      personB.initialAgeRounded = 49
+      personA.initialAge = birthdayService.findAgeOnDate(personA, service.today)
+      personA.initialAgeRounded = Math.round(personA.initialAge)
+      personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
+      personB.initialAgeRounded = Math.round(personB.initialAge)
       personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
       personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
       personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
@@ -603,13 +606,13 @@ describe('tests calculateCouplePV', () => {
       personA.PIA = 500
       personB.PIA = 1500
           personB.isOnDisability = true
-          personB.retirementBenefitDate = new MonthYearDate (2018, 0, 1) //On disabillity as of age 48
-          personB.fixedRetirementBenefitDate = new MonthYearDate (2018, 0, 1) //On disabillity as of age 48
+          personB.retirementBenefitDate = new MonthYearDate (2018, 0) //On disabillity as of age 48
+          personB.fixedRetirementBenefitDate = new MonthYearDate (2018, 0) //On disabillity as of age 48
       personB.beginSuspensionDate = new MonthYearDate(personB.FRA)
-      personB.endSuspensionDate = new MonthYearDate(2040, 0, 1)//Suspends FRA-70
-      personA.retirementBenefitDate = new MonthYearDate (2040, 0, 1) //Filing exactly at 70
-      personA.spousalBenefitDate = new MonthYearDate (2040, 0, 1) //Later of two retirement benefit dates
-      personB.spousalBenefitDate = new MonthYearDate (2040, 0, 1) //Later of two retirement benefit dates
+      personB.endSuspensionDate = new MonthYearDate(2040, 0)//Suspends FRA-70
+      personA.retirementBenefitDate = new MonthYearDate (2040, 0) //Filing exactly at 70
+      personA.spousalBenefitDate = new MonthYearDate (2040, 0) //Later of two retirement benefit dates
+      personB.spousalBenefitDate = new MonthYearDate (2040, 0) //Later of two retirement benefit dates
       scenario.discountRate = 1
       expect(service.calculateCouplePV(personA, personB, scenario, true))
         .toBeCloseTo(712879, 0)//Went year-by-year checking benefit amounts. They're good. There is a question of how to calculate PV though (i.e., to what point do we discount everything. See todo.txt)

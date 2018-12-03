@@ -191,7 +191,7 @@ describe('FamilyMaximumService', () => {
       //personB's spousal benefit now adjusted downward by great of PIA ($400) or retirementBenefit ($315). So it's reduced to zero.
       service.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, true)
       //Now we have $1100 available between child1 and child2. So they should each be able to get their full $500 child benefit.
-      benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
+      benefitService.adjustSpousalBenefitsForAge(scenario, calcYear, personA, personB)
       //$0 is adjusted downward for filing 39 months early. Gets 73.75% of $0
       expect(scenario.children[0].monthlyChildPayment)
         .toEqual(500)

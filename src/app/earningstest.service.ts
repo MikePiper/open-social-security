@@ -3,13 +3,14 @@ import {CalculationYear} from './data model classes/calculationyear'
 import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
+import { BirthdayService } from './birthday.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EarningsTestService {
 
-  constructor() { }
+  constructor(private birthdayService:BirthdayService) { }
   today: MonthYearDate = new MonthYearDate()
 
 
@@ -84,7 +85,7 @@ export class EarningsTestService {
             child.monthlyChildPayment = 0
           }
           //Add to tally of months withheld
-          person.monthsRetirementWithheld = person.monthsRetirementWithheld + 1
+          person.retirementARFcreditingMonths = person.retirementARFcreditingMonths + 1
           //Reduce necessary withholding by amount that was withheld this month
           calcYear.annualWithholdingDuetoSinglePersonEarnings = calcYear.annualWithholdingDuetoSinglePersonEarnings - availableForWithholding
       }
@@ -93,6 +94,9 @@ export class EarningsTestService {
 
   applyEarningsTestCouple(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:Boolean, personB:Person, personBaliveBoolean:Boolean){
     let availableForWithholding:number = 0
+
+        //Check if there is *currently* a child under 18 or disabled. (We have to do this because we only want to give spousalARFcreditingMonths for earnings test in months in which there isn't a child in care. Otherwise they'd get 2 credits for the same month.)
+        let childUnder18orDisabled:boolean = this.birthdayService.checkForChildUnder18orDisabled(scenario)
 
         //If it's the beginning of a year, calculate earnings test withholding and determine if this is a grace year
         if (calcYear.date.getMonth() == 0 && personAaliveBoolean === true && personBaliveBoolean === true){//Check for "alive booleans" to be true because we only want to do this once each January.
@@ -120,12 +124,12 @@ export class EarningsTestService {
                 //Go through each person to see what can be withheld on personA's record. Add that amount to availableForWithholding, set applicable monthlyPayment to zero, and add 1 to monthsWithheld tally
                   availableForWithholding = personA.monthlyRetirementPayment
                   personA.monthlyRetirementPayment = 0
-                  personA.monthsRetirementWithheld = personA.monthsRetirementWithheld + 1
+                  personA.retirementARFcreditingMonths = personA.retirementARFcreditingMonths + 1
                   if (scenario.maritalStatus == "married"){//Only make spouse B's benefit as a spouse available for withholding if they're currently married (as opposed to divorced)
                     if (calcYear.date >= personB.spousalBenefitDate && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate)){//If it's a spousalBenefit month, and not a nonservice month in grace year for personB
                         availableForWithholding = availableForWithholding + personB.monthlySpousalPayment
                         personB.monthlySpousalPayment = 0
-                        personB.monthsSpousalWithheld = personB.monthsSpousalWithheld + 1
+                        if (childUnder18orDisabled === false) {personB.spousalARFcreditingMonths = personB.spousalARFcreditingMonths + 1}
                     }       
                   }   
                   for (let child of scenario.children){
@@ -148,11 +152,11 @@ export class EarningsTestService {
                 //Go through each person to see what can be withheld on personA's record. Add that amount to availableForWithholding, set applicable monthlyPayment to zero, and add 1 to monthsWithheld tally
                   availableForWithholding = personB.monthlyRetirementPayment
                   personB.monthlyRetirementPayment = 0
-                  personB.monthsRetirementWithheld = personB.monthsRetirementWithheld + 1
+                  personB.retirementARFcreditingMonths = personB.retirementARFcreditingMonths + 1
                   if (calcYear.date >= personA.spousalBenefitDate && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate)){//If it's a spousalBenefit month, and not a nonservice month in grace year for personA
                       availableForWithholding = availableForWithholding + personA.monthlySpousalPayment
                       personA.monthlySpousalPayment = 0
-                      personA.monthsSpousalWithheld = personA.monthsSpousalWithheld + 1
+                      if (childUnder18orDisabled === false) {personA.spousalARFcreditingMonths = personA.spousalARFcreditingMonths + 1}
                   }       
                   for (let child of scenario.children){
                       if ((child.age < 17.99 || child.isOnDisability === true) && calcYear.date >= child.childBenefitDate ){//if child is entitled to a child's benefit
@@ -175,7 +179,7 @@ export class EarningsTestService {
                 ) {
                 calcYear.annualWithholdingDueToPersonAearningsBothAlive = calcYear.annualWithholdingDueToPersonAearningsBothAlive - personA.monthlySpousalPayment
                 personA.monthlySpousalPayment = 0
-                personA.monthsSpousalWithheld = personA.monthsSpousalWithheld + 1
+                if (childUnder18orDisabled === false) {personA.spousalARFcreditingMonths = personA.spousalARFcreditingMonths + 1}
                 }
             }
             
@@ -189,7 +193,7 @@ export class EarningsTestService {
               ) {
               calcYear.annualWithholdingDueToPersonBearningsBothAlive = calcYear.annualWithholdingDueToPersonBearningsBothAlive - personB.monthlySpousalPayment
               personB.monthlySpousalPayment = 0
-              personB.monthsSpousalWithheld = personB.monthsSpousalWithheld + 1
+              if (childUnder18orDisabled === false) {personB.spousalARFcreditingMonths = personB.spousalARFcreditingMonths + 1}
               }
           }
         }

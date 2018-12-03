@@ -59,8 +59,8 @@ export class Person {
     monthlySurvivorPayment:number = 0
     monthlyChildPayment:number = 0
         originalBenefit:number = 0 //"original benefit" in the sense as used in family max application. (That is, this is a number that can change from one month to the next.)
-    monthsRetirementWithheld:number = 0 //for earnings test
-    monthsSpousalWithheld:number = 0 //for earnings test
+    retirementARFcreditingMonths:number = 0 //for earnings test
+    spousalARFcreditingMonths:number = 0 //for earnings test and for months with child-in-care: (See POMS RS 00615.482)
 
     constructor(id:string){
         this.id = id

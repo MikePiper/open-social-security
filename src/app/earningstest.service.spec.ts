@@ -3,16 +3,13 @@ import {TestBed, inject} from '@angular/core/testing'
 import {EarningsTestService} from './earningstest.service'
 import {BenefitService} from './benefit.service'
 import {Person} from './data model classes/person'
-import {CalculationYear} from './data model classes/calculationyear'
 import {BirthdayService} from './birthday.service'
-import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
-import { PresentValueService } from './presentvalue.service';
 
 describe('EarningstestService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [EarningsTestService, BenefitService]
+      providers: [EarningsTestService, BenefitService, BirthdayService]
     });
   });
 

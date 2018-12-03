@@ -12,6 +12,8 @@ export class CalculationScenario {
         benefitCutPercentage: number = 23
     outputTable: any[][] = []
     outputTableComplete:boolean = false
+    childUnder18onPersonAspousalBenefitDate:boolean //used for sake of determining when to start counting early entitlement months for spousal benefit (i.e., start on spousal benefit date, or start at later date?)
+    childUnder18onPersonBspousalBenefitDate:boolean //ditto
 
 }
 

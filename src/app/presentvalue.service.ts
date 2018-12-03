@@ -27,7 +27,7 @@ export class PresentValueService {
       person.hasHadGraceYear = false
       person.adjustedRetirementBenefitDate = new MonthYearDate(person.retirementBenefitDate)
       person.DRCsViaSuspension = 0
-      person.monthsRetirementWithheld = 0
+      person.retirementARFcreditingMonths = 0
       scenario.outputTable = []
 
     //calculate initial retirement benefit
@@ -138,6 +138,8 @@ export class PresentValueService {
     let couplePV: number = 0
     let savedCalculationYear: CalculationYear = new CalculationYear(this.today)
     scenario.outputTable = []
+    scenario.childUnder18onPersonAspousalBenefitDate = this.birthdayService.checkForChildUnder18onGivenDate(scenario, personA.spousalBenefitDate)
+    scenario.childUnder18onPersonBspousalBenefitDate = this.birthdayService.checkForChildUnder18onGivenDate(scenario, personB.spousalBenefitDate)
     personA.hasHadGraceYear = false
     personB.hasHadGraceYear = false
     personA.retirementBenefit = 0
@@ -148,10 +150,10 @@ export class PresentValueService {
     personB.adjustedSpousalBenefitDate = new MonthYearDate(personB.spousalBenefitDate)
     personA.DRCsViaSuspension = 0
     personB.DRCsViaSuspension = 0
-    personA.monthsRetirementWithheld = 0
-    personA.monthsSpousalWithheld = 0
-    personB.monthsRetirementWithheld = 0
-    personB.monthsSpousalWithheld = 0
+    personA.retirementARFcreditingMonths = 0
+    personA.spousalARFcreditingMonths = 0
+    personB.retirementARFcreditingMonths = 0
+    personB.spousalARFcreditingMonths = 0
 
 
     //calculate combined family maximum (We need to know "simultaneous entitlement year" so we can't do this in HomeComponent or maximize function. But can do it anywhere at beginning of PV calc.)
@@ -200,7 +202,7 @@ export class PresentValueService {
             //Redo family max application
               this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, true)
             //Adjust spousal monthlyPayment fields as necessary for age
-              this.benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
+              this.benefitService.adjustSpousalBenefitsForAge(scenario, calcYear, personA, personB)
             //Adjust spousal/survivor monthlyPayment fields for GPO
               this.benefitService.adjustSpousalAndSurvivorBenefitsForGPO(personA, personB)
             //Adjust as necessary for earnings test (and tally months withheld)
@@ -216,8 +218,6 @@ export class PresentValueService {
               this.benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
             //Redo family max application
               this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, false)
-            //Adjust spousal monthlyPayment fields as necessary for age
-              this.benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
             //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
               this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personA, personB)
             //Adjust spousal/survivor monthlyPayment fields for GPO
@@ -235,8 +235,6 @@ export class PresentValueService {
               this.benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
             //Redo family max application
               this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, false, personB, true)
-            //Adjust spousal monthlyPayment fields as necessary for age
-              this.benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
             //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
               this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
             //Adjust spousal/survivor monthlyPayment fields for GPO
