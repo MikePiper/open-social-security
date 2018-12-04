@@ -484,16 +484,19 @@ export class BenefitService {
           }
           else {//if neither person is suspended
             //if entitled to benefits in question: personA gets retirement and spousal, personB gets retirement and spousal and children each get benefit on personA or personB
+            let childUnder16orDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabled(scenario)
             if (calcYear.date >= personA.retirementBenefitDate){
               personA.monthlyRetirementPayment = personA.retirementBenefit
             }
-            if (calcYear.date >= personA.spousalBenefitDate && (personA.PIA < 0.5 * personB.PIA || calcYear.date < personA.retirementBenefitDate)){
+            if (calcYear.date >= personA.spousalBenefitDate && (personA.PIA < 0.5 * personB.PIA || calcYear.date < personA.retirementBenefitDate) && (childUnder16orDisabled === true || personA.age >= 61.99) ){
+            //if (calcYear.date >= personA.spousalBenefitDate && (personA.PIA < 0.5 * personB.PIA || calcYear.date < personA.retirementBenefitDate)){
               personA.monthlySpousalPayment = this.calculateSpousalOriginalBenefit(personB)
             }
             if (calcYear.date >= personB.retirementBenefitDate){
               personB.monthlyRetirementPayment = personB.retirementBenefit
             }
-            if (calcYear.date >= personB.spousalBenefitDate && (personB.PIA < 0.5 * personA.PIA || calcYear.date < personB.retirementBenefitDate)){
+            if (calcYear.date >= personB.spousalBenefitDate && (personB.PIA < 0.5 * personA.PIA || calcYear.date < personB.retirementBenefitDate) && (childUnder16orDisabled === true || personB.age >= 61.99) ){
+            //if (calcYear.date >= personB.spousalBenefitDate && (personB.PIA < 0.5 * personA.PIA || calcYear.date < personB.retirementBenefitDate)){
               personB.monthlySpousalPayment = this.calculateSpousalOriginalBenefit(personA)
             }
             for (let child of scenario.children){

@@ -81,7 +81,7 @@ export class OutputTableService {
             }
           }
         }
-      if (person.age <= 70 || childUnder19 === true || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts until a) person is 70 b) there are no non-disabled children under 19 and c) benefit cut year (if applicable) has been reached
+      if (person.age <= 71 || childUnder19 === true || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts until a) person is 70 for entire year b) there are no non-disabled children under 19 and c) benefit cut year (if applicable) has been reached
         if (scenario.children.length > 0){
           scenario.outputTable.push([
             calcYear.date.getFullYear(),
@@ -171,7 +171,7 @@ export class OutputTableService {
           }
         }
       }
-      if (personA.age <= 70 || personB.age <= 70 || childUnder19 === true || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts until both people are 70, there are no nondisabled children under 19, and benefit cut year (if applicable) has been reached
+      if (personA.age <= 71 || personB.age <= 71 || childUnder19 === true || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts until both people are 70 for entire year, there are no nondisabled children under 19, and benefit cut year (if applicable) has been reached
         if (scenario.children.length > 0){
           scenario.outputTable.push([
             calcYear.date.getFullYear(),

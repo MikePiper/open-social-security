@@ -253,7 +253,9 @@ export class PresentValueService {
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, false, printOutputTable)
       }
 
-      //After month is over increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
+      //After month is over increase age of everybody by 1 month
+            personA.age = personA.age + 1/12
+            personB.age = personB.age + 1/12
             for (let child of scenario.children){
               child.age = child.age + 1/12
             }
@@ -274,9 +276,9 @@ export class PresentValueService {
                 this.outputTableService.generateOutputTableDivorced(personA, scenario, calcYear)
               }
 
-            //Calculate each person's probability of being alive at end of age in question
-              let probabilityAalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personA, personA.age, personB)
-              let probabilityBalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personB, personB.age, personA)
+            //Calculate each person's probability of being alive at end of age in question. (Have to use age-1 here because we want their age as of beginning of year.)
+              let probabilityAalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personA, personA.age-1, personB)
+              let probabilityBalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personB, personB.age-1, personA)
 
             //Apply probability alive to annual benefit amounts
               let annualPV:number =
@@ -286,11 +288,11 @@ export class PresentValueService {
 
 
             //Discount that probability-weighted annual benefit amount to age 62
-                //Find which spouse is older, because we're discounting back to date on which older spouse is age 62.
+                //Find which spouse is older, because we're discounting back to date on which older spouse is age 62. (Have to use age-1 here because we want their age as of beginning of year.)
                 let olderAge: number
                 if (personA.age > personB.age) {
-                  olderAge = personA.age
-                } else {olderAge = personB.age}
+                  olderAge = personA.age-1
+                } else {olderAge = personB.age-1}
 
                 if (printOutputTable === true){
                   console.log("monthly loop year: " + calcYear.date.getFullYear())
@@ -327,10 +329,6 @@ export class PresentValueService {
             if (this.readyForSavedCalculationYearForFasterLoop(scenario, calcYear, personA, personB) === true){
               savedCalculationYear = this.createSavedCalculationYearForFasterLoop(calcYear)
             }
-
-            //increment personA and personB ages by 1 year
-              personA.age = personA.age + 1
-              personB.age = personB.age + 1
       }
       //increment month by 1 and create new CalculationYear object if it's now January
       calcYear.date.setMonth(calcYear.date.getMonth()+1)
@@ -912,13 +910,14 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
   }
 
   readyForSavedCalculationYearForFasterLoop(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personB:Person):boolean{
-    if (personA.age < 70 || personB.age < 70){
+    if (personA.age < 71.1 || personB.age < 71.1){
+        //We call this function in december. We have already added 1 month to person's age at point where this function is called though.
+        //and we want to make sure they were 70 for the ENTIRE year. So they need to be 71 and 1 month by this point basically.
       return false
     }
     for (let child of scenario.children){
       if (child.age < 19.1 && child.isOnDisability === false){
-        //We call this function in december. We have already added 1 month to child's age at point where this function is called though.
-        //and we want to make sure they were 18 for the ENTIRE year. So they need to be 19 and 1 month by this point basically.
+        //Ditto reasoning above, but for age 18
         return false
       }
     }
