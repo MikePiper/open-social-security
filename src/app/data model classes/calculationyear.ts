@@ -1,5 +1,4 @@
 import {MonthYearDate} from "./monthyearDate"
-import { CalculationScenario } from "./calculationscenario";
 
 export class CalculationYear {
     //This class is only for things that get reset each year (e.g., months of a benefit)
