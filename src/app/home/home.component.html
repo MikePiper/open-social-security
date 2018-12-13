@@ -141,8 +141,23 @@
         <!--End personA Mortality Inputs -->
 
         <div *ngIf="scenario.maritalStatus != 'single' && this.advanced === true">
-          <label for="personAgovernmentPension">Monthly government pension (from non-covered employment)</label>
-          <input type="number" [(ngModel)]="personA.governmentPension" id="personAgovernmentPension" name="personA.governmentPension">
+          <label for="personAreceivesGovernmentPension">You receive (or will receive) a government pension (from non-covered employment)</label>
+          <input id="personAreceivesGovernmentPension" [(ngModel)]="personAreceivesGovernmentPension" name="personAreceivesGovernmentPension" value="true" type="checkbox">
+          <div *ngIf="personAreceivesGovernmentPension === true">
+            <label for="personAgovernmentPension">Monthly government pension (from non-covered employment)</label>
+            <input type="number" [(ngModel)]="personA.governmentPension" id="personAgovernmentPension" name="personA.governmentPension">
+            <div>
+              <label>Widow(er) PIA</label>
+              <input type="number" [(ngModel)]="personA.wepSurvivorPIA" name="personA.wepSurvivorPIA" #personASurvivorPIAinput="ngModel" id="personASurvivorPIA" required pattern="[0-9]{1,7}">
+              <span *ngIf="personASurvivorPIAinput.invalid" class="alert alert-danger">digits only, please</span>
+              <p class="inputexplanation">
+                Your widow(er) PIA is the basis for calculating the benefit your surviving spouse could receive based on your record.
+                Leave at zero unless you are affected by the Windfall Elimination Provision (WEP). If so, enter your WEP PIA above, and your non-WEP PIA here.
+                You can calculate those PIA's with at <a href="https://www.ssa.gov/planners/retire/gpo-wep.html" target="_blank">Social Security Online Calculator (WEP Version)</a>
+                or the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> offline calculator.
+              </p>
+            </div>
+          </div>
         </div>    
 
       <span *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">
@@ -260,10 +275,25 @@
           </span>
         <!--End personB Mortality Inputs -->
 
-        <div *ngIf="this.advanced === true && scenario.maritalStatus == 'married'">
-            <label for="personBgovernmentPension">Monthly government pension (from non-covered employment)</label>
-            <input type="number" [(ngModel)]="personB.governmentPension" id="personBgovernmentPension" name="personB.governmentPension">
-        </div>
+          <div *ngIf="this.advanced === true && scenario.maritalStatus == 'married'">
+            <label for="personBreceivesGovernmentPension">You receive (or will receive) a government pension (from non-covered employment)  </label>
+            <input id="personBreceivesGovernmentPension" [(ngModel)]="personBreceivesGovernmentPension" name="personBreceivesGovernmentPension" value="true" type="checkbox">
+            <div *ngIf="personBreceivesGovernmentPension === true">
+              <label for="personBgovernmentPension">Monthly government pension (from non-covered employment)</label>
+              <input type="number" [(ngModel)]="personB.governmentPension" id="personBgovernmentPension" name="personB.governmentPension">
+              <div>
+                <label>Widow(er) PIA</label>
+                <input type="number" [(ngModel)]="personB.wepSurvivorPIA" name="personB.wepSurvivorPIA" #personBSurvivorPIAinput="ngModel" id="personBSurvivorPIA" required pattern="[0-9]{1,7}">
+                <span *ngIf="personBSurvivorPIAinput.invalid" class="alert alert-danger">digits only, please</span>
+                <p class="inputexplanation">
+                  Your spouse's Widow(er) PIA is the basis for calculating the benefit you could receive based on your spouse's record.
+                  Leave at zero unless your spouse is affected by the Windfall Elimination Provision (WEP). If so, enter your spouse's WEP PIA above, and the non-WEP PIA here.
+                  You can calculate those PIA's with at <a href="https://www.ssa.gov/planners/retire/gpo-wep.html" target="_blank">Social Security Online Calculator (WEP Version)</a>
+                  or the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> offline calculator.
+                </p>
+              </div>
+            </div>
+          </div>
       </span>
 
         <!--Begin Child Inputs -->
