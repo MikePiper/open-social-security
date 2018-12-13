@@ -101,7 +101,10 @@ export class HomeComponent implements OnInit {
   personBmortalityInput: string = "SSA"
   personBassumedDeathAge: number = 0
   advanced: boolean = false
-  qualifyingChildrenBoolean:boolean = false
+  qualifyingChildrenBoolean: boolean = false
+
+  personAreceivesGovernmentPension: boolean = false
+  personBreceivesGovernmentPension: boolean = false
 
     //earnings test inputs
     personAworking: boolean = false
@@ -360,6 +363,20 @@ export class HomeComponent implements OnInit {
       if (this.scenario.maritalStatus == "divorced" && this.personB.initialAge < 70) {
         this.personB.hasFiled = false
       }
+
+    // Reset values related to government pension if not receiving a government pension
+      if (this.personAreceivesGovernmentPension === false) {
+        this.personA.governmentPension = 0
+        this.personA.wepSurvivorPIA = 0
+      }
+      // otherwise, these personA fields set by the form 
+
+      if (this.personBreceivesGovernmentPension === false) {
+        this.personB.governmentPension = 0
+        this.personB.wepSurvivorPIA = 0
+      }
+      // otherwise, these personB fields set by the form 
+
     //reset earnings test inputs if "still working" is false
       if (this.personAworking === false) {
         this.personA.monthlyEarnings = 0
