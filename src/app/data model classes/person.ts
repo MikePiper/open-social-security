@@ -21,7 +21,9 @@ export class Person {
     declineSpousal: boolean = false
     declineSuspension:boolean = false
 
-
+    // fields to calculate benefit due to a survivor of a person whose benefit may have been reduced by the Windfall Elimination Provision
+    receivesGovernmentPension: boolean = false
+    wepSurvivorPIA: number = 0 // zero unless user specifies the PIA this person would have had, if not affected by the Windfall Elimination Provision. 
 
     //ageRounded: number
     //ageLastBirthday: number
