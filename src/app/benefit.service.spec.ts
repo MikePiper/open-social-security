@@ -146,7 +146,7 @@ describe('BenefitService', () => {
 
 
 
-  //Testing calculateSurvivorBenefit
+  //Testing calculateSurvivorBenefit if deceased was not affected by Windfall Elimination Provision
     it('should calculate survivor benefit appropriately after FRA, with own smaller retirement benefit. Deceased filed at age 70, died at 71', inject([BenefitService], (service: BenefitService) => {
       let deceasedPerson:Person = new Person("A")
       let survivingPerson:Person = new Person("B")
@@ -199,29 +199,162 @@ describe('BenefitService', () => {
             //That's 12 months early out of 84 possible months early (given FRA of 67), so we have 14.2857% of the reduction. Full reduction is 28.5%. So reduction is 4.07%. $1320 x .9593 = 1266.28. Minus own 700 retirement is 566.28
     }))
 
-    it('should calculate survivor benefit appropriately before FRA, with own smaller retirement benefit. Deceased filed at age 64, died after 70 (RIBLIM calculation)', inject([BenefitService], (service: BenefitService) => {
-      let deceasedPerson:Person = new Person("A")
-      let survivingPerson:Person = new Person("B")
-      survivingPerson.SSbirthDate = new MonthYearDate (1963, 7, 1) //SSbirthday Aug 1, 1963
-      let birthdayService:BirthdayService = new BirthdayService()
-      survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //FRA Aug 1, 2030
-      let survivorRetirementBenefit: number = 500
-      let survivorSurvivorBenefitDate: MonthYearDate = new MonthYearDate (2029, 7 , 1) //filing for survivor benefit prior to FRA
-      deceasedPerson.FRA = new MonthYearDate (2020, 11, 1) //deceased FRA December 1, 2020 (was born in Dec 1954 and has FRA of 66)
-      let deceasedClaimingDate: MonthYearDate = new MonthYearDate (2017, 11, 1) //deceased filed 3 years before FRA (age 63)
-      let dateOfDeath: MonthYearDate = new MonthYearDate (2025, 2, 1) //deceased died after age 70
-      deceasedPerson.PIA = 1000
-      survivingPerson.governmentPension = 0
-      expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
-          .toEqual(325) //deceased filed at 63 with FRA of 66. Benefit would have been 800. Survivor benefit also being claimed early (12 months early). So we have 'RIBLIM' situation.
-            //Now we start with deceased's PIA (1000) rather than actual retirement benefit. And apply reduction from there.
-            //Widow benefit 12 months early out of 84 possible months early (given FRA of 67), so we have 14.2857% of the reduction. Full reduction is 28.5%. So reduction is 4.07%.
-            //$1000 x .9593 = 959.30, which gets limited to greater of:
-                //82.5% of deceased's PIA (so, $825), or
-                //Amount deceased was receiving at death (so, $800)
-                //So 959.3 is limited to $825.
-                //825 is then reduced by own retirement benefit of $500, for a survivor benefit of $325
-    }))
+  it('should calculate survivor benefit appropriately before FRA, with own smaller retirement benefit. Deceased filed at age 64, died after 70 (RIBLIM calculation)', inject([BenefitService], (service: BenefitService) => {
+    let deceasedPerson: Person = new Person("A")
+    let survivingPerson: Person = new Person("B")
+    survivingPerson.SSbirthDate = new MonthYearDate(1963, 7, 1) //SSbirthday Aug 1, 1963
+    let birthdayService: BirthdayService = new BirthdayService()
+    survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //FRA Aug 1, 2030
+    let survivorRetirementBenefit: number = 500
+    let survivorSurvivorBenefitDate: MonthYearDate = new MonthYearDate(2029, 7, 1) //filing for survivor benefit prior to FRA
+    deceasedPerson.FRA = new MonthYearDate(2020, 11, 1) //deceased FRA December 1, 2020 (was born in Dec 1954 and has FRA of 66)
+    let deceasedClaimingDate: MonthYearDate = new MonthYearDate(2017, 11, 1) //deceased filed 3 years before FRA (age 63)
+    let dateOfDeath: MonthYearDate = new MonthYearDate(2025, 2, 1) //deceased died after age 70
+    deceasedPerson.PIA = 1000
+    survivingPerson.governmentPension = 0
+    expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
+      .toEqual(325) //deceased filed at 63 with FRA of 66. Benefit would have been 800. Survivor benefit also being claimed early (12 months early). So we have 'RIBLIM' situation.
+    //Now we start with deceased's PIA (1000) rather than actual retirement benefit. And apply reduction from there.
+    //Widow benefit 12 months early out of 84 possible months early (given FRA of 67), so we have 14.2857% of the reduction. Full reduction is 28.5%. So reduction is 4.07%.
+    //$1000 x .9593 = 959.30, which gets limited to greater of:
+    //82.5% of deceased's PIA (so, $825), or
+    //Amount deceased was receiving at death (so, $800)
+    //So 959.3 is limited to $825.
+    //825 is then reduced by own retirement benefit of $500, for a survivor benefit of $325
+  }))
+
+  it('should calculate survivor benefit appropriately before FRA, with own smaller retirement benefit. Deceased filed at age 64, died after 70 (RIBLIM calculation, part 2)', inject([BenefitService], (service: BenefitService) => {
+    let deceasedPerson: Person = new Person("A")
+    let survivingPerson: Person = new Person("B")
+    survivingPerson.SSbirthDate = new MonthYearDate(1963, 7, 1) //SSbirthday Aug 1, 1963
+    let birthdayService: BirthdayService = new BirthdayService()
+    survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //FRA Aug 1, 2030
+    let survivorRetirementBenefit: number = 500
+    let survivorSurvivorBenefitDate: MonthYearDate = new MonthYearDate(2029, 7, 1) //filing for survivor benefit prior to FRA
+    deceasedPerson.FRA = new MonthYearDate(2020, 11, 1) //deceased FRA December 1, 2020 (was born in Dec 1954 and has FRA of 66)
+    let deceasedClaimingDate: MonthYearDate = new MonthYearDate(2018, 8, 1) //deceased filed 27 months before FRA (age 63)
+    let dateOfDeath: MonthYearDate = new MonthYearDate(2025, 2, 1) //deceased died after age 70
+    deceasedPerson.PIA = 1000
+    survivingPerson.governmentPension = 0
+    expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
+      .toEqual(350) //deceased filed at 63 with FRA of 66. Benefit would have been 800. Survivor benefit also being claimed early (12 months early). So we have 'RIBLIM' situation.
+    //Now we start with deceased's PIA (1000) rather than actual retirement benefit. And apply reduction from there.
+    //Widow benefit 12 months early out of 84 possible months early (given FRA of 67), so we have 14.2857% of the reduction. Full reduction is 28.5%. So reduction is 4.07%.
+    //$1000 x .9593 = 959.30, which gets limited to greater of:
+    //82.5% of deceased's PIA (so, $825), or
+    //Amount deceased was receiving at death (so, $850)
+    //So 959.3 is limited to $850
+    //850 is then reduced by own retirement benefit of $500, for a survivor benefit of $350
+  }))
+
+  //Testing calculateSurvivorBenefit if deceased was affected by Windfall Elimination Provision
+  it('should calculate WEP-affected survivor benefit appropriately after FRA, with own smaller retirement benefit. Deceased filed at age 70, died at 71', inject([BenefitService], (service: BenefitService) => {
+    let deceasedPerson: Person = new Person("A")
+    let survivingPerson: Person = new Person("B")
+    survivingPerson.SSbirthDate = new MonthYearDate(1963, 7, 1) //SSbirthday Aug 1, 1963
+    let birthdayService: BirthdayService = new BirthdayService()
+    survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //FRA Aug 1, 2030
+    let survivorRetirementBenefit: number = 700
+    let survivorSurvivorBenefitDate: MonthYearDate = new MonthYearDate(2040, 7, 1) //filing for survivor benefit after FRA
+    deceasedPerson.FRA = new MonthYearDate(2030, 2, 1) //deceased FRA March 1, 2030
+    let dateOfDeath: MonthYearDate = new MonthYearDate(2034, 2, 1) //deceased died at 71
+    deceasedPerson.PIA = 1000
+    deceasedPerson.wepSurvivorPIA = 1200
+    let deceasedClaimingDate: MonthYearDate = new MonthYearDate(2033, 2, 1) //deceased filed 3 years after FRA
+    survivingPerson.governmentPension = 0
+    expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
+      .toEqual(788) //deceased filed at 70 with FRA of 67. Benefit would have been 1488. Minus survivor's own 700 retirement benefit, gives 788 survivor benefit
+  }))
+
+  it('should calculate WEP-affected survivor benefit appropriately as zero with own larger retirement benefit. Deceased filed at age 70, died at 71', inject([BenefitService], (service: BenefitService) => {
+    let deceasedPerson: Person = new Person("A")
+    let survivingPerson: Person = new Person("B")
+    survivingPerson.SSbirthDate = new MonthYearDate(1963, 7, 1) //SSbirthday Aug 1, 1963
+    let birthdayService: BirthdayService = new BirthdayService()
+    survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //FRA Aug 1, 2030
+    let survivorRetirementBenefit: number = 1500
+    let survivorSurvivorBenefitDate: MonthYearDate = new MonthYearDate(2040, 7, 1) //filing for survivor benefit after FRA
+    deceasedPerson.FRA = new MonthYearDate(2030, 2, 1) //deceased FRA March 1, 2030
+    let deceasedClaimingDate: MonthYearDate = new MonthYearDate(2033, 2, 1) //deceased filed 3 years after FRA
+    let dateOfDeath: MonthYearDate = new MonthYearDate(2034, 2, 1) //deceased died at 71
+    deceasedPerson.PIA = 1000
+    deceasedPerson.wepSurvivorPIA = 1200
+    survivingPerson.governmentPension = 0
+    expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
+      .toEqual(0) //deceased filed at 70 with FRA of 67. Benefit would have been 1488. Minus survivor's own 1500 retirement benefit, gives zero survivor benefit
+  }))
+
+  it('should calculate WEP-affected survivor benefit appropriately before FRA, with own smaller retirement benefit. Deceased filed at age 70, died at 71', inject([BenefitService], (service: BenefitService) => {
+    let deceasedPerson: Person = new Person("A")
+    let survivingPerson: Person = new Person("B")
+    survivingPerson.SSbirthDate = new MonthYearDate(1963, 7, 1) //SSbirthday Aug 1, 1963
+    let birthdayService: BirthdayService = new BirthdayService()
+    survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //survivorFRA Aug 1, 2030
+    let survivorRetirementBenefit: number = 700
+    let survivorSurvivorBenefitDate: MonthYearDate = new MonthYearDate(2029, 7, 1) //filing for survivor benefit 12 months prior to FRA
+    deceasedPerson.FRA = new MonthYearDate(2020, 11, 1) //deceased FRA December 1, 2020 (was born in Dec 1954 and has FRA of 66)
+    let deceasedClaimingDate: MonthYearDate = new MonthYearDate(2024, 11, 1) //deceased filed 4 years after FRA (age 70)
+    let dateOfDeath: MonthYearDate = new MonthYearDate(2025, 2, 1) //deceased died after age 70
+    deceasedPerson.PIA = 1000
+    deceasedPerson.wepSurvivorPIA = 1200
+    survivingPerson.governmentPension = 0
+    expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
+      .toBeCloseTo(819.51, 1) //deceased filed at 70 with FRA of 66.
+    // Benefit would have been 1584. But survivor benefit is being claimed 12 months prior to FRA.
+    // That's 12 months early out of 84 possible months early (given FRA of 67),
+    // so we have 14.2857 % of the reduction.Full reduction is 28.5 %.
+    // So reduction is 4.07 %. $1584 x .9593 = 1519.51. Minus own 700 retirement is 819.51
+  }))
+
+  it('should calculate WEP-affected survivor benefit appropriately before FRA, with own smaller retirement benefit. Deceased filed at age 64, died after 70 (RIBLIM calculation)', inject([BenefitService], (service: BenefitService) => {
+    let deceasedPerson: Person = new Person("A")
+    let survivingPerson: Person = new Person("B")
+    survivingPerson.SSbirthDate = new MonthYearDate(1963, 7, 1) //SSbirthday Aug 1, 1963
+    let birthdayService: BirthdayService = new BirthdayService()
+    survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //FRA Aug 1, 2030
+    let survivorRetirementBenefit: number = 500
+    let survivorSurvivorBenefitDate: MonthYearDate = new MonthYearDate(2029, 7, 1) //filing for survivor benefit prior to FRA
+    deceasedPerson.FRA = new MonthYearDate(2020, 11, 1) //deceased FRA December 1, 2020 (was born in Dec 1954 and has FRA of 66)
+    let deceasedClaimingDate: MonthYearDate = new MonthYearDate(2017, 11, 1) //deceased filed 3 years before FRA (age 63)
+    let dateOfDeath: MonthYearDate = new MonthYearDate(2025, 2, 1) //deceased died after age 70
+    deceasedPerson.PIA = 1000
+    deceasedPerson.wepSurvivorPIA = 1200
+    survivingPerson.governmentPension = 0
+    expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
+      .toEqual(490) //deceased filed at 63 with FRA of 66. Benefit would have been 960. Survivor benefit also being claimed early (12 months early). So we have 'RIBLIM' situation.
+    //Now we start with deceased's wepSurvivorPIA (1200) rather than actual retirement benefit. And apply reduction from there.
+    //Widow benefit 12 months early out of 84 possible months early (given FRA of 67), so we have 14.2857% of the reduction. Full reduction is 28.5%. So reduction is 4.07%.
+    //$1200 x .9593 = 1151.16, which gets limited to greater of:
+    //82.5% of deceased's wepSurvivorPIA (so, $990), or
+    //Amount deceased would have been receiving at death (so, $960)
+    //So 1151.16 is limited to $990.
+    //990 is then reduced by own retirement benefit of $500, for a survivor benefit of $490
+  }))
+
+  it('should calculate WEP-affected survivor benefit appropriately before FRA, with own smaller retirement benefit. Deceased filed at age 64, died after 70 (RIBLIM calculation, part 2)', inject([BenefitService], (service: BenefitService) => {
+    let deceasedPerson: Person = new Person("A")
+    let survivingPerson: Person = new Person("B")
+    survivingPerson.SSbirthDate = new MonthYearDate(1963, 7, 1) //SSbirthday Aug 1, 1963
+    let birthdayService: BirthdayService = new BirthdayService()
+    survivingPerson.survivorFRA = birthdayService.findSurvivorFRA(survivingPerson.SSbirthDate) //FRA Aug 1, 2030
+    let survivorRetirementBenefit: number = 500
+    let survivorSurvivorBenefitDate: MonthYearDate = new MonthYearDate(2029, 7, 1) //filing for survivor benefit prior to FRA
+    deceasedPerson.FRA = new MonthYearDate(2020, 11, 1) //deceased FRA December 1, 2020 (was born in Dec 1954 and has FRA of 66)
+    let deceasedClaimingDate: MonthYearDate = new MonthYearDate(2018, 11, 1) //deceased filed 2 years before FRA (age 63)
+    let dateOfDeath: MonthYearDate = new MonthYearDate(2025, 2, 1) //deceased died after age 70
+    deceasedPerson.PIA = 1000
+    deceasedPerson.wepSurvivorPIA = 1200
+    survivingPerson.governmentPension = 0
+    expect(service.calculateSurvivorBenefit(survivingPerson, survivorRetirementBenefit, survivorSurvivorBenefitDate, deceasedPerson, dateOfDeath, deceasedClaimingDate))
+      .toEqual(540) //deceased filed at 63 with FRA of 66. Benefit would have been 960. Survivor benefit also being claimed early (12 months early). So we have 'RIBLIM' situation.
+    //Now we start with deceased's wepSurvivorPIA (1200) rather than actual retirement benefit. And apply reduction from there.
+    //Widow benefit 12 months early out of 84 possible months early (given FRA of 67), so we have 14.2857% of the reduction. Full reduction is 28.5%. So reduction is 4.07%.
+    //$1200 x .9593 = 1151.16, which gets limited to greater of:
+    //82.5% of deceased's wepSurvivorPIA (so, $990), or
+    //Amount deceased would have been receiving at death (so, $1040)
+    //So 1151.16 is limited to $1040.
+    //1040 is then reduced by own retirement benefit of $500, for a survivor benefit of $540
+  }))
 
 
   //testing CountCoupleBenefitMonths()
