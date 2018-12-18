@@ -43,3 +43,4 @@ testem.log
 .DS_Store
 Thumbs.db
 ToDoList.txt
+src/app/articles/HowToAddAnArticle.txt
