@@ -15,12 +15,10 @@ import { LegalComponent } from './legal/legal.component';
 import { EarningsTestService } from './earningstest.service';
 import { MortalityService } from './mortality.service';
 import { SolutionSetService } from './solutionset.service';
-import { DebugTableComponent } from './debugtable/debugtable.component';
 import { OutputTableComponent } from './output-table/output-table.component';
 import { CsvModule } from '@ctrl/ngx-csv';
 import { ChildinputsComponent } from './childinputs/childinputs.component';
-import { ArticlesComponent } from './articles/articles.component'
-
+import { SharedModule } from './shared/shared.module';
 
 
 @NgModule({
@@ -30,20 +28,20 @@ import { ArticlesComponent } from './articles/articles.component'
     AboutComponent,
     ContactComponent,
     LegalComponent,
-    DebugTableComponent,
     OutputTableComponent,
     ChildinputsComponent,
-    ArticlesComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     FormsModule,
-    AppRoutingModule,
     CollapseModule.forRoot(),
     BsDropdownModule.forRoot(),
-    CsvModule
+    CsvModule,
+    SharedModule,
+    AppRoutingModule,
   ],
+  exports: [],
   providers: [BenefitService, BirthdayService, PresentValueService, EarningsTestService, MortalityService, SolutionSetService],
   bootstrap: [AppComponent]
 })
