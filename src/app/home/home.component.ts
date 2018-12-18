@@ -336,11 +336,11 @@ export class HomeComponent implements OnInit {
     this.personA.mortalityTable = this.mortalityService.determineMortalityTable(this.personAgender, this.personAmortalityInput, this.personAassumedDeathAge)
     this.personB.mortalityTable = this.mortalityService.determineMortalityTable(this.personBgender, this.personBmortalityInput, this.personBassumedDeathAge)
 
-      //Clear children array and only push as many children objects as applicable
-      this.scenario.children = []
-      for (let i = 0; i < this.scenario.numberOfChildren; i++) { 
-        this.scenario.children.push(this.childrenObjectsArray[i])
-      }
+    //Clear children array and only push as many children objects as applicable
+    if (this.scenario.numberOfChildren > 0){
+      this.scenario.setChildrenArray(this.childrenObjectsArray, this.today)
+    }
+    else {this.scenario.children = []}
 
       //Reset conditionally-hidden inputs as necessary, based on changes to other inputs. (If a hidden input should be null/false based on status of other inputs, make sure it is null/false.)
       this.resetHiddenInputs()

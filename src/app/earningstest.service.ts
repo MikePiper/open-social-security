@@ -95,8 +95,8 @@ export class EarningsTestService {
   applyEarningsTestCouple(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:Boolean, personB:Person, personBaliveBoolean:Boolean){
     let availableForWithholding:number = 0
 
-        //Check if there is *currently* a child under 18 or disabled. (We have to do this because we only want to give spousalARFcreditingMonths for earnings test in months in which there isn't a child in care. Otherwise they'd get 2 credits for the same month.)
-        let childUnder18orDisabled:boolean = this.birthdayService.checkForChildUnder18orDisabled(scenario)
+        //Check if there is *currently* a child under 16 or disabled. (We have to do this because we only want to give spousalARFcreditingMonths for earnings test in months in which there isn't a child in care, because child-in-care months are already not being counted toward total of early entitlement months.)
+        let childUnder16orDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabled(scenario)
 
         //If it's the beginning of a year, calculate earnings test withholding and determine if this is a grace year
         if (calcYear.date.getMonth() == 0 && personAaliveBoolean === true && personBaliveBoolean === true){//Check for "alive booleans" to be true because we only want to do this once each January.
@@ -126,10 +126,11 @@ export class EarningsTestService {
                   personA.monthlyRetirementPayment = 0
                   personA.retirementARFcreditingMonths = personA.retirementARFcreditingMonths + 1
                   if (scenario.maritalStatus == "married"){//Only make spouse B's benefit as a spouse available for withholding if they're currently married (as opposed to divorced)
-                    if (calcYear.date >= personB.spousalBenefitDate && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate)){//If it's a spousalBenefit month, and not a nonservice month in grace year for personB
+                    if ((calcYear.date >= personB.spousalBenefitDate || (calcYear.date >= personA.retirementBenefitDate && childUnder16orDisabled === true)) //If it's a spousalBenefit month for personB
+                      && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate)){//and not a nonservice month in grace year for personB
                         availableForWithholding = availableForWithholding + personB.monthlySpousalPayment
                         personB.monthlySpousalPayment = 0
-                        if (childUnder18orDisabled === false) {personB.spousalARFcreditingMonths = personB.spousalARFcreditingMonths + 1}
+                        if (childUnder16orDisabled === false) {personB.spousalARFcreditingMonths = personB.spousalARFcreditingMonths + 1}
                     }       
                   }   
                   for (let child of scenario.children){
@@ -153,10 +154,11 @@ export class EarningsTestService {
                   availableForWithholding = personB.monthlyRetirementPayment
                   personB.monthlyRetirementPayment = 0
                   personB.retirementARFcreditingMonths = personB.retirementARFcreditingMonths + 1
-                  if (calcYear.date >= personA.spousalBenefitDate && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate)){//If it's a spousalBenefit month, and not a nonservice month in grace year for personA
+                  if ((calcYear.date >= personA.spousalBenefitDate || (calcYear.date >= personB.retirementBenefitDate && childUnder16orDisabled === true)) //If it's a spousalBenefit month for personA
+                  && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate)){//and not a nonservice month in grace year for personA                  
                       availableForWithholding = availableForWithholding + personA.monthlySpousalPayment
                       personA.monthlySpousalPayment = 0
-                      if (childUnder18orDisabled === false) {personA.spousalARFcreditingMonths = personA.spousalARFcreditingMonths + 1}
+                      if (childUnder16orDisabled === false) {personA.spousalARFcreditingMonths = personA.spousalARFcreditingMonths + 1}
                   }       
                   for (let child of scenario.children){
                       if ((child.age < 17.99 || child.isOnDisability === true) && calcYear.date >= child.childBenefitDate ){//if child is entitled to a child's benefit
@@ -172,28 +174,26 @@ export class EarningsTestService {
           //If A still has excess earnings, count those against A's benefit as a spouse. (Don't have to check for withholding against benefit as survivor, because we assume no survivor application until survivorFRA.)
             if (calcYear.annualWithholdingDueToPersonAearningsBothAlive > 0) {
                 //Check if personA gets spousal benefit this month
-                if (calcYear.date >= personA.spousalBenefitDate && calcYear.date >= personA.retirementBenefitDate
-                    //^^why are we checking retirementBenefitDate also? No harm in it, because we're by definition talking about an application for spousal prior to FRA, so retirementBenefitDate is same date...
+                if ((calcYear.date >= personA.spousalBenefitDate || (calcYear.date >= personB.retirementBenefitDate && childUnder16orDisabled === true))
                   && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate) //Make sure it's not a nonservice month in a grace year
                   && (calcYear.date < personA.FRA) //Make sure current month is prior to FRA
                 ) {
                 calcYear.annualWithholdingDueToPersonAearningsBothAlive = calcYear.annualWithholdingDueToPersonAearningsBothAlive - personA.monthlySpousalPayment
                 personA.monthlySpousalPayment = 0
-                if (childUnder18orDisabled === false) {personA.spousalARFcreditingMonths = personA.spousalARFcreditingMonths + 1}
+                if (childUnder16orDisabled === false) {personA.spousalARFcreditingMonths = personA.spousalARFcreditingMonths + 1}
                 }
             }
             
           //If B still has excess earnings, count those against B's benefit as a spouse. (Don't have to check for withholding against benefit as survivor, because we assume no survivor application until survivorFRA.)
             if (calcYear.annualWithholdingDueToPersonBearningsBothAlive > 0) {
               //Check if personB gets spousal benefit this month
-              if (calcYear.date >= personB.spousalBenefitDate && calcYear.date >= personB.retirementBenefitDate
-                  //^^why are we checking retirementBenefitDate also? No harm in it, because we're by definition talking about an application for spousal prior to FRA, so retirementBenefitDate is same date...
+              if ((calcYear.date >= personB.spousalBenefitDate || (calcYear.date >= personA.retirementBenefitDate && childUnder16orDisabled === true))
                 && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate) //Make sure it's not a nonservice month in a grace year
                 && (calcYear.date < personB.FRA) //Make sure current month is prior to FRA
               ) {
               calcYear.annualWithholdingDueToPersonBearningsBothAlive = calcYear.annualWithholdingDueToPersonBearningsBothAlive - personB.monthlySpousalPayment
               personB.monthlySpousalPayment = 0
-              if (childUnder18orDisabled === false) {personB.spousalARFcreditingMonths = personB.spousalARFcreditingMonths + 1}
+              if (childUnder16orDisabled === false) {personB.spousalARFcreditingMonths = personB.spousalARFcreditingMonths + 1}
               }
           }
         }

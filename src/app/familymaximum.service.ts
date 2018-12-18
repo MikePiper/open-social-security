@@ -144,14 +144,17 @@ export class FamilyMaximumService {
       let familyMaximum:number = 0
       let sumOfAuxBenefits:number = 0
 
-      //Check if there's at least one child under 18 or disabled
+      //Check if there's at least one child under 18 or disabled, and separately check if there's a child under 16 or disabled
       let entitledChild:boolean = this.birthdayService.checkForChildUnder18orDisabled(scenario)
+      let childUnder16orDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabled(scenario)
 
       //Find out who is entitled as aux beneficiaries
-        if (personA.monthlySpousalPayment > 0 || personA.monthlySurvivorPayment > 0){//if personA is entitled on personB's record
+        if (personA.monthlySpousalPayment > 0 || personA.monthlySurvivorPayment > 0 //if personA is entitled on personB's record...
+          || (entitledChild === true && calcYear.date > personB.retirementBenefitDate)){ //or if there is a child entitled on personB but not on personA...
           familyMaximum = personB.familyMaximum
         }
-        if (personB.monthlySpousalPayment > 0 || personB.monthlySurvivorPayment > 0){//if personB is entitled on personA's record
+        if (personB.monthlySpousalPayment > 0 || personB.monthlySurvivorPayment > 0 //if personB is entitled on personA's record...
+          || (entitledChild === true && calcYear.date > personA.retirementBenefitDate)){ //or if there is a child entitled on personA but not on personB...
           familyMaximum = personA.familyMaximum
         }
         if(calcYear.date >= personA.retirementBenefitDate && calcYear.date >= personB.retirementBenefitDate && entitledChild === true){//if there is a child entitled on both personA and personB
@@ -179,10 +182,14 @@ export class FamilyMaximumService {
         }
       //Find family max to be split among auxilliary beneficiaries (i.e., reduce by worker's own PIA in worker-alive scenario)
         let familyMaxForAuxBeneficiaries:number = familyMaximum
-        if (personAaliveBoolean === true && personBaliveBoolean === true && calcYear.date >= personA.spousalBenefitDate && (personA.PIA < 0.5 * personB.PIA || calcYear.date < personA.retirementBenefitDate)){//i.e., personA is entitled on personB's record in both-alive scenario
+        if (personAaliveBoolean === true && personBaliveBoolean === true
+            && (calcYear.date >= personA.spousalBenefitDate || (calcYear.date >= personB.retirementBenefitDate && childUnder16orDisabled === true))
+            && (personA.PIA < 0.5 * personB.PIA || calcYear.date < personA.retirementBenefitDate)){//i.e., personA is entitled on personB's record in both-alive scenario
         familyMaxForAuxBeneficiaries = familyMaxForAuxBeneficiaries - personB.PIA
         }
-        if (personAaliveBoolean === true && personBaliveBoolean === true && calcYear.date >= personB.spousalBenefitDate && (personB.PIA < 0.5 * personA.PIA || calcYear.date < personB.retirementBenefitDate)){//i.e., personB is entitled on personA's record in both-alive scenario
+        if (personAaliveBoolean === true && personBaliveBoolean === true
+            && (calcYear.date >= personB.spousalBenefitDate || (calcYear.date >= personA.retirementBenefitDate && childUnder16orDisabled === true))
+            && (personB.PIA < 0.5 * personA.PIA || calcYear.date < personB.retirementBenefitDate)){//i.e., personB is entitled on personA's record in both-alive scenario
         familyMaxForAuxBeneficiaries = familyMaxForAuxBeneficiaries - personA.PIA
         }
       //First run of family max exists only to adjust benefits downward. Second run exists only to adjust benefits upward (after reducing some people's aux benefits for own entitlement).

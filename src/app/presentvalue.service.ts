@@ -138,8 +138,6 @@ export class PresentValueService {
     let couplePV: number = 0
     let savedCalculationYear: CalculationYear = new CalculationYear(this.today)
     scenario.outputTable = []
-    scenario.childUnder18onPersonAspousalBenefitDate = this.birthdayService.checkForChildUnder18onGivenDate(scenario, personA.spousalBenefitDate)
-    scenario.childUnder18onPersonBspousalBenefitDate = this.birthdayService.checkForChildUnder18onGivenDate(scenario, personB.spousalBenefitDate)
     personA.hasHadGraceYear = false
     personB.hasHadGraceYear = false
     personA.retirementBenefit = 0
@@ -202,7 +200,7 @@ export class PresentValueService {
             //Redo family max application
               this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, true)
             //Adjust spousal monthlyPayment fields as necessary for age
-              this.benefitService.adjustSpousalBenefitsForAge(scenario, calcYear, personA, personB)
+              this.benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
             //Adjust spousal/survivor monthlyPayment fields for GPO
               this.benefitService.adjustSpousalAndSurvivorBenefitsForGPO(personA, personB)
             //Adjust as necessary for earnings test (and tally months withheld)
@@ -294,33 +292,33 @@ export class PresentValueService {
                   olderAge = personA.age-1
                 } else {olderAge = personB.age-1}
 
-                if (printOutputTable === true){
-                  console.log("monthly loop year: " + calcYear.date.getFullYear())
-                  console.log("probability A alive: " + probabilityAalive)
-                  console.log("probability B alive: " + probabilityBalive)
-                  console.log("undiscounted annualPV: " + annualPV)
-                }
+                // if (printOutputTable === true){
+                //   console.log("monthly loop year: " + calcYear.date.getFullYear())
+                //   console.log("probability A alive: " + probabilityAalive)
+                //   console.log("probability B alive: " + probabilityBalive)
+                //   console.log("undiscounted annualPV: " + annualPV)
+                // }
 
                 //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
                 annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
-                if (printOutputTable === true){
-                  console.log("discounted annualPV: " + annualPV)
-                  console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
-                  console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
-                  console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
-                  console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
-                  console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
-                  console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
-                  console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
-                  console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
-                  console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
-                  console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
-                  console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
-                  console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
-                  console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
-                  console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
-                }
+                // if (printOutputTable === true){
+                //   console.log("discounted annualPV: " + annualPV)
+                //   console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
+                //   console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
+                //   console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
+                //   console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
+                //   console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
+                //   console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
+                //   console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
+                //   console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
+                //   console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
+                //   console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
+                //   console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
+                //   console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
+                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
+                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
+                // }
 
             //Add discounted benefit to ongoing sum
               couplePV = couplePV + annualPV
@@ -783,6 +781,25 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       if ( (person.hasFiled === true || person.isOnDisability) && person.spousalBenefitDate < person.retirementBenefitDate){
         person.spousalBenefitDate = new MonthYearDate(person.retirementBenefitDate)
       }
+
+    //If there are minor or disabled children, spousalBenefitDate must reflect date on which regular spousal benefit (as opposed to child-in-care spousal benefit) begins.
+      if (scenario.children.length > 0){
+        //if there is a disabled child or a child under 16 when otherPerson begins retirement benefit, don't let spousalBenefitDate be before own FRA.
+          //In other words, we're assuming here that person doesn't file Form SSA-25. We're letting them claim child-in-care spousal benefits, then letting it stop when youngest child reaches 16 (if not yet FRA and no disabled child), then start again at FRA.
+        let disabledChild:boolean = false
+        for (let child of scenario.children){
+          if (child.isOnDisability === true){
+            disabledChild = true
+          }
+        }
+        let childUnder16onOtherPersonRetirementBenefitDate:boolean = this.birthdayService.checkForChildUnder16onGivenDate(scenario, otherPerson.retirementBenefitDate)
+        if (disabledChild === true || childUnder16onOtherPersonRetirementBenefitDate === true){
+          if (person.spousalBenefitDate < person.FRA){
+            person.spousalBenefitDate = person.FRA
+          }
+        }
+      }  
+
     return person
   }
 

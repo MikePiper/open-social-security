@@ -106,7 +106,7 @@ findFRA(SSbirthDate:MonthYearDate){
     return age
   }
 
-  //Checks list of children to see if there is currently one under 18 or disabled
+  //Checks list of children to see if there is currently one under 18 or disabled ("currently" in the sense of using whatever age the child Person object has whenever this function is being run)
   checkForChildUnder18orDisabled(scenario:CalculationScenario):boolean{
     let entitledChild:boolean = false
     for (let child of scenario.children){
@@ -117,7 +117,7 @@ findFRA(SSbirthDate:MonthYearDate){
     return entitledChild
   }
 
-  //Checks list of children to see if there is currently one under 16 or disabled
+  //Checks list of children to see if there is currently one under 16 or disabled( "currently" in the sense of using whatever age the child Person object has whenever this function is being run)
   checkForChildUnder16orDisabled(scenario:CalculationScenario):boolean{
     let entitledChild:boolean = false
     for (let child of scenario.children){
@@ -139,4 +139,17 @@ findFRA(SSbirthDate:MonthYearDate){
     }
     return childUnder18onGivenDate
   }
+
+  //Checks if there was a child under 16 as of given date.
+  checkForChildUnder16onGivenDate(scenario:CalculationScenario, date:MonthYearDate):boolean{
+    let childUnder16onGivenDate:boolean = false
+    for (let child of scenario.children){
+      let childAgeOnDate:number = this.findAgeOnDate(child, date)
+      if (childAgeOnDate < 15.99){
+        childUnder16onGivenDate = true
+      }
+    }
+    return childUnder16onGivenDate
+  }
+
 }

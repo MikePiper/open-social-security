@@ -8,7 +8,6 @@ import {FREDresponse} from '../data model classes/fredresponse'
 import {HttpClient} from '@angular/common/http'
 import {Person} from '../data model classes/person'
 import {CalculationScenario} from '../data model classes/calculationscenario'
-import {MonthYearDate} from '../data model classes/monthyearDate'
 import { NgForm, NgModel } from '@angular/forms'
 import { AppRoutingModule } from '../app-routing.module'
 import {AboutComponent} from '../about/about.component'
@@ -17,6 +16,7 @@ import { LegalComponent } from '../legal/legal.component'
 import { ChildinputsComponent } from '../childinputs/childinputs.component'
 import { OutputTableComponent } from '../output-table/output-table.component'
 import { APP_BASE_HREF } from '@angular/common'
+import { SharedModule } from '../shared/shared.module';
 
 
 
@@ -25,7 +25,6 @@ describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>
   let HttpClientStub: Partial<HttpClient>
   let mortalityService:MortalityService = new MortalityService()
-  let birthdayService:BirthdayService = new BirthdayService()
   var dummyElement = document.createElement('div')
   document.getElementById = function(){return dummyElement}
 
@@ -33,7 +32,7 @@ describe('HomeComponent', () => {
     TestBed.configureTestingModule({
       providers: [BirthdayService, PresentValueService, MortalityService, BenefitService, FREDresponse, {provide: HttpClient, useValue: HttpClientStub}, {provide: APP_BASE_HREF, useValue : '/'}],
       declarations: [HomeComponent, AboutComponent, ContactComponent, LegalComponent, ChildinputsComponent, OutputTableComponent, NgForm, NgModel],
-      imports: [AppRoutingModule]
+      imports: [AppRoutingModule, SharedModule]
     })
     fixture = TestBed.createComponent(HomeComponent)
     component = fixture.componentInstance

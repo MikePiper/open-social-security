@@ -1,21 +1,35 @@
+ON CHILD DISABILITY RECIPIENTS BEING ABLE TO HAVE THEIR BENEFITS WITHHELD VIA EARNINGS TEST (ON PARENT'S EARNINGS)
 https://secure.ssa.gov/poms.nsf/lnx/0302501021
 ^ Says child on childhood disability benefit does not have benefit withheld due to earnings test. What it actually means is that child's benefit as child won't be withheld due to their OWN earnings. Can still be withheld due to parent's earnings.
  See here: https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501140 (Social Security Act also pretty clear on this in 203(f)(1).)
 
 
+----
+ON ORDER OF EARNINGS TEST APPLICATION:
 Key point in married scenario: A's earnings first reduce A's retirement benefit and B's spousal benefit. *Then* B's earnings reduce B's spousal benefit. See CFR 404.434
     So we first use A's earnings to reduce A's retirement and B's spousal. And we use B's earnings to reduce B's retirement and A's spousal.
     Then if further withholding is necessary we have their own earnings reduce their own spousal.
 
-
+--------
+ON CHILDREN BEING DEEMED ENTITLED ON PARENT'S RECORD FOR EARNINGS TEST
 https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501140
     Says that if a child of personA is entitled on personB's record, deem child to be entitled on personA's record as well for the sake of withholding due to A's earnings.
 
+Social Securitiy Act 203(b)(1)(B) appears to say that this deemed entitlement for sake of earnings test only applies to a person who
+1) is married to the earner (but not truly entitled on his/her record), and
+2) is entitled as an adult disabled child or mother/father on another record.
 
+CFR 404.420 appears to say the same thing as SSAct 203(b)(1)(B).
+
+SSAct 203(f) doesn't appear to speak to question of children being deemed entitled.
+
+
+--------
 
 Social Security Act 203(f)(1)(F) might be saying that a person entitled to spousal benefits solely due to having child in care doesn't have benefits reduced by earnings test if they are earning less than 1/12 threshold amount per month.
 
-
+-------
+ON DUALLY ENTITLED CHILDREN (I.E., ENTITLED ON BOTH PARENTS' RECORDS)
 When a child is entitled to child benefits on two work records, and both parents are working while younger than FRA: does child's benefit get used for withholding due to high-PIA spouse's record?
 Or is it split between the two? Don't see anything in Social Security Act 203(b) or 203(f) about such situation. Nor do I see anything in CFR about such situation.
 Conclusion: Doesn't matter.
@@ -25,8 +39,8 @@ Conclusion: Doesn't matter.
     So we might end up with a situation where in the table PersonB's benefit is overstated and PersonA's is understated, but it wouldn't affect PV for the year at all.
 
 
-
-***Earnings Test Applied Before Or After Application of Family Max?****
+----
+ON ORDERING RE: EARNINGS TEST AND FAMILY MAXIMUM
         SS Act notes:
         203(a)(1) is family max
         203(a)(3)(A) is combined family max
