@@ -838,6 +838,7 @@ describe('tests calculateCouplePV', () => {
         service.today = new MonthYearDate(2018, 11)
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
+        scenario.numberOfChildren = 1
         let child1:Person = new Person("1")
         child1.SSbirthDate = new MonthYearDate(2009, 2) //March 2009
         scenario.setChildrenArray([child1], service.today)
@@ -894,6 +895,7 @@ describe('tests calculateCouplePV', () => {
         service.today = new MonthYearDate(2018, 11)
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
+        scenario.numberOfChildren = 1
         let child1:Person = new Person("1")
         child1.SSbirthDate = new MonthYearDate(2009, 2) //March 2009
         scenario.setChildrenArray([child1], service.today)
@@ -956,6 +958,7 @@ describe('tests calculateCouplePV', () => {
           service.today = new MonthYearDate(2018, 11)
           scenario.maritalStatus = "married"
           scenario.discountRate = 1
+          scenario.numberOfChildren = 3
           let child1:Person = new Person("1")
           let child2:Person = new Person("2")
           let child3:Person = new Person("3")
@@ -1031,6 +1034,7 @@ describe('tests calculateCouplePV', () => {
           service.today = new MonthYearDate(2018, 11)
           scenario.maritalStatus = "married"
           scenario.discountRate = 1
+          scenario.numberOfChildren = 1
           let child1:Person = new Person("1")
           child1.SSbirthDate = new MonthYearDate(2010, 2) //March 2010
           scenario.setChildrenArray([child1], service.today)
@@ -1086,6 +1090,7 @@ describe('tests calculateCouplePV', () => {
           service.today = new MonthYearDate(2018, 11)
           scenario.maritalStatus = "married"
           scenario.discountRate = 1
+          scenario.numberOfChildren = 1
           let child1:Person = new Person("1")
           child1.SSbirthDate = new MonthYearDate(2010, 2) //March 2010
           scenario.setChildrenArray([child1], service.today)

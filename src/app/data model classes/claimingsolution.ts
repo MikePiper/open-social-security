@@ -28,6 +28,15 @@ import {MonthYearDate} from "./monthyearDate"
           if (this.benefitType == "retroactiveSpousal") {
             this.message = "You file for your spousal benefit to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
+          if (this.benefitType == "childInCareSpousal") {
+            this.message = "You file for child-in-care spousal benefits to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+          }
+          if (this.benefitType == "childInCareSpousalSuspension") {
+            this.message = "Your child-in-care spousal benefit is automatically suspended when your youngest child reaches age 16 (" + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "), at your age " + this.ageYears + " and " + this.ageMonths + " months."
+          }
+          if (this.benefitType == "automaticSpousalUnsuspension") {
+            this.message = "Your spousal benefit begins again automatically at your full retirement age (" + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ")."
+          }
           if (this.benefitType == "suspendToday") {
             this.message = "You suspend your retirement benefit today."
           }
@@ -59,6 +68,15 @@ import {MonthYearDate} from "./monthyearDate"
           }
           if (this.benefitType == "retroactiveSpousal") {
             this.message = "Your spouse files for his/her spousal benefit to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+          }
+          if (this.benefitType == "childInCareSpousal") {
+            this.message = "Your spouse files for child-in-care spousal benefits to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+          }
+          if (this.benefitType == "childInCareSpousalSuspension") {
+            this.message = "Your spouse's child-in-care spousal benefit is automatically suspended when your youngest child reaches age 16 " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at your age " + this.ageYears + " and " + this.ageMonths + " months."
+          }
+          if (this.benefitType == "automaticSpousalUnsuspension") {
+            this.message = "Your spouse's spousal benefit begins again automatically at his/her full retirement age (" + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ")."
           }
           if (this.benefitType == "suspendToday") {
             this.message = "Your spouse suspends his/her retirement benefit today."

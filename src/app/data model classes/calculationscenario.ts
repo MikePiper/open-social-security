@@ -46,8 +46,6 @@ export class CalculationScenario {
                     this.disabledChild = true
                 }
             }
-            console.log("youngestChildTurns16date: " + Number(this.youngestChildTurns16date.getMonth()+1) + "/" + this.youngestChildTurns16date.getFullYear())
-            console.log("disabledChild: " + this.disabledChild)
         }, 25)
     }
 }

@@ -21,6 +21,7 @@ SPOUSAL BENEFITS WITH CHILD IN CARE
             ...which says that husband/wife benefits shall never be reduced for age for any month for which there is not a certificate expressly electing reduced benefits.
         *But that would not be an issue once person reaches FRA.
 
+
 ASSUMPTION MADE REGARDING SPOUSAL BENEFITS WITH CHILD IN CARE
 *In presentvalue.service.adjustSpousalBenefitDate() (which sets spousalBenefitDate for each person in the maximize functions) spousalBenefitDate represents the date that their non-child-in-care spousal benefit begins (i.e., date they file SSA-25, if applicable or date they reach FRA).
     *If there is a disabled child, or a child under 16 when otherPerson starts retirementBenefit, we are not letting person.spousalBenefitDate be before their FRA
@@ -33,23 +34,3 @@ ASSUMPTION MADE REGARDING SPOUSAL BENEFITS WITH CHILD IN CARE
         *Not filing SSA-25 is simpler than filing it.
         *Not filing SSA-25 provides slightly more longevity protection.
 
-
-
-REMAINING TO-DO FOR SPOUSAL BENEFITS WITH CHILD IN CARE
-
-*Do a commit (or series of them)
-
-*Going to need additional types of solution object
-    *"Child in care spousal benefit is suspended when child reaches 16"
-    *"Spousal benefits begin again automatically at your FRA"
-    *Original filing doesn't need a new type of solution object (because its message will just be same as for normal spousal filing)
-        *But it will be tricky in that it is on a date that doesn't match spousalBenefitDate
-
-
-*Going to need to work on custom date form to account for child-in-care spousal stuff
-    *Need message about "no date input necessary for child in care spousal benefits" (like for child benefits)
-    *Will need to rename label for spousalBenefitDate input to make it clear it refers to date for beginning non-child-in-care spousal (say something about form SSA-25?)
-    *Will need to rework validation
-
-*In tests:
-    *Have to redo all child-benefit-related tests for couple
