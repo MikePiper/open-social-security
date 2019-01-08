@@ -29,7 +29,7 @@ describe('EarningstestService', () => {
         .toEqual(0)
   }))
 
-  it('should calculate withholding as zero when FRA is in a prior year (quiteWorkDate is in future)', inject([EarningsTestService], (service: EarningsTestService) => { 
+  it('should calculate withholding as zero when FRA is in a prior year (quiteWorkDate is in future)', inject([EarningsTestService], (service: EarningsTestService) => {
     let person:Person = new Person("A") 
     let currentCalculationDate:MonthYearDate = new MonthYearDate (2019, 0, 1) //January 1, 2019
     person.quitWorkDate = new MonthYearDate (2020, 7, 1) //August 1, 2020
@@ -40,6 +40,7 @@ describe('EarningstestService', () => {
   }))
 
   it('should calculate withholding properly when quitWorkDate is this year, FRA is in future year', inject([EarningsTestService], (service: EarningsTestService) => {
+    service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
     let person:Person = new Person("A") 
     let currentCalculationDate:MonthYearDate = new MonthYearDate (2019, 0, 1) //January 1, 2019
     person.quitWorkDate = new MonthYearDate (2019, 7, 1) //August 1, 2019
@@ -50,6 +51,7 @@ describe('EarningstestService', () => {
   }))
 
   it('should calculate withholding properly when quitWorkDate is this year, FRA is later this year', inject([EarningsTestService], (service: EarningsTestService) => {
+    service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
     let person:Person = new Person("A") 
     let currentCalculationDate:MonthYearDate = new MonthYearDate (2019, 0, 1) //January 1, 2019
     person.quitWorkDate = new MonthYearDate (2019, 7, 1) //August 1, 2019
@@ -60,6 +62,7 @@ describe('EarningstestService', () => {
   }))
 
   it('should calculate withholding properly when FRA is this year (only count earnings up to FRA) and quitWorkDate is in future', inject([EarningsTestService], (service: EarningsTestService) => {
+    service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
     let person:Person = new Person("A") 
     let currentCalculationDate:MonthYearDate = new MonthYearDate (2019, 0, 1) //January 1, 2019
     person.quitWorkDate = new MonthYearDate (2020, 7, 1) //August 1, 2020

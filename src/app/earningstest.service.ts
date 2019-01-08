@@ -31,11 +31,11 @@ export class EarningsTestService {
       //determine withholdingAmount
       let withholdingAmount:number = 0
       if (currentCalculationDate.getFullYear() < person.FRA.getFullYear()) {
-        //withhold using $17,040 threshold, $1 per $2 excess
-        withholdingAmount = (annualEarnings - 17040) / 2
+        //withhold using before-year-of-FRA threshold, $1 per $2 excess
+        withholdingAmount = (annualEarnings - this.earningsTestThresholds[this.today.getFullYear()-2018].beforeFRAthreshold) / 2
       } else if (currentCalculationDate.getFullYear() == person.FRA.getFullYear()) {
-        //withhold using $45,360 threshold, $1 per $3 excess
-        withholdingAmount = (annualEarnings - 45360) / 3
+        //withhold using higher (year of FRA) threshold, $1 per $3 excess
+        withholdingAmount = (annualEarnings - this.earningsTestThresholds[this.today.getFullYear()-2018].FRAyearThreshold) / 3
       }
       //Don't let withholdingAmount be negative
       if (withholdingAmount < 0) {
@@ -263,4 +263,16 @@ export class EarningsTestService {
     }
   }
 
+  earningsTestThresholds = [
+    {
+      "Year": 2018,
+      "beforeFRAthreshold": 17040,
+      "FRAyearThreshold": 45360
+    },
+    {
+      "Year": 2019,
+      "beforeFRAthreshold": 17640,
+      "FRAyearThreshold": 46920
+    }
+  ]
 }
