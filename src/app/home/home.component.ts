@@ -243,7 +243,9 @@ export class HomeComponent implements OnInit {
 
     //Clear children array and only push as many children objects as applicable
     if (this.scenario.numberOfChildren > 0){
-      this.scenario.setChildrenArray(this.childrenObjectsArray, this.today)
+      setTimeout( () => {//Need to have a timeout here, because we have to let the getinputs() function from the childinputs component finish running, otherwise child objects have no SSbirthdate fields (and those fields are necessary for the setChildrenArray function to run properly)
+        this.scenario.setChildrenArray(this.childrenObjectsArray, this.today)
+      }, 25)
     }
     else {this.scenario.children = []}
 

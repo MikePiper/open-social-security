@@ -21,6 +21,7 @@ export class Person {
     declineSpousal: boolean = false
     childInCareSpousal: boolean = false
     declineSuspension:boolean = false
+    entitledToRetirement:boolean //just the results of whether calcYear.date >= person.retirementBenefitDate
 
     //Everything below has to get reset or recalculated for each PV calc
         age: number //as in, "age as of current calculation year"
@@ -32,6 +33,7 @@ export class Person {
         DRCsViaSuspension: number = 0
         beginSuspensionDate: MonthYearDate = new MonthYearDate(1900, 0, 1) //When testing in "one is fixed" maximize functions, this is basically just going to be "FRA but no earlier than today"   Benefit IS suspended for this month
         endSuspensionDate: MonthYearDate = new MonthYearDate(1900, 0, 1) //this is a variable that will be iterated. Benefit is NOT suspended for this month
+    suspendingBenefits:boolean = false //Is true if they will be suspending benefits at all during a particular PV calc.
     spousalBenefitDate: MonthYearDate
     adjustedRetirementBenefitDate: MonthYearDate
     adjustedSpousalBenefitDate: MonthYearDate
@@ -40,6 +42,7 @@ export class Person {
 
     //benefit amount fields. benefit amount just gets overwritten when recalculated
     retirementBenefit:number = 0
+    spousalReductionPercentage:number
     monthlyRetirementPayment:number = 0
     monthlySpousalPayment:number = 0
     monthlySurvivorPayment:number = 0

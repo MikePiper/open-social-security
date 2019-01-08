@@ -93,7 +93,7 @@ export class EarningsTestService {
   }
 
   applyEarningsTestCouple(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:Boolean, personB:Person, personBaliveBoolean:Boolean){
-    let availableForWithholding:number = 0
+      let availableForWithholding:number = 0
 
         //Check if there is *currently* a child under 16 or disabled. (We have to do this because we only want to give spousalARFcreditingMonths for earnings test in months in which there isn't a child in care, because child-in-care months are already not being counted toward total of early entitlement months.)
         let childUnder16orDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabled(scenario)

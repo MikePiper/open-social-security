@@ -1171,7 +1171,73 @@ describe('tests calculateCouplePV', () => {
             expect(scenario.outputTable[5]).toEqual([2028, "$13,500", "$0", "$0", "$5,070", "$1,260", "$0", "$1,500", "$21,330"])
         })
 
-
+        it('Should calculate survivor benefits appropriately in family max scenario with 2 disabled children', () => {
+          service.today = new MonthYearDate(2019, 0)
+          scenario.maritalStatus = "married"
+          scenario.discountRate = 1
+          scenario.numberOfChildren = 2
+          let child1:Person = new Person("1")
+          child1.SSbirthDate = new MonthYearDate(1998, 2) //March 1998
+          child1.isOnDisability = true
+          let child2:Person = new Person("1")
+          child2.SSbirthDate = new MonthYearDate(2000, 2) //March 2000
+          child2.isOnDisability = true
+          scenario.setChildrenArray([child1, child2], service.today)
+          personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+          personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+          personA.PIA = 1500
+          personB.PIA = 600
+          personA.actualBirthDate = new Date (1960, 2, 5) //March 1960
+          personB.actualBirthDate = new Date (1960, 2, 21) //March 1960
+          personA.SSbirthDate = new MonthYearDate(1960, 2)
+          personB.SSbirthDate = new MonthYearDate(1960, 2)
+          personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2027
+          personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //March 2027
+          personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+          personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+          personA.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63
+          personB.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63
+          personA.spousalBenefitDate = new MonthYearDate(personA.FRA) //This date doesn't matter, given PIAs. But same reasoning as field for personB
+          personB.spousalBenefitDate = new MonthYearDate(personB.FRA)
+          //^^Spousal benefit begins March 2023 when personA starts retirement. But it's child in care spousal benefit at all ages, given disabled child.
+          personA.initialAge = birthdayService.findAgeOnDate(personA, service.today)
+          personA.initialAgeRounded = Math.round(personA.initialAge)
+          personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
+          personB.initialAgeRounded = Math.round(personB.initialAge)
+          personA = familyMaximumService.calculateFamilyMaximum(personA)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personB = familyMaximumService.calculateFamilyMaximum(personB)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          service.calculateCouplePV(personA, personB, scenario, true)
+          //manual calculation
+            //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
+            //personB.familyMaximum = 900
+            //combined family max = 3584.32
+            //personA retirement benefit = 1125 (75% of PIA due to 48 months early)
+            //personB retirement benefit = 450 (75% of PIA due to 48 months early)
+            //in personA deceased, personB alive scenario:
+              //personB original benefit on personA's record = great of personA's PIA or retirement benefit = 1500
+              //child1 and child2 original benefit on personA's record = 75% of personA PIA = 1125 each
+              //1500 + 1125 + 1125 = 3750, which exceeds combined family max
+              //3584.32/3750 = 0.955819
+              //1500 x 0.955819 = $1433.73
+              //1125 x 0.955819 = $1075.30
+              //reduce personB original benefit by own retirement = 1433.73 - 450 = 983.73
+              //new total of aux benefits = 983.73 + 1075.30 + 1075.30 = 3134.33
+              //Additional "amount available" on personA's record = 3584.32 - 3134.33 = 449.99 = 450
+              //divide $450 between two children = $225 each
+              //1075.30 + 225 = 1300.30.
+              //1300.30 will be limited to original benefit of 75% of personA PIA = $1125 for each child
+              //Apply RIBLIM: limit sum of personB retirement and survivor benefit to greater of personA retirement benefit or 82.5% of personA PIA (in this case 82.5% of PIA)
+              //1500 x 0.825 = 1237.50
+              //1237.50 - 450 own retirement = 787.50 survivor benefit
+            //table begins in 2023
+            //each row: year, personAretirement, personAspousal, personAsurvivor, personBretirement, personBspousal, personBsurvivor, total child benefit, total
+            expect(scenario.outputTable[10][0]).toEqual("If your spouse outlives you") //12 months of own $450 retirement benefit
+            expect(scenario.outputTable[10][4]).toEqual("$5,400") //12 months of own $450 retirement benefit
+            expect(scenario.outputTable[10][5]).toEqual("$0") //no spousal since personA deceased
+            expect(scenario.outputTable[10][6]).toEqual("$9,450") //12 months of $787.50 survivor benefit
+            expect(scenario.outputTable[10][7]).toEqual("$27,000") //12 months of each getting $1125
+            expect(scenario.outputTable[10][8]).toEqual("$41,850") //total of above amounts
+        })
 
 })
 
@@ -1179,6 +1245,7 @@ describe('tests calculateCouplePV', () => {
     let service:PresentValueService
     let mortalityService:MortalityService
     let birthdayService:BirthdayService
+    let familyMaximumService:FamilyMaximumService
     let scenario:CalculationScenario
     let personA:Person
     let personB:Person
@@ -1191,6 +1258,7 @@ describe('tests calculateCouplePV', () => {
       service = TestBed.get(PresentValueService)
       mortalityService = TestBed.get(MortalityService)
       birthdayService = TestBed.get(BirthdayService)
+      familyMaximumService = TestBed.get(FamilyMaximumService)
       scenario = new CalculationScenario()
       personA = new Person("A")
       personB = new Person("B")
@@ -1472,9 +1540,9 @@ describe('tests calculateCouplePV', () => {
       personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
       personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
       personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
-      personA.initialAge =  ( service.today.getMonth() - personA.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
+      personA.initialAge = birthdayService.findAgeOnDate(personA, service.today)
       personA.initialAgeRounded = Math.round(personA.initialAge)
-      personB.initialAge =  ( service.today.getMonth() - personB.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
+      personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
       personB.initialAgeRounded = Math.round(personB.initialAge)
       personA.PIA = 1000
       personB.PIA = 1400
@@ -1487,6 +1555,47 @@ describe('tests calculateCouplePV', () => {
         //personA retroactive retirement back to FRA of Sept 2018
         //personB retroactive restricted app back to FRA of Oct 2018
         //personB retirement at age 70
+    })
+
+    it('should tell a low-PIA spouse to file for child-in-care spousal benefits before age 62', () => {
+      service.today = new MonthYearDate(2019, 0)//(date when creating this test, so that it doesn't fail in the future as "today" changes)
+      familyMaximumService.today = new MonthYearDate(2019, 0) //Ditto
+      scenario.maritalStatus = "married"
+      scenario.discountRate = 1
+      scenario.numberOfChildren = 1
+      let child1:Person = new Person("1")
+      child1.SSbirthDate = new MonthYearDate(2017, 3) //April 2017
+      scenario.setChildrenArray([child1], service.today)
+      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0) 
+      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) 
+      personA.actualBirthDate = new Date(1960, 3, 15) //Spouse A born in April 1960
+      personA.SSbirthDate = new MonthYearDate(1960, 3)
+      personB.actualBirthDate = new Date(1970, 3, 11) //Spouse B born in April 1970
+      personB.SSbirthDate = new MonthYearDate(1970, 3)
+      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      personA.initialAge = birthdayService.findAgeOnDate(personA, service.today)
+      personA.initialAgeRounded = Math.round(personA.initialAge)
+      personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
+      personB.initialAgeRounded = Math.round(personB.initialAge)
+      personA.PIA = 2500
+      personB.PIA = 400
+      let results = service.maximizeCouplePViterateBothPeople(personA, personB, scenario)
+      expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2022, 4))
+      expect(results.solutionsArray[1].date).toEqual(new MonthYearDate(2022, 4))
+      expect(results.solutionsArray[2].date).toEqual(new MonthYearDate(2022, 4))
+      expect(results.solutionsArray[3].date).toEqual(new MonthYearDate(2032, 4))
+      expect(results.solutionsArray[4].date).toEqual(new MonthYearDate(2033, 3))
+      expect(results.solutionsArray[5].date).toEqual(new MonthYearDate(2037, 3))
+      //This array should have 6 items in it, in this order:
+        // personA retirement benefit to begin 5/2022, at age 62 and 1 months.
+        // personB files for child-in-care spousal benefits to begin 5/2022, at age 52 and 1 months.
+        // child files for benefits on personA's record 5/2022.
+        // personB retirement benefit to begin 5/2032, at age 62 and 1 months.
+        // personB child-in-care spousal benefit is automatically suspended when child reaches age 16 (4/2033), when personB is age 63 and 0 months.
+        // personB spousal benefit begins again automatically at his/her full retirement age (4/2037).
     })
 
   })

@@ -23,8 +23,6 @@ export class CalculationScenario {
         for (let i:number = 0; i < this.numberOfChildren; i++){ 
             this.children.push(childrenArray[i])
         }
-
-        setTimeout( () => {//Need to have a timeout here, because we have to let the getinputs() function from the childinputs component finish running, otherwise child objects have no SSbirthdate fields
             //calculate ages of children
             for (let child of this.children){
                 child.age = (today.getMonth() - child.SSbirthDate.getMonth() + 12 * (today.getFullYear() - child.SSbirthDate.getFullYear()) )/12
@@ -46,7 +44,6 @@ export class CalculationScenario {
                     this.disabledChild = true
                 }
             }
-        }, 25)
     }
 }
 

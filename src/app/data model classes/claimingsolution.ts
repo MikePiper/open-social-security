@@ -73,7 +73,7 @@ import {MonthYearDate} from "./monthyearDate"
             this.message = "Your spouse files for child-in-care spousal benefits to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "childInCareSpousalSuspension") {
-            this.message = "Your spouse's child-in-care spousal benefit is automatically suspended when your youngest child reaches age 16 " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at your age " + this.ageYears + " and " + this.ageMonths + " months."
+            this.message = "Your spouse's child-in-care spousal benefit is automatically suspended when your youngest child reaches age 16 (" + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "), when your spouse is age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "automaticSpousalUnsuspension") {
             this.message = "Your spouse's spousal benefit begins again automatically at his/her full retirement age (" + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ")."

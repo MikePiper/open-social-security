@@ -152,6 +152,16 @@ export class PresentValueService {
     personA.spousalARFcreditingMonths = 0
     personB.retirementARFcreditingMonths = 0
     personB.spousalARFcreditingMonths = 0
+    personA.entitledToRetirement = false
+    personB.entitledToRetirement = false
+    personA.spousalReductionPercentage = undefined
+    personB.spousalReductionPercentage = undefined
+
+    //Determine whether anybody is suspending benefits at any time in this PV calc
+      if (personA.beginSuspensionDate >= this.today){personA.suspendingBenefits = true}
+      else {personA.suspendingBenefits = false}
+      if (personB.beginSuspensionDate >= this.today){personB.suspendingBenefits = true}
+      else {personB.suspendingBenefits = false}
 
 
     //calculate combined family maximum (We need to know "simultaneous entitlement year" so we can't do this in HomeComponent or maximize function. But can do it anywhere at beginning of PV calc.)
