@@ -42,6 +42,7 @@ describe('FamilyMaximumService', () => {
   
     //Testing calculateFamilyMaximum()
     it('calculateFamilyMaximum() should calculate AIME appropriately in scenario with PIA below first bend point', () => {
+      service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       let person:Person = new Person("A")
       person.isOnDisability = true
       person.fixedRetirementBenefitDate = new MonthYearDate(2015, 5, 13)
@@ -55,6 +56,7 @@ describe('FamilyMaximumService', () => {
     })
   
     it('calculateFamilyMaximum() should calculate AIME appropriately in disability scenario with PIA between first and second bend points', () => {
+      service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       let person:Person = new Person("A")
       person.isOnDisability = true
       person.fixedRetirementBenefitDate = new MonthYearDate(2015, 5, 13)
@@ -69,6 +71,7 @@ describe('FamilyMaximumService', () => {
     })
   
     it('calculateFamilyMaximum() should calculate AIME appropriately in disability scenario with PIA beyond second bend point', () => {
+      service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       let person:Person = new Person("A")
       person.isOnDisability = true
       person.fixedRetirementBenefitDate = new MonthYearDate(2013, 5, 13)
@@ -83,6 +86,7 @@ describe('FamilyMaximumService', () => {
     })
   
     it('calculateFamilyMaximum() should calculate family maximum appropriately for person on disability', () => {
+      service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       let person:Person = new Person("A")
       person.isOnDisability = true
       person.fixedRetirementBenefitDate = new MonthYearDate(2015, 5, 13)

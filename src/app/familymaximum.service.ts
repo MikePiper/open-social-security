@@ -27,7 +27,7 @@ export class FamilyMaximumService {
       */
       let PIAbeforeCOLAs: number = person.PIA
       //take current disability benefit (person.PIA) and back out COLAs for every year back to (and including) year in which disability entitlement began
-          let thisYear:number = new MonthYearDate().getFullYear()
+          let thisYear:number = this.today.getFullYear()
           let entitlementYear:number = person.fixedRetirementBenefitDate.getFullYear()
           let i: number = thisYear - 1 //Don't back out COLA for this year, because it isn't effective until next year anyway.
           while (i >= entitlementYear) {
@@ -70,9 +70,10 @@ export class FamilyMaximumService {
         var thirdBendPoint: number = this.annualIndexedValuesArray[person.SSbirthDate.getFullYear() + 62 - 1979].thirdFamilyMaxBendPoint
       }
       else {//If they turn 62 in the future, use most recent published bend points.
-        var firstBendPoint: number = this.annualIndexedValuesArray[this.annualIndexedValuesArray.length - 1].firstFamilyMaxBendPoint
-        var secondBendPoint: number = this.annualIndexedValuesArray[this.annualIndexedValuesArray.length - 1].secondFamilyMaxBendPoint
-        var thirdBendPoint: number = this.annualIndexedValuesArray[this.annualIndexedValuesArray.length - 1].thirdFamilyMaxBendPoint
+//[this.annualIndexedValuesArray.length - 1]
+        var firstBendPoint: number = this.annualIndexedValuesArray[this.today.getFullYear() - 1979].firstFamilyMaxBendPoint
+        var secondBendPoint: number = this.annualIndexedValuesArray[this.today.getFullYear() - 1979].secondFamilyMaxBendPoint
+        var thirdBendPoint: number = this.annualIndexedValuesArray[this.today.getFullYear() - 1979].thirdFamilyMaxBendPoint
       }
       if (person.PIA <= firstBendPoint){
         person.familyMaximum = 1.5 * person.PIA
@@ -627,8 +628,18 @@ export class FamilyMaximumService {
           "firstFamilyMaxBendPoint": 1144,
           "secondFamilyMaxBendPoint": 1651,
           "thirdFamilyMaxBendPoint": 2154,
-          "COLA": null,
+          "COLA": 0.028,
           "MaxTaxableWages": 128400
+        },
+        {
+          "Year": 2019,
+          "firstPIAbendPoint": 926,
+          "secondPIAbendPoint": 5583,
+          "firstFamilyMaxBendPoint": 1184,
+          "secondFamilyMaxBendPoint": 1708,
+          "thirdFamilyMaxBendPoint": 2228,
+          "COLA": null,//current year should always be set to null
+          "MaxTaxableWages": 132900
         }
        ]
 }
