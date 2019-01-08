@@ -206,16 +206,15 @@ export class SolutionSetService {
           let personAsavedSpousalAgeMonths: number = Math.round((personAsavedSpousalAge%1)*12)
           //create personAchildInCareSpousalSolution if necessary (and related suspension/endsuspension objects if necessary)
           if (scenario.children.length > 0){
-            if (this.birthdayService.checkForChildUnder16onGivenDate(scenario, personB.retirementBenefitDate) === true || scenario.disabledChild === true){
-              if (this.birthdayService.findAgeOnDate(personA, personB.retirementBenefitDate) < 62 //i.e., so there can be no deemed filing
-                  || (personA.PIA < 0.5 * personB.PIA && personB.retirementBenefitDate < personA.FRA) ){//if older than FRA it's just regular spousal filing, not child-in-care spousal
+            if (personA.childInCareSpousal === true){
+              if (!(personA.retirementBenefitDate <= personB.retirementBenefitDate && personA.PIA >= 0.5 * personB.PIA)) {//Won't be any spousal benefit for personA if they have already started retirement with PIA > 50% of personB.PIA
                   //create childInCareSpousal solution object
                   let personAageOnChildInCareSpousalDate:number = this.birthdayService.findAgeOnDate(personA, personB.retirementBenefitDate)
                   let personAageYearsOnChildInCareSpousalDate:number = Math.floor(personAageOnChildInCareSpousalDate)
                   let personAageMonthsOnChildInCareSpousalDate:number = Math.round((personAageOnChildInCareSpousalDate%1)*12)
                   personAchildInCareSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "childInCareSpousal", personA, personB.retirementBenefitDate, personAageYearsOnChildInCareSpousalDate, personAageMonthsOnChildInCareSpousalDate)
                   //see if need to create spousal suspension/endsuspension solution objects
-                    if (scenario.youngestChildTurns16date < personA.FRA){
+                    if (scenario.youngestChildTurns16date < personA.FRA && scenario.disabledChild === false){
                         //create childInCareSpousalSuspension
                         let personAageOnYoungest16Date:number = this.birthdayService.findAgeOnDate(personA, scenario.youngestChildTurns16date)
                         let personAageYearsOnYoungest16Date:number = Math.floor(personAageOnYoungest16Date)
@@ -246,16 +245,15 @@ export class SolutionSetService {
           let personBsavedSpousalAgeMonths: number = Math.round((personBsavedSpousalAge%1)*12)
           //create personBchildInCareSpousalSolution if necessary (and related suspension/endsuspension objects if necessary)
           if (scenario.children.length > 0){
-            if (this.birthdayService.checkForChildUnder16onGivenDate(scenario, personA.retirementBenefitDate) === true || scenario.disabledChild === true){
-              if (this.birthdayService.findAgeOnDate(personB, personA.retirementBenefitDate) < 62 //i.e., so there can be no deemed filing
-                  || (personB.PIA < 0.5 * personA.PIA && personA.retirementBenefitDate < personB.FRA) ){//if older than FRA it's just regular spousal filing, not child-in-care spousal
+            if (personB.childInCareSpousal === true){
+              if (!(personB.retirementBenefitDate <= personA.retirementBenefitDate && personB.PIA >= 0.5 * personA.PIA)) {//Won't be any spousal benefit for personB if they have already started retirement with PIA > 50% of personA.PIA
                   //create childInCareSpousal solution object
                   let personBageOnChildInCareSpousalDate:number = this.birthdayService.findAgeOnDate(personB, personA.retirementBenefitDate)
                   let personBageYearsOnChildInCareSpousalDate:number = Math.floor(personBageOnChildInCareSpousalDate)
                   let personBageMonthsOnChildInCareSpousalDate:number = Math.round((personBageOnChildInCareSpousalDate%1)*12)
                   personBchildInCareSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "childInCareSpousal", personB, personA.retirementBenefitDate, personBageYearsOnChildInCareSpousalDate, personBageMonthsOnChildInCareSpousalDate)
                   //see if need to create spousal suspension/endsuspension solution objects
-                    if (scenario.youngestChildTurns16date < personB.FRA){
+                    if (scenario.youngestChildTurns16date < personB.FRA && scenario.disabledChild === false){
                         //create childInCareSpousalSuspension
                         let personBageOnYoungest16Date:number = this.birthdayService.findAgeOnDate(personB, scenario.youngestChildTurns16date)
                         let personBageYearsOnYoungest16Date:number = Math.floor(personBageOnYoungest16Date)
