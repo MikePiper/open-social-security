@@ -17,6 +17,7 @@ describe('test calculateSinglePersonPV', () => {
   let birthdayService:BirthdayService
   let mortalityService:MortalityService
   let familyMaximumService:FamilyMaximumService
+  let earningsTestService:EarningsTestService
   let scenario:CalculationScenario
   let person:Person
   beforeEach(() => {
@@ -27,6 +28,7 @@ describe('test calculateSinglePersonPV', () => {
     birthdayService = TestBed.get(BirthdayService)
     mortalityService = TestBed.get(MortalityService)
     familyMaximumService = TestBed.get(FamilyMaximumService)
+    earningsTestService = TestBed.get(EarningsTestService)
     scenario = new CalculationScenario()
     person = new Person("A")
   })
@@ -151,6 +153,8 @@ describe('test calculateSinglePersonPV', () => {
       })
   
       it('should return appropriate PV for single person, adult disabled child, earnings test applicable, future benefit cut assumption', () => {
+        service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+        earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "single"
         scenario.benefitCutAssumption = true
         scenario.benefitCutYear = 2034
@@ -176,6 +180,7 @@ describe('test calculateSinglePersonPV', () => {
   
       //Integration testing -- not actually testing the calculated PV itself
       it('should show zero retirement benefit in table when a single person files before FRA and has high enough earnings', () => {
+        service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
         person.SSbirthDate = new MonthYearDate(1956, 6)//Born July 1956
         person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
@@ -191,6 +196,8 @@ describe('test calculateSinglePersonPV', () => {
       })
   
       it('should show appropriate retirement benefit in table when a single person files before FRA and has earnings to cause some but not complete withholding', () => {
+        service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+        earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
         person.SSbirthDate = new MonthYearDate(1956, 5)//Born June 1956
         person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
@@ -207,6 +214,7 @@ describe('test calculateSinglePersonPV', () => {
       })
   
       it('should show appropriate adjustedRetirementBenefitDate, when a single person files before FRA and has earnings to cause some but not complete withholding', () => {
+        service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
         person.SSbirthDate = new MonthYearDate(1956, 5)//Born June 1956
         person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
@@ -353,6 +361,7 @@ describe('tests calculateCouplePV', () => {
   let birthdayService:BirthdayService
   let mortalityService:MortalityService
   let familyMaximumService:FamilyMaximumService
+  let earningsTestService:EarningsTestService
   let scenario:CalculationScenario
   let personA:Person
   let personB:Person
@@ -365,6 +374,7 @@ describe('tests calculateCouplePV', () => {
     birthdayService = TestBed.get(BirthdayService)
     mortalityService = TestBed.get(MortalityService)
     familyMaximumService = TestBed.get(FamilyMaximumService)
+    earningsTestService = TestBed.get(EarningsTestService)
     scenario = new CalculationScenario()
     personA = new Person("A")
     personB = new Person("B")
@@ -453,7 +463,9 @@ describe('tests calculateCouplePV', () => {
         .toBeCloseTo(580715, 0)
     })
   
-    it('should return appropriate PV for married couple, still working, filing early with partial withholding and overwithholding', () => { 
+    it('should return appropriate PV for married couple, still working, filing early with partial withholding and overwithholding', () => {
+      service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+      earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
@@ -682,6 +694,7 @@ describe('tests calculateCouplePV', () => {
 
       //tests for calculateCouplePV() that don't focus on ending PV
       it('should appropriately reflect personB spousal benefit being partially withheld based on personA excess earnings', () => {
+        service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         personA.actualBirthDate = new Date(1956, 5, 10) //born June 1956
         personA.SSbirthDate = birthdayService.findSSbirthdate(6, 10, 1956)
         personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
@@ -754,6 +767,8 @@ describe('tests calculateCouplePV', () => {
       })
 
       it('Should calculate annual retirement and spousal benefits appropriately in year in which personB hits FRA, triggering ARF from withholding in some prior year', () => {
+        service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+        earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
         personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -795,6 +810,8 @@ describe('tests calculateCouplePV', () => {
       })
 
       it('Should calculate annual retirement and spousal benefits appropriately in year in which personA hits FRA, triggering ARF for spousal benefit due to withholding from other personB earnings in prior year', () => {
+        service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+        earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
         personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -955,7 +972,8 @@ describe('tests calculateCouplePV', () => {
       })
 
         it('Should calculate retirement/spousal/child benefits appropriately for everybody in combined family max scenario', () => {
-          service.today = new MonthYearDate(2018, 11)
+          service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+          familyMaximumService.today = new MonthYearDate(2018, 11) //Ditto
           scenario.maritalStatus = "married"
           scenario.discountRate = 1
           scenario.numberOfChildren = 3
@@ -1031,7 +1049,8 @@ describe('tests calculateCouplePV', () => {
         })
 
         it("Should calculate everybody's benefits appropriately in pre-62 scenario with child in care (before child 16, after child 16)", () => {
-          service.today = new MonthYearDate(2018, 11)
+          service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+          familyMaximumService.today = new MonthYearDate(2018, 11) //Ditto
           scenario.maritalStatus = "married"
           scenario.discountRate = 1
           scenario.numberOfChildren = 1
@@ -1087,7 +1106,8 @@ describe('tests calculateCouplePV', () => {
         })
 
         it("Should calculate everybody's benefits appropriately in pre-62 scenario with child in care (child turns 16 when person is 63. person files SSA-25 on that date, so spousal continues but is reduced for age.)", () => {
-          service.today = new MonthYearDate(2018, 11)
+          service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+          familyMaximumService.today = new MonthYearDate(2018, 11) //Ditto
           scenario.maritalStatus = "married"
           scenario.discountRate = 1
           scenario.numberOfChildren = 1

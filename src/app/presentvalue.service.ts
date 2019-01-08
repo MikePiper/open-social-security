@@ -162,6 +162,24 @@ export class PresentValueService {
           else {
             this.familyMaximumService.calculateCombinedFamilyMaximum(personA, personB, personA.retirementBenefitDate.getFullYear())
           }
+      
+    //Determine whether either person will be getting child-in-care spousal benefits
+        if (scenario.children.length > 0){
+          personA.childInCareSpousal = false
+          personB.childInCareSpousal = false
+          if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, personB.retirementBenefitDate) === true){
+            //If spousalBenefitDate is after FRA and after youngestchildturns16date, then they must not have had an automatic conversion to regular spousal from child-in-care spousal, which means they weren't on child-in-care spousal at that time (or ever)
+            if (!(personA.spousalBenefitDate > personA.FRA && personA.spousalBenefitDate > scenario.youngestChildTurns16date)){
+              personA.childInCareSpousal = true
+            }
+          }
+          if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, personA.retirementBenefitDate) === true){
+            //If spousalBenefitDate is after FRA and after youngestchildturns16date, then they must not have had an automatic conversion to regular spousal from child-in-care spousal, which means they weren't on child-in-care spousal at that time (or ever)
+            if (!(personB.spousalBenefitDate > personB.FRA && personB.spousalBenefitDate > scenario.youngestChildTurns16date)){
+              personB.childInCareSpousal = true
+            }
+          }
+        }
 
     //Create initial CalculationYear object
         let initialCalcDate:MonthYearDate = this.whenShouldPVcalculationStart(scenario, personA, personB)
@@ -786,14 +804,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       if (scenario.children.length > 0){
         //if there is a disabled child or a child under 16 when otherPerson begins retirement benefit, don't let spousalBenefitDate be before own FRA.
           //In other words, we're assuming here that person doesn't file Form SSA-25. We're letting them claim child-in-care spousal benefits, then letting it stop when youngest child reaches 16 (if not yet FRA and no disabled child), then start again at FRA.
-        let disabledChild:boolean = false
-        for (let child of scenario.children){
-          if (child.isOnDisability === true){
-            disabledChild = true
-          }
-        }
-        let childUnder16onOtherPersonRetirementBenefitDate:boolean = this.birthdayService.checkForChildUnder16onGivenDate(scenario, otherPerson.retirementBenefitDate)
-        if (disabledChild === true || childUnder16onOtherPersonRetirementBenefitDate === true){
+        if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, otherPerson.retirementBenefitDate)=== true){
           if (person.spousalBenefitDate < person.FRA){
             person.spousalBenefitDate = person.FRA
           }

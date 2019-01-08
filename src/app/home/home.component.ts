@@ -113,22 +113,22 @@ export class HomeComponent implements OnInit {
     personBquitWorkMonth: number
 
   //Inputs from custom date form
-  customPersonAretirementBenefitMonth: number
-  customPersonAretirementBenefitYear: number
-  customPersonAspousalBenefitMonth: number
-  customPersonAspousalBenefitYear: number
-  customPersonBretirementBenefitMonth: number
-  customPersonBretirementBenefitYear: number
-  customPersonBspousalBenefitMonth: number
-  customPersonBspousalBenefitYear: number
-  customPersonAbeginSuspensionMonth: number
-  customPersonAbeginSuspensionYear: number
-  customPersonAendSuspensionMonth: number
-  customPersonAendSuspensionYear: number
-  customPersonBbeginSuspensionMonth: number
-  customPersonBbeginSuspensionYear: number
-  customPersonBendSuspensionMonth: number
-  customPersonBendSuspensionYear: number
+  customPersonAretirementBenefitMonth: number = this.today.getMonth()+1
+  customPersonAretirementBenefitYear: number = this.today.getFullYear()
+  customPersonAspousalBenefitMonth: number = this.today.getMonth()+1
+  customPersonAspousalBenefitYear: number = this.today.getFullYear()
+  customPersonBretirementBenefitMonth: number = this.today.getMonth()+1
+  customPersonBretirementBenefitYear: number = this.today.getFullYear()
+  customPersonBspousalBenefitMonth: number = this.today.getMonth()+1
+  customPersonBspousalBenefitYear: number = this.today.getFullYear()
+  customPersonAbeginSuspensionMonth: number = this.today.getMonth()+1
+  customPersonAbeginSuspensionYear: number = this.today.getFullYear()
+  customPersonAendSuspensionMonth: number = this.today.getMonth()+1
+  customPersonAendSuspensionYear: number = this.today.getFullYear()
+  customPersonBbeginSuspensionMonth: number = this.today.getMonth()+1
+  customPersonBbeginSuspensionYear: number = this.today.getFullYear()
+  customPersonBendSuspensionMonth: number = this.today.getMonth()+1
+  customPersonBendSuspensionYear: number = this.today.getFullYear()
 
 
   //solution variables
@@ -139,14 +139,6 @@ export class HomeComponent implements OnInit {
     "solutionsArray": []
   }
 
-
-   returnTrueAsync() {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(true);
-      }, 1000);
-    });
-  }
 
 
    onSubmit() {
@@ -181,7 +173,7 @@ export class HomeComponent implements OnInit {
     }
     this.normalCursor()
     this.primaryFormHasChanged = false//Set this to false so that customDates() doesn't rerun onSubmit() next time it is run, unless another change is made to primary inputs
-    if (this.customPersonAretirementBenefitMonth || this.customPersonAspousalBenefitMonth || this.customPersonBretirementBenefitMonth || this.customPersonBspousalBenefitMonth){//If custom date inputs have been provided (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs
+    if (this.customPV){//If customDates() has already been run (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs
       this.customDates()
     }
     //For testing performance
@@ -198,111 +190,24 @@ export class HomeComponent implements OnInit {
     }
     this.customPV = undefined //Makes custom date output disappear until new PV is calc'd. (We don't want a broken-looking half-table appearing if there is an error in new inputs.)
 
-    //If there are inputs for a fixedRetirementBenefitDate (as would be the case if person has filed or is on disability -- or for personB in a divorce scenario) go get those inputs and make a Date object
-    //Then use that object for personA's retirementBenefitDate. Otherwise, use input from Custom Date form
-    if (this.personAfixedRetirementBenefitMonth || this.personAfixedRetirementBenefitYear){
-      this.personA.fixedRetirementBenefitDate = new MonthYearDate(this.personAfixedRetirementBenefitYear, this.personAfixedRetirementBenefitMonth-1, 1)
-      this.personA.retirementBenefitDate = new MonthYearDate(this.personA.fixedRetirementBenefitDate)
-    }
-    else {
-      this.personA.retirementBenefitDate = new MonthYearDate(this.customPersonAretirementBenefitYear, this.customPersonAretirementBenefitMonth-1, 1)
-    }
-    if (this.personBfixedRetirementBenefitMonth || this.personBfixedRetirementBenefitYear){
-      this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1, 1)
-      this.personB.retirementBenefitDate = new MonthYearDate(this.personB.fixedRetirementBenefitDate)
-    }
-    else {
-      this.personB.retirementBenefitDate = new MonthYearDate(this.customPersonBretirementBenefitYear, this.customPersonBretirementBenefitMonth-1, 1)
-
-    }
-    //Get inputs for custom spousal dates
-    this.personA.spousalBenefitDate = new MonthYearDate(this.customPersonAspousalBenefitYear, this.customPersonAspousalBenefitMonth-1, 1)
-    this.personB.spousalBenefitDate = new MonthYearDate(this.customPersonBspousalBenefitYear, this.customPersonBspousalBenefitMonth-1, 1)
-
-    //If there are inputs for custom begin/end suspension dates create Date objects and set applicable person field. (Set to 1900 if there are no inputs)
-    if (this.customPersonAbeginSuspensionMonth || this.customPersonAbeginSuspensionYear) {
-      this.personA.beginSuspensionDate = new MonthYearDate (this.customPersonAbeginSuspensionYear, this.customPersonAbeginSuspensionMonth-1, 1)
-    }
-    else {
-      this.personA.beginSuspensionDate = new MonthYearDate(1900, 0, 1)
-    }
-    if (this.customPersonAendSuspensionMonth || this.customPersonAendSuspensionYear) {
-      this.personA.endSuspensionDate = new MonthYearDate (this.customPersonAendSuspensionYear, this.customPersonAendSuspensionMonth-1, 1)
-    }
-    else {
-      this.personA.endSuspensionDate = new MonthYearDate(1900, 0, 1)
-    }
-    if (this.customPersonBbeginSuspensionMonth || this.customPersonBbeginSuspensionYear) {
-      this.personB.beginSuspensionDate = new MonthYearDate (this.customPersonBbeginSuspensionYear, this.customPersonBbeginSuspensionMonth-1, 1)
-    }
-    else {
-      this.personB.beginSuspensionDate = new MonthYearDate(1900, 0, 1)
-    }
-    if (this.customPersonBendSuspensionMonth || this.customPersonBendSuspensionYear) {
-      this.personB.endSuspensionDate = new MonthYearDate (this.customPersonBendSuspensionYear, this.customPersonBendSuspensionMonth-1, 1)
-    }
-    else {
-      this.personB.endSuspensionDate = new MonthYearDate(1900, 0, 1)
-    }
-
-
-    //Get spousal benefit dates if there were no inputs from user (i.e. if personA won't actually file for a spousal benefit at any time, get the input that makes function run appropriately)
-    if (
-          this.personA.declineSpousal === true || //choosing not to file for spousal
-          (this.personA.PIA >= 0.5 * this.personB.PIA && this.personA.actualBirthDate >= this.deemedFilingCutoff) || //can't file for spousal due to new deemed filing and size of PIA
-          (this.personA.PIA >= 0.5 * this.personB.PIA && (this.personA.hasFiled === true || this.personA.isOnDisability === true)) || //can't file for spousal due to size of PIA and because already filed for retirement/disability
-          ( (this.personA.hasFiled === true || this.personA.isOnDisability === true) && (this.personB.hasFiled === true || this.personB.isOnDisability === true) ) //both have already started retirement or disability and therefore have already started spousal so there will be no spousal input
-        ) {
-      //If married, personA spousal date is later of retirement dates
-      if (this.scenario.maritalStatus == "married") {
-        if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
-          this.personA.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
-        }
-        else {
-          this.personA.spousalBenefitDate = new MonthYearDate(this.personB.retirementBenefitDate)
-        }
-      }
-      //If divorced, personA spousal date is personA retirementdate
-      else if (this.scenario.maritalStatus == "divorced"){
-        this.personA.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
-      }
-    }
-    //Ditto, for personB
-    if (
-        this.personB.declineSpousal === true || //choosing not to file for spousal
-        (this.personB.PIA >= 0.5 * this.personA.PIA && this.personB.actualBirthDate >= this.deemedFilingCutoff) || //can't file for spousal due to new deemed filing and size of PIA
-        (this.personB.PIA >= 0.5 * this.personA.PIA && (this.personB.hasFiled === true || this.personB.isOnDisability === true)) || //can't file for spousal due to size of PIA and because already filed for retirement/disability
-        ( (this.personA.hasFiled === true || this.personA.isOnDisability === true) && (this.personB.hasFiled === true || this.personB.isOnDisability === true) ) || //both have already started retirement or disability and therefore have already started spousal so there will be no spousal input
-        this.scenario.maritalStatus == "divorced"
-        ) {
-      //personB spousal date is later of retirement dates
-      if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
-        this.personB.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
-      }
-      else {
-        this.personB.spousalBenefitDate = new MonthYearDate(this.personB.retirementBenefitDate)
-      }
-    }
-
     //Check for errors in custom date inputs
-   this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
-
+      this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
 
     //Calc PV with input dates
-      //Create a new ClaimingScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one. (This is necessary so that it can have a separate "outputTable" field from the original.)
-        //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
-        this.customDateScenario = Object.assign({}, this.scenario)
-        this.customDateScenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
-    if (this.scenario.maritalStatus == "single" && this.errorCollection.hasErrors === false) {
-      this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.customDateScenario, true)
+        //Create a new ClaimingScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one. (This is necessary so that it can have a separate "outputTable" field from the original.)
+          //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
+          this.customDateScenario = Object.assign({}, this.scenario)
+          this.customDateScenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
+      if (this.scenario.maritalStatus == "single" && this.errorCollection.hasErrors === false) {
+        this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.customDateScenario, true)
+        }
+      if(this.scenario.maritalStatus == "married" && this.errorCollection.hasErrors === false) {
+        this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
+        }
+      if(this.scenario.maritalStatus == "divorced" && this.errorCollection.hasErrors === false) {
+        this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
       }
-    if(this.scenario.maritalStatus == "married" && this.errorCollection.hasErrors === false) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
-      }
-    if(this.scenario.maritalStatus == "divorced" && this.errorCollection.hasErrors === false) {
-      this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
-    }
-    this.differenceInPV = this.solutionSet.solutionPV - this.customPV
+      this.differenceInPV = this.solutionSet.solutionPV - this.customPV
   }
 
   //Use inputs to calculate ages, SSbirthdates, FRAs, etc. Happens every time an input in the primary form is changed.
@@ -315,23 +220,23 @@ export class HomeComponent implements OnInit {
     this.personB.SSbirthDate = this.birthdayService.findSSbirthdate(this.personBinputMonth, this.personBinputDay, this.personBinputYear)
     this.personB.FRA = this.birthdayService.findFRA(this.personB.SSbirthDate)
     this.personB.survivorFRA = this.birthdayService.findSurvivorFRA(this.personB.SSbirthDate)
-    this.personA.initialAge =  ( this.today.getMonth() - this.personA.SSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.personA.SSbirthDate.getFullYear()) )/12
+    this.personA.initialAge =  this.birthdayService.findAgeOnDate(this.personA, this.today)
       if (this.personA.initialAge > 70){
         this.personA.hasFiled = true
       }
-    this.personB.initialAge =  ( this.today.getMonth() - this.personB.SSbirthDate.getMonth() + 12 * (this.today.getFullYear() - this.personB.SSbirthDate.getFullYear()) )/12
+    this.personB.initialAge =  this.birthdayService.findAgeOnDate(this.personB, this.today)
       if (this.personB.initialAge > 70){
         this.personB.hasFiled = true
       }
     this.personA.initialAgeRounded = Math.round(this.personA.initialAge)
     this.personB.initialAgeRounded = Math.round(this.personB.initialAge)
-    this.personA.quitWorkDate = new MonthYearDate(this.personAquitWorkYear, this.personAquitWorkMonth-1, 1)
-    this.personB.quitWorkDate = new MonthYearDate(this.personBquitWorkYear, this.personBquitWorkMonth-1, 1)
+    this.personA.quitWorkDate = new MonthYearDate(this.personAquitWorkYear, this.personAquitWorkMonth-1)
+    this.personB.quitWorkDate = new MonthYearDate(this.personBquitWorkYear, this.personBquitWorkMonth-1)
     if (this.personAfixedRetirementBenefitMonth && this.personAfixedRetirementBenefitYear){
-      this.personA.fixedRetirementBenefitDate = new MonthYearDate(this.personAfixedRetirementBenefitYear, this.personAfixedRetirementBenefitMonth-1, 1)
+      this.personA.fixedRetirementBenefitDate = new MonthYearDate(this.personAfixedRetirementBenefitYear, this.personAfixedRetirementBenefitMonth-1)
     }
     if (this.personBfixedRetirementBenefitMonth && this.personBfixedRetirementBenefitYear){
-      this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1, 1)
+      this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1)
     }
     this.personA.mortalityTable = this.mortalityService.determineMortalityTable(this.personAgender, this.personAmortalityInput, this.personAassumedDeathAge)
     this.personB.mortalityTable = this.mortalityService.determineMortalityTable(this.personBgender, this.personBmortalityInput, this.personBassumedDeathAge)
@@ -342,9 +247,147 @@ export class HomeComponent implements OnInit {
     }
     else {this.scenario.children = []}
 
+    //This childInCareSpousal field is used for determining whether to display spousal input dates in custom form. We normally set this in getCustomDateFormInputs(). But we set it here in case of disabled child so that spousal benefit input doesnt show up on initial load of custom date form.
+    if (this.scenario.disabledChild === true){
+      this.personA.childInCareSpousal = true
+      this.personB.childInCareSpousal = true
+    }
+
       //Reset conditionally-hidden inputs as necessary, based on changes to other inputs. (If a hidden input should be null/false based on status of other inputs, make sure it is null/false.)
       this.resetHiddenInputs()
     }
+
+  //Use inputs to set retirementBenefitDate, spousalBenefitDate fields. Also checks now whether there will be child-in-care spousal benefits, given retirementBenefitDates selected.
+  //Input validation doesn't happen here. This function runs every time the form changes, and we only want validation upon submission.
+  getCustomDateFormInputs() {
+    //set everybody's dates to undefined at first. (Clears any values they had from maximize function or anything else. We want them undefined at the end of this function if this function intentionally does not set them.)
+    this.personA.retirementBenefitDate = undefined
+    this.personA.spousalBenefitDate = undefined
+    this.personA.beginSuspensionDate = undefined
+    this.personA.endSuspensionDate = undefined
+    this.personB.retirementBenefitDate = undefined
+    this.personB.spousalBenefitDate = undefined
+    this.personB.beginSuspensionDate = undefined
+    this.personB.endSuspensionDate = undefined
+
+    //If there are inputs for a fixedRetirementBenefitDate (as would be the case if person has filed or is on disability -- or for personB in a divorce scenario) go get those inputs and make a Date object
+      //Then use that object for personA's retirementBenefitDate. Otherwise, use input from Custom Date form.
+      if (this.personAfixedRetirementBenefitMonth || this.personAfixedRetirementBenefitYear){
+        this.personA.fixedRetirementBenefitDate = new MonthYearDate(this.personAfixedRetirementBenefitYear, this.personAfixedRetirementBenefitMonth-1)
+        this.personA.retirementBenefitDate = new MonthYearDate(this.personA.fixedRetirementBenefitDate)
+      }
+      else {
+        this.personA.retirementBenefitDate = new MonthYearDate(this.customPersonAretirementBenefitYear, this.customPersonAretirementBenefitMonth-1)
+      }
+      if (this.personBfixedRetirementBenefitMonth || this.personBfixedRetirementBenefitYear){
+        this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1)
+        this.personB.retirementBenefitDate = new MonthYearDate(this.personB.fixedRetirementBenefitDate)
+      }
+      else {
+        this.personB.retirementBenefitDate = new MonthYearDate(this.customPersonBretirementBenefitYear, this.customPersonBretirementBenefitMonth-1)
+      }
+
+    //If user is selecting custom begin/end suspension dates create Date objects and set applicable person field. (Set to 1900 if they haven't filed or are declining suspension.)
+      if ((this.personA.hasFiled === true || this.personA.isOnDisability === true) && this.personA.declineSuspension === false) {
+        this.personA.beginSuspensionDate = new MonthYearDate (this.customPersonAbeginSuspensionYear, this.customPersonAbeginSuspensionMonth-1)
+      }
+      else {
+        this.personA.beginSuspensionDate = new MonthYearDate(1900, 0)
+      }
+      if ((this.personA.hasFiled === true || this.personA.isOnDisability === true) && this.personA.declineSuspension === false) {
+        this.personA.endSuspensionDate = new MonthYearDate (this.customPersonAendSuspensionYear, this.customPersonAendSuspensionMonth-1)
+      }
+      else {
+        this.personA.endSuspensionDate = new MonthYearDate(1900, 0)
+      }
+      if ((this.personB.hasFiled === true || this.personB.isOnDisability === true) && this.personB.declineSuspension === false) {
+        this.personB.beginSuspensionDate = new MonthYearDate (this.customPersonBbeginSuspensionYear, this.customPersonBbeginSuspensionMonth-1)
+      }
+      else {
+        this.personB.beginSuspensionDate = new MonthYearDate(1900, 0)
+      }
+      if ((this.personB.hasFiled === true || this.personB.isOnDisability === true) && this.personB.declineSuspension === false) {
+        this.personB.endSuspensionDate = new MonthYearDate (this.customPersonBendSuspensionYear, this.customPersonBendSuspensionMonth-1)
+      }
+      else {
+        this.personB.endSuspensionDate = new MonthYearDate(1900, 0)
+      }
+
+      //Set spousalBenefitDates automatically if child-in-care
+      //If there are minor or disabled children, spousalBenefitDate must reflect date on which regular spousal benefit (as opposed to child-in-care spousal benefit) begins.
+      this.personA.childInCareSpousal = false
+      this.personB.childInCareSpousal = false
+      if (this.scenario.children.length > 0){
+        //if there is a disabled child or a child under 16 when otherPerson begins retirement benefit, don't let spousalBenefitDate be before own FRA.
+          //In other words, we're assuming here that person doesn't file Form SSA-25. We're letting them claim child-in-care spousal benefits, then letting it stop when youngest child reaches 16 (if not yet FRA and no disabled child), then start again at FRA.
+        if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(this.scenario, this.personB.retirementBenefitDate) === true){
+          this.presentvalueService.adjustSpousalBenefitDate(this.personA, this.personB, this.scenario)
+          //Also, set childInCareSpousal field to true if applicable
+          //If spousalBenefitDate is after FRA and after youngestchildturns16date, then they must not have had an automatic conversion to regular spousal from child-in-care spousal, which means they weren't on child-in-care spousal at that time (or ever)
+          if (!(this.personA.spousalBenefitDate > this.personA.FRA && this.personA.spousalBenefitDate > this.scenario.youngestChildTurns16date)){
+            this.personA.childInCareSpousal = true
+          }
+        }
+        if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(this.scenario, this.personA.retirementBenefitDate) === true){
+          this.presentvalueService.adjustSpousalBenefitDate(this.personB, this.personA, this.scenario)
+          if (!(this.personB.spousalBenefitDate > this.personB.FRA && this.personB.spousalBenefitDate > this.scenario.youngestChildTurns16date)){
+            this.personB.childInCareSpousal = true
+          }
+        }
+      }
+      if (this.personA.childInCareSpousal === false) {
+      //if we're in a different no-input situation (i.e. if personA won't actually file for a spousal benefit at any time) get the input that makes function run appropriately
+        if (
+          this.personA.declineSpousal === true || //choosing not to file for spousal
+          (this.personA.PIA >= 0.5 * this.personB.PIA && this.personA.actualBirthDate >= this.deemedFilingCutoff) || //can't file for spousal due to new deemed filing and size of PIA
+          (this.personA.PIA >= 0.5 * this.personB.PIA && (this.personA.hasFiled === true || this.personA.isOnDisability === true)) || //can't file for spousal due to size of PIA and because already filed for retirement/disability
+          ( (this.personA.hasFiled === true || this.personA.isOnDisability === true) && (this.personB.hasFiled === true || this.personB.isOnDisability === true) ) //both have already started retirement or disability and therefore have already started spousal so there will be no spousal input
+        )
+          {
+            //If married, personA spousal date is later of retirement dates
+            if (this.scenario.maritalStatus == "married") {
+              if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
+                this.personA.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
+              }
+              else {
+                this.personA.spousalBenefitDate = new MonthYearDate(this.personB.retirementBenefitDate)
+              }
+            }
+            //If divorced, personA spousal date is personA retirementdate
+            else if (this.scenario.maritalStatus == "divorced"){
+              this.personA.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
+            }
+          }
+        else {//i.e., if there are inputs
+          this.personA.spousalBenefitDate = new MonthYearDate(this.customPersonAspousalBenefitYear, this.customPersonAspousalBenefitMonth-1)
+        }
+      }
+    //Ditto for personB
+    if (this.personB.childInCareSpousal === false){
+      //if we're in a different no-input situation (i.e. if personA won't actually file for a spousal benefit at any time) get the input that makes function run appropriately
+      if (
+        this.personB.declineSpousal === true || //choosing not to file for spousal
+        (this.personB.PIA >= 0.5 * this.personA.PIA && this.personB.actualBirthDate >= this.deemedFilingCutoff) || //can't file for spousal due to new deemed filing and size of PIA
+        (this.personB.PIA >= 0.5 * this.personA.PIA && (this.personB.hasFiled === true || this.personB.isOnDisability === true)) || //can't file for spousal due to size of PIA and because already filed for retirement/disability
+        ( (this.personA.hasFiled === true || this.personA.isOnDisability === true) && (this.personB.hasFiled === true || this.personB.isOnDisability === true) ) || //both have already started retirement or disability and therefore have already started spousal so there will be no spousal input
+        this.scenario.maritalStatus == "divorced"
+        )
+        {
+          //personB spousal date is later of retirement dates
+          if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
+            this.personB.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
+          }
+          else {
+            this.personB.spousalBenefitDate = new MonthYearDate(this.personB.retirementBenefitDate)
+          }
+        }
+      else {//i.e., if there are inputs
+        this.personB.spousalBenefitDate = new MonthYearDate(this.customPersonBspousalBenefitYear, this.customPersonBspousalBenefitMonth-1)
+      }
+    }
+    //Call resetHiddenInputs() <-- necessary because right now that is the function that's bound to custom date form's (change) event. And we'll need that event to be bound to this function instead.
+    this.resetHiddenInputs()
+  }
 
 
   waitCursor() {
@@ -401,12 +444,12 @@ export class HomeComponent implements OnInit {
     if (this.scenario.maritalStatus == "divorced" && this.personB.isOnDisability === true){
       this.personB.fixedRetirementBenefitDate = new MonthYearDate()
     }
-    //If "declineSpousal" or "declineSuspension" inputs are checked in custom date form, reset related month/year inputs
-    if (this.personA.declineSpousal === true){
+    //If "declineSpousal" or "declineSuspension" inputs are checked in custom date form, reset related month/year inputs. Similarly, reset spousal inputs to null if person in question would get child-in-care spousal
+    if (this.personA.declineSpousal === true || this.personA.childInCareSpousal === true){
       this.customPersonAspousalBenefitMonth = null
       this.customPersonAspousalBenefitYear = null
     }
-    if (this.personB.declineSpousal === true){
+    if (this.personB.declineSpousal === true || this.personB.childInCareSpousal === true){
       this.customPersonBspousalBenefitMonth = null
       this.customPersonBspousalBenefitYear = null
     }

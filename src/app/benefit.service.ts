@@ -478,7 +478,7 @@ export class BenefitService {
               personA.monthlyRetirementPayment = personA.retirementBenefit
             }
             if( (personA.PIA < 0.5 * personB.PIA || calcYear.date < personA.retirementBenefitDate) && //if personA has PIA less than 50% of personB's PIA or is not yet entitled to a retirement benefit, AND
-              ( calcYear.date >= personA.spousalBenefitDate || (calcYear.date >= personB.retirementBenefitDate && childUnder16orDisabled === true) )){//personA has reached spousalBenefitDate OR personB has started retirement benefit and there is a childUnder16orDisabled
+              ( calcYear.date >= personA.spousalBenefitDate || (calcYear.date >= personB.retirementBenefitDate && childUnder16orDisabled === true && personA.childInCareSpousal === true) )){//personA has reached spousalBenefitDate OR personB has started retirement benefit and there is a childUnder16orDisabled and personA.childInCareSpousal is true
               personA.monthlySpousalPayment = this.calculateSpousalOriginalBenefit(personB)
             }
             //personB
@@ -486,7 +486,7 @@ export class BenefitService {
               personB.monthlyRetirementPayment = personB.retirementBenefit
             }
             if( (personB.PIA < 0.5 * personA.PIA || calcYear.date < personB.retirementBenefitDate) && //if personB has PIA less than 50% of personA's PIA or is not yet entitled to a retirement benefit, AND
-              ( calcYear.date >= personB.spousalBenefitDate || (calcYear.date >= personA.retirementBenefitDate && childUnder16orDisabled === true) )){//personB has reached spousalBenefitDate OR personA has started retirement benefit and there is a childUnder16orDisabled
+              ( calcYear.date >= personB.spousalBenefitDate || (calcYear.date >= personA.retirementBenefitDate && childUnder16orDisabled === true && personB.childInCareSpousal === true) )){//personB has reached spousalBenefitDate OR personA has started retirement benefit and there is a childUnder16orDisabled and personB.childInCareSpousal is true
               personB.monthlySpousalPayment = this.calculateSpousalOriginalBenefit(personA)
             }
             for (let child of scenario.children){

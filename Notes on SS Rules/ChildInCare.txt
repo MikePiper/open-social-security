@@ -6,21 +6,16 @@ SPOUSAL BENEFITS WITH CHILD IN CARE
         *Avoiding reduction for entitlement prior to FRA
         *Qualifying for mother's/father's benefits
 
-
     *No reduction for age if there is a child in care entitled on worker's record (i.e., under 16 or disabled)
     *Can receive spousal benefits prior to 62 if there is a child under 16 or disabled
-    *When spouse reaches 62 (or 62 and 1 month), it DOES NOT trigger deemed retirement filing. (See https://secure.ssa.gov/poms.nsf/lnx/0200204035 B2)
-    *If younger than FRA when child turns 16, spousal benefit is suspended
-        *If spouse is over 62 (or 62 and 1 month) they can file Form SSA-25 electing to continue spousal benefit at reduced rate.
-            *If they elect to continue, reduction calculated based on month in which reduced benefit begins (rather than based on original month of entitlement and ARF'd later)
-            *If they elect to continue, deemed filing for retirement also occurs at that time. (See https://secure.ssa.gov/poms.nsf/lnx/0200204035 B2)
-        *If spouse is not yet 62 (or 62 and 1 month) when child turns 16, they can file Form SSA-25 electing reduced spousal benefits once they DO reach 62 (or 62 and 1 month)
-    *If spouse did not elect via Form SSA-25 to continue receiving spousal benefit, unreduced spousal benefit begins automatically at FRA, I think.
-        *They are still entitled; it has just been suspended.
-        *Suspension is due to SSAct 202(q)(5)(A)
-            ...which says that husband/wife benefits shall never be reduced for age for any month for which there is not a certificate expressly electing reduced benefits.
-        *But that would not be an issue once person reaches FRA.
+    *Deemed filing simply does not apply to child-in-care spousal benefits. A person filing for such benefits is not deemed to have filed for retirement, regardless of their age. (See https://secure.ssa.gov/poms.nsf/lnx/0200204035 B2)
+        *When last child turns 16 (if none are disabled), if person has already reached FRA, they are converted to a normal spousal benefit and normal deemed filing rules (i.e., depending on their DoB) apply at that time.
+        *When last child turns 16 (if none are disabled), if person is younger than FRA, their spousal benefit is suspended until FRA. (Then it automatically begins at FRA and normal deemed filing rules apply at that time.)
+            *Alternatively they can file Form SSA-25 (if they are at least 62 or 62+1 month) to continue receiving spousal benefit, which would now be reduced based on month in which reduced benefit begins.
+                *Deemed filing for retirement would apply at that time.
 
+    *Suspension discussed above is due to SSAct 202(q)(5)(A)
+        ...which says that husband/wife benefits shall never be reduced for age for any month for which there is not a certificate expressly electing reduced benefits.
 
 ASSUMPTION MADE REGARDING SPOUSAL BENEFITS WITH CHILD IN CARE
 *In presentvalue.service.adjustSpousalBenefitDate() (which sets spousalBenefitDate for each person in the maximize functions) spousalBenefitDate represents the date that their non-child-in-care spousal benefit begins (i.e., date they file SSA-25, if applicable or date they reach FRA).
@@ -33,4 +28,5 @@ ASSUMPTION MADE REGARDING SPOUSAL BENEFITS WITH CHILD IN CARE
             *With SSA life expectancies, 2% discount rate seems to be "breakeven" discount rate -- as good to file SSA-25 as to not file it.
         *Not filing SSA-25 is simpler than filing it.
         *Not filing SSA-25 provides slightly more longevity protection.
+
 
