@@ -425,16 +425,18 @@ export class BenefitService {
       personB.monthlySurvivorPayment = 0
       for (let child of scenario.children){child.monthlyChildPayment = 0}
 
-      if (personA.entitledToRetirement === false){
-        if (calcYear.date >= personA.retirementBenefitDate){
-          personA.entitledToRetirement = true
+      //Check whether a person's retirement benefit begins this month
+        if (personA.entitledToRetirement === false){
+          if (calcYear.date >= personA.retirementBenefitDate){
+            personA.entitledToRetirement = true
+          }
         }
-      }
-      if (personB.entitledToRetirement === false){
-        if (calcYear.date >= personB.retirementBenefitDate){
-          personB.entitledToRetirement = true
+        if (personB.entitledToRetirement === false){
+          if (calcYear.date >= personB.retirementBenefitDate){
+            personB.entitledToRetirement = true
+          }
         }
-      }
+
 
     //determine if personA and/or personB are suspended
       let personAsuspended:boolean = false

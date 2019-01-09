@@ -154,8 +154,6 @@ export class PresentValueService {
     personB.spousalARFcreditingMonths = 0
     personA.entitledToRetirement = false
     personB.entitledToRetirement = false
-    personA.spousalReductionPercentage = undefined
-    personB.spousalReductionPercentage = undefined
 
     //Determine whether anybody is suspending benefits at any time in this PV calc
       if (personA.beginSuspensionDate >= this.today){personA.suspendingBenefits = true}

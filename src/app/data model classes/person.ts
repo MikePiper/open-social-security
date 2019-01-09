@@ -23,6 +23,7 @@ export class Person {
     declineSuspension:boolean = false
     entitledToRetirement:boolean //just the results of whether calcYear.date >= person.retirementBenefitDate
 
+
     //Everything below has to get reset or recalculated for each PV calc
         age: number //as in, "age as of current calculation year"
         hasHadGraceYear:boolean = false
@@ -42,7 +43,6 @@ export class Person {
 
     //benefit amount fields. benefit amount just gets overwritten when recalculated
     retirementBenefit:number = 0
-    spousalReductionPercentage:number
     monthlyRetirementPayment:number = 0
     monthlySpousalPayment:number = 0
     monthlySurvivorPayment:number = 0
