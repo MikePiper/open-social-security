@@ -2,7 +2,8 @@ import {MonthYearDate} from "./monthyearDate"
 
 export class CalculationYear {
     //This class is only for things that get reset each year (e.g., months of a benefit)
-    date: MonthYearDate //( Jan 1 of year in question)
+    date: MonthYearDate
+    isInPast:boolean //Gets set in couple PV calc when .date is changed. Used for performance sake so we don't have to repeatedly check whether calcYear.date >= today
     debugTableRow: number[] = []
 
     //PersonA

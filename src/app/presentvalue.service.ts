@@ -194,6 +194,8 @@ export class PresentValueService {
     //Create initial CalculationYear object
         let initialCalcDate:MonthYearDate = this.whenShouldPVcalculationStart(scenario, personA, personB)
         let calcYear:CalculationYear = new CalculationYear(initialCalcDate)
+        if (calcYear.date < this.today){calcYear.isInPast = true}
+        else {calcYear.isInPast = false}
 
     //Find childBenefitDate for any children
     for (let child of scenario.children){
@@ -361,6 +363,8 @@ export class PresentValueService {
       if (calcYear.date.getMonth() == 0){
       calcYear = new CalculationYear(calcYear.date)
       }
+      if (!(calcYear.isInPast === false) && calcYear.date < this.today){calcYear.isInPast = true}//if calcYear.isInPast is already false, no need to check again as date gets incremented forward (using "not false" rather than "is true" because we want it to trigger if it isn't set yet also)
+      else {calcYear.isInPast = false}
     }
     return couplePV
   }
@@ -871,25 +875,25 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
 
 
   addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB:Person, personBaliveBoolean:boolean, printOutputTable:Boolean){
-      //if both parents alive, add monthlyPayment fields to annualBenefitBothAlive
+      //if both spouses alive, add monthlyPayment fields to annualBenefitBothAlive
         if (personAaliveBoolean === true && personBaliveBoolean === true){
-          if (calcYear.date >= this.today || (personA.hasFiled === false && personA.isOnDisability === false) ){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
+          if (calcYear.isInPast === false || (personA.hasFiled === false && personA.isOnDisability === false) ){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
           calcYear.annualBenefitBothAlive = calcYear.annualBenefitBothAlive + personA.monthlyRetirementPayment + personA.monthlySpousalPayment
           }
-          if (calcYear.date >= this.today || (personB.hasFiled === false && personB.isOnDisability === false) ){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
+          if (calcYear.isInPast === false || (personB.hasFiled === false && personB.isOnDisability === false) ){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
             if (scenario.maritalStatus == "married"){//only want to include personB's monthlyPayment fields in PV if married rather than divorced
               calcYear.annualBenefitBothAlive = calcYear.annualBenefitBothAlive + personB.monthlyRetirementPayment + personB.monthlySpousalPayment
             }
           }
           for (let child of scenario.children){
-            if (calcYear.date >= this.today || child.hasFiled === false){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
+            if (calcYear.isInPast === false || child.hasFiled === false){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
               calcYear.annualBenefitBothAlive = calcYear.annualBenefitBothAlive + child.monthlyChildPayment
             }
           }
         }
       //if personA alive and personB deceased, add monthlyPayment fields to annualBenefitOnlyPersonAalive
         if (personAaliveBoolean === true && personBaliveBoolean === false){
-          if (calcYear.date >= this.today){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
+          if (calcYear.isInPast === false){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
             calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive + personA.monthlyRetirementPayment + personA.monthlySurvivorPayment
             for (let child of scenario.children){
               calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive + child.monthlyChildPayment
@@ -898,7 +902,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         }
       //if personA deceased and personB alive, add monthlyPayment fields to annualBenefitOnlyPersonBalive
         if (personAaliveBoolean === false && personBaliveBoolean === true){
-          if (calcYear.date >= this.today){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
+          if (calcYear.isInPast === false){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
             if (scenario.maritalStatus == "married"){//only want to include personB's monthlyPayment fields in PV if married rather than divorced
               calcYear.annualBenefitOnlyPersonBalive = calcYear.annualBenefitOnlyPersonBalive + personB.monthlyRetirementPayment + personB.monthlySurvivorPayment
             }
@@ -909,7 +913,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         }
       //if personA deceased and personB deceased, add monthlyPayment fields to annualBenefitBothDeceased
         if (personAaliveBoolean === false && personBaliveBoolean === false){
-          if (calcYear.date >= this.today){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
+          if (calcYear.isInPast === false){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
             for (let child of scenario.children){
               calcYear.annualBenefitBothDeceased = calcYear.annualBenefitBothDeceased + child.monthlyChildPayment
             }
