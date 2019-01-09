@@ -46,7 +46,15 @@ export class InputValidationService {
       else {
         errorCollection.hasErrors = true
       }
-      console.log("errorCollection: " + errorCollection)
+      if (errorCollection.personAfixedRetirementDateError){console.log(errorCollection.personAfixedRetirementDateError)}
+      if (errorCollection.personBfixedRetirementDateError){console.log(errorCollection.personBfixedRetirementDateError)}
+      if (errorCollection.customPersonAretirementDateError){console.log(errorCollection.customPersonAretirementDateError)}
+      if (errorCollection.customPersonBretirementDateError){console.log(errorCollection.customPersonBretirementDateError)}
+      if (errorCollection.customPersonBspousalDateError){console.log(errorCollection.customPersonBspousalDateError)}
+      if (errorCollection.customPersonAbeginSuspensionDateError){console.log(errorCollection.customPersonAbeginSuspensionDateError)}
+      if (errorCollection.customPersonBbeginSuspensionDateError){console.log(errorCollection.customPersonBbeginSuspensionDateError)}
+      if (errorCollection.customPersonAendSuspensionDateError){console.log(errorCollection.customPersonAendSuspensionDateError)}
+      if (errorCollection.customPersonBendSuspensionDateError){console.log(errorCollection.customPersonBendSuspensionDateError)}
 
     return errorCollection
   }
@@ -97,7 +105,15 @@ export class InputValidationService {
       else {
         errorCollection.hasErrors = true
       }
-      console.log("errorCollection: " + errorCollection)
+      if (errorCollection.personAfixedRetirementDateError){console.log(errorCollection.personAfixedRetirementDateError)}
+      if (errorCollection.personBfixedRetirementDateError){console.log(errorCollection.personBfixedRetirementDateError)}
+      if (errorCollection.customPersonAretirementDateError){console.log(errorCollection.customPersonAretirementDateError)}
+      if (errorCollection.customPersonBretirementDateError){console.log(errorCollection.customPersonBretirementDateError)}
+      if (errorCollection.customPersonBspousalDateError){console.log(errorCollection.customPersonBspousalDateError)}
+      if (errorCollection.customPersonAbeginSuspensionDateError){console.log(errorCollection.customPersonAbeginSuspensionDateError)}
+      if (errorCollection.customPersonBbeginSuspensionDateError){console.log(errorCollection.customPersonBbeginSuspensionDateError)}
+      if (errorCollection.customPersonAendSuspensionDateError){console.log(errorCollection.customPersonAendSuspensionDateError)}
+      if (errorCollection.customPersonBendSuspensionDateError){console.log(errorCollection.customPersonBendSuspensionDateError)}
 
     return errorCollection
   }
@@ -188,7 +204,7 @@ export class InputValidationService {
           else {
             secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
           }
-          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false) {
+          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false && person.childInCareSpousal === false) {
           error = "Per new deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date."
           }
         }
@@ -206,7 +222,7 @@ export class InputValidationService {
           else {//ie., if own retirementBenefitDate comes after other person is 62, or if otherPerson is disabled
             secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
           }
-          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false) {
+          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false && person.childInCareSpousal === false) {
           error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month."
           }
         }
