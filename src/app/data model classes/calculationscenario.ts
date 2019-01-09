@@ -25,6 +25,7 @@ export class CalculationScenario {
         }
             //calculate ages of children
             for (let child of this.children){
+                if (!child.SSbirthDate){child.SSbirthDate = new MonthYearDate(2000, 3)} //This is here just so following line doesn't throw a console error when childinputs.component is initialized for first time. This nonsense date (equal to default for child DoB inputs) will be overridden by the getInputs() function in childinputs component.
                 child.age = (today.getMonth() - child.SSbirthDate.getMonth() + 12 * (today.getFullYear() - child.SSbirthDate.getFullYear()) )/12
             }
 
