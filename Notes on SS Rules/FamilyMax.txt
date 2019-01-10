@@ -57,5 +57,13 @@ https://secure.ssa.gov/poms.nsf/lnx/0300615770
         3041.59 x 1.75 = 5322, which is maximum possible CFM for 2018
     
     
-œ
+WHY NO MORE THAN 6 CHILD INPUTS ALLOWED
+    $5322 was maximum combined family max in 2018
+        What is lowest PIA where we'd hit this? -> 2 people with same PIA
+        PIA of $1492 gets family max of $2662
+        Two people with exactly that PIA would get combined family max of $5322
+        5322/1492 = 3.567 = 357% of PIA
+        100% goes to self, 257% left.
+        Takes 6 kids to hit that limit, if spouse is getting nothing as spousal (which they wouldn't in this case).
+
 

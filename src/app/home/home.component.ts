@@ -37,7 +37,9 @@ export class HomeComponent implements OnInit {
   child2:Person = new Person("2")
   child3:Person = new Person("3")
   child4:Person = new Person("4")
-  childrenObjectsArray:Person[] = [this.child1, this.child2, this.child3, this.child4]
+  child5:Person = new Person("5")
+  child6:Person = new Person("6")
+  childrenObjectsArray:Person[] = [this.child1, this.child2, this.child3, this.child4, this.child5, this.child6]
   scenario:CalculationScenario = new CalculationScenario()
   customDateScenario:CalculationScenario
   errorCollection:ErrorCollection = new ErrorCollection()
