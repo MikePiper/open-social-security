@@ -50,12 +50,16 @@ export class BenefitService {
     //See FamilyMax.txt for more information.
   calculateSurvivorOriginalBenefit(deceasedPerson:Person):number{
     let survivorOriginalBenefit:number
+    //If deceasedPerson.receivesNonCoveredPension === false:
     if (deceasedPerson.retirementBenefit > deceasedPerson.PIA){
       survivorOriginalBenefit = deceasedPerson.retirementBenefit
     }
     else {
       survivorOriginalBenefit = deceasedPerson.PIA
     }
+    //Else:
+      //recalculate deceasedPerson.retirementBenefit (don't actually want to do it here, otherwise we're doing it repeatedly for no reason)
+      //survivorOriginalBenefit is greater of newly calculated retirement benefit or their non-WEP PIA
     return survivorOriginalBenefit
   }
 

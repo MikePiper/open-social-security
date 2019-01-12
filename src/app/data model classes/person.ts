@@ -11,6 +11,7 @@ export class Person {
     initialAge: number //as in, "age on the date they're filling out the form" whereas age/ageRounded/ageLastBirthday are all variables that get changed throughout process as we age the person from one year to the next
     initialAgeRounded: number
     mortalityTable: number[]
+    receivesNonCoveredPension: boolean = false
     governmentPension: number = 0
     quitWorkDate: MonthYearDate = new MonthYearDate (1, 0, 1) //This also gets set as "way in past" via resetHiddenInputs(). This default value is mostly here so tests (which dont call that function) can run.
     monthlyEarnings: number = 0
