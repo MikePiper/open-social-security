@@ -44,10 +44,12 @@ describe('FamilyMaximumService', () => {
     it('calculateFamilyMaximum() should calculate AIME appropriately in scenario with PIA below first bend point', () => {
       service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       let person:Person = new Person("A")
+      person.SSbirthDate = new MonthYearDate(1965, 4)//born May 1965 (so, younger than FRA, such that we still calculate family max based on disability rules)
+      person.FRA = birthdayService.findFRA(person.SSbirthDate)
       person.isOnDisability = true
       person.fixedRetirementBenefitDate = new MonthYearDate(2015, 5, 13)
       person.PIA = 700
-      expect(service.calculateFamilyMaximum(person).AIME)
+      expect(service.calculateFamilyMaximum(person, service.today).AIME)
           .toBeCloseTo(760.25, 1)
       //2017 COLA = 2%. 2016 COLA = 0.3%. 2015 COLA = 0.
       //700 / 1.02 / 1.003 / 1 = 684.22 <- PIAbeforeCOLAs
@@ -58,10 +60,12 @@ describe('FamilyMaximumService', () => {
     it('calculateFamilyMaximum() should calculate AIME appropriately in disability scenario with PIA between first and second bend points', () => {
       service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       let person:Person = new Person("A")
+      person.SSbirthDate = new MonthYearDate(1965, 4)//born May 1965 (so, younger than FRA, such that we still calculate family max based on disability rules)
+      person.FRA = birthdayService.findFRA(person.SSbirthDate)
       person.isOnDisability = true
       person.fixedRetirementBenefitDate = new MonthYearDate(2015, 5, 13)
       person.PIA = 1000
-      expect(service.calculateFamilyMaximum(person).AIME)
+      expect(service.calculateFamilyMaximum(person, service.today).AIME)
           .toBeCloseTo(1557.44, 1)
       //2017 COLA = 2%. 2016 COLA = 0.3%. 2015 COLA = 0.
       //1000 / 1.02 / 1.003 / 1 = 977.46 <- PIAbeforeCOLAs
@@ -73,10 +77,12 @@ describe('FamilyMaximumService', () => {
     it('calculateFamilyMaximum() should calculate AIME appropriately in disability scenario with PIA beyond second bend point', () => {
       service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       let person:Person = new Person("A")
+      person.SSbirthDate = new MonthYearDate(1965, 4)//born May 1965 (so, younger than FRA, such that we still calculate family max based on disability rules)
+      person.FRA = birthdayService.findFRA(person.SSbirthDate)
       person.isOnDisability = true
       person.fixedRetirementBenefitDate = new MonthYearDate(2013, 5, 13)
       person.PIA = 2400
-      expect(service.calculateFamilyMaximum(person).AIME)
+      expect(service.calculateFamilyMaximum(person, service.today).AIME)
           .toBeCloseTo(6688.4, 1)
       //2017 COLA = 2%. 2016 COLA = 0.3%. 2015 COLA = 0. 2014 COLA = 1.7%. 2013 COLA = 1.5%.
       //2400 / 1.02 / 1.003 / 1 / 1.017 / 1.015 = 2272.60 <- PIAbeforeCOLAs
@@ -88,10 +94,12 @@ describe('FamilyMaximumService', () => {
     it('calculateFamilyMaximum() should calculate family maximum appropriately for person on disability', () => {
       service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       let person:Person = new Person("A")
+      person.SSbirthDate = new MonthYearDate(1965, 4)//born May 1965 (so, younger than FRA, such that we still calculate family max based on disability rules)
+      person.FRA = birthdayService.findFRA(person.SSbirthDate)
       person.isOnDisability = true
       person.fixedRetirementBenefitDate = new MonthYearDate(2015, 5, 13)
       person.PIA = 2000
-      expect(service.calculateFamilyMaximum(person).familyMaximum)
+      expect(service.calculateFamilyMaximum(person, service.today).familyMaximum)
           .toBeCloseTo(2977.46, 1)
       //2017 COLA = 2%. 2016 COLA = 0.3%. 2015 COLA = 0.
       //2000 / 1.02 / 1.003 / 1  = 1954.92 <- PIAbeforeCOLAs
@@ -107,7 +115,7 @@ describe('FamilyMaximumService', () => {
       let person:Person = new Person("A")
       person.SSbirthDate = new MonthYearDate(1952, 4, 1)//Person born in May 1952.
       person.PIA = 2000
-      expect(service.calculateFamilyMaximum(person).familyMaximum)
+      expect(service.calculateFamilyMaximum(person, service.today).familyMaximum)
           .toBeCloseTo(3501.24, 1)
       //person reaches 62 in 2014
       //Family max bend points in 2014: 1042,	1505, 1962
@@ -149,7 +157,7 @@ describe('FamilyMaximumService', () => {
         scenario.children = [child1, child2]
         person.PIA = 1000
         person.SSbirthDate = new MonthYearDate(1984, 5)
-        person = service.calculateFamilyMaximum(person)
+        person = service.calculateFamilyMaximum(person, service.today)
         let amountLeftForRestOfFamily = person.familyMaximum - person.PIA
         scenario = service.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamily)
         expect(scenario.children[0].monthlyChildPayment)
@@ -187,8 +195,8 @@ describe('FamilyMaximumService', () => {
       personB.spousalBenefitDate = new MonthYearDate(2018, 8)
       personB.monthlyRetirementPayment = 315 //FRA is 66 and 2 months (so Dec 2021). Filing 39 months early. Gets 78.75% of PIA
       personB.monthlySpousalPayment = 500 //This is the "original benefit" amount.  Gets reduced for age later.
-      personA = service.calculateFamilyMaximum(personA) //Turns 62 in 2017, so bend points are $1,131	$1,633	$2,130. Family max = 150% x 1000 = 1500
-      personB = service.calculateFamilyMaximum(personB) //Turns 62 in 2017, so bend points are $1,131	$1,633	$2,130. Family max = 150% x 400 = 600
+      personA = service.calculateFamilyMaximum(personA, service.today) //Turns 62 in 2017, so bend points are $1,131	$1,633	$2,130. Family max = 150% x 1000 = 1500
+      personB = service.calculateFamilyMaximum(personB, service.today) //Turns 62 in 2017, so bend points are $1,131	$1,633	$2,130. Family max = 150% x 400 = 600
       service.applyFamilyMaximumCouple(1, scenario, calcYear, personA, true, personB, true)
       //Combined family max is $2100. That's $1100 for personB and 2 children, or $366.67 each.
       benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)

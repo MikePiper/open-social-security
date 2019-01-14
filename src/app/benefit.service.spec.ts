@@ -2,7 +2,6 @@ import {TestBed, inject} from '@angular/core/testing'
 import {BenefitService} from './benefit.service'
 import {BirthdayService} from './birthday.service'
 import {Person} from './data model classes/person'
-import {CalculationYear} from './data model classes/calculationyear'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 

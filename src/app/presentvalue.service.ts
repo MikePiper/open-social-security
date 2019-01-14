@@ -406,7 +406,7 @@ export class PresentValueService {
     }
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
-    person = this.familyMaximumService.calculateFamilyMaximum(person)
+    person = this.familyMaximumService.calculateFamilyMaximum(person, this.today)
 
     //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
     let savedPV: number = this.calculateSinglePersonPV(person, scenario, false)
@@ -535,8 +535,8 @@ export class PresentValueService {
     }
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
-    personA = this.familyMaximumService.calculateFamilyMaximum(personA)
-    personB = this.familyMaximumService.calculateFamilyMaximum(personB)
+    personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)
+    personB = this.familyMaximumService.calculateFamilyMaximum(personB, this.today)
 
     while (personA.retirementBenefitDate <= spouseAendTestDate && personA.endSuspensionDate <= spouseAendTestDate) {
         //Reset personB.retirementBenefitDate to earliest possible (i.e., their "age 62 for whole month" month, or today's month if they're currently older than 62, or earliest retroactive date if they're older than FRA)
@@ -684,8 +684,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     }
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
-      flexibleSpouse = this.familyMaximumService.calculateFamilyMaximum(flexibleSpouse)
-      fixedSpouse = this.familyMaximumService.calculateFamilyMaximum(fixedSpouse)
+      flexibleSpouse = this.familyMaximumService.calculateFamilyMaximum(flexibleSpouse, this.today)
+      fixedSpouse = this.familyMaximumService.calculateFamilyMaximum(fixedSpouse, this.today)
 
     while (flexibleSpouse.retirementBenefitDate <= endTestDate && flexibleSpouse.endSuspensionDate <= endTestDate) {
       //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse

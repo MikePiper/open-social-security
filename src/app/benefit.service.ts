@@ -4,12 +4,13 @@ import { CalculationYear } from './data model classes/calculationyear';
 import { CalculationScenario } from './data model classes/calculationscenario';
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import { BirthdayService } from './birthday.service';
+import { FamilyMaximumService } from './familymaximum.service';
 
 
 @Injectable()
 export class BenefitService {
 
-  constructor(private birthdayService: BirthdayService) { }
+  constructor(private birthdayService: BirthdayService, private familyMaximumService: FamilyMaximumService) { }
 
   today: MonthYearDate = new MonthYearDate()
 
@@ -632,17 +633,35 @@ export class BenefitService {
     if (personB.retirementBenefit == 0) {
       personB.retirementBenefit = this.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
     }
-    //Recalculate person's own retirement benefit using adjusted date at FRA. Also set adjustedSpousalBenefitDate field.
-    if (calcYear.date.valueOf() == personA.FRA.valueOf() && personA.retirementBenefitDate < personA.FRA){//Second conditional is because we only want to calculate these things at FRA if person filed prior to FRA. If person hasn't hit retirementBenefitDate yet, we don't want to calculate it yet.
-      personA.adjustedRetirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+personA.retirementARFcreditingMonths)
-      personA.adjustedSpousalBenefitDate.setMonth(personA.adjustedSpousalBenefitDate.getMonth()+personA.spousalARFcreditingMonths)
-      personA.retirementBenefit = this.calculateRetirementBenefit(personA, personA.adjustedRetirementBenefitDate)
+    
+    //At personA's FRA...
+    if (calcYear.date.valueOf() == personA.FRA.valueOf()){
+      //Recalculate person's own retirement benefit using adjusted date at FRA. Also set adjustedSpousalBenefitDate field.
+      if (personA.retirementBenefitDate < personA.FRA){//This conditional is because we only want to calculate these things at FRA if person filed prior to FRA. If person hasn't hit retirementBenefitDate yet, we don't want to calculate it yet.
+        personA.adjustedRetirementBenefitDate.setMonth(personA.retirementBenefitDate.getMonth()+personA.retirementARFcreditingMonths)
+        personA.adjustedSpousalBenefitDate.setMonth(personA.adjustedSpousalBenefitDate.getMonth()+personA.spousalARFcreditingMonths)
+        personA.retirementBenefit = this.calculateRetirementBenefit(personA, personA.adjustedRetirementBenefitDate)
+      }
+      //If personA is disabled, recalculate family maximum using normal retirement family maximum rules rather than disability ("DMAX") rules. (See https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615742)
+      if (personA.isOnDisability === true){
+        this.familyMaximumService.calculateFamilyMaximum(personA, calcYear.date)
+      }
     }
-    if (calcYear.date.valueOf() == personB.FRA.valueOf() && personB.retirementBenefitDate < personB.FRA){//Second conditional is because we only want to calculate these things at FRA if person filed prior to FRA. If person hasn't hit retirementBenefitDate yet, we don't want to calculate it yet.
-      personB.adjustedRetirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+personB.retirementARFcreditingMonths)
-      personB.adjustedSpousalBenefitDate.setMonth(personB.adjustedSpousalBenefitDate.getMonth()+personB.spousalARFcreditingMonths)
-      personB.retirementBenefit = this.calculateRetirementBenefit(personB, personB.adjustedRetirementBenefitDate)
+    //At personB's FRA...
+    if (calcYear.date.valueOf() == personB.FRA.valueOf()){
+      //Recalculate person's own retirement benefit using adjusted date at FRA. Also set adjustedSpousalBenefitDate field.
+      if (personB.retirementBenefitDate < personB.FRA){//Second conditional is because we only want to calculate these things at FRA if person filed prior to FRA. If person hasn't hit retirementBenefitDate yet, we don't want to calculate it yet.
+        personB.adjustedRetirementBenefitDate.setMonth(personB.retirementBenefitDate.getMonth()+personB.retirementARFcreditingMonths)
+        personB.adjustedSpousalBenefitDate.setMonth(personB.adjustedSpousalBenefitDate.getMonth()+personB.spousalARFcreditingMonths)
+        personB.retirementBenefit = this.calculateRetirementBenefit(personB, personB.adjustedRetirementBenefitDate)
+      }
+      //If personB is disabled, recalculate family maximum using normal retirement family maximum rules rather than disability ("DMAX") rules. (See https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615742)
+      if (personB.isOnDisability === true){
+        this.familyMaximumService.calculateFamilyMaximum(personB, calcYear.date)
+      }
     }
+
+
     //Recalculate retirement benefit using DRCs at endSuspensionDate\
     if (calcYear.date.valueOf() == personA.endSuspensionDate.valueOf()){
       personA.retirementBenefit = this.calculateRetirementBenefit(personA, personA.adjustedRetirementBenefitDate)

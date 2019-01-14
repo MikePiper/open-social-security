@@ -105,7 +105,7 @@ describe('test calculateSinglePersonPV', () => {
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        person = familyMaximumService.calculateFamilyMaximum(person)
+        person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false))
           .toBeCloseTo(265512, 0)
       })
@@ -125,7 +125,7 @@ describe('test calculateSinglePersonPV', () => {
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        person = familyMaximumService.calculateFamilyMaximum(person)
+        person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false))
           .toBeCloseTo(323555, 0)
       })
@@ -147,7 +147,7 @@ describe('test calculateSinglePersonPV', () => {
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        person = familyMaximumService.calculateFamilyMaximum(person)
+        person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false))
           .toBeCloseTo(323555, 0)
       })
@@ -173,7 +173,7 @@ describe('test calculateSinglePersonPV', () => {
         person.monthlyEarnings = 3000
         scenario.discountRate = 1 //1% discount rate
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        person = familyMaximumService.calculateFamilyMaximum(person)
+        person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false))
           .toBeCloseTo(376859, 0)
       })
@@ -880,8 +880,8 @@ describe('tests calculateCouplePV', () => {
         personA.initialAgeRounded = Math.round(personA.initialAge)
         personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
         personB.initialAgeRounded = Math.round(personB.initialAge)
-        personA = familyMaximumService.calculateFamilyMaximum(personA)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-        personB = familyMaximumService.calculateFamilyMaximum(personB)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+        personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+        personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
         expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(429232, 0)
         //manual calculation
           //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
@@ -939,8 +939,8 @@ describe('tests calculateCouplePV', () => {
         personA.initialAgeRounded = Math.round(personA.initialAge)
         personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
         personB.initialAgeRounded = Math.round(personB.initialAge)
-        personA = familyMaximumService.calculateFamilyMaximum(personA)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-        personB = familyMaximumService.calculateFamilyMaximum(personB)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+        personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+        personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
         expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(389651, 0)
         //manual calculation:
           //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
@@ -1004,8 +1004,8 @@ describe('tests calculateCouplePV', () => {
           personA.initialAgeRounded = Math.round(personA.initialAge)
           personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
           personB.initialAgeRounded = Math.round(personB.initialAge)
-          personA = familyMaximumService.calculateFamilyMaximum(personA)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          personB = familyMaximumService.calculateFamilyMaximum(personB)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           expect(service.calculateCouplePV(personA, personB, scenario, true))
             .toBeCloseTo(491618, 0)
           //manual calculation:
@@ -1078,8 +1078,8 @@ describe('tests calculateCouplePV', () => {
           personA.initialAgeRounded = Math.round(personA.initialAge)
           personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
           personB.initialAgeRounded = Math.round(personB.initialAge)
-          personA = familyMaximumService.calculateFamilyMaximum(personA)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          personB = familyMaximumService.calculateFamilyMaximum(personB)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(464341, 0)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
@@ -1134,8 +1134,8 @@ describe('tests calculateCouplePV', () => {
           personA.initialAgeRounded = Math.round(personA.initialAge)
           personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
           personB.initialAgeRounded = Math.round(personB.initialAge)
-          personA = familyMaximumService.calculateFamilyMaximum(personA)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          personB = familyMaximumService.calculateFamilyMaximum(personB)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(452034, 0)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
@@ -1204,8 +1204,8 @@ describe('tests calculateCouplePV', () => {
           personA.initialAgeRounded = Math.round(personA.initialAge)
           personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
           personB.initialAgeRounded = Math.round(personB.initialAge)
-          personA = familyMaximumService.calculateFamilyMaximum(personA)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          personB = familyMaximumService.calculateFamilyMaximum(personB)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           service.calculateCouplePV(personA, personB, scenario, true)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)

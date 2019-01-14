@@ -17,8 +17,8 @@ export class FamilyMaximumService {
 
 
   //calculates family maximum on one person's work record
-  calculateFamilyMaximum(person:Person):Person{
-    if (person.isOnDisability === true){
+  calculateFamilyMaximum(person:Person, calculationDate:MonthYearDate):Person{
+    if (person.isOnDisability === true && calculationDate < person.FRA){//If person is disabled and benefit has not yet converted to a retirement benefit at FRA...
       /* https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615742
       family maximum is lesser of:
       85% of the AIME (but not less than the PIA before COLAs), or
