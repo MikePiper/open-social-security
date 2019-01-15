@@ -693,6 +693,134 @@ describe('tests calculateCouplePV', () => {
     })
 
       //tests for calculateCouplePV() that don't focus on ending PV
+      it('should calculate personB spousal benefit as zero when own PIA is too high', () => {
+        scenario.maritalStatus = "married"
+        scenario.discountRate = 1
+        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
+        personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
+        personA.SSbirthDate = new MonthYearDate(1963, 2)
+        personB.SSbirthDate = new MonthYearDate (1963, 7)
+        personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2030
+        personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //August 2030
+        personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+        personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+        personA.PIA = 1000
+        personB.PIA = 1500
+        personA.retirementBenefitDate = new MonthYearDate(2033, 2) //March 2033, age 70
+        personB.retirementBenefitDate = new MonthYearDate(2025, 7) //August 2025 (age 62, 5 years before FRA)
+        personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
+        personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
+        service.calculateCouplePV(personA, personB, scenario, true)
+        expect(scenario.outputTable[8][0]).toEqual(2033)
+        expect(scenario.outputTable[8][5]).toEqual("$0")
+        expect(scenario.outputTable[9][0]).toEqual("2034 and beyond")
+        expect(scenario.outputTable[9][5]).toEqual("$0")
+      })
+    
+      it('should calculate spousal benefit appropriately prior to FRA', () => {
+        scenario.maritalStatus = "married"
+        scenario.discountRate = 1
+        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
+        personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
+        personA.SSbirthDate = new MonthYearDate(1963, 2)
+        personB.SSbirthDate = new MonthYearDate (1963, 7)
+        personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2030
+        personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //August 2030
+        personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+        personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+        personA.PIA = 1500
+        personB.PIA = 500
+        personA.retirementBenefitDate = new MonthYearDate(2026, 2) //March 2026
+        personB.retirementBenefitDate = new MonthYearDate(2027, 7) //August 2027 (age 64, 3 years before FRA) Own retirement benefit will be $400
+        personA.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
+        personB.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
+        service.calculateCouplePV(personA, personB, scenario, true)
+        expect(scenario.outputTable[2][0]).toEqual(2028)
+        expect(scenario.outputTable[2][5]).toEqual("$2,250")
+        //Original spousal benefit = 750. Reduced for own entitlement = 250. Multiplied by 0.75 for being 3 years early = 187.50. 187.5 x 12 = 2250
+      })
+    
+      it('should calculate spousal benefit appropriately prior to FRA, when reduced by GPO', () => {
+        scenario.maritalStatus = "married"
+        scenario.discountRate = 1
+        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
+        personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
+        personA.SSbirthDate = new MonthYearDate(1963, 2)
+        personB.SSbirthDate = new MonthYearDate (1963, 7)
+        personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2030
+        personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //August 2030
+        personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+        personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+        personA.PIA = 1500
+        personB.PIA = 500
+        personA.retirementBenefitDate = new MonthYearDate(2026, 2) //March 2026
+        personB.retirementBenefitDate = new MonthYearDate(2027, 7) //August 2027 (age 64, 3 years before FRA) Own retirement benefit will be $400
+        personA.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
+        personB.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
+        personB.governmentPension = 150
+        service.calculateCouplePV(personA, personB, scenario, true)
+        expect(scenario.outputTable[2][0]).toEqual(2028)
+        expect(scenario.outputTable[2][5]).toEqual("$1,050")
+        //same as prior, minus 2/3 of $150 monthly gov pension = $87.50 spousal per month
+      })
+    
+      it('should calculate spousal benefit appropriately prior to FRA, when reduced to zero by GPO', () => {
+        scenario.maritalStatus = "married"
+        scenario.discountRate = 1
+        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
+        personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
+        personA.SSbirthDate = new MonthYearDate(1963, 2)
+        personB.SSbirthDate = new MonthYearDate (1963, 7)
+        personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2030
+        personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //August 2030
+        personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+        personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+        personA.PIA = 1500
+        personB.PIA = 500
+        personA.retirementBenefitDate = new MonthYearDate(2026, 2) //March 2026
+        personB.retirementBenefitDate = new MonthYearDate(2027, 7) //August 2027 (age 64, 3 years before FRA) Own retirement benefit will be $400
+        personA.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
+        personB.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
+        personB.governmentPension = 1000
+        service.calculateCouplePV(personA, personB, scenario, true)
+        expect(scenario.outputTable[2][0]).toEqual(2028)
+        expect(scenario.outputTable[2][5]).toEqual("$0")
+      })
+    
+      it('should calculate spousal benefit appropriately after FRA', () => {
+        scenario.maritalStatus = "married"
+        scenario.discountRate = 1
+        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
+        personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
+        personA.SSbirthDate = new MonthYearDate(1963, 2)
+        personB.SSbirthDate = new MonthYearDate (1963, 7)
+        personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2030
+        personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //August 2030
+        personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+        personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+        personA.PIA = 2000
+        personB.PIA = 800
+        personA.retirementBenefitDate = new MonthYearDate(2031, 7) //Aug 2031
+        personB.retirementBenefitDate = new MonthYearDate(2031, 7) //Aug 2031 (one year after FRA, retirement benefit will be $864)
+        personA.spousalBenefitDate = new MonthYearDate(2031, 7) //later of two retirementBenefitDates
+        personB.spousalBenefitDate = new MonthYearDate(2031, 7) //later of two retirementBenefitDates
+        service.calculateCouplePV(personA, personB, scenario, true)
+        expect(scenario.outputTable[1][0]).toEqual(2032)
+        expect(scenario.outputTable[1][5]).toEqual("$1,632")
+        //Original spousal benefit = 1000. Reduced by own entitlement (864) = 136. No reduction for age. 136 x 12 = 1632
+      })
+
+
       it('should calculate personB survivor benefit appropriately, when claimed after FRA with own smaller retirement benefit. Deceased personA filed at age 70', () => {
         scenario.maritalStatus = "married"
         scenario.discountRate = 1

@@ -197,10 +197,6 @@ export class SolutionSetService {
           }
 
         //personA spousal stuff
-          let personAsavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(personA, personB, personAsavedRetirementBenefit, personA.spousalBenefitDate)
-            if (personAsavedSpousalBenefit == 0 && personA.spousalBenefitDate < personA.retirementBenefitDate){//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
-              personAsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(personA, personB, 0, personA.spousalBenefitDate)
-            }
           let personAsavedSpousalAge: number = this.birthdayService.findAgeOnDate(personA, personA.spousalBenefitDate)
           let personAsavedSpousalAgeYears: number = Math.floor(personAsavedSpousalAge)
           let personAsavedSpousalAgeMonths: number = Math.round((personAsavedSpousalAge%1)*12)
@@ -236,10 +232,6 @@ export class SolutionSetService {
             
 
         //personB spousal stuff
-          let personBsavedSpousalBenefit: number = this.benefitService.calculateSpousalBenefit(personB, personA, personBsavedRetirementBenefit, personB.spousalBenefitDate)
-          if (personBsavedSpousalBenefit == 0 && personB.spousalBenefitDate < personB.retirementBenefitDate) {//In case of restricted application, recalculate spousal benefit with zero as retirement benefit amount
-            personBsavedSpousalBenefit = this.benefitService.calculateSpousalBenefit(personB, personA, 0, personB.spousalBenefitDate)
-          }
           let personBsavedSpousalAge: number = this.birthdayService.findAgeOnDate(personB, personB.spousalBenefitDate)
           let personBsavedSpousalAgeYears: number = Math.floor(personBsavedSpousalAge)
           let personBsavedSpousalAgeMonths: number = Math.round((personBsavedSpousalAge%1)*12)
@@ -317,34 +309,44 @@ export class SolutionSetService {
               }
             }
 
-            //personA spousal-related solution(s). We don't want a spousal solution if (A is older than 70 or A has filed) AND (B is over 70, B has filed, or B is on disability)
-            //Also don't want regular spousal solution object if there are child-in-care spousal solutions
-            if (personAchildInCareSpousalSuspensionSolution) {solutionSet.solutionsArray.push(personAchildInCareSpousalSuspensionSolution)}
-            if (personAautomaticSpousalUnsuspensionSolution) {solutionSet.solutionsArray.push(personAautomaticSpousalUnsuspensionSolution)}
-            if (personAchildInCareSpousalSolution) {solutionSet.solutionsArray.push(personAchildInCareSpousalSolution)}
-            else {
-              if ( (personA.initialAge >= 70 || personA.hasFiled === true) && (personB.initialAge >= 70 || personB.hasFiled === true || personB.isOnDisability === true) ) {
-                //no spousal solution for personA
-              } else{
-                if (personAsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(personAspousalSolution)}
-              }
-            }
-
-            //personB spousal solution. We don't want a spousal solution if (B is older than 70 or B has filed) AND (A is over 70, A has filed, or A is on disability). Also, not if divorce scenario
-            //Also don't want regular spousal solution object if there are child-in-care spousal solutions
-            if (scenario.maritalStatus == "married"){
-              if (personBchildInCareSpousalSuspensionSolution) {solutionSet.solutionsArray.push(personBchildInCareSpousalSuspensionSolution)}
-              if (personBautomaticSpousalUnsuspensionSolution) {solutionSet.solutionsArray.push(personBautomaticSpousalUnsuspensionSolution)}
-              if (personBchildInCareSpousalSolution) {solutionSet.solutionsArray.push(personBchildInCareSpousalSolution)}
+            //personA spousal-related solution(s)
+              //We don't want regular spousal solution object if there are child-in-care spousal solutions
+              if (personAchildInCareSpousalSuspensionSolution) {solutionSet.solutionsArray.push(personAchildInCareSpousalSuspensionSolution)}
+              if (personAautomaticSpousalUnsuspensionSolution) {solutionSet.solutionsArray.push(personAautomaticSpousalUnsuspensionSolution)}
+              if (personAchildInCareSpousalSolution) {solutionSet.solutionsArray.push(personAchildInCareSpousalSolution)}
               else {
-                if ( (personB.initialAge >= 70 || personB.hasFiled === true) && (personA.initialAge >= 70 || personA.hasFiled === true || personA.isOnDisability === true)  ) {
-                  //no spousal solution for personB
+                //We also don't want a spousal solution if (A is older than 70 or A has filed) AND (B is over 70, B has filed, or B is on disability) -- because in that case we know they've already filed for spousal, if applicable
+                if ( (personA.initialAge >= 70 || personA.hasFiled === true) && (personB.initialAge >= 70 || personB.hasFiled === true || personB.isOnDisability === true) ) {
+                  //no spousal solution for personA
                 }
                 else {
-                  if (personBsavedSpousalBenefit > 0) {solutionSet.solutionsArray.push(personBspousalSolution)}
+                  //If personA will get spousal because their PIA is less than 50% of other PIA or because of restricted application, push regular spousal solution
+                  if (personA.PIA < 0.5 * personB.PIA || personA.spousalBenefitDate < personA.retirementBenefitDate) {
+                    solutionSet.solutionsArray.push(personAspousalSolution)
+                  }
                 }
               }
-            }
+
+            //personB spousal-related solution(s)
+              //We don't want personB solutions in divorce scenario
+              if (scenario.maritalStatus == "married"){
+                //We don't want regular spousal solution object if there are child-in-care spousal solutions
+                if (personBchildInCareSpousalSuspensionSolution) {solutionSet.solutionsArray.push(personBchildInCareSpousalSuspensionSolution)}
+                if (personBautomaticSpousalUnsuspensionSolution) {solutionSet.solutionsArray.push(personBautomaticSpousalUnsuspensionSolution)}
+                if (personBchildInCareSpousalSolution) {solutionSet.solutionsArray.push(personBchildInCareSpousalSolution)}
+                else {
+                  //We also don't want a spousal solution if (B is older than 70 or B has filed) AND (A is over 70, A has filed, or A is on disability)  -- because in that case we know they've already filed for spousal, if applicable
+                  if ( (personB.initialAge >= 70 || personB.hasFiled === true) && (personA.initialAge >= 70 || personA.hasFiled === true || personA.isOnDisability === true)  ) {
+                    //no spousal solution for personB
+                  }
+                  else {
+                    //If personB will get spousal because their PIA is less than 50% of other PIA or because of restricted application, push regular spousal solution
+                    if (personB.PIA < 0.5 * personA.PIA || personB.spousalBenefitDate < personB.retirementBenefitDate) {
+                      solutionSet.solutionsArray.push(personBspousalSolution)
+                    }
+                  }
+                }
+              }
 
 
         //Child Benefit Solution

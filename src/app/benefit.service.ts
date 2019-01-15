@@ -161,44 +161,6 @@ export class BenefitService {
     if (personB.monthlySurvivorPayment < 0) {personB.monthlySurvivorPayment = 0}
   }
 
-  
-  //This function is now only used in solutionset.service
-  calculateSpousalBenefit(person:Person, otherPerson:Person, retirementBenefit: number, spousalStartDate: MonthYearDate)
-  {
-    //Initial calculation
-    let spousalBenefit = otherPerson.PIA / 2
-
-    //subtract greater of PIA or retirement benefit, but no more than spousal benefit. No subtraction if retirement benefit is zero (i.e., if not yet filed for retirement benefit)
-      if (retirementBenefit > 0 && retirementBenefit >= person.PIA) {
-        spousalBenefit = spousalBenefit - retirementBenefit
-        }
-      else if (retirementBenefit > 0 && retirementBenefit < person.PIA) {
-        spousalBenefit = spousalBenefit - person.PIA
-      }
-
-    //Multiply by a reduction factor if spousal benefit claimed prior to FRA
-    let monthsWaited = spousalStartDate.getMonth() - person.FRA.getMonth() + 12 * (spousalStartDate.getFullYear() - person.FRA.getFullYear())
-    if (monthsWaited >= -36 && monthsWaited < 0)
-    {spousalBenefit = spousalBenefit + (spousalBenefit * 25/36/100 * monthsWaited)}
-    if (monthsWaited < -36)
-    {spousalBenefit = spousalBenefit - (spousalBenefit * 25/36/100 * 36) + (spousalBenefit * 5/12/100 * (monthsWaited+36))}
-
-    //GPO: reduce by 2/3 of government pension
-    spousalBenefit = spousalBenefit - 2/3 * person.governmentPension
-
-    //If GPO or reduction for own retirementBenefit/PIA reduced spousalBenefit below zero, spousalBenefit is zero.
-    if (spousalBenefit < 0) {
-      spousalBenefit = 0
-    }
-
-    //If otherPerson has a family max (ie if they're married) make sure spousal benefit doesn't cause family max to be exceeded
-    if (otherPerson.familyMaximum && spousalBenefit > otherPerson.familyMaximum - otherPerson.PIA){
-      spousalBenefit = otherPerson.familyMaximum - otherPerson.PIA
-    }
-
-    return Number(spousalBenefit)
-  }
-
   determineChildBenefitDate(scenario:CalculationScenario, child:Person, personA:Person, personB?:Person):MonthYearDate{
     let childBenefitDate:MonthYearDate
     if (scenario.maritalStatus == "single"){
