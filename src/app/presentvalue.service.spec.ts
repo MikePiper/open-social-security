@@ -693,6 +693,54 @@ describe('tests calculateCouplePV', () => {
     })
 
       //tests for calculateCouplePV() that don't focus on ending PV
+      it('should calculate personB survivor benefit appropriately, when claimed after FRA with own smaller retirement benefit. Deceased personA filed at age 70', () => {
+        scenario.maritalStatus = "married"
+        scenario.discountRate = 1
+        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
+        personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
+        personA.SSbirthDate = new MonthYearDate(1963, 2)
+        personB.SSbirthDate = new MonthYearDate (1963, 7)
+        personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2030
+        personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //August 2030
+        personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+        personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+        personA.PIA = 1000
+        personB.PIA = 1000
+        personA.retirementBenefitDate = new MonthYearDate(2033, 2) //March 2033, age 70
+        personB.retirementBenefitDate = new MonthYearDate(2025, 7) //August 2025 (age 62, 5 years before FRA)
+        personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
+        personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
+        service.calculateCouplePV(personA, personB, scenario, true)
+        expect(scenario.outputTable[11][0]).toEqual("If your spouse outlives you")
+        expect(scenario.outputTable[11][6]).toEqual("$6,480") //deceased filed at 70 with FRA of 67. Benefit would have been 1240. Minus survivor's own 700 retirement benefit, gives 540 survivor benefit. 12 x 540 = 6480
+      })
+  
+      it('should calculate personB survivor benefit appropriately as zero with own larger retirement benefit. Deceased personA filed at age 70', () => {
+        scenario.maritalStatus = "married"
+        scenario.discountRate = 1
+        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
+        personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
+        personA.SSbirthDate = new MonthYearDate(1963, 2)
+        personB.SSbirthDate = new MonthYearDate (1963, 7)
+        personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2030
+        personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //August 2030
+        personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+        personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+        personA.PIA = 1000
+        personB.PIA = 1500
+        personA.retirementBenefitDate = new MonthYearDate(2033, 2) //March 2033, age 70
+        personB.retirementBenefitDate = new MonthYearDate(personB.FRA) //Files at FRA of Aug 2030
+        personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
+        personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
+        service.calculateCouplePV(personA, personB, scenario, true)
+        expect(scenario.outputTable[6][0]).toEqual("If your spouse outlives you")
+        expect(scenario.outputTable[6][6]).toEqual("$0") //deceased filed at 70 with FRA of 67. Benefit would have been 1240. Minus survivor's own 1500 retirement benefit, gives zero survivor benefit
+      })
+
       it('should appropriately reflect personB spousal benefit being partially withheld based on personA excess earnings', () => {
         service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         personA.actualBirthDate = new Date(1956, 5, 10) //born June 1956
