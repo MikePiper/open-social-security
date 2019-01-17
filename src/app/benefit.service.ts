@@ -36,6 +36,11 @@ export class BenefitService {
     else {//If person filed before FRA, DRCs via suspension are applied to reduced benefit amount
       retirementBenefit = retirementBenefit + (retirementBenefit * (2/3/100) * person.DRCsViaSuspension)
     }
+    
+    //Any time this function is called, if person is receiving pension from noncovered employment, also recalculate their nonWEPretirementBenefit
+    if (person.receivesNonCoveredPension === true){
+      person.nonWEPretirementBenefit = retirementBenefit / person.PIA * person.nonWEP_PIA
+    }
 
     return Number(retirementBenefit)
   }
@@ -51,16 +56,23 @@ export class BenefitService {
     //See FamilyMax.txt for more information.
   calculateSurvivorOriginalBenefit(deceasedPerson:Person):number{
     let survivorOriginalBenefit:number
-    //If deceasedPerson.receivesNonCoveredPension === false:
-    if (deceasedPerson.retirementBenefit > deceasedPerson.PIA){
-      survivorOriginalBenefit = deceasedPerson.retirementBenefit
+    if (deceasedPerson.receivesNonCoveredPension === false) {
+      if (deceasedPerson.retirementBenefit > deceasedPerson.PIA){
+        survivorOriginalBenefit = deceasedPerson.retirementBenefit
+      }
+      else {
+        survivorOriginalBenefit = deceasedPerson.PIA
+      }
     }
-    else {
-      survivorOriginalBenefit = deceasedPerson.PIA
+    else {//if deceased person was subject to WEP, we have to calculate survivor benefits using non-WEP PIA (and non-WEP retirement benefit, which is based on non-WEP PIA)
+      if (deceasedPerson.nonWEPretirementBenefit > deceasedPerson.nonWEP_PIA){
+        survivorOriginalBenefit = deceasedPerson.nonWEPretirementBenefit
+      }
+      else {
+        survivorOriginalBenefit = deceasedPerson.nonWEP_PIA
+      }
     }
-    //Else:
-      //recalculate deceasedPerson.retirementBenefit (don't actually want to do it here, otherwise we're doing it repeatedly for no reason)
-      //survivorOriginalBenefit is greater of newly calculated retirement benefit or their non-WEP PIA
+
     return survivorOriginalBenefit
   }
 
@@ -105,11 +117,21 @@ export class BenefitService {
   adjustSurvivorBenefitsForRIB_LIM(livingPerson:Person, deceasedPerson:Person){
     //Determine whether RIB-LIM limit is 82.5% of deceased's PIA or amount deceased was receiving
       let RIB_LIMlimit:number = 0
-      if (deceasedPerson.retirementBenefit > 0.825 * deceasedPerson.PIA){
-        RIB_LIMlimit = deceasedPerson.retirementBenefit
+      if (deceasedPerson.receivesNonCoveredPension === false){
+        if (deceasedPerson.retirementBenefit > 0.825 * deceasedPerson.PIA){
+          RIB_LIMlimit = deceasedPerson.retirementBenefit
+        }
+        else {
+          RIB_LIMlimit = 0.825 * deceasedPerson.PIA
+        }
       }
-      else {
-        RIB_LIMlimit = 0.825 * deceasedPerson.PIA
+      else {//Use non-WEP PIA and retirement benefit if deceased person was subject to WEP during life.
+        if (deceasedPerson.nonWEPretirementBenefit > 0.825 * deceasedPerson.nonWEP_PIA){
+          RIB_LIMlimit = deceasedPerson.nonWEPretirementBenefit
+        }
+        else {
+          RIB_LIMlimit = 0.825 * deceasedPerson.nonWEP_PIA
+        }
       }
     //Limit sum of survivor's monthlySurvivorPayment and monthlyRetirementPayment to RIB-LIM limit
       if (livingPerson.monthlySurvivorPayment + livingPerson.monthlyRetirementPayment > RIB_LIMlimit){
@@ -304,7 +326,12 @@ export class BenefitService {
     else {//if we're assuming person is deceased
       for (let child of scenario.children){
         if (child.age < 17.99 || child.isOnDisability === true){//Use 17.99 as the cutoff because sometimes when child is actually 18 javascript value will be 17.9999999
-          child.monthlyChildPayment = person.PIA * 0.75
+          if (person.receivesNonCoveredPension === false){
+            child.monthlyChildPayment = person.PIA * 0.75
+          }
+          else {
+            child.monthlyChildPayment = person.nonWEP_PIA * 0.75
+          }
         }
       }
     }
@@ -428,7 +455,12 @@ export class BenefitService {
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                    child.monthlyChildPayment = personB.PIA * 0.75//No need to do any check based on personB dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                    if (personB.receivesNonCoveredPension === false){
+                      child.monthlyChildPayment = personB.PIA * 0.75//No need to do any check based on personB dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                    }
+                    else {
+                      child.monthlyChildPayment = personB.nonWEP_PIA * 0.75
+                    }
                   }
                 }
               }
@@ -445,10 +477,20 @@ export class BenefitService {
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
                     if (personA.entitledToRetirement === true){
-                      child.monthlyChildPayment = (personA.PIA * 0.5 > personB.PIA * 0.75) ? personA.PIA * 0.5 : personB.PIA * 0.75
+                      if (personB.receivesNonCoveredPension === false){
+                        child.monthlyChildPayment = (personA.PIA * 0.5 > personB.PIA * 0.75) ? personA.PIA * 0.5 : personB.PIA * 0.75
+                      }
+                      else {
+                        child.monthlyChildPayment = (personA.PIA * 0.5 > personB.nonWEP_PIA * 0.75) ? personA.PIA * 0.5 : personB.nonWEP_PIA * 0.75
+                      }
                     }
                     else {
-                      child.monthlyChildPayment = personB.PIA * 0.75//No need to do any check based on personB dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                      if (personB.receivesNonCoveredPension === false){
+                        child.monthlyChildPayment = personB.PIA * 0.75//No need to do any check based on personB dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                      }
+                      else {
+                        child.monthlyChildPayment = personB.nonWEP_PIA
+                      }
                     }
                   }
                 }
@@ -462,7 +504,12 @@ export class BenefitService {
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                    child.monthlyChildPayment = personA.PIA * 0.75//No need to do any check based on personA dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                    if (personA.receivesNonCoveredPension === false){
+                      child.monthlyChildPayment = personA.PIA * 0.75//No need to do any check based on personA dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                    }
+                    else {
+                      child.monthlyChildPayment = personA.nonWEP_PIA * 0.75
+                    }
                   }
                 }
               }
@@ -479,10 +526,20 @@ export class BenefitService {
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                   if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
                     if (personB.entitledToRetirement === true){
-                      child.monthlyChildPayment = (personA.PIA * 0.75 > personB.PIA * 0.5) ? personA.PIA * 0.75 : personB.PIA * 0.5
+                      if (personA.receivesNonCoveredPension === false){
+                        child.monthlyChildPayment = (personA.PIA * 0.75 > personB.PIA * 0.5) ? personA.PIA * 0.75 : personB.PIA * 0.5
+                      }
+                      else {
+                        child.monthlyChildPayment = (personA.nonWEP_PIA * 0.75 > personB.PIA * 0.5) ? personA.nonWEP_PIA * 0.75 : personB.PIA * 0.5
+                      }
                     }
                     else {
-                      child.monthlyChildPayment = personA.PIA * 0.75//No need to do any check based on personA dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                      if (personA.receivesNonCoveredPension === false){
+                        child.monthlyChildPayment = personA.PIA * 0.75//No need to do any check based on personA dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
+                      }
+                      else {
+                        child.monthlyChildPayment = personA.nonWEP_PIA * 0.75
+                      }
                     }
                   }
                 }
@@ -494,7 +551,18 @@ export class BenefitService {
           for (let child of scenario.children){
             if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
               if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                child.monthlyChildPayment = (personA.PIA > personB.PIA) ? personA.PIA * 0.75 : personB.PIA * 0.75
+                if (personA.receivesNonCoveredPension === false && personB.receivesNonCoveredPension === false){
+                  child.monthlyChildPayment = (personA.PIA > personB.PIA) ? personA.PIA * 0.75 : personB.PIA * 0.75
+                }
+                else if (personA.receivesNonCoveredPension === true && personB.receivesNonCoveredPension === false){
+                  child.monthlyChildPayment = (personA.nonWEP_PIA > personB.PIA) ? personA.nonWEP_PIA * 0.75 : personB.PIA * 0.75
+                }
+                else if (personA.receivesNonCoveredPension === false && personB.receivesNonCoveredPension === true){
+                  child.monthlyChildPayment = (personA.PIA > personB.nonWEP_PIA) ? personA.PIA * 0.75 : personB.nonWEP_PIA * 0.75
+                }
+                else {
+                  child.monthlyChildPayment = (personA.nonWEP_PIA > personB.nonWEP_PIA) ? personA.nonWEP_PIA * 0.75 : personB.nonWEP_PIA * 0.75
+                }
                 //No need to do any check based on parent dates. If we're assuming they're deceased, children are eligible (assuming <18 or disabled)
               }
             }
@@ -526,7 +594,7 @@ export class BenefitService {
     if (personB.retirementBenefit == 0) {
       personB.retirementBenefit = this.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
     }
-    
+
     //At personA's FRA...
     if (calcYear.date.valueOf() == personA.FRA.valueOf()){
       //Recalculate person's own retirement benefit using adjusted date at FRA. Also set adjustedSpousalBenefitDate field.
