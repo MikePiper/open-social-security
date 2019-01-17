@@ -4,7 +4,7 @@
         <label for="advanced">Advanced Options</label>
         <input type="checkbox" [(ngModel)]="advanced" id="advanced" name="advanced" value="true">
       </div>
-        <h2>Your Information</h2>
+        <h1>Your Information</h1>
 
         <!--Martital Status Inputs -->
         <div class="form-inline">
@@ -140,15 +140,40 @@
             </p>
         <!--End personA Mortality Inputs -->
 
-        <div *ngIf="scenario.maritalStatus != 'single' && this.advanced === true">
-          <label for="personAgovernmentPension">Monthly government pension (from non-covered employment)</label>
-          <input type="number" [(ngModel)]="personA.governmentPension" id="personAgovernmentPension" name="personA.governmentPension">
+        <!--personA Non-covered Pension Inputs -->
+        <div *ngIf="this.advanced === true && (scenario.maritalStatus != 'single' || scenario.children.length > 0)">
+          <label for="personAnonCoveredPensionYes">Do you receive (or will you receive) a pension from employment that was not covered by Social Security taxes?</label>
+          <input type="radio" id="personAnonCoveredPensionYes" [(ngModel)]="personA.receivesNonCoveredPension" name="personA.receivesNonCoveredPension" [value]="true">
+          <label for="personAnonCoveredPensionYes">Yes</label>
+          <input type="radio" id="personAnonCoveredPensionNo" [(ngModel)]="personA.receivesNonCoveredPension" name="personA.receivesNonCoveredPension" [value]="false">
+          <label for="personAnonCoveredPensionNo">No</label>
+          <div *ngIf="personA.receivesNonCoveredPension === true">
+            <span *ngIf="scenario.maritalStatus != 'single'">
+              <label for="personAgovernmentPension">Monthly government pension (from non-covered employment)</label>
+              <input type="number" [(ngModel)]="personA.governmentPension" name="personA.governmentPension" id="personAgovernmentPension" #personAgovernmentPension="ngModel" required pattern="[0-9]{1,7}">
+              <span *ngIf="personAgovernmentPension.invalid" class="alert alert-danger">digits only, please</span>
+            </span>
+            <div>
+              <label>Survivor Benefit PIA</label>
+              <input type="number" [(ngModel)]="personA.nonWEP_PIA" name="personA.nonWEP_PIA" id="personAnonWEP_PIA" #personAnonWEP_PIA="ngModel" required pattern="[0-9]{1,7}">
+              <span *ngIf="personAnonWEP_PIA.invalid" class="alert alert-danger">digits only, please</span>
+              <p class="inputexplanation">
+                If you are affected by the Windfall Elimination Provision (WEP), please enter your WEP-affected PIA in the "PIA" field above. Here, in the field for "Survivor Benefit PIA," please enter
+                your PIA <em>without</em> the affect of the WEP. This allows the calculator to account for the fact that, when calculating survivor benefits for your surviving spouse (or children), your PIA
+                is not reduced by the WEP. The SSA can calculate these amounts for you over the phone, or you can calculate them yourself with
+                the SSA's <a href="https://www.ssa.gov/planners/retire/anyPiaWepjs04.html" target="_blank">Online Calculator (WEP Version)</a>
+                or the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> offline calculator.
+              </p>
+            </div>
+          </div>
         </div>    
+        <!--End personA Non-covered Pension Inputs -->
+
 
       <span *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">
 
-        <h2 *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Information</h2>
-        <h2 *ngIf="scenario.maritalStatus == 'divorced'">Your Ex-spouse's Information</h2>
+        <h1 *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Information</h1>
+        <h1 *ngIf="scenario.maritalStatus == 'divorced'">Your Ex-spouse's Information</h1>
         <div class="form-inline">
         <label>Gender</label>
         <select [(ngModel)]="personBgender" name="personBgender" class="form-control">
@@ -260,15 +285,40 @@
           </span>
         <!--End personB Mortality Inputs -->
 
+        <!--personB Non-covered Pension Inputs -->
         <div *ngIf="this.advanced === true && scenario.maritalStatus == 'married'">
-            <label for="personBgovernmentPension">Monthly government pension (from non-covered employment)</label>
-            <input type="number" [(ngModel)]="personB.governmentPension" id="personBgovernmentPension" name="personB.governmentPension">
-        </div>
+            <label for="personBnonCoveredPensionYes">Does your spouse receive (or will he/she receive) a pension from employment that was not covered by Social Security taxes?</label>
+            <input type="radio" id="personBnonCoveredPensionYes" [(ngModel)]="personB.receivesNonCoveredPension" name="personB.receivesNonCoveredPension" [value]="true">
+            <label for="personBnonCoveredPensionYes">Yes</label>
+            <input type="radio" id="personBnonCoveredPensionNo" [(ngModel)]="personB.receivesNonCoveredPension" name="personB.receivesNonCoveredPension" [value]="false">
+            <label for="personBnonCoveredPensionNo">No</label>
+            <div *ngIf="personB.receivesNonCoveredPension === true">
+              <label for="personBgovernmentPension">Monthly government pension (from non-covered employment)</label>
+              <input type="number" [(ngModel)]="personB.governmentPension" name="personB.governmentPension" id="personBgovernmentPension" #personBgovernmentPension="ngModel" required pattern="[0-9]{1,7}">
+              <span *ngIf="personBgovernmentPension.invalid" class="alert alert-danger">digits only, please</span>
+              <div>
+                <label>Survivor Benefit PIA</label>
+                <input type="number" [(ngModel)]="personB.nonWEP_PIA" name="personB.nonWEP_PIA" id="personBnonWEP_PIA" #personBnonWEP_PIA="ngModel" required pattern="[0-9]{1,7}">
+                <span *ngIf="personBnonWEP_PIA.invalid" class="alert alert-danger">digits only, please</span>
+                <p class="inputexplanation">
+                  If your spouse is affected by the Windfall Elimination Provision (WEP), please enter his/her WEP-affected PIA in the "PIA" field above. Here, in the field for "Survivor Benefit PIA," please enter
+                  his/her PIA <em>without</em> the affect of the WEP. This allows the calculator to account for the fact that, when calculating survivor benefits on your spouse's work record
+                  (i.e., survivor benefits for you or your children if applicable) you spouse's PIA is not reduced by the WEP.
+                  The SSA can calculate these amounts for you over the phone, or you can calculate them yourself with
+                  the SSA's <a href="https://www.ssa.gov/planners/retire/anyPiaWepjs04.html" target="_blank">Online Calculator (WEP Version)</a>
+                  or the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> offline calculator.
+                </p>
+              </div>
+            </div>
+          </div>    
+          <!--End personB Non-covered Pension Inputs -->
+
+
       </span>
 
         <!--Begin Child Inputs -->
         <span *ngIf="this.advanced">
-            <h2>Children</h2>
+            <h1>Children</h1>
             <label>Do you have any children who are under age 19 or permanently disabled?</label>
             <input type="radio" id="childrenYes" [(ngModel)]="qualifyingChildrenBoolean" name="qualifyingChildrenBoolean" [value]="true">
             <label for="childrenYes">Yes</label>
@@ -297,7 +347,7 @@
 
         <!--Begin "Other Inputs" such as discount rate and benefit cut assumptions -->
         <div *ngIf="this.advanced === true">
-            <h2>Other Inputs</h2>
+            <h1>Other Inputs</h1>
             <label>Real discount rate</label>
             <input type="text" [(ngModel)]="scenario.discountRate" name="scenario.discountRate" class="smallTextInput" required>%
             <p class="inputexplanation">

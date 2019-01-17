@@ -446,6 +446,20 @@ export class HomeComponent implements OnInit {
     if (this.scenario.maritalStatus == "divorced" && this.personB.isOnDisability === true){
       this.personB.fixedRetirementBenefitDate = new MonthYearDate()
     }
+
+    // Reset values related to government pension if not receiving a government pension
+    if (this.personA.receivesNonCoveredPension === false) {
+      this.personA.governmentPension = 0
+      this.personA.nonWEP_PIA = 0
+    }
+    // otherwise, these personA fields set by the form 
+
+    if (this.personB.receivesNonCoveredPension === false) {
+      this.personB.governmentPension = 0
+      this.personB.nonWEP_PIA = 0
+    }
+    // otherwise, these personB fields set by the form 
+
     //If "declineSpousal" or "declineSuspension" inputs are checked in custom date form, reset related month/year inputs. Similarly, reset spousal inputs to null if person in question would get child-in-care spousal
     if (this.personA.declineSpousal === true || this.personA.childInCareSpousal === true){
       this.customPersonAspousalBenefitMonth = null
