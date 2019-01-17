@@ -13,6 +13,8 @@ export class Person {
     mortalityTable: number[]
     receivesNonCoveredPension: boolean = false
     governmentPension: number = 0
+    nonWEP_PIA: number = 0 //This is the PIA *without* WEP, used for calculating survivor benefits on this person's work record.
+    nonWEPretirementBenefit:number //The person will never actually receive this. It is what their retirement benefit WOULD have been without WEP. Calculated for use in determining survivor benefits on their work record.
     quitWorkDate: MonthYearDate = new MonthYearDate (1, 0, 1) //This also gets set as "way in past" via resetHiddenInputs(). This default value is mostly here so tests (which dont call that function) can run.
     monthlyEarnings: number = 0
     hasFiled:boolean = false
