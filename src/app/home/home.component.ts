@@ -325,14 +325,14 @@ export class HomeComponent implements OnInit {
         if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(this.scenario, this.personB.retirementBenefitDate) === true){
           this.presentvalueService.adjustSpousalBenefitDate(this.personA, this.personB, this.scenario)
           //Also, set childInCareSpousal field to true if applicable
-          //If spousalBenefitDate is after FRA and after youngestchildturns16date, then they must not have had an automatic conversion to regular spousal from child-in-care spousal, which means they weren't on child-in-care spousal at that time (or ever)
-          if (!(this.personA.spousalBenefitDate > this.personA.FRA && this.personA.spousalBenefitDate > this.scenario.youngestChildTurns16date)){
+          //If there is no disabled child, and spousalBenefitDate is after FRA and after youngestchildturns16date, then there must not have been an automatic conversion (to regular spousal from child-in-care spousal) which means they weren't on child-in-care spousal
+          if (!(this.personA.spousalBenefitDate > this.personA.FRA && this.personA.spousalBenefitDate > this.scenario.youngestChildTurns16date && this.scenario.disabledChild === false)){
             this.personA.childInCareSpousal = true
           }
         }
         if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(this.scenario, this.personA.retirementBenefitDate) === true){
           this.presentvalueService.adjustSpousalBenefitDate(this.personB, this.personA, this.scenario)
-          if (!(this.personB.spousalBenefitDate > this.personB.FRA && this.personB.spousalBenefitDate > this.scenario.youngestChildTurns16date)){
+          if (!(this.personB.spousalBenefitDate > this.personB.FRA && this.personB.spousalBenefitDate > this.scenario.youngestChildTurns16date && this.scenario.disabledChild === false)){
             this.personB.childInCareSpousal = true
           }
         }

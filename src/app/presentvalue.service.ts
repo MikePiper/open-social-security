@@ -176,14 +176,14 @@ export class PresentValueService {
           personA.childInCareSpousal = false
           personB.childInCareSpousal = false
           if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, personB.retirementBenefitDate) === true){
-            //If spousalBenefitDate is after FRA and after youngestchildturns16date, then they must not have had an automatic conversion to regular spousal from child-in-care spousal, which means they weren't on child-in-care spousal at that time (or ever)
-            if (!(personA.spousalBenefitDate > personA.FRA && personA.spousalBenefitDate > scenario.youngestChildTurns16date)){
+            //If there is no disabled child, and spousalBenefitDate is after FRA and after youngestchildturns16date, then automatic conversion (to regular spousal from child-in-care spousal) must not have occurred, which means they weren't on child-in-care spousal
+            if (!(personA.spousalBenefitDate > personA.FRA && personA.spousalBenefitDate > scenario.youngestChildTurns16date && scenario.disabledChild === false)){
               personA.childInCareSpousal = true
             }
           }
           if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, personA.retirementBenefitDate) === true){
-            //If spousalBenefitDate is after FRA and after youngestchildturns16date, then they must not have had an automatic conversion to regular spousal from child-in-care spousal, which means they weren't on child-in-care spousal at that time (or ever)
-            if (!(personB.spousalBenefitDate > personB.FRA && personB.spousalBenefitDate > scenario.youngestChildTurns16date)){
+            //If there is no disabled child, and spousalBenefitDate is after FRA and after youngestchildturns16date, then automatic conversion (to regular spousal from child-in-care spousal) must not have occurred, which means they weren't on child-in-care spousal
+            if (!(personB.spousalBenefitDate > personB.FRA && personB.spousalBenefitDate > scenario.youngestChildTurns16date && scenario.disabledChild === false)){
               personB.childInCareSpousal = true
             }
           }
