@@ -364,6 +364,7 @@ export class PresentValueService {
       if (!(calcYear.isInPast === false) && calcYear.date < this.today){calcYear.isInPast = true}//if calcYear.isInPast is already false, no need to check again as date gets incremented forward (using "not false" rather than "is true" because we want it to trigger if it isn't set yet also)
       else {calcYear.isInPast = false}
     }
+
     return couplePV
   }
 
@@ -453,15 +454,13 @@ export class PresentValueService {
     //If personA is currently over age 62 when filling out form, adjust their initial retirementBenefitDate to today's month/year instead of their age 62 month/year.
     let spouseAageToday: number = this.today.getFullYear() - personA.SSbirthDate.getFullYear() + (this.today.getMonth() - personA.SSbirthDate.getMonth()) /12
     if (spouseAageToday > 62){
-      personA.retirementBenefitDate.setMonth(this.today.getMonth())
-      personA.retirementBenefitDate.setFullYear(this.today.getFullYear())
+      personA.retirementBenefitDate = new MonthYearDate(this.today)
     }
-    //If personA is currently beyond FRA when filling out form, set testClaimingDate to earliest retroactive date (6 months ago but no earlier than FRA)
+    //If personA is currently beyond FRA when filling out form, set their initial retirementBenefitDate to earliest retroactive date (6 months ago but no earlier than FRA)
     if (this.today > personA.FRA){
       personA.retirementBenefitDate.setMonth(this.today.getMonth()-6)
       if (personA.retirementBenefitDate < personA.FRA){
-        personA.retirementBenefitDate.setMonth(personA.FRA.getMonth())
-        personA.retirementBenefitDate.setFullYear(personA.FRA.getFullYear())
+        personA.retirementBenefitDate = new MonthYearDate(personA.FRA)
       }
     }
 
@@ -472,22 +471,20 @@ export class PresentValueService {
     }
     let spouseBageToday: number = this.today.getFullYear() - personB.SSbirthDate.getFullYear() + (this.today.getMonth() - personB.SSbirthDate.getMonth()) /12
     if (spouseBageToday > 62){
-      personB.retirementBenefitDate.setMonth(this.today.getMonth())
-      personB.retirementBenefitDate.setFullYear(this.today.getFullYear())
+      personB.retirementBenefitDate = new MonthYearDate(this.today)
     }
     if (this.today > personB.FRA){
       personB.retirementBenefitDate.setMonth(this.today.getMonth()-6)
       if (personB.retirementBenefitDate < personB.FRA){
-        personB.retirementBenefitDate.setMonth(personB.FRA.getMonth())
-        personB.retirementBenefitDate.setFullYear(personB.FRA.getFullYear())
+        personB.retirementBenefitDate = new MonthYearDate(personB.FRA)
       }
     }
 
     //If either person has already filed or is on disability, initialize that person's begin&end suspension date as their FRA (but no earlier than this month), and set that person's retirementBenefitDate using fixedRetirementBenefitDate field 
     if (personA.isOnDisability === true || personA.hasFiled === true) {
       if (this.today > personA.FRA){
-        personA.beginSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth(), 1)
-        personA.endSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth(), 1)
+        personA.beginSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth())
+        personA.endSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth())
       }
       else {
         personA.beginSuspensionDate = new MonthYearDate(personA.FRA)
@@ -497,8 +494,8 @@ export class PresentValueService {
     }
     if (personB.isOnDisability === true || personB.hasFiled === true) {
       if (this.today > personB.FRA){
-        personB.beginSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth(), 1)
-        personB.endSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth(), 1)
+        personB.beginSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth())
+        personB.endSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth())
       }
       else {
         personB.beginSuspensionDate = new MonthYearDate(personB.FRA)
@@ -523,15 +520,15 @@ export class PresentValueService {
       let personBsavedEndSuspensionDate = new MonthYearDate(personB.endSuspensionDate)
 
     //Set endingTestDate for each spouse equal to the month they turn 70. Or if using fixed-death-age-assumption younger than 70, set to assumed month of death
-    let spouseAendTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth(), 1)
-    let spouseBendTestDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+70, personB.SSbirthDate.getMonth(), 1)
+    let spouseAendTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth())
+    let spouseBendTestDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+70, personB.SSbirthDate.getMonth())
     if (personA.mortalityTable[70] == 0) {
       let deceasedByAge:number = personA.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69. But we want last possible filing date suggested to be 68, so we subtract 1 in following line.
-      spouseAendTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+deceasedByAge-1, personA.SSbirthDate.getMonth(), 1)
+      spouseAendTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+deceasedByAge-1, personA.SSbirthDate.getMonth())
     }
     if (personB.mortalityTable[70] == 0) {
       let deceasedByAge:number = personB.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69
-      spouseBendTestDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+deceasedByAge-1, personB.SSbirthDate.getMonth(), 1)
+      spouseBendTestDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+deceasedByAge-1, personB.SSbirthDate.getMonth())
     }
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
@@ -541,8 +538,7 @@ export class PresentValueService {
     while (personA.retirementBenefitDate <= spouseAendTestDate && personA.endSuspensionDate <= spouseAendTestDate) {
         //Reset personB.retirementBenefitDate to earliest possible (i.e., their "age 62 for whole month" month, or today's month if they're currently older than 62, or earliest retroactive date if they're older than FRA)
         if (spouseBageToday > 62){
-          personB.retirementBenefitDate.setMonth(this.today.getMonth())
-          personB.retirementBenefitDate.setFullYear(this.today.getFullYear())
+          personB.retirementBenefitDate = new MonthYearDate(this.today)
         }
         else {
           personB.retirementBenefitDate = new MonthYearDate(personB.actualBirthDate.getFullYear()+62, personB.actualBirthDate.getMonth())
@@ -553,16 +549,15 @@ export class PresentValueService {
         if (this.today > personB.FRA){
           personB.retirementBenefitDate.setMonth(this.today.getMonth()-6)
           if (personB.retirementBenefitDate < personB.FRA){
-            personB.retirementBenefitDate.setMonth(personB.FRA.getMonth())
-            personB.retirementBenefitDate.setFullYear(personB.FRA.getFullYear())
+            personB.retirementBenefitDate = new MonthYearDate(personB.FRA)
           }
         }
 
         //If personB is disabled or already filed, reset suspension begin/end dates, and set retirementBenefitDate using fixedRetirementBenefitDate field
           if (personB.isOnDisability === true || personB.hasFiled === true) {
             if (this.today > personB.FRA){
-              personB.beginSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth(), 1)
-              personB.endSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth(), 1)
+              personB.beginSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth())
+              personB.endSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth())
             }
             else {
               personB.beginSuspensionDate = new MonthYearDate(personB.FRA)
@@ -571,13 +566,14 @@ export class PresentValueService {
             personB.retirementBenefitDate = new MonthYearDate(personB.fixedRetirementBenefitDate)
           }
 
-        //After personB's retirement testdate has been reset, reset spousal dates as necessary for personA and personB
+        //After personB's retirementBenefitDate has been reset, reset spousal dates as necessary for personA and personB
           personA = this.adjustSpousalBenefitDate(personA, personB, scenario)
           personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
 
         while (personB.retirementBenefitDate <= spouseBendTestDate && personB.endSuspensionDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
             let currentTestPV: number = this.calculateCouplePV(personA, personB, scenario, false)
+
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTestPV >= savedPV) {
               savedPV = currentTestPV
@@ -653,8 +649,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     //If flexibleSpouse has already filed or is on disability, initialize their begin&end suspension date as their FRA (but no earlier than this month). And set retirementBenefitDate to fixedRetirementBenefitDate
     if (flexibleSpouse.isOnDisability === true || flexibleSpouse.hasFiled === true) {
       if (this.today > flexibleSpouse.FRA){
-        flexibleSpouse.beginSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth(), 1)
-        flexibleSpouse.endSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth(), 1)
+        flexibleSpouse.beginSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth())
+        flexibleSpouse.endSuspensionDate = new MonthYearDate(this.today.getFullYear(), this.today.getMonth())
       }
       else {
         flexibleSpouse.beginSuspensionDate = new MonthYearDate(flexibleSpouse.FRA)
@@ -677,10 +673,10 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     let fixedSpouseSavedSpousalDate: MonthYearDate = new MonthYearDate(fixedSpouse.spousalBenefitDate)
 
     //Set endTestDate equal to the month flexibleSpouse turns 70. Or, if flexible spouse chose a fixed-death-age assumption younger than age 70, set ending test date to that fixed death age.
-    let endTestDate = new MonthYearDate(flexibleSpouse.SSbirthDate.getFullYear()+70, flexibleSpouse.SSbirthDate.getMonth(), 1)
+    let endTestDate = new MonthYearDate(flexibleSpouse.SSbirthDate.getFullYear()+70, flexibleSpouse.SSbirthDate.getMonth())
     if (flexibleSpouse.mortalityTable[70] == 0) {
       let deceasedByAge:number = flexibleSpouse.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69. But we want last possible filing date suggested to be 68, so we subtract 1 in following line.
-      endTestDate = new MonthYearDate(flexibleSpouse.SSbirthDate.getFullYear()+deceasedByAge-1, flexibleSpouse.SSbirthDate.getMonth(), 1)
+      endTestDate = new MonthYearDate(flexibleSpouse.SSbirthDate.getFullYear()+deceasedByAge-1, flexibleSpouse.SSbirthDate.getMonth())
     }
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
