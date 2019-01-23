@@ -20,16 +20,15 @@ export class MonthYearDate {
             this.year = today.getFullYear()
             this.month = today.getMonth()
         }
-        else if (!isNaN(param1) && !isNaN(param2))//there is at least one parameter (due to prior check) and params 1 and 2 are numbers
-        {
+        else if (!isNaN(param1) && !isNaN(param2)){//there is at least one parameter (due to prior check) and params 1 and 2 are numbers
+            this.year = Number(param1)
+            this.month = Number(param2)
             if (param1 % 1 != 0 || param1 < 0){
                 this.year = undefined
             }
             if (param2 % 1 != 0 || param2 < 0 || param2 > 11 ){
                 this.month = undefined
             }
-            this.year = param1
-            this.month = param2
         }
         else if (typeof param1 == "object"){//param1 and param2 aren't numbers.
             this.year = param1.getFullYear()
@@ -51,20 +50,27 @@ export class MonthYearDate {
         if (year % 1 != 0 || year < 0){
             throw new Error("Invalid year for monthYearDate object")
         }
-        this.year = year
+        else {
+            this.year = year
+        }
     }
 
     setMonth(month:number){
         if (month % 1 != 0){
             throw new Error("Invalid month for monthYearDate object")
         }
-        if (month >= 0 && month <= 11){
+        else if (month >= 0 && month <= 11){
             this.month = month
         }
         else if (month < 0){
             var subtractedYears:number = Math.floor(month/12)
             this.year = Number(this.year) + Number(subtractedYears)
-            this.month = (month % 12) + 12
+            if (month % 12 == 0){
+                this.month = 0
+            }
+            else {
+                this.month = (month % 12) + 12 //Have to add 12 to get back to a positive figure. For example if we're using -4 or -16 as month paramter, we want this.month to be 8
+            }
         }
         else if (month > 11) {
             var addedYears:number = Math.floor(month/12)
