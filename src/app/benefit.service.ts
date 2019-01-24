@@ -579,6 +579,10 @@ export class BenefitService {
     if (calcYear.date.valueOf() == person.FRA.valueOf()){
       person.adjustedRetirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+person.retirementARFcreditingMonths)
       person.retirementBenefit = this.calculateRetirementBenefit(person, person.adjustedRetirementBenefitDate)
+      //If person is disabled, recalculate family maximum using normal retirement family maximum rules rather than disability ("DMAX") rules. (See https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615742)
+      if (person.isOnDisability === true){
+        this.familyMaximumService.calculateFamilyMaximum(person, calcYear.date)
+      }
     }
     if (calcYear.date.valueOf() == person.endSuspensionDate.valueOf()){
       person.retirementBenefit = this.calculateRetirementBenefit(person, person.adjustedRetirementBenefitDate)

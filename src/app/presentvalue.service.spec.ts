@@ -425,7 +425,7 @@ describe('tests calculateCouplePV', () => {
       personA.spousalBenefitDate = new MonthYearDate (2030, 3) //Later of two retirement benefit dates
       personB.spousalBenefitDate = new MonthYearDate (2030, 3) //Later of two retirement benefit dates
       scenario.discountRate = 1
-      expect(service.calculateCouplePV(personA, personB, scenario, true))
+      expect(service.calculateCouplePV(personA, personB, scenario, false))
         .toBeCloseTo(353854, 0)//$353,854 is PV for those dates from current live version of site
       //no spousal for anybody.
       //Survivor beginning at 66 and 8 months (Dec 2026)
@@ -630,7 +630,7 @@ describe('tests calculateCouplePV', () => {
       personA.spousalBenefitDate = new MonthYearDate (2040, 0) //Later of two retirement benefit dates
       personB.spousalBenefitDate = new MonthYearDate (2040, 0) //Later of two retirement benefit dates
       scenario.discountRate = 1
-      expect(service.calculateCouplePV(personA, personB, scenario, true))
+      expect(service.calculateCouplePV(personA, personB, scenario, false))
         .toBeCloseTo(712879, 0)//Went year-by-year checking benefit amounts. They're good. There is a question of how to calculate PV though (i.e., to what point do we discount everything. See todo.txt)
     })
 
@@ -660,7 +660,7 @@ describe('tests calculateCouplePV', () => {
       personA.spousalBenefitDate = new MonthYearDate (2018, 6) //Later of two retirement benefit dates
       personB.spousalBenefitDate = new MonthYearDate (2018, 6) //Later of two retirement benefit dates
       scenario.discountRate = 1
-      expect(service.calculateCouplePV(personA, personB, scenario, true))
+      expect(service.calculateCouplePV(personA, personB, scenario, false))
         .toBeCloseTo(445800, 0)
     })
 
@@ -688,7 +688,7 @@ describe('tests calculateCouplePV', () => {
       personA.spousalBenefitDate = new MonthYearDate (2017, 11) //Later of two retirement benefit dates
       personB.spousalBenefitDate = new MonthYearDate (2017, 11) //Later of two retirement benefit dates
       scenario.discountRate = 1
-      expect(service.calculateCouplePV(personA, personB, scenario, true))
+      expect(service.calculateCouplePV(personA, personB, scenario, false))
         .toBeCloseTo(389682, 0)
     })
 

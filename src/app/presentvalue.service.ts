@@ -29,6 +29,8 @@ export class PresentValueService {
       person.DRCsViaSuspension = 0
       person.retirementARFcreditingMonths = 0
       scenario.outputTable = []
+      //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
+      if (person.isOnDisability === true){person = this.familyMaximumService.calculateFamilyMaximum(person, this.today)}
 
     //calculate initial retirement benefit
       person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
@@ -154,6 +156,9 @@ export class PresentValueService {
     personB.spousalARFcreditingMonths = 0
     personA.entitledToRetirement = false
     personB.entitledToRetirement = false
+    //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
+      if (personA.isOnDisability === true){personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)}
+      if (personB.isOnDisability === true){personB = this.familyMaximumService.calculateFamilyMaximum(personB, this.today)}
 
     //Determine whether anybody is suspending benefits at any time in this PV calc
       if (personA.beginSuspensionDate >= this.today){personA.suspendingBenefits = true}
