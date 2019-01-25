@@ -9,6 +9,7 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import {FamilyMaximumService} from './familymaximum.service'
+import { SolutionSet } from './data model classes/solutionset';
 
 
 
@@ -1280,6 +1281,45 @@ describe('tests calculateCouplePV', () => {
             expect(scenario.outputTable[11]).toEqual(["After both you and your spouse are deceased", "$0", "$0", "$0", "$0", "$0", "$0", "$0", "$0"])//after both parents deceased
         })
 
+        // fit('Should solve bug from Dionnes email', () => {
+        //   service.today = new MonthYearDate(2019, 0) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+        //   familyMaximumService.today = new MonthYearDate(2019, 0) //Ditto
+        //   scenario.maritalStatus = "married"
+        //   scenario.discountRate = 1
+        //   scenario.numberOfChildren = 2
+        //   let child1:Person = new Person("1")
+        //   let child2:Person = new Person("2")
+        //   child1.SSbirthDate = new MonthYearDate(2007, 4)
+        //   child2.SSbirthDate = new MonthYearDate(2010, 0)
+        //   scenario.setChildrenArray([child1, child2], service.today)
+        //   personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        //   personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        //   personA.PIA = 2239
+        //   personB.PIA = 2700
+        //   personA.actualBirthDate = new Date (1955, 11, 15)
+        //   personB.actualBirthDate = new Date (1970, 6, 15)
+        //   personA.SSbirthDate = new MonthYearDate(1955, 11)
+        //   personB.SSbirthDate = new MonthYearDate(1970, 6)
+        //   personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+        //   personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+        //   personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
+        //   personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+        //   personA.retirementBenefitDate = new MonthYearDate(2019, 0)
+        //   personB.retirementBenefitDate = new MonthYearDate(2040, 6)
+        //   personA.spousalBenefitDate = new MonthYearDate(2040, 6)
+        //   personB.spousalBenefitDate = new MonthYearDate(2040, 6)
+        //   personA.initialAge = birthdayService.findAgeOnDate(personA, service.today)
+        //   personA.initialAgeRounded = Math.round(personA.initialAge)
+        //   personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
+        //   personB.initialAgeRounded = Math.round(personB.initialAge)
+        //   personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+        //   personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+        //   expect(service.calculateCouplePV(personA, personB, scenario, true)).toEqual(99999)
+        //   console.log(child1)
+        //   console.log(child2)
+        //   console.log(scenario.outputTable)
+        // })
+
         it("Should calculate everybody's benefits appropriately in pre-62 scenario with child in care (before child 16, after child 16)", () => {
           service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
           familyMaximumService.today = new MonthYearDate(2018, 11) //Ditto
@@ -1312,7 +1352,7 @@ describe('tests calculateCouplePV', () => {
           personB.initialAgeRounded = Math.round(personB.initialAge)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(464341, 0)
+          expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(464335, 0)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900
@@ -1368,7 +1408,7 @@ describe('tests calculateCouplePV', () => {
           personB.initialAgeRounded = Math.round(personB.initialAge)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(452034, 0)
+          expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(452055, 0)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900

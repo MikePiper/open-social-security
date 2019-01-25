@@ -149,16 +149,16 @@ export class FamilyMaximumService {
       let entitledChild:boolean = this.birthdayService.checkForChildUnder18orDisabled(scenario)
       let childUnder16orDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabled(scenario)
 
-      //Find out who is entitled as aux beneficiaries
+      //Find out whether to use personA's family max, personB's family or, or combined family max
         if (personA.monthlySpousalPayment > 0 || personA.monthlySurvivorPayment > 0 //if personA is entitled on personB's record...
-          || (entitledChild === true && calcYear.date > personB.retirementBenefitDate)){ //or if there is a child entitled on personB but not on personA...
+          || (entitledChild === true && personB.entitledToRetirement === true)){ //or if there is a child entitled on personB but not on personA...
           familyMaximum = personB.familyMaximum
         }
         if (personB.monthlySpousalPayment > 0 || personB.monthlySurvivorPayment > 0 //if personB is entitled on personA's record...
-          || (entitledChild === true && calcYear.date > personA.retirementBenefitDate)){ //or if there is a child entitled on personA but not on personB...
+          || (entitledChild === true && personA.entitledToRetirement === true)){ //or if there is a child entitled on personA but not on personB...
           familyMaximum = personA.familyMaximum
         }
-        if(calcYear.date >= personA.retirementBenefitDate && calcYear.date >= personB.retirementBenefitDate && entitledChild === true){//if there is a child entitled on both personA and personB
+        if(personA.entitledToRetirement === true && personB.entitledToRetirement === true && entitledChild === true){//if there is a child entitled on both personA and personB
           if (personA.retirementBenefitDate > this.today && personB.retirementBenefitDate > this.today){//if both retirementBenefitDates are in the future, use this year as simultaneous entitlement year (becuase we don't know future year's bend points)
             familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, this.today.getFullYear())
           }
@@ -193,6 +193,8 @@ export class FamilyMaximumService {
             && (personB.PIA < 0.5 * personA.PIA || calcYear.date < personB.retirementBenefitDate)){//i.e., personB is entitled on personA's record in both-alive scenario
         familyMaxForAuxBeneficiaries = familyMaxForAuxBeneficiaries - personA.PIA
         }
+        //Don't let "amount left for rest of family" be less than zero
+        if (familyMaxForAuxBeneficiaries < 0) {familyMaxForAuxBeneficiaries = 0}
       //First run of family max exists only to adjust benefits downward. Second run exists only to adjust benefits upward (after reducing some people's aux benefits for own entitlement).
         if (sumOfAuxBenefits == 0){
           //no need to do anything, since nobody is getting aux benefits anyway, even before family max adjustment. Need this here though so that we can avoid "divide by zero" below.
