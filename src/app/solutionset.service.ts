@@ -405,11 +405,13 @@ export class SolutionSetService {
             }
             solutionSet.solutionsArray.push(childBenefitSolution)
             //Do we need a second child benefit solution? (i.e., because entitlement on second parent begins at later date?)
-            if (personA.retirementBenefitDate > childBenefitSolution.date && personA.PIA > personB.PIA){
+            if (personA.retirementBenefitDate > childBenefitSolution.date && personA.PIA > personB.PIA &&
+              (this.birthdayService.checkForChildUnder18onGivenDate(scenario, personA.retirementBenefitDate) === true || scenario.disabledChild === true)){
               let secondChildBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", personA, personA.retirementBenefitDate, 0, 0)
               solutionSet.solutionsArray.push(secondChildBenefitSolution)
             }
-            else if (personB.retirementBenefitDate > childBenefitSolution.date && personB.PIA > personA.PIA){
+            else if (personB.retirementBenefitDate > childBenefitSolution.date && personB.PIA > personA.PIA &&
+              (this.birthdayService.checkForChildUnder18onGivenDate(scenario, personB.retirementBenefitDate) === true || scenario.disabledChild === true)){
               let secondChildBenefitSolution:ClaimingSolution = new ClaimingSolution(scenario.maritalStatus, "child", personB, personB.retirementBenefitDate, 0, 0)
               solutionSet.solutionsArray.push(secondChildBenefitSolution)
             }
