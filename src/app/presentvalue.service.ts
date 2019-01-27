@@ -29,6 +29,7 @@ export class PresentValueService {
       person.DRCsViaSuspension = 0
       person.retirementARFcreditingMonths = 0
       scenario.outputTable = []
+      person.entitledToNonCoveredPension = false
       //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
       if (person.isOnDisability === true){person = this.familyMaximumService.calculateFamilyMaximum(person, this.today)}
 
@@ -131,7 +132,6 @@ export class PresentValueService {
         calcYear = new CalculationYear(calcYear.date)
         }
     }
-
     return retirementPV
   }
 
@@ -156,6 +156,8 @@ export class PresentValueService {
     personB.spousalARFcreditingMonths = 0
     personA.entitledToRetirement = false
     personB.entitledToRetirement = false
+    personA.entitledToNonCoveredPension = false
+    personB.entitledToNonCoveredPension = false
     //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
       if (personA.isOnDisability === true){personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)}
       if (personB.isOnDisability === true){personB = this.familyMaximumService.calculateFamilyMaximum(personB, this.today)}
@@ -376,20 +378,20 @@ export class PresentValueService {
 
   maximizeSinglePersonPV(person:Person, scenario:CalculationScenario) : SolutionSet{
 
-    //find initial testClaimingDate for age 62 (or, more often, 62 and 1 month)
+    //find initial retirementBenefitDate for age 62 (or, more often, 62 and 1 month)
     person.retirementBenefitDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth())
     if (person.actualBirthDate.getDate() > 1){//i.e., if they are born after 2nd of month ("1" is second of month)
       person.retirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+1)
     }
 
-    //If user is currently over age 62 when filling out form, set testClaimingDate to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
+    //If user is currently over age 62 when filling out form, set retirementBenefitDate to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
     let ageToday = this.today.getFullYear() - person.SSbirthDate.getFullYear() + (this.today.getMonth() - person.SSbirthDate.getMonth())/12
     if (ageToday > 62){
       person.retirementBenefitDate.setMonth(this.today.getMonth())
       person.retirementBenefitDate.setFullYear(this.today.getFullYear())
     }
 
-    //If user is currently beyond FRA when filling out form, set testClaimingDate to earliest retroactive date (6 months ago but no earlier than FRA)
+    //If user is currently beyond FRA when filling out form, set retirementBenefitDate to earliest retroactive date (6 months ago but no earlier than FRA)
     if (this.today > person.FRA){
       person.retirementBenefitDate.setMonth(this.today.getMonth()-6)
       if (person.retirementBenefitDate < person.FRA){
@@ -421,7 +423,8 @@ export class PresentValueService {
     let savedEndSuspensionDate: MonthYearDate = new MonthYearDate(person.endSuspensionDate)
 
     //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
-    let endingTestDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth()-1, 1)
+      let endingTestDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth())
+      endingTestDate.setMonth(endingTestDate.getMonth()-1)
     while (person.retirementBenefitDate <= endingTestDate && person.endSuspensionDate <= endingTestDate){
       //Increment claiming date (or suspension date) and run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
       person = this.incrementRetirementORendSuspensionDate(person, scenario)
