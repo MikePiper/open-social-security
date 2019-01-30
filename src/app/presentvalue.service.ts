@@ -29,7 +29,7 @@ export class PresentValueService {
       person.DRCsViaSuspension = 0
       person.retirementARFcreditingMonths = 0
       scenario.outputTable = []
-      person.entitledToNonCoveredPension = false
+      this.benefitService.checkWhichPIAtoUse(person, this.today)//checks whether person is *entitled* to gov pension (by checking eligible and pension beginning date) and sets PIA accordingly based on one of two PIA inputs
       //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
       if (person.isOnDisability === true){person = this.familyMaximumService.calculateFamilyMaximum(person, this.today)}
 
@@ -156,8 +156,9 @@ export class PresentValueService {
     personB.spousalARFcreditingMonths = 0
     personA.entitledToRetirement = false
     personB.entitledToRetirement = false
-    personA.entitledToNonCoveredPension = false
-    personB.entitledToNonCoveredPension = false
+    this.benefitService.checkWhichPIAtoUse(personA, this.today)//checks whether person is *entitled* to gov pension (by checking eligible and pension beginning date) and sets PIA accordingly based on one of two PIA inputs
+    this.benefitService.checkWhichPIAtoUse(personB, this.today)
+
     //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
       if (personA.isOnDisability === true){personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)}
       if (personB.isOnDisability === true){personB = this.familyMaximumService.calculateFamilyMaximum(personB, this.today)}
@@ -966,6 +967,9 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       }
     }
     if (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear){
+      return false
+    }
+    if ((personA.eligibleForNonCoveredPension === true && personA.entitledToNonCoveredPension === false) || (personB.eligibleForNonCoveredPension === true && personB.entitledToNonCoveredPension === false)){
       return false
     }
     return true

@@ -87,19 +87,27 @@ export class HomeComponent implements OnInit {
 
 
 //Inputs from form
+  personAprimaryPIAinput: number = 1000
+  personAsecondaryPIAinput: number = 1000
   personAinputMonth: number = 4
   personAinputDay: number = 15
   personAinputYear: number = 1960
   personAfixedRetirementBenefitMonth: number
   personAfixedRetirementBenefitYear: number
-  personBfixedRetirementBenefitMonth: number
-  personBfixedRetirementBenefitYear: number
+  personAnonCoveredPensionMonth:number = 1
+  personAnonCoveredPensionYear:number = 2020
   personAgender: string = "male"
   personAassumedDeathAge: number = 0
   personAmortalityInput: string = "SSA"
+  personBprimaryPIAinput: number = 1000
+  personBsecondaryPIAinput: number = 1000
   personBinputMonth: number = 4
   personBinputDay: number = 15
   personBinputYear: number = 1960
+  personBfixedRetirementBenefitMonth: number
+  personBfixedRetirementBenefitYear: number
+  personBnonCoveredPensionMonth:number = 1
+  personBnonCoveredPensionYear:number = 2020
   personBgender: string = "female"
   personBmortalityInput: string = "SSA"
   personBassumedDeathAge: number = 0
@@ -232,6 +240,43 @@ export class HomeComponent implements OnInit {
       }
     this.personA.initialAgeRounded = Math.round(this.personA.initialAge)
     this.personB.initialAgeRounded = Math.round(this.personB.initialAge)
+    //Get PIA inputs
+      //personA
+      if (this.personA.eligibleForNonCoveredPension === false){
+        this.personA.PIA = this.personAprimaryPIAinput
+      }
+      else {//i.e., personA will be getting noncovered pension
+        //create nonCoveredPensionDate
+        this.personA.nonCoveredPensionDate = new MonthYearDate(this.personAnonCoveredPensionYear, this.personAnonCoveredPensionMonth-1)
+        //set WEP_PIA and nonWEP_PIA based on primary/secondary PIAinput
+        if (this.personA.isOnDisability === true && this.personA.nonCoveredPensionDate > this.today){//if person is on disability and pension has not yet begun, primaryPIAinput represents their nonWEP_PIA
+          this.personA.nonWEP_PIA = this.personAprimaryPIAinput
+          this.personA.WEP_PIA = this.personAsecondaryPIAinput
+        }
+        else {//in all other cases in which person is eligible for noncovered pension, primaryPIAinput is their WEP PIA
+          this.personA.WEP_PIA = this.personAprimaryPIAinput
+          this.personA.nonWEP_PIA = this.personAsecondaryPIAinput
+        }
+      }
+      //personB
+      if (this.personB.eligibleForNonCoveredPension === false){
+        this.personB.PIA = this.personBprimaryPIAinput
+      }
+      else {//i.e., personB will be getting noncovered pension
+        //create nonCoveredPensionDate
+        this.personB.nonCoveredPensionDate = new MonthYearDate(this.personBnonCoveredPensionYear, this.personBnonCoveredPensionMonth-1)
+        //set WEP_PIA and nonWEP_PIA based on primary/secondary PIAinput
+        if (this.personB.isOnDisability === true && this.personB.nonCoveredPensionDate > this.today){//if person is on disability and pension has not yet begun, primaryPIAinput represents their nonWEP_PIA
+          this.personB.nonWEP_PIA = this.personBprimaryPIAinput
+          this.personB.WEP_PIA = this.personBsecondaryPIAinput
+        }
+        else {//in all other cases in which person is eligible for noncovered pension, primaryPIAinput is their WEP PIA
+          this.personB.WEP_PIA = this.personBprimaryPIAinput
+          this.personB.nonWEP_PIA = this.personBsecondaryPIAinput
+        }
+      }
+    this.benefitService.checkWhichPIAtoUse(this.personA, this.today)
+    this.benefitService.checkWhichPIAtoUse(this.personB, this.today)
     this.personA.quitWorkDate = new MonthYearDate(this.personAquitWorkYear, this.personAquitWorkMonth-1)
     this.personB.quitWorkDate = new MonthYearDate(this.personBquitWorkYear, this.personBquitWorkMonth-1)
     if (this.personAfixedRetirementBenefitMonth && this.personAfixedRetirementBenefitYear){
@@ -448,17 +493,21 @@ export class HomeComponent implements OnInit {
     }
 
     // Reset values related to government pension if not receiving a government pension
-    if (this.personA.receivesNonCoveredPension === false) {
+    if (this.personA.eligibleForNonCoveredPension === false) {
+      this.personA.entitledToNonCoveredPension = false
       this.personA.governmentPension = 0
-      this.personA.nonWEP_PIA = 0
+      this.personA.WEP_PIA = undefined
+      this.personA.nonWEP_PIA = undefined
+      this.personA.nonCoveredPensionDate = undefined
     }
-    // otherwise, these personA fields set by the form 
 
-    if (this.personB.receivesNonCoveredPension === false) {
+    if (this.personB.eligibleForNonCoveredPension === false) {
+      this.personB.entitledToNonCoveredPension = false
       this.personB.governmentPension = 0
-      this.personB.nonWEP_PIA = 0
+      this.personB.WEP_PIA = undefined
+      this.personB.nonWEP_PIA = undefined
+      this.personB.nonCoveredPensionDate = undefined
     }
-    // otherwise, these personB fields set by the form 
 
     //If "declineSpousal" or "declineSuspension" inputs are checked in custom date form, reset related month/year inputs. Similarly, reset spousal inputs to null if person in question would get child-in-care spousal
     if (this.personA.declineSpousal === true || this.personA.childInCareSpousal === true){

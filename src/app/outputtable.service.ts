@@ -25,7 +25,8 @@ export class OutputTableService {
         //need year-by year row if...
         if (person.age <= 70 || //person is younger than 70
           (childUnder19 === true) || //or there is a child who is not disabled and they are younger than 19
-          (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear)){ //or user has chosen an assumed benefit cut and that year has not yet arrived
+          (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) || //or user has chosen an assumed benefit cut and that year has not yet arrived
+          (person.eligibleForNonCoveredPension === true && person.entitledToNonCoveredPension === false) ){ //or person is eligible for noncovered pension but it hasn't yet begun
             if (scenario.children.length > 0){
               scenario.outputTable.push([
                 calcYear.date.getFullYear(),
@@ -81,7 +82,12 @@ export class OutputTableService {
             }
           }
         }
-      if (person.age <= 71 || childUnder19 === true || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts until a) person is 70 for entire year b) there are no non-disabled children under 19 and c) benefit cut year (if applicable) has been reached
+      //Need another year-by-year row if...
+      if (person.age <= 71 || //person is not 70 for entire year
+          childUnder19 === true || //there is a non-disabled children under 19
+          (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) || //there's a benefit cut assumption and cutyear hasn't yet been reached
+          (person.eligibleForNonCoveredPension === true && person.entitledToNonCoveredPension === false) //person is eligible for noncovered pension but it hasn't yet begun
+          ){
         if (scenario.children.length > 0){
           scenario.outputTable.push([
             calcYear.date.getFullYear(),
@@ -171,7 +177,13 @@ export class OutputTableService {
           }
         }
       }
-      if (personA.age <= 71 || personB.age <= 71 || childUnder19 === true || (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) ){//Provide year-by-year amounts until both people are 70 for entire year, there are no nondisabled children under 19, and benefit cut year (if applicable) has been reached
+      //Need another year-by-year row if...
+      if (personA.age <= 71 || personB.age <= 71 || //personA or personB is not yet 70 for whole year
+        childUnder19 === true || //or there is a non-disabled child who isn't yet 18 for whole year
+        (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) || //or there's a benefit cut assumption and cutyear has not yet been reached
+        (personA.eligibleForNonCoveredPension === true && personA.entitledToNonCoveredPension === false) || //or somebody is eligible for a noncovered pension and it hasn't yet begun
+        (personB.eligibleForNonCoveredPension === true && personB.entitledToNonCoveredPension === false)
+        ){
         if (scenario.children.length > 0){
           scenario.outputTable.push([
             calcYear.date.getFullYear(),
