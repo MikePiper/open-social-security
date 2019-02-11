@@ -13,6 +13,7 @@ export class BenefitService {
   constructor(private birthdayService: BirthdayService, private familyMaximumService: FamilyMaximumService) { }
 
   today: MonthYearDate = new MonthYearDate()
+  deemedFilingCutoff: Date = new Date(1954, 0, 1)//January 2, 1954. If date is LESS than cutoff, old rules. If greater than OR EQUAL TO cutoff, new rules.
 
   //For people who will be getting pension from noncovered employment, at any given time we have to know whether to use WEP_PIA or nonWEP_PIA
   checkWhichPIAtoUse(person:Person, date:MonthYearDate){
@@ -456,7 +457,7 @@ export class BenefitService {
             }
             if( (personA.PIA < 0.5 * personB.PIA || personA.entitledToRetirement === false) && //if personA has PIA less than 50% of personB's PIA or is not yet entitled to a retirement benefit, AND
               ( calcYear.date >= personA.spousalBenefitDate || (personB.entitledToRetirement === true && childUnder16orDisabled === true && personA.childInCareSpousal === true) )){//personA has reached spousalBenefitDate OR personB has started retirement benefit and there is a childUnder16orDisabled and personA.childInCareSpousal is true
-              personA.monthlySpousalPayment = this.calculateSpousalOriginalBenefit(personB)
+                personA.monthlySpousalPayment = this.calculateSpousalOriginalBenefit(personB)
             }
             //personB
             if (personB.entitledToRetirement === true){
@@ -466,6 +467,7 @@ export class BenefitService {
               ( calcYear.date >= personB.spousalBenefitDate || (personA.entitledToRetirement === true && childUnder16orDisabled === true && personB.childInCareSpousal === true) )){//personB has reached spousalBenefitDate OR personA has started retirement benefit and there is a childUnder16orDisabled and personB.childInCareSpousal is true
               personB.monthlySpousalPayment = this.calculateSpousalOriginalBenefit(personA)
             }
+            //children
             for (let child of scenario.children){
               if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
                 if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
