@@ -126,8 +126,7 @@ export class EarningsTestService {
                   personA.monthlyRetirementPayment = 0
                   personA.retirementARFcreditingMonths = personA.retirementARFcreditingMonths + 1
                   if (scenario.maritalStatus == "married"){//Only make spouse B's benefit as a spouse available for withholding if they're currently married (as opposed to divorced)
-                    if ((calcYear.date >= personB.spousalBenefitDate || (calcYear.date >= personA.retirementBenefitDate && childUnder16orDisabled === true)) //If it's a spousalBenefit month for personB
-                      && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate)){//and not a nonservice month in grace year for personB
+                    if (calcYear.date >= personB.spousalBenefitDate || (calcYear.date >= personA.retirementBenefitDate && childUnder16orDisabled === true)){ //If it's a spousalBenefit month for personB
                         availableForWithholding = availableForWithholding + personB.monthlySpousalPayment
                         personB.monthlySpousalPayment = 0
                         if (childUnder16orDisabled === false) {personB.spousalARFcreditingMonths = personB.spousalARFcreditingMonths + 1}
@@ -154,8 +153,7 @@ export class EarningsTestService {
                   availableForWithholding = personB.monthlyRetirementPayment
                   personB.monthlyRetirementPayment = 0
                   personB.retirementARFcreditingMonths = personB.retirementARFcreditingMonths + 1
-                  if ((calcYear.date >= personA.spousalBenefitDate || (calcYear.date >= personB.retirementBenefitDate && childUnder16orDisabled === true)) //If it's a spousalBenefit month for personA
-                  && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate)){//and not a nonservice month in grace year for personA                  
+                  if (calcYear.date >= personA.spousalBenefitDate || (calcYear.date >= personB.retirementBenefitDate && childUnder16orDisabled === true)){ //If it's a spousalBenefit month for personA
                       availableForWithholding = availableForWithholding + personA.monthlySpousalPayment
                       personA.monthlySpousalPayment = 0
                       if (childUnder16orDisabled === false) {personA.spousalARFcreditingMonths = personA.spousalARFcreditingMonths + 1}
