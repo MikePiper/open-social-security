@@ -8,4 +8,10 @@ In articles.routing.ts, add a path for new component.
 
 In articles-home-component.html, add link to new article.
 
+Commit?
+
+Do a build and upload new files?
+
+Do a rebase and push new code to GH?
+
 Link to article in roundup.
