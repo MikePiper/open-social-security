@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { DelayingSocialSecurity8ReturnComponent } from './delaying-social-security8-return/delaying-social-security8-return.component';
 import { ArticlesHomeComponent } from './articles-home/articles-home.component';
 import { SharedModule } from '../shared/shared.module';
+import { SimilarPIAsComponent } from './similar-pias/similar-pias.component';
 
 
 @NgModule({
@@ -13,6 +14,6 @@ import { SharedModule } from '../shared/shared.module';
     RouterModule.forChild(routes),
     SharedModule
   ],
-  declarations: [DelayingSocialSecurity8ReturnComponent, ArticlesHomeComponent]
+  declarations: [DelayingSocialSecurity8ReturnComponent, ArticlesHomeComponent, SimilarPIAsComponent]
 })
 export class ArticlesModule { }

@@ -4,6 +4,8 @@ Create new component for the article in the /articles directory:
 
 Delete spec and css files for that component. And in the ts file, change it to "styles" rather than styleURL. (Make the array empty, unless it needs its own css for some reason.)
 
+in the .ts file, in constructor set title for page
+
 In articles.routing.ts, add a path for new component.
 
 In articles-home-component.html, add link to new article.
