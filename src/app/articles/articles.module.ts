@@ -6,6 +6,7 @@ import { DelayingSocialSecurity8ReturnComponent } from './delaying-social-securi
 import { ArticlesHomeComponent } from './articles-home/articles-home.component';
 import { SharedModule } from '../shared/shared.module';
 import { SimilarPIAsComponent } from './similar-pias/similar-pias.component';
+import { SpousalBenefitCalculationComponenentComponent } from './spousal-benefit-calculation-componenent/spousal-benefit-calculation-componenent.component';
 
 
 @NgModule({
@@ -14,6 +15,6 @@ import { SimilarPIAsComponent } from './similar-pias/similar-pias.component';
     RouterModule.forChild(routes),
     SharedModule
   ],
-  declarations: [DelayingSocialSecurity8ReturnComponent, ArticlesHomeComponent, SimilarPIAsComponent]
+  declarations: [DelayingSocialSecurity8ReturnComponent, ArticlesHomeComponent, SimilarPIAsComponent, SpousalBenefitCalculationComponenentComponent]
 })
 export class ArticlesModule { }
