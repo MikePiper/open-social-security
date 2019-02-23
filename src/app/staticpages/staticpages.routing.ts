@@ -17,5 +17,5 @@ export const routes: Routes = [
     { path: 'articles/8-return', component: DelayingSocialSecurity8ReturnComponent },
     { path: 'articles/social-security-planning-similar-earnings-history', component: SimilarPIAsComponent },
     { path: 'articles/spousal-benefit-calculation', component: SpousalBenefitCalculationComponenentComponent },
-    //{ path: '**', redirectTo: '', pathMatch: 'full'}
+    { path: '**', redirectTo: '', pathMatch: 'full'}
 ];
