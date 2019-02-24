@@ -199,9 +199,8 @@ export class HomeComponent implements OnInit {
       this.onSubmit()
     }
     this.customPV = undefined //Makes custom date output disappear until new PV is calc'd. (We don't want a broken-looking half-table appearing if there is an error in new inputs.)
-
-    //Check for errors in custom date inputs
-      this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
+    this.getCustomDateFormInputs()
+    this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
 
     //Calc PV with input dates
         //Create a new ClaimingScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one. (This is necessary so that it can have a separate "outputTable" field from the original.)
