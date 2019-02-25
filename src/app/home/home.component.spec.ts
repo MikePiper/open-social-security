@@ -10,9 +10,6 @@ import {Person} from '../data model classes/person'
 import {CalculationScenario} from '../data model classes/calculationscenario'
 import { NgForm, NgModel } from '@angular/forms'
 import { AppRoutingModule } from '../app-routing.module'
-import {AboutComponent} from '../about/about.component'
-import { ContactComponent } from '../contact/contact.component'
-import { LegalComponent } from '../legal/legal.component'
 import { ChildinputsComponent } from '../childinputs/childinputs.component'
 import { OutputTableComponent } from '../output-table/output-table.component'
 import { APP_BASE_HREF } from '@angular/common'
@@ -31,7 +28,7 @@ describe('HomeComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [BirthdayService, PresentValueService, MortalityService, BenefitService, FREDresponse, {provide: HttpClient, useValue: HttpClientStub}, {provide: APP_BASE_HREF, useValue : '/'}],
-      declarations: [HomeComponent, AboutComponent, ContactComponent, LegalComponent, ChildinputsComponent, OutputTableComponent, NgForm, NgModel],
+      declarations: [HomeComponent, ChildinputsComponent, OutputTableComponent, NgForm, NgModel],
       imports: [AppRoutingModule, SharedModule]
     })
     fixture = TestBed.createComponent(HomeComponent)

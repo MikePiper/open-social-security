@@ -26,7 +26,7 @@ import { SharedModule } from './shared/shared.module';
     ChildinputsComponent,
   ],
   imports: [
-    BrowserModule,
+    BrowserModule.withServerTransition({ appId: 'serverApp' }),
     HttpClientModule,
     FormsModule,
     CollapseModule.forRoot(),
