@@ -1,0 +1,7 @@
+RewriteEngine on
+# enforce a trailing slash policy:
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*[^/])$ /$1/ [L,R] # <- for test, for prod use [L,R=301]
+# Remove www from any URLs that have them:
+RewriteCond %{HTTP_HOST} ^www\.
+RewriteRule ^(.*)$ https://opensocialsecurity.com/$1 [R=301,L]
