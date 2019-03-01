@@ -42,5 +42,6 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+#Things I just don't want included in GH
 ToDoList.txt
-src/app/articles/HowToAddAnArticle.txt

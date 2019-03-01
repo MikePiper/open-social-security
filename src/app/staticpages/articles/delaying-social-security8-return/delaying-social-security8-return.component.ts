@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-delaying-social-security8-return',
@@ -7,7 +8,9 @@ import { Component, OnInit } from '@angular/core';
 })
 export class DelayingSocialSecurity8ReturnComponent implements OnInit {
 
-  constructor() { }
+  constructor(private titleService:Title) {
+    this.titleService.setTitle("Why Delaying Social Security Doesn't Provide an 8% Return");
+  }
 
   ngOnInit() {
   }

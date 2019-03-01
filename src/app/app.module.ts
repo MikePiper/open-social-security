@@ -7,11 +7,8 @@ import { HomeComponent } from './home/home.component';
 import { BenefitService } from './benefit.service';
 import { AppRoutingModule } from './app-routing.module';
 import { BirthdayService } from './birthday.service';
-import { AboutComponent } from './about/about.component';
 import { PresentValueService } from './presentvalue.service';
-import { ContactComponent } from './contact/contact.component';
 import { HttpClientModule } from '@angular/common/http';
-import { LegalComponent } from './legal/legal.component';
 import { EarningsTestService } from './earningstest.service';
 import { MortalityService } from './mortality.service';
 import { SolutionSetService } from './solutionset.service';
@@ -25,9 +22,6 @@ import { SharedModule } from './shared/shared.module';
   declarations: [
     AppComponent,
     HomeComponent,
-    AboutComponent,
-    ContactComponent,
-    LegalComponent,
     OutputTableComponent,
     ChildinputsComponent,
   ],

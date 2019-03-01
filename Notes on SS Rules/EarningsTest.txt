@@ -1,3 +1,12 @@
+ON GRACE YEAR RULE
+Grace year concept only applies to the person who has excess earnings. For example if:
+    1) personA is working (with high amount of excess earnings) and files for a retirement benefit, and
+    2) personB files for a spousal benefit on personA's record
+    3) personB's spousal benefit can still be withheld. This is true even if personB is no longer working and this is their first nonservice month in a year in which they're entitlted to a benefit.
+        4) Also true even if personB is over FRA
+    See: SSAct 203(f)(1)
+    "Notwithstanding the preceding provisions of this paragraph but subject to section 202(s), no part of the excess earnings of an individual shall be charged to any month [...] (E) in which SUCH INDIVIDUAL did not engage in self-employment and did not render services for wages (determined as provided in paragraph (5) of this subsection) of more than the applicable exempt amount as determined under paragraph (8), if such month is in the taxable year in which occurs the first month after December 1977 that is both (i) a month for which the individual is entitled to benefits under subsection (a), (b), (c), (d), (e), (f), (g), or (h) of section 202 (without having been entitled for the preceding month to a benefit under any other of such subsections), and (ii) a month in which the individual did not engage in self-employment and did not render services for wages (determined as provided in paragraph (5)) of more than the applicable exempt amount as determined under paragraph (8)"
+
 ON CHILD DISABILITY RECIPIENTS BEING ABLE TO HAVE THEIR BENEFITS WITHHELD VIA EARNINGS TEST (ON PARENT'S EARNINGS)
 https://secure.ssa.gov/poms.nsf/lnx/0302501021
 ^ Says child on childhood disability benefit does not have benefit withheld due to earnings test. What it actually means is that child's benefit as child won't be withheld due to their OWN earnings. Can still be withheld due to parent's earnings.
@@ -22,7 +31,6 @@ Social Securitiy Act 203(b)(1)(B) appears to say that this deemed entitlement fo
 CFR 404.420 appears to say the same thing as SSAct 203(b)(1)(B).
 
 SSAct 203(f) doesn't appear to speak to question of children being deemed entitled.
-
 
 --------
 

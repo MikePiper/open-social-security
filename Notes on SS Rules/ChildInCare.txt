@@ -8,11 +8,13 @@ SPOUSAL BENEFITS WITH CHILD IN CARE
 
     *No reduction for age if there is a child in care entitled on worker's record (i.e., under 16 or disabled)
     *Can receive spousal benefits prior to 62 if there is a child under 16 or disabled
-    *Deemed filing simply does not apply to child-in-care spousal benefits. A person filing for such benefits is not deemed to have filed for retirement, regardless of their age. (See https://secure.ssa.gov/poms.nsf/lnx/0200204035 B2)
+    *A person filing for child-in-care spousal benefits is not deemed to have filed for retirement, regardless of their age. (See https://secure.ssa.gov/poms.nsf/lnx/0200204035 B2)
         *When last child turns 16 (if none are disabled), if person has already reached FRA, they are converted to a normal spousal benefit and normal deemed filing rules (i.e., depending on their DoB) apply at that time.
         *When last child turns 16 (if none are disabled), if person is younger than FRA, their spousal benefit is suspended until FRA. (Then it automatically begins at FRA and normal deemed filing rules apply at that time.)
             *Alternatively they can file Form SSA-25 (if they are at least 62 or 62+1 month) to continue receiving spousal benefit, which would now be reduced based on month in which reduced benefit begins.
                 *Deemed filing for retirement would apply at that time.
+    *Conversely, filing for retirement *does* cause a deemed filing for spousal benefits, if eligible for such (unless person has old deemeed filing rules and is filing for retirement after FRA).
+        *If person has child-in-care, that spousal benefit would be a child-in-care spousal benefit
 
     *Suspension discussed above is due to SSAct 202(q)(5)(A)
         ...which says that husband/wife benefits shall never be reduced for age for any month for which there is not a certificate expressly electing reduced benefits.
