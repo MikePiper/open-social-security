@@ -16,6 +16,13 @@ import { OutputTableComponent } from './output-table/output-table.component';
 import { CsvModule } from '@ctrl/ngx-csv';
 import { ChildinputsComponent } from './childinputs/childinputs.component';
 import { SharedModule } from './shared/shared.module';
+import { AboutComponent } from './staticpages/about/about.component';
+import { ContactComponent } from './staticpages/contact/contact.component';
+import { LegalComponent } from './staticpages/legal/legal.component';
+import { DelayingSocialSecurity8ReturnComponent } from './staticpages/articles/delaying-social-security8-return/delaying-social-security8-return.component';
+import { ArticlesHomeComponent } from './staticpages/articles/articles-home/articles-home.component';
+import { SimilarPIAsComponent } from './staticpages/articles/similar-pias/similar-pias.component';
+import { SpousalBenefitCalculationComponenentComponent } from './staticpages/articles/spousal-benefit-calculation-componenent/spousal-benefit-calculation-componenent.component';
 
 
 @NgModule({
@@ -24,6 +31,13 @@ import { SharedModule } from './shared/shared.module';
     HomeComponent,
     OutputTableComponent,
     ChildinputsComponent,
+    AboutComponent,
+    ContactComponent,
+    LegalComponent,
+    DelayingSocialSecurity8ReturnComponent,
+    ArticlesHomeComponent,
+    SimilarPIAsComponent,
+    SpousalBenefitCalculationComponenentComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'serverApp' }),

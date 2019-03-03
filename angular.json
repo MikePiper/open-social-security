@@ -19,7 +19,8 @@
             "assets": [
               "src/assets",
               "src/favicon.ico",
-              "src/404.html"
+              "src/404.html",
+              "src/wordpress"
             ],
             "styles": [
               "src/styles.css"
