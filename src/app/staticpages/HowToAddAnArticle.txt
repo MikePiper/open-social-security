@@ -6,9 +6,9 @@ Delete spec and css files for that component. And in the ts file, change it to "
 
 in the .ts file, in constructor set title for page
 
-In app-routing.module.ts, add a path for new component.
-
-Also add it to static.paths.ts
+Add a path for new component:
+*in app/app-routing.module.ts
+*And in static.paths.ts
 
 In articles-home-component.html, add link to new article.
 

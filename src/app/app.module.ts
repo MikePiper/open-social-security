@@ -23,6 +23,7 @@ import { DelayingSocialSecurity8ReturnComponent } from './staticpages/articles/d
 import { ArticlesHomeComponent } from './staticpages/articles/articles-home/articles-home.component';
 import { SimilarPIAsComponent } from './staticpages/articles/similar-pias/similar-pias.component';
 import { SpousalBenefitCalculationComponenentComponent } from './staticpages/articles/spousal-benefit-calculation-componenent/spousal-benefit-calculation-componenent.component';
+import { ChildInCareSpousalComponent } from './staticpages/articles/child-in-care-spousal/child-in-care-spousal.component';
 
 
 @NgModule({
@@ -37,7 +38,8 @@ import { SpousalBenefitCalculationComponenentComponent } from './staticpages/art
     DelayingSocialSecurity8ReturnComponent,
     ArticlesHomeComponent,
     SimilarPIAsComponent,
-    SpousalBenefitCalculationComponenentComponent
+    SpousalBenefitCalculationComponenentComponent,
+    ChildInCareSpousalComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'serverApp' }),
