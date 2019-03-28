@@ -1,0 +1,4 @@
+RewriteEngine on
+# Remove www from any URLs that have them:
+RewriteCond %{HTTP_HOST} ^www\.
+RewriteRule ^(.*)$ https://opensocialsecurity.com/$1 [R=301,L]

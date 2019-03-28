@@ -31,7 +31,7 @@ describe('HomeComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [BirthdayService, PresentValueService, MortalityService, BenefitService, FREDresponse, {provide: HttpClient, useValue: HttpClientStub}, {provide: APP_BASE_HREF, useValue : '/'}],
-      declarations: [HomeComponent, AboutComponent, ContactComponent, LegalComponent, ChildinputsComponent, OutputTableComponent, NgForm, NgModel],
+      declarations: [HomeComponent, ChildinputsComponent, OutputTableComponent, NgForm, NgModel],
       imports: [AppRoutingModule, SharedModule]
     })
     fixture = TestBed.createComponent(HomeComponent)
