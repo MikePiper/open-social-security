@@ -51,9 +51,17 @@ export class PresentValueService {
       child.age = this.birthdayService.findAgeOnDate(child, calcYear.date)
     }
 
-    //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
-    while (person.age < 115) {
-      //Do we have to recalculate any benefits? (e.g., due to reaching FRA and ARF happening, or due to suspension ending) (Never have to recalculate a child's benefit amount.)
+    // Doing initial calculation of probability of being alive here 
+    // to possibly reduce unnecessary calculations 
+    // 
+    // Calculate person's probability of being alive at start of calculation process
+    let currentYear = calcYear.date.getFullYear()
+    let probabilityAlive:number = person.probabilityAliveAtBeginYear(currentYear)
+
+    // calculation limit is a person-specific value
+    person.setEndDates(scenario)
+    while (person.age <= person.endCalcAge) {
+        //Do we have to recalculate any benefits? (e.g., due to reaching FRA and ARF happening, or due to suspension ending) (Never have to recalculate a child's benefit amount.)
         this.benefitService.monthlyCheckForBenefitRecalculationsSingle(person, calcYear)
       
       //Do we ever have to recalculate family max? (No. In family scenario might have to recalculate combined family max though. Or rather, combined family max doesn't get calculated at beginning but rather in a later year?)
@@ -112,8 +120,7 @@ export class PresentValueService {
             }
 
           //Apply probability alive to annual benefit amounts
-          let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(scenario, person, person.age)
-          calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * probabilityPersonAlive + calcYear.annualBenefitSinglePersonDeceased * (1 - probabilityPersonAlive)
+          calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * probabilityAlive + calcYear.annualBenefitSinglePersonDeceased * (1 - probabilityAlive)
 
           //Discount that probability-weighted annual benefit amount to age 62
           calcYear.annualPV = calcYear.annualPV / (1 + scenario.discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
@@ -129,7 +136,9 @@ export class PresentValueService {
         //increment month by 1 and create new CalculationYear object if it's now January
         calcYear.date.setMonth(calcYear.date.getMonth()+1)
         if (calcYear.date.getMonth() == 0){
-        calcYear = new CalculationYear(calcYear.date)
+          calcYear = new CalculationYear(calcYear.date)
+          currentYear++
+          probabilityAlive = person.probabilityAliveAtBeginYear(currentYear)
         }
     }
     return retirementPV
@@ -215,18 +224,32 @@ export class PresentValueService {
         child.age = this.birthdayService.findAgeOnDate(child, calcYear.date)
       }
 
-    //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
-    while (personA.age < 115 || personB.age < 115){
+    // Set limits according to individual's conditions
+    personA.setEndDates(scenario)
+    personB.setEndDates(scenario)
+
+    // Doing initial calculation of probability of being alive here to possibly reduce unnecessary calculations 
+    // 
+    // Calculate each person's probability of being alive at start of calculation process
+    let currentYear = calcYear.date.getFullYear()
+    let probabilityAalive:number = personA.probabilityAliveAtBeginYear(currentYear)
+    let probabilityBalive:number = personB.probabilityAliveAtBeginYear(currentYear)
+
+    // OPTION: while (personA.age < personA.endCalcAge || personB.age < personB.endCalcAge){
+    while (calcYear.date <= personA.endCalcDate || calcYear.date <= personB.endCalcDate){
 
       //Use savedCalculationYear sums if parents over 70, children over 18 or disabled, and assumed benfit cut year (if applicable) has been reached
       if (savedCalculationYear.annualBenefitBothAlive > 0){
         this.useSavedCalculationYearForFasterLoop(calcYear, savedCalculationYear)
       }
       else {
-      //Do we have to calculate/recalculate any benefits for personA or personB?
-      this.benefitService.monthlyCheckForBenefitRecalculationsCouple(personA, personB, calcYear)
+        //Do we have to calculate/recalculate any benefits for personA or personB?
+        this.benefitService.monthlyCheckForBenefitRecalculationsCouple(personA, personB, calcYear)
+      
 
+      // added tests so we only do the calculations that are appropriate
       //Assume personA and personB are alive
+      if ((probabilityAalive > 0) && (probabilityBalive > 0)) {
             //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, true)
             //Adjust each person's monthlyPayment as necessary for family max
@@ -243,8 +266,10 @@ export class PresentValueService {
               this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, true, personB, true)
             //add everybody's monthlyPayment fields to appropriate annual totals (annualBenefitBothAlive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, true, personB, true, printOutputTable)
+      }
       //Assume personA is alive and personB is deceased
-            //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
+      if (probabilityAalive > 0) {
+        //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, false)
             //Adjust each person's monthlyPayment as necessary for family max
               this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, true, personB, false)
@@ -260,8 +285,10 @@ export class PresentValueService {
               this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, true, personB, false)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitOnlyPersonAalive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, true, personB, false, printOutputTable)
+      }
       //Assume personA is deceased and personB is alive
-            //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
+      if (probabilityBalive > 0) {
+        //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, true)
             //Adjust each person's monthlyPayment as necessary for family max
               this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, false, personB, true)
@@ -277,6 +304,7 @@ export class PresentValueService {
               this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, false, personB, true)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitOnlyPersonBalive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, true, printOutputTable)
+      }
       //Assume personA and personB are deceased
             //calculate "original benefit" amounts for each person
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, false)
@@ -310,16 +338,16 @@ export class PresentValueService {
                 this.outputTableService.generateOutputTableDivorced(personA, scenario, calcYear)
               }
 
-            //Calculate each person's probability of being alive at end of age in question. (Have to use age-1 here because we want their age as of beginning of year.)
-              let probabilityAalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personA, personA.age-1, personB)
-              let probabilityBalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personB, personB.age-1, personA)
-
+              // moved calculation of probability of being alive to beginning of year, so we can reduce unnecessary calculations
             //Apply probability alive to annual benefit amounts
               let annualPV:number =
                 probabilityAalive * probabilityBalive * calcYear.annualBenefitBothAlive +
                 probabilityAalive * (1 - probabilityBalive) * calcYear.annualBenefitOnlyPersonAalive +
-                probabilityBalive * (1 - probabilityAalive) * calcYear.annualBenefitOnlyPersonBalive
-
+                probabilityBalive * (1 - probabilityAalive) * calcYear.annualBenefitOnlyPersonBalive 
+                // The line below could be added to include benefits to children who survive both parents
+                // BUT it should not be added until this part of the total (and perhaps other parts) 
+                // includes the probabilities of disabled adult children being alive each year
+                // + (1 - probabilityAalive) * (1 - probabilityBalive) * calcYear.annualBenefitBothDeceased
 
             //Discount that probability-weighted annual benefit amount to age 62
                 //Find which spouse is older, because we're discounting back to date on which older spouse is age 62. (Have to use age-1 here because we want their age as of beginning of year.)
@@ -367,7 +395,10 @@ export class PresentValueService {
       //increment month by 1 and create new CalculationYear object if it's now January
       calcYear.date.setMonth(calcYear.date.getMonth()+1)
       if (calcYear.date.getMonth() == 0){
-      calcYear = new CalculationYear(calcYear.date)
+        calcYear = new CalculationYear(calcYear.date)
+        currentYear++
+        probabilityAalive = personA.probabilityAliveAtBeginYear(currentYear)
+        probabilityBalive = personB.probabilityAliveAtBeginYear(currentYear)
       }
       if (!(calcYear.isInPast === false) && calcYear.date < this.today){calcYear.isInPast = true}//if calcYear.isInPast is already false, no need to check again as date gets incremented forward (using "not false" rather than "is true" because we want it to trigger if it isn't set yet also)
       else {calcYear.isInPast = false}
@@ -379,6 +410,9 @@ export class PresentValueService {
 
   maximizeSinglePersonPV(person:Person, scenario:CalculationScenario) : SolutionSet{
 
+    // precalculate probabilities so they won't have to be re-calculated at each benefit date
+    person.initializeProbabilityAliveArray(this.today)
+    
     //find initial retirementBenefitDate for age 62 (or, more often, 62 and 1 month)
     person.retirementBenefitDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth())
     if (person.actualBirthDate.getDate() > 1){//i.e., if they are born after 2nd of month ("1" is second of month)
@@ -423,9 +457,11 @@ export class PresentValueService {
     let savedBeginSuspensionDate: MonthYearDate = new MonthYearDate(person.beginSuspensionDate)
     let savedEndSuspensionDate: MonthYearDate = new MonthYearDate(person.endSuspensionDate)
 
-    //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
-      let endingTestDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth())
-      endingTestDate.setMonth(endingTestDate.getMonth()-1)
+    //Set endingTestDate equal to the month before they turn 70, or their assumed age at death)
+    person.setEndDates(scenario)
+    let endingTestDate = new MonthYearDate(person.endTestDate)
+    endingTestDate.setMonth(endingTestDate.getMonth()-1)
+
     while (person.retirementBenefitDate <= endingTestDate && person.endSuspensionDate <= endingTestDate){
       //Increment claiming date (or suspension date) and run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
       person = this.incrementRetirementORendSuspensionDate(person, scenario)
@@ -529,22 +565,22 @@ export class PresentValueService {
       let personBsavedEndSuspensionDate = new MonthYearDate(personB.endSuspensionDate)
 
     //Set endingTestDate for each spouse equal to the month they turn 70. Or if using fixed-death-age-assumption younger than 70, set to assumed month of death
-    let spouseAendTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth())
-    let spouseBendTestDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+70, personB.SSbirthDate.getMonth())
-    if (personA.mortalityTable[70] == 0) {
-      let deceasedByAge:number = personA.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69. But we want last possible filing date suggested to be 68, so we subtract 1 in following line.
-      spouseAendTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+deceasedByAge-1, personA.SSbirthDate.getMonth())
-    }
-    if (personB.mortalityTable[70] == 0) {
-      let deceasedByAge:number = personB.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69
-      spouseBendTestDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+deceasedByAge-1, personB.SSbirthDate.getMonth())
-    }
+    // determination of end dates moved to Person
+    personA.setEndDates(scenario)
+    personB.setEndDates(scenario)
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
     personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)
     personB = this.familyMaximumService.calculateFamilyMaximum(personB, this.today)
 
-    while (personA.retirementBenefitDate <= spouseAendTestDate && personA.endSuspensionDate <= spouseAendTestDate) {
+    // precalculate probabilities so they don't need to be calculated for each combination of filing dates
+    // baseDate is date at which calculation is being made
+    let baseDate: MonthYearDate = this.today
+    personA.initializeProbabilityAliveArray(baseDate)
+    personB.initializeProbabilityAliveArray(baseDate)
+    // calculateCouplePV will use these probabilities to calculate PV's
+
+    while (personA.retirementBenefitDate <= personA.endTestDate && personA.endSuspensionDate <= personA.endTestDate) {
         //Reset personB.retirementBenefitDate to earliest possible (i.e., their "age 62 for whole month" month, or today's month if they're currently older than 62, or earliest retroactive date if they're older than FRA)
         if (spouseBageToday > 62){
           personB.retirementBenefitDate = new MonthYearDate(this.today)
@@ -579,9 +615,11 @@ export class PresentValueService {
           personA = this.adjustSpousalBenefitDate(personA, personB, scenario)
           personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
 
-        while (personB.retirementBenefitDate <= spouseBendTestDate && personB.endSuspensionDate <= spouseBendTestDate) {
-          //Calculate PV using current testDates
+          while (personB.retirementBenefitDate <= personB.endTestDate && personB.endSuspensionDate <= personB.endTestDate) {
+              //Calculate PV using current testDates
             let currentTestPV: number = this.calculateCouplePV(personA, personB, scenario, false)
+
+            // TODO: save info for each combination of benefit dates to show users for comparison and evaluation
 
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTestPV >= savedPV) {
@@ -672,6 +710,12 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       flexibleSpouse = this.adjustSpousalBenefitDate(flexibleSpouse, fixedSpouse, scenario)
       fixedSpouse = this.adjustSpousalBenefitDate(fixedSpouse, flexibleSpouse, scenario)
 
+    // precalculate probabilities so they don't need to be calculated for each combination of filing dates
+    // baseDate is date at which calculation is being made
+    let baseDate: MonthYearDate = this.today
+    flexibleSpouse.initializeProbabilityAliveArray(baseDate)
+    fixedSpouse.initializeProbabilityAliveArray(baseDate)
+    // calculateCouplePV will use these probabilities to calculate PV's
 
     //Initialize savedPV as zero. Set saved dates equal to their current testDates.
     let savedPV: number = 0
@@ -682,11 +726,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     let fixedSpouseSavedSpousalDate: MonthYearDate = new MonthYearDate(fixedSpouse.spousalBenefitDate)
 
     //Set endTestDate equal to the month flexibleSpouse turns 70. Or, if flexible spouse chose a fixed-death-age assumption younger than age 70, set ending test date to that fixed death age.
-    let endTestDate = new MonthYearDate(flexibleSpouse.SSbirthDate.getFullYear()+70, flexibleSpouse.SSbirthDate.getMonth())
-    if (flexibleSpouse.mortalityTable[70] == 0) {
-      let deceasedByAge:number = flexibleSpouse.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69. But we want last possible filing date suggested to be 68, so we subtract 1 in following line.
-      endTestDate = new MonthYearDate(flexibleSpouse.SSbirthDate.getFullYear()+deceasedByAge-1, flexibleSpouse.SSbirthDate.getMonth())
-    }
+    flexibleSpouse.setEndDates(scenario) // calculation moved to person
+    let endTestDate = flexibleSpouse.endTestDate
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
       flexibleSpouse = this.familyMaximumService.calculateFamilyMaximum(flexibleSpouse, this.today)

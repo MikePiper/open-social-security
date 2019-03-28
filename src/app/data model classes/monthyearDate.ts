@@ -86,5 +86,9 @@ export class MonthYearDate {
         return Number(this.year * 12 + this.month)
     }
 
+    toString(): string {
+        return `(${this.year}/${this.month})`
+    }
+
 
 }

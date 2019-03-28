@@ -544,6 +544,12 @@ export class HomeComponent implements OnInit {
   primaryFormInputChange(){
     this.getPrimaryFormInputs()
     this.primaryFormHasChanged = true
+
+    // It would be better not to erase these arrays unless we had to.
+    // Could check if any of the items changed affected the person's mortality, 
+    // but just do the brute force method now
+    this.personA.probabilityAliveArray = null 
+    this.personB.probabilityAliveArray = null 
   }
 
   focusError(){//Do all these checks in reverse order on screen, so that top-most check happens last (i.e., so that the input element that gets focused is the top-most one on the screen)
