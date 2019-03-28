@@ -21,9 +21,6 @@ export class PresentValueService {
 
   today: MonthYearDate = new MonthYearDate()
 
-  // probabilityCalcs: number = 0
-  // benefitDateCombos: number = 0
-
   calculateSinglePersonPV(person:Person, scenario:CalculationScenario, printOutputTable:boolean):number{
     //reset values for new PV calc
       let retirementPV:number = 0
@@ -60,13 +57,6 @@ export class PresentValueService {
     // Calculate person's probability of being alive at start of calculation process
     let currentYear = calcYear.date.getFullYear()
     let probabilityAlive:number = person.probabilityAliveAtBeginYear(currentYear)
-    let prevAnnualPV = 0
-    let prevAnnualPV2 = 0
-    let prevTotalPV = 0
-    let prevTotalPV2 = 0
-    let prevAnnualNhProbPmt = 0
-    let prevAnnualChildProbPmt = 0
-    // let pv2Factor
 
     // calculation limit is a person-specific value
     person.setEndDates(scenario)
@@ -244,7 +234,6 @@ export class PresentValueService {
     let currentYear = calcYear.date.getFullYear()
     let probabilityAalive:number = personA.probabilityAliveAtBeginYear(currentYear)
     let probabilityBalive:number = personB.probabilityAliveAtBeginYear(currentYear)
-    // this.probabilityCalcs += 2
 
     // OPTION: while (personA.age < personA.endCalcAge || personB.age < personB.endCalcAge){
     while (calcYear.date <= personA.endCalcDate || calcYear.date <= personB.endCalcDate){
@@ -410,7 +399,6 @@ export class PresentValueService {
         currentYear++
         probabilityAalive = personA.probabilityAliveAtBeginYear(currentYear)
         probabilityBalive = personB.probabilityAliveAtBeginYear(currentYear)
-        // this.probabilityCalcs += 2
       }
       if (!(calcYear.isInPast === false) && calcYear.date < this.today){calcYear.isInPast = true}//if calcYear.isInPast is already false, no need to check again as date gets incremented forward (using "not false" rather than "is true" because we want it to trigger if it isn't set yet also)
       else {calcYear.isInPast = false}
@@ -502,9 +490,6 @@ export class PresentValueService {
 
 
   maximizeCouplePViterateBothPeople(personA:Person, personB:Person, scenario:CalculationScenario) : SolutionSet{
-
-    // this.probabilityCalcs = 0
-    // this.benefitDateCombos = 0
 
     //find initial retirementBenefitDate for personA (first month for which they are considered 62 for entire month)
     personA.retirementBenefitDate = new MonthYearDate(personA.actualBirthDate.getFullYear()+62, personA.actualBirthDate.getMonth())
@@ -652,7 +637,6 @@ export class PresentValueService {
           //Find next possible claiming combination for spouseB
             personB = this.incrementRetirementORendSuspensionDate(personB, scenario)
             personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
-            // this.benefitDateCombos++
 
           //After personB's retirement/spousal dates have been incremented, adjust personA's spousal date as necessary
             personA = this.adjustSpousalBenefitDate(personA, personB, scenario)
@@ -678,8 +662,6 @@ export class PresentValueService {
       let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, personA, personB, Number(savedPV))
       
       console.log(solutionSet)
-      // console.log("probabilityCalcs by Array: " + this.probabilityCalcs)
-      // console.log("benefitDateCombos: " + this.benefitDateCombos)
 
       return solutionSet
   }

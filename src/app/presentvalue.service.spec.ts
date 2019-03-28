@@ -10,7 +10,6 @@ import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import {FamilyMaximumService} from './familymaximum.service'
 import {SolutionSet} from "./data model classes/solutionset"
-import { PrefixSource } from 'webpack-sources';
 
 //Util used to replace certain things that would happen in real life application, but which need to be done in tests because getPrimaryFormInputs() never gets called
 function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdayService:BirthdayService, benefitService:BenefitService){
@@ -409,8 +408,6 @@ describe('test maximizeSinglePersonPV', () => {
     let results = service.maximizeSinglePersonPV(person, scenario)
     expect(results.solutionsArray[0].date)
       .toEqual(new MonthYearDate(person.FRA))
-      // expect(results.solutionsArray[1].date)
-      // .toEqual(new MonthYearDate(2023, 3, 1))
       expect(results.solutionsArray[1].date)
       .toEqual(new MonthYearDate(2023, 3, 1))
     //solutionsArray should have two items: begin suspension date (at FRA), and end suspension date (age 70)
@@ -2160,9 +2157,7 @@ describe('tests calculateCouplePV', () => {
       personA.quitWorkDate = new MonthYearDate(2015,3,1) //already quit working
       personB.quitWorkDate = new MonthYearDate(2015,3,1) //already quit working
       scenario.discountRate = 0
-      // service.logEachPvCalc = true
       let solutionSet: SolutionSet = service.maximizeCouplePViterateBothPeople(personA, personB, scenario)
-      // service.logEachPvCalc = false
       expect(solutionSet.solutionsArray[1].date)
       .toEqual(new MonthYearDate(2028, 2, 1))
       //We're looking at item [1] in the array. This array should have 2 items in it: retirementDate for personA and retirement date for personB.
