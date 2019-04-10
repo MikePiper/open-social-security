@@ -9,6 +9,8 @@ import { DelayingSocialSecurity8ReturnComponent } from './staticpages/articles/d
 import { SimilarPIAsComponent } from './staticpages/articles/similar-pias/similar-pias.component';
 import { SpousalBenefitCalculationComponenentComponent } from './staticpages/articles/spousal-benefit-calculation-componenent/spousal-benefit-calculation-componenent.component';
 import { ChildInCareSpousalComponent } from './staticpages/articles/child-in-care-spousal/child-in-care-spousal.component';
+import { CalculateRetirementBenefitComponent } from './staticpages/articles/calculate-retirement-benefit/calculate-retirement-benefit.component';
+import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-with-retirement/spousal-with-retirement.component';
 
 const routes: Routes = [
   { path: '', pathMatch:'full', component: HomeComponent },
@@ -29,6 +31,10 @@ const routes: Routes = [
     { path: 'articles/spousal-benefit-calculation', redirectTo: 'articles/spousal-benefit-calculation/.', pathMatch: 'full'},
   { path: 'articles/child-in-care-spousal/.', component: ChildInCareSpousalComponent },
     { path: 'articles/child-in-care-spousal', redirectTo: 'articles/child-in-care-spousal/.', pathMatch: 'full'},
+  { path: 'articles/calculate-retirement-benefit/.', component: CalculateRetirementBenefitComponent },
+    { path: 'articles/calculate-retirement-benefit', redirectTo: 'articles/calculate-retirement-benefit/.', pathMatch: 'full'},
+  { path: 'articles/retirement-and-spousal/.', component: SpousalWithRetirementComponent },
+    { path: 'articles/retirement-and-spousal', redirectTo: 'articles/retirement-and-spousal/.', pathMatch: 'full'},
   //{ path: '**', redirectTo: '', pathMatch: 'full'}
 ];
 

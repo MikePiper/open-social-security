@@ -1,10 +1,12 @@
 Create new component for the article in the /staticpages/articles directory:
-    ng generate component staticpages/articles/ArticleComponentName
+    ng generate component staticpages/articles/ArticleComponentName --module app
     ^^This creates the component and adds it to the declarations array in app.module.ts
 
 Delete spec and css files for that component. And in the ts file, change it to "styles" rather than styleURL. (Make the array empty, unless it needs its own css for some reason.)
 
 in the .ts file, in constructor set title for page
+
+Add html for the article.
 
 Add a path for new component:
 *in app/app-routing.module.ts

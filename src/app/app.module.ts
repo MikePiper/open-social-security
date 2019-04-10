@@ -24,6 +24,8 @@ import { ArticlesHomeComponent } from './staticpages/articles/articles-home/arti
 import { SimilarPIAsComponent } from './staticpages/articles/similar-pias/similar-pias.component';
 import { SpousalBenefitCalculationComponenentComponent } from './staticpages/articles/spousal-benefit-calculation-componenent/spousal-benefit-calculation-componenent.component';
 import { ChildInCareSpousalComponent } from './staticpages/articles/child-in-care-spousal/child-in-care-spousal.component';
+import { CalculateRetirementBenefitComponent } from './staticpages/articles/calculate-retirement-benefit/calculate-retirement-benefit.component';
+import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-with-retirement/spousal-with-retirement.component';
 
 
 @NgModule({
@@ -39,7 +41,9 @@ import { ChildInCareSpousalComponent } from './staticpages/articles/child-in-car
     ArticlesHomeComponent,
     SimilarPIAsComponent,
     SpousalBenefitCalculationComponenentComponent,
-    ChildInCareSpousalComponent
+    ChildInCareSpousalComponent,
+    CalculateRetirementBenefitComponent,
+    SpousalWithRetirementComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'serverApp' }),
