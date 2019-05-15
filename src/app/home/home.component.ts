@@ -98,7 +98,7 @@ export class HomeComponent implements OnInit {
   personAnonCoveredPensionYear:number = 2020
   personAgender: string = "male"
   personAassumedDeathAge: number = 0
-  personAmortalityInput: string = "SSA"
+  personAmortalityInput: string = "SSA2016"
   personBprimaryPIAinput: number = 1000
   personBsecondaryPIAinput: number = 1000
   personBinputMonth: number = 4
@@ -109,7 +109,7 @@ export class HomeComponent implements OnInit {
   personBnonCoveredPensionMonth:number = 1
   personBnonCoveredPensionYear:number = 2020
   personBgender: string = "female"
-  personBmortalityInput: string = "SSA"
+  personBmortalityInput: string = "SSA2016"
   personBassumedDeathAge: number = 0
   advanced: boolean = false
   qualifyingChildrenBoolean:boolean = false
