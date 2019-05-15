@@ -22,7 +22,7 @@ import { LegalComponent } from './staticpages/legal/legal.component';
 import { DelayingSocialSecurity8ReturnComponent } from './staticpages/articles/delaying-social-security8-return/delaying-social-security8-return.component';
 import { ArticlesHomeComponent } from './staticpages/articles/articles-home/articles-home.component';
 import { SimilarPIAsComponent } from './staticpages/articles/similar-pias/similar-pias.component';
-import { SpousalBenefitCalculationComponenentComponent } from './staticpages/articles/spousal-benefit-calculation-componenent/spousal-benefit-calculation-componenent.component';
+import { SpousalBenefitCalculationComponent } from './staticpages/articles/spousal-benefit-calculation/spousal-benefit-calculation.component';
 import { ChildInCareSpousalComponent } from './staticpages/articles/child-in-care-spousal/child-in-care-spousal.component';
 import { CalculateRetirementBenefitComponent } from './staticpages/articles/calculate-retirement-benefit/calculate-retirement-benefit.component';
 import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-with-retirement/spousal-with-retirement.component';
@@ -40,7 +40,7 @@ import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-w
     DelayingSocialSecurity8ReturnComponent,
     ArticlesHomeComponent,
     SimilarPIAsComponent,
-    SpousalBenefitCalculationComponenentComponent,
+    SpousalBenefitCalculationComponent,
     ChildInCareSpousalComponent,
     CalculateRetirementBenefitComponent,
     SpousalWithRetirementComponent

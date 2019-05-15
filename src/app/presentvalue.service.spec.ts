@@ -271,7 +271,7 @@ describe('test maximizeSinglePersonPV', () => {
   })
 
   it('should tell a single person slightly past FRA to file retroactively at FRA with very high discount rate', () => {
-    //This test is important, but unfortunately every 6 months it'll fail because the "no more than 6 months retroactive window" will have moved
+    service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
     person.actualBirthDate = new Date(1952, 8, 15)
     person.SSbirthDate = new MonthYearDate(1952, 8) //SSBirthdate Sept 1952
     person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA age 66 -> Sept 2018
@@ -286,6 +286,7 @@ describe('test maximizeSinglePersonPV', () => {
   })
 
   it('should tell a single person to suspend until 70 if filed early, long life expectancy, and zero discount rate', () => {
+    service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
     scenario.maritalStatus = "single"
     person.hasFiled = true
     person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
@@ -2126,7 +2127,7 @@ describe('tests calculateCouplePV', () => {
     personB.initialAgeRounded = Math.round(personB.initialAge)
     personA.PIA = 1800
     personB.PIA = 1400
-    scenario.discountRate = 3
+    scenario.discountRate = 8
     personA.fixedRetirementBenefitDate = new MonthYearDate(2018, 2) //filed March 2018, at 69 and 6 months
     let results = service.maximizeCouplePViterateOnePerson(scenario, personB, personA)
     expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2018, 9)) //retroactive back to personB's FRA

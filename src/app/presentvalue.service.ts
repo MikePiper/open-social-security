@@ -797,14 +797,14 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
           person.spousalBenefitDate = new MonthYearDate(otherPersonsLimitingDate)
         }
         if (otherPerson.isOnDisability === false){
-          let sixMonthsAgo:MonthYearDate = new MonthYearDate()
+          let sixMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
           sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6)
           if (person.spousalBenefitDate < sixMonthsAgo){
             person.spousalBenefitDate = new MonthYearDate(sixMonthsAgo)
           }
         }
         else {//i.e., otherPerson is on disability
-          let twelveMonthsAgo:MonthYearDate = new MonthYearDate()
+          let twelveMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
           twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth()-12)
           if (person.spousalBenefitDate < twelveMonthsAgo){
             person.spousalBenefitDate = new MonthYearDate(twelveMonthsAgo)

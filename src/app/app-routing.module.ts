@@ -7,7 +7,7 @@ import { LegalComponent } from './staticpages/legal/legal.component';
 import { ArticlesHomeComponent } from './staticpages/articles/articles-home/articles-home.component';
 import { DelayingSocialSecurity8ReturnComponent } from './staticpages/articles/delaying-social-security8-return/delaying-social-security8-return.component';
 import { SimilarPIAsComponent } from './staticpages/articles/similar-pias/similar-pias.component';
-import { SpousalBenefitCalculationComponenentComponent } from './staticpages/articles/spousal-benefit-calculation-componenent/spousal-benefit-calculation-componenent.component';
+import { SpousalBenefitCalculationComponent } from './staticpages/articles/spousal-benefit-calculation/spousal-benefit-calculation.component';
 import { ChildInCareSpousalComponent } from './staticpages/articles/child-in-care-spousal/child-in-care-spousal.component';
 import { CalculateRetirementBenefitComponent } from './staticpages/articles/calculate-retirement-benefit/calculate-retirement-benefit.component';
 import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-with-retirement/spousal-with-retirement.component';
@@ -27,7 +27,7 @@ const routes: Routes = [
     { path: 'articles/8-return', redirectTo: 'articles/8-return/.', pathMatch: 'full'},
   { path: 'articles/social-security-planning-similar-earnings-history/.', component: SimilarPIAsComponent },
     { path: 'articles/social-security-planning-similar-earnings-history', redirectTo: 'articles/social-security-planning-similar-earnings-history/.', pathMatch: 'full'},
-  { path: 'articles/spousal-benefit-calculation/.', component: SpousalBenefitCalculationComponenentComponent },
+  { path: 'articles/spousal-benefit-calculation/.', component: SpousalBenefitCalculationComponent },
     { path: 'articles/spousal-benefit-calculation', redirectTo: 'articles/spousal-benefit-calculation/.', pathMatch: 'full'},
   { path: 'articles/child-in-care-spousal/.', component: ChildInCareSpousalComponent },
     { path: 'articles/child-in-care-spousal', redirectTo: 'articles/child-in-care-spousal/.', pathMatch: 'full'},
