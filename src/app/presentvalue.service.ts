@@ -51,6 +51,8 @@ export class PresentValueService {
       child.age = this.birthdayService.findAgeOnDate(child, calcYear.date)
     }
 
+    this.mortalityService.calculateBaseFactorSingleOrDivorced(person)
+
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (person.age < 115) {
       //Do we have to recalculate any benefits? (e.g., due to reaching FRA and ARF happening, or due to suspension ending) (Never have to recalculate a child's benefit amount.)
@@ -214,6 +216,14 @@ export class PresentValueService {
       for (let child of scenario.children){
         child.age = this.birthdayService.findAgeOnDate(child, calcYear.date)
       }
+
+    if (scenario.maritalStatus == "divorced") {    
+      this.mortalityService.calculateBaseFactorSingleOrDivorced(personA)
+      this.mortalityService.calculateBaseFactorSingleOrDivorced(personB)
+    } else {
+      this.mortalityService.calculateBaseFactorMarried(personA, personB)
+      this.mortalityService.calculateBaseFactorMarried(personB, personA)
+    }
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (personA.age < 115 || personB.age < 115){

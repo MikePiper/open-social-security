@@ -46,6 +46,7 @@ describe('MortalityService', () => {
     person.initialAgeRounded = 60 //younger than 62 when filling out form, so denominator is age 62 lives
     person.mortalityTable = service.determineMortalityTable("female", "SSA", 0)
     let age = 80
+    service.calculateBaseFactorSingleOrDivorced(person)
     expect(service.calculateProbabilityAlive(scenario, person, age))
         .toBeCloseTo(0.6791, 4) //Lives at 62 is 90,017. Lives at 81 (i.e., end of age 80) is 61,131. 61131/90017 = 0.6791
   }))

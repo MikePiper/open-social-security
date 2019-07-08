@@ -9,22 +9,63 @@ export class MortalityService {
 
   constructor() { }
 
-  calculateProbabilityAlive(scenario:CalculationScenario, person:Person, age:number, otherPerson?:Person){//"age" here is age as of beginning of year in question. person.initialAgeRounded is rounded age as of date filling out form
-    //Calculate probability of being alive at end of age in question
-    //Denominator age is age today, unless user (and user's spouse if married) is younger than 62 and not disabled, in which case we start it at 62 (i.e., assume they live at least until 62)
-    let denominatorAge: number = person.initialAgeRounded
-    if (scenario.maritalStatus == "single" || scenario.maritalStatus == "divorced") {
-      if (person.initialAgeRounded < 62 && person.isOnDisability === false) {
-        denominatorAge = 62
+  calculateBaseFactorSingleOrDivorced(person:Person)  {
+    // baseFactor is based on person's initialAge, unless younger than 62 and not disabled, 
+    // in which case we start it at 62 (i.e., assume they live at least until 62)
+    if (person.initialAgeRounded < 62 && person.isOnDisability === false) {
+      person.baseFactor = 1 / person.mortalityTable[62]
+    } else {
+      person.baseFactor = 1 / person.mortalityTable[person.initialAgeRounded]
+    }
+  }
+
+  /*
+  This version of calculatBaseFactorMarried gives the same calculateProbabityAlive results
+  as in the May 2019 GitHub version of MortalityService
+  */
+
+  /*
+  calculateBaseFactorMarried(person:Person, otherPerson:Person)  {
+  // baseFactor is based on person's initialAge, unless user and user's spouse are younger than 62 and not disabled, 
+  // in which case we start it at 62 (i.e., assume they live at least until 62)
+  if (person.initialAgeRounded < 62 && person.isOnDisability === false && 
+    otherPerson.initialAgeRounded < 62 && otherPerson.isOnDisability === false){
+      person.baseFactor = 1 / person.mortalityTable[62]
+    } else {
+      person.baseFactor = 1 / person.mortalityTable[person.initialAgeRounded]
+    }
+  }
+  */
+
+  calculateBaseFactorMarried(person:Person, otherPerson:Person)  {
+    // If the spouses have much different ages, inaccurate probabilites are calculated if their baseFactors are
+    // based on age 62 - different starting times. This revised version avoids that problem by
+    // basing the factor on each person's initialAgeRounded when the ages differ by more
+    // than a year.
+    // baseFactor is based on person's initialAge, unless user and user's spouse are younger than 62 and not disabled, 
+    // their ages differ by no more than one year,
+    // in which case we start it at 62 (i.e., assume they live at least until 62)
+    if (Math.abs(person.initialAgeRounded - otherPerson.initialAgeRounded) <= 1 && 
+      person.initialAgeRounded < 62 && person.isOnDisability === false && 
+      otherPerson.initialAgeRounded < 62 && otherPerson.isOnDisability === false){
+        person.baseFactor = 1 / person.mortalityTable[62]
+      } else {
+        person.baseFactor = 1 / person.mortalityTable[person.initialAgeRounded]
       }
-    }
-    else if (person.initialAgeRounded < 62 && person.isOnDisability === false && otherPerson.initialAgeRounded < 62 && otherPerson.isOnDisability === false){
-      denominatorAge = 62
-    }
+  }
+  
+  calculateProbabilityAlive(scenario:CalculationScenario, person:Person, age:number, otherPerson?:Person){//"age" here is age as of beginning of year in question. person.initialAgeRounded is rounded age as of date filling out form
+    // Calculate probability of being alive at end of age in question
+    // This revised version requires that the person's baseFactor be already calculated.
+    // That can be done just once, before starting present value calculations, 
+    // rather than each time probability is calculated
     let ageLastBirthday = Math.floor(age)
-    let probabilityAlive = //need probability of being alive at end of "currentCalculationDate" year
-      person.mortalityTable[ageLastBirthday + 1] / person.mortalityTable[denominatorAge] * (1 - (age%1)) //eg if user is 72 and 4 months at beginning of year, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
-    + person.mortalityTable[ageLastBirthday + 2] / person.mortalityTable[denominatorAge] * (age%1)
+    //need probability of being alive at end of "currentCalculationDate" year
+    // eg if user is 72 and 4 months at beginning of year, we want probability of living to end of 72 * 8/12 
+    // (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
+    let probabilityAlive = 
+      (person.mortalityTable[ageLastBirthday + 1] * (1 - (age%1)) 
+      + person.mortalityTable[ageLastBirthday + 2] * (age%1)) * person.baseFactor
 
     return Number(probabilityAlive)
   }
