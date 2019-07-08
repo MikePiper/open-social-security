@@ -17,6 +17,8 @@ export class Person {
     age: number //as in, "age as of current calculation year"
     mortalityTable: number[]
 
+    baseFactor: number // factor by which to multiply personsAlive at given age to determine probabilityAlive at that age
+
     eligibleForNonCoveredPension:boolean = false
     entitledToNonCoveredPension:boolean = false
     nonCoveredPensionDate:MonthYearDate //Date on which noncovered pension begins
