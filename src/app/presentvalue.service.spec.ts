@@ -613,8 +613,8 @@ describe('tests calculateCouplePV', () => {
       personB.endSuspensionDate = new MonthYearDate(2040, 0, 1)//Age 70
       scenario.discountRate = 1
       personA.hasFiled = true //Doing this just so that it triggers the monthly "count benefit" loop
-      expect(service.calculateCouplePV(personA, personB, scenario, false))
-        .toBeCloseTo(487328, 0)//See "present value service" spreadsheet for a calculation of this figure
+      expect(service.calculateCouplePV(personA, personB, scenario, false)).toBeCloseTo(487328, 0)
+      //See "present value service" spreadsheet for a calculation of this figure
     })
   
     it('should return appropriate PV for married couple (where spousal benefits are relevant). PersonB is disabled prior to 62. He suspends FRA to 70. Person A files at 70 for retirement and spousal.', () => { 
@@ -1048,7 +1048,8 @@ describe('tests calculateCouplePV', () => {
         personA.initialAgeRounded = Math.round(personA.initialAge)
         personB.initialAge =  ( today.getMonth() - personB.SSbirthDate.getMonth() + 12 * (today.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
         personB.initialAgeRounded = Math.round(personB.initialAge)
-        expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(519114, 0)
+        // PREVIOUS VERSION expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(519114, 0)
+        expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(477603, 0)
         //manual calculation
           //personA retirement benefit = 600 (75% due to filing 48 months early)
           //personB retirement benefit = 1733.3333 (86.666% of PIA due to filing 24 months early)
@@ -1256,8 +1257,7 @@ describe('tests calculateCouplePV', () => {
           mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          expect(service.calculateCouplePV(personA, personB, scenario, true))
-            .toBeCloseTo(491618, 0)
+          expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(491618, 0)
           //manual calculation:
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900
@@ -1367,7 +1367,8 @@ describe('tests calculateCouplePV', () => {
           mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(464335, 0)
+          // PREVIOUS VERSION expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(464335, 0)
+          expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(445457, 0)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900
@@ -1421,7 +1422,8 @@ describe('tests calculateCouplePV', () => {
           mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(452055, 0)
+          // PREVIOUS VERSION expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(452055, 0)
+          expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(439903, 0)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900
