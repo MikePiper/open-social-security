@@ -156,6 +156,8 @@ export class HomeComponent implements OnInit {
     setTimeout( () => {//whole rest of this function is in a setTimeout statement, to have 10 millisecond delay, to give DOM time to update with status message from waitCursor()
     let startTime = performance.now() //for testing performance
     console.log("-------------")
+    console.log(this.personA)
+    console.log(this.personB)
     this.getPrimaryFormInputs()
     this.scenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
     this.errorCollection = this.inputValidationService.checkForFixedRetirementDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
@@ -276,6 +278,18 @@ export class HomeComponent implements OnInit {
       }
     this.benefitService.checkWhichPIAtoUse(this.personA, this.today)
     this.benefitService.checkWhichPIAtoUse(this.personB, this.today)
+
+    //reset beginSuspensionDate and endSuspensionDate for each person. This is necessary because if maximize function is run with one person having a fixed filing date...
+      //...then that person's suspension dates will be iterated, and they wouldn't get reset at any point. And we WANT them to be reset if you run the function again after changing any inputs.
+      if (this.personA.hasFiled === false || this.personA.isOnDisability === false){
+        this.personA.beginSuspensionDate = new MonthYearDate(1900, 0, 1)
+        this.personA.endSuspensionDate = new MonthYearDate(1900, 0, 1)
+      }
+      if (this.personB.hasFiled === false || this.personB.isOnDisability === false){
+        this.personB.beginSuspensionDate = new MonthYearDate(1900, 0, 1)
+        this.personB.endSuspensionDate = new MonthYearDate(1900, 0, 1)
+      }
+
     this.personA.quitWorkDate = new MonthYearDate(this.personAquitWorkYear, this.personAquitWorkMonth-1)
     this.personB.quitWorkDate = new MonthYearDate(this.personBquitWorkYear, this.personBquitWorkMonth-1)
     if (this.personAfixedRetirementBenefitMonth && this.personAfixedRetirementBenefitYear){
