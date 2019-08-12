@@ -318,7 +318,10 @@ export class PresentValueService {
               let annualPV:number =
                 probabilityAalive * probabilityBalive * calcYear.annualBenefitBothAlive +
                 probabilityAalive * (1 - probabilityBalive) * calcYear.annualBenefitOnlyPersonAalive +
-                probabilityBalive * (1 - probabilityAalive) * calcYear.annualBenefitOnlyPersonBalive
+                probabilityBalive * (1 - probabilityAalive) * calcYear.annualBenefitOnlyPersonBalive +
+                (1 - probabilityAalive) * (1 - probabilityBalive) * calcYear.annualBenefitBothDeceased
+
+
 
 
             //Discount that probability-weighted annual benefit amount to age 62
