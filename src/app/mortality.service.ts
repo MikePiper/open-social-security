@@ -11,23 +11,22 @@ export class MortalityService {
 
   calculateProbabilityAlive(scenario:CalculationScenario, person:Person, age:number, otherPerson?:Person){//"age" here is age as of beginning of year in question. person.initialAgeRounded is rounded age as of date filling out form
     //Calculate probability of being alive at end of age in question
-    //Denominator age is age today, unless user (and user's spouse if married) is younger than 62 and not disabled, in which case we start it at 62 (i.e., assume they live at least until 62)
-    let denominatorAge: number = person.initialAgeRounded
-    if (scenario.maritalStatus == "single" || scenario.maritalStatus == "divorced") {
-      if (person.initialAgeRounded < 62 && person.isOnDisability === false) {
-        denominatorAge = 62
-      }
-    }
-    else if (person.initialAgeRounded < 62 && person.isOnDisability === false && otherPerson.initialAgeRounded < 62 && otherPerson.isOnDisability === false){
-      denominatorAge = 62
-    }
     let ageLastBirthday = Math.floor(age)
     let probabilityAlive = //need probability of being alive at end of "currentCalculationDate" year
-      person.mortalityTable[ageLastBirthday + 1] / person.mortalityTable[denominatorAge] * (1 - (age%1)) //eg if user is 72 and 4 months at beginning of year, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
-    + person.mortalityTable[ageLastBirthday + 2] / person.mortalityTable[denominatorAge] * (age%1)
+      (person.mortalityTable[ageLastBirthday + 1] * (1 - (age%1)) //eg if user is 72 and 4 months at beginning of year, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
+    + person.mortalityTable[ageLastBirthday + 2] * (age%1))
+    * person.baseMortalityFactor
 
     return Number(probabilityAlive)
   }
+
+
+  calculateBaseMortalityFactor(scenario:CalculationScenario, person:Person, otherPerson?:Person):number{
+    let baseMortalityFactor:number
+    baseMortalityFactor = 1 / person.mortalityTable[person.initialAgeRounded]
+    return baseMortalityFactor
+  }
+
 
   determineMortalityTable (gender:string, mortalityInput:string, assumedDeathAge:number) {
     let mortalityTable: number[] = []
@@ -53,6 +52,7 @@ export class MortalityService {
     
     return mortalityTable
   }
+
 
   createMortalityTable(deathAge:number){
     let yearInTable: number = 0

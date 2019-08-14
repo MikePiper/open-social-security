@@ -14,6 +14,7 @@ export class Person {
 
     initialAge: number //as in, "age on the date they're filling out the form" whereas age/ageRounded/ageLastBirthday are all variables that get changed throughout process as we age the person from one year to the next
     initialAgeRounded: number
+    baseMortalityFactor: number //calculated as 1/lives remaining at initial age. We multiply this factor by livesRemaining at given age to determine probabilityAlive at that age. 
     age: number //as in, "age as of current calculation year"
     mortalityTable: number[]
 

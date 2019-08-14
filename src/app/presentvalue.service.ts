@@ -33,6 +33,9 @@ export class PresentValueService {
       //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
       if (person.isOnDisability === true){person = this.familyMaximumService.calculateFamilyMaximum(person, this.today)}
 
+    //Determine baseMortalityFactor
+        person.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(scenario, person)          
+
     //calculate initial retirement benefit
       person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
 
@@ -158,6 +161,10 @@ export class PresentValueService {
     personB.entitledToRetirement = false
     this.benefitService.checkWhichPIAtoUse(personA, this.today)//checks whether person is *entitled* to gov pension (by checking eligible and pension beginning date) and sets PIA accordingly based on one of two PIA inputs
     this.benefitService.checkWhichPIAtoUse(personB, this.today)
+
+    //Determine baseMortalityFactor for each person
+        personA.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(scenario, personA, personB)
+        personB.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(scenario, personB, personA)
 
     //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
       if (personA.isOnDisability === true){personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)}
