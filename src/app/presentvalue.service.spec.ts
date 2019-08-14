@@ -11,11 +11,12 @@ import {MonthYearDate} from "./data model classes/monthyearDate"
 import {FamilyMaximumService} from './familymaximum.service'
 
 //Util used to replace certain things that would happen in real life application, but which need to be done in tests because getPrimaryFormInputs() never gets called
-function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdayService:BirthdayService, benefitService:BenefitService){
+function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdayService:BirthdayService, benefitService:BenefitService, mortalityService:MortalityService){
   person.FRA = birthdayService.findFRA(person.SSbirthDate)
   person.survivorFRA = birthdayService.findSurvivorFRA(person.SSbirthDate)
   person.initialAge =  birthdayService.findAgeOnDate(person, today)
   person.initialAgeRounded = Math.round(person.initialAge)
+  person.baseMortalityFactor = mortalityService.calculateBaseMortalityFactor(person)
   benefitService.checkWhichPIAtoUse(person, today)//checks whether person is *entitled* to gov pension (by checking eligible and pension beginning date) and sets PIA accordingly based on one of two PIA inputs
 }
 
@@ -48,51 +49,51 @@ describe('test calculateSinglePersonPV', () => {
 
       //Test calculateSinglePersonPV()
       it('should return appropriate PV for single person, no complicating factors', () => {
+        service.today = new MonthYearDate(2019, 7)
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
-        person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
-        person.initialAgeRounded = 59 //younger than 62 when fillling out form
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         expect(service.calculateSinglePersonPV(person, scenario, false))
           .toBeCloseTo(146599, 0)
       })
   
       it('should return appropriate PV for single person who files retroactive application as of their FRA', () => {
+        service.today = new MonthYearDate(2018, 9)
         person.SSbirthDate = new MonthYearDate(1952, 3, 1) //Person born April 1952
-        person.initialAgeRounded = 67
-        person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA is age 66, so April 2018
         person.PIA = 1000
-        person.retirementBenefitDate = new MonthYearDate(person.FRA) //filing at FRA, which is retroactive
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+        person.retirementBenefitDate = new MonthYearDate(person.FRA) //filing at FRA, which is retroactive (note that this line has to come after mockGetPrimaryFormInputs, which sets the person's FRA)
         scenario.discountRate = 1 //1% discount rate
         expect(service.calculateSinglePersonPV(person, scenario, false))
           .toBeCloseTo(175977, 0)
       })
     
       it('should return appropriate PV for single person, but with "still working" inputs and a different mortality table', () => { 
+        service.today = new MonthYearDate(2019, 7)
         scenario.maritalStatus = "single"
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
-        person.initialAgeRounded = 59
-        person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2024, 3, 1) //filing at age 64
         person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work after filing date but before FRA, earnings test IS relevant
         person.monthlyEarnings = 4500 //Just picking something here...
         scenario.discountRate = 1 //1% discount rate
         person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+        mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         expect(service.calculateSinglePersonPV(person, scenario, false))
           .toBeCloseTo(199623, 0)
       })
     
       it('should return appropriate PV for a single person who files at FRA but suspends immediately until 70', () => { 
+        service.today = new MonthYearDate(2019, 7)
         scenario.maritalStatus = "single"
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
         person.SSbirthDate = new MonthYearDate(1970, 8, 1) //Spouse A born in Sept 1970 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
-        person.FRA = birthdayService.findFRA(person.SSbirthDate)
         person.PIA = 1000
-        person.initialAgeRounded = 49
+        mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person.retirementBenefitDate = new MonthYearDate (person.FRA) //Filing exactly at FRA of 67
         person.beginSuspensionDate = new MonthYearDate(person.FRA)
         person.endSuspensionDate = new MonthYearDate(2040, 8, 1)//Age 70
@@ -102,37 +103,37 @@ describe('test calculateSinglePersonPV', () => {
       })
   
       it('should return appropriate PV for single person, a newborn child, no other complicating factors', () => {
+        service.today = new MonthYearDate(2019, 7)
         let child1:Person = new Person("1")
         scenario.maritalStatus = "single"
         scenario.children = [child1]
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
-        person.initialAge = 59
-        person.initialAgeRounded = 59
         child1.SSbirthDate = new MonthYearDate(2030, 3, 1) //child1 born in month in which retirement benefit begins
-        person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false))
           .toBeCloseTo(263569, 0)
       })
   
       it('should return appropriate PV for single person, two newborn twins, no other complicating factors (confirming family max is being applied correctly)', () => {
+        
         service.today = new MonthYearDate(2019, 0)
         let child1:Person = new Person("1")
         let child2:Person = new Person("2")
         scenario.maritalStatus = "single"
         scenario.children = [child1, child2]
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
-        mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService)
         child1.SSbirthDate = new MonthYearDate(2030, 3, 1) //child1 born in month in which retirement benefit begins (April 2030)
         child2.SSbirthDate = new MonthYearDate(2030, 3, 1) //child2 born in same month
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false))
           .toBeCloseTo(326730, 0)
@@ -146,15 +147,14 @@ describe('test calculateSinglePersonPV', () => {
         scenario.maritalStatus = "single"
         scenario.children = [child1, child2, child3]
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
-        mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService)
         child1.SSbirthDate = new MonthYearDate(2030, 3, 1) //child1 born in month in which retirement benefit begins (April 2030)
         child2.SSbirthDate = new MonthYearDate(2030, 3, 1) //child2 born in same month
         child3.SSbirthDate = new MonthYearDate(2030, 3, 1) //child3 born in same month
-        person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false))
           .toBeCloseTo(326730, 0)
@@ -170,17 +170,15 @@ describe('test calculateSinglePersonPV', () => {
         let child1:Person = new Person("1")
         scenario.children = [child1]
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
-        person.initialAge = 59
-        person.initialAgeRounded = 59
         child1.SSbirthDate = new MonthYearDate(2000, 3, 1) //child1 born April 2000
         child1.isOnDisability = true
-        person.FRA = birthdayService.findFRA(person.SSbirthDate)
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2023, 3, 1) //filing at age 63
         person.quitWorkDate = new MonthYearDate (2028, 3, 1) //Working until beyond FRA. Earnings test is relevant.
         person.monthlyEarnings = 3000
         scenario.discountRate = 1 //1% discount rate
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false))
           .toBeCloseTo(374709, 0)
@@ -241,6 +239,7 @@ describe('test calculateSinglePersonPV', () => {
 
 describe('test maximizeSinglePersonPV', () => {
   let service:PresentValueService
+  let benefitService:BenefitService
   let birthdayService:BirthdayService
   let mortalityService:MortalityService
   let scenario:CalculationScenario
@@ -251,6 +250,7 @@ describe('test maximizeSinglePersonPV', () => {
       providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
     })
     service = TestBed.get(PresentValueService)
+    benefitService = TestBed.get(BenefitService)
     birthdayService = TestBed.get(BirthdayService)
     mortalityService = TestBed.get(MortalityService)
     scenario = new CalculationScenario()
@@ -258,14 +258,14 @@ describe('test maximizeSinglePersonPV', () => {
   })
 
   it('should tell a single person to file ASAP with very high discount rate', () => {
+    service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
     scenario.maritalStatus = "single"
     person.actualBirthDate = new Date(1960, 3, 15) //Person born April 16 1960
     person.SSbirthDate = new MonthYearDate(1960, 3, 1)
-    person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
-    person.initialAge = 58
     person.PIA = 1000
     scenario.discountRate = 9 //9% discount rate
     person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
       .toEqual(new MonthYearDate(2022, 4, 1))
   })
@@ -292,9 +292,7 @@ describe('test maximizeSinglePersonPV', () => {
     person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
     person.actualBirthDate = new Date(1953, 3, 15) //Person born April 16 1953
     person.SSbirthDate = new MonthYearDate(1953, 3, 1)
-    person.FRA = birthdayService.findFRA(person.SSbirthDate)
-    person.initialAge = 65
-    person.initialAgeRounded = 65
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
     person.PIA = 1000
     person.fixedRetirementBenefitDate = new MonthYearDate (2017, 3, 1) //filed for retirement at age 64
     scenario.discountRate = 0
@@ -307,18 +305,18 @@ describe('test maximizeSinglePersonPV', () => {
   })
 
   it('should tell a single person to file ASAP with disabled child, 1% discount rate and SSA life expectancy', () => {
+    service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
     let child:Person = new Person("1")
     scenario.maritalStatus = "single"
     scenario.children = [child]
     person.actualBirthDate = new Date(1960, 3, 15) //Person born April 16 1960
     person.SSbirthDate = new MonthYearDate(1960, 3, 1)
-    person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
-    person.initialAge = 58
     person.PIA = 1000
     child.SSbirthDate = new MonthYearDate(1990, 7)
     child.isOnDisability = true
     scenario.discountRate = 1 //1% discount rate
     person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
       .toEqual(new MonthYearDate(2022, 4, 1))
   })
@@ -392,18 +390,15 @@ describe('tests calculateCouplePV', () => {
   })
 
     //Test the actual present value calculated
-    it('should return appropriate PV for married couple, basic inputs', () => { 
+    it('should return appropriate PV for married couple, basic inputs', () => {
+      service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
       personB.SSbirthDate = new MonthYearDate(1963, 6, 1) //Spouse B born in July 1963
-      personA.initialAgeRounded = 54
-      personB.initialAgeRounded = 55
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //Sept 2031
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //July 2030
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 700
       personB.PIA = 1900
       personA.retirementBenefitDate = new MonthYearDate (2032, 8, 1) //At age 68
@@ -415,20 +410,15 @@ describe('tests calculateCouplePV', () => {
         .toBeCloseTo(568516, 0)
     })
   
-    it('should return appropriate PV for married couple, basic inputs, no spousal benefits, one filing early one late', () => { 
+    it('should return appropriate PV for married couple, basic inputs, no spousal benefits, one filing early one late', () => {
+      service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1960, 3, 1) //Spouse A born in April 1960
       personB.SSbirthDate = new MonthYearDate(1960, 3, 1) //Spouse B born in April 1960
-      personA.initialAge = birthdayService.findAgeOnDate(personA, service.today)
-      personA.initialAgeRounded = Math.round(personA.initialAge)
-      personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
-      personB.initialAgeRounded = Math.round(personB.initialAge)
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //April 2027
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //April 2027
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 1000
       personB.PIA = 1000
       personA.retirementBenefitDate = new MonthYearDate (2030, 3) //At age 70 ($1240 monthly)
@@ -452,8 +442,8 @@ describe('tests calculateCouplePV', () => {
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
       personB.SSbirthDate = new MonthYearDate(1963, 6, 1) //Spouse B born in July 1963
-      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 700
       personB.PIA = 1900
       personA.retirementBenefitDate = new MonthYearDate (2032, 8, 1) //At age 68 (Sept 2032)
@@ -477,8 +467,8 @@ describe('tests calculateCouplePV', () => {
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
       personB.SSbirthDate = new MonthYearDate(1963, 6, 1) //Spouse B born in July 1963
-      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 1200
       personB.PIA = 1500
       personA.retirementBenefitDate = new MonthYearDate (2027, 8, 1) //At age 63
@@ -501,8 +491,8 @@ describe('tests calculateCouplePV', () => {
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
       personB.SSbirthDate = new MonthYearDate(1963, 6, 1) //Spouse B born in July 1963
-      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 700
       personB.PIA = 1900
       personA.retirementBenefitDate = new MonthYearDate (2032, 8, 1) //At age 68
@@ -525,8 +515,8 @@ describe('tests calculateCouplePV', () => {
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
       personB.SSbirthDate = new MonthYearDate(1955, 3, 1) //Spouse B born in April 1955
-      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 700
       personB.PIA = 1900
       personA.retirementBenefitDate = new MonthYearDate (2032, 8, 1) //At age 68
@@ -549,8 +539,8 @@ describe('tests calculateCouplePV', () => {
       personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1970, 8, 1) //Spouse A born in Sept 1970 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
       personB.SSbirthDate = new MonthYearDate(1970, 8, 1) //Spouse B born in Sept 1970
-      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 1000
       personB.PIA = 1000
       personA.retirementBenefitDate = new MonthYearDate (2037, 8, 1) //Filing exactly at FRA of 67
@@ -576,8 +566,8 @@ describe('tests calculateCouplePV', () => {
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1970, 0, 1) //Spouse A born in Jan 1970 (has to be under 62 right now, otherwise the value will be different every time we run the calculator because the discounting will happen to a different date)
       personB.SSbirthDate = new MonthYearDate(1970, 0, 1) //Spouse B born in Jan 1970
-      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 1800
       personB.PIA = 500
       personA.retirementBenefitDate = new MonthYearDate (personA.FRA) //Filing exactly at FRA of 67
@@ -603,14 +593,8 @@ describe('tests calculateCouplePV', () => {
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1970, 0, 1) //Spouse A born in Jan 1970
       personB.SSbirthDate = new MonthYearDate(1970, 0, 1) //Spouse B born in Jan 1970
-      personA.initialAge = birthdayService.findAgeOnDate(personA, service.today)
-      personA.initialAgeRounded = Math.round(personA.initialAge)
-      personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
-      personB.initialAgeRounded = Math.round(personB.initialAge)
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 500
       personB.PIA = 1500
           personB.isOnDisability = true
@@ -633,16 +617,10 @@ describe('tests calculateCouplePV', () => {
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1951, 8) //Sept 1951
       personB.SSbirthDate = new MonthYearDate(1952, 2)  //March 1952
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 500
       personB.PIA = 1500
-      personA.initialAge =  ( service.today.getMonth() - personA.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
-      personA.initialAgeRounded = Math.round(personA.initialAge)
-      personB.initialAge =  ( service.today.getMonth() - personB.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
-      personB.initialAgeRounded = Math.round(personB.initialAge)
       personA.hasFiled = true
       personB.hasFiled = true
       personA.retirementBenefitDate = new MonthYearDate (2016, 10) //Filed 2 years ago
@@ -663,16 +641,10 @@ describe('tests calculateCouplePV', () => {
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1955, 10) //Nov 1955
       personB.SSbirthDate = new MonthYearDate(1955, 10)  //Nov 1955
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 700
       personB.PIA = 1500
-      personA.initialAge =  ( service.today.getMonth() - personA.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
-      personA.initialAgeRounded = Math.round(personA.initialAge)
-      personB.initialAge =  ( service.today.getMonth() - personB.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
-      personB.initialAgeRounded = Math.round(personB.initialAge)
       personA.hasFiled = true
       personB.hasFiled = true
       personA.retirementBenefitDate = new MonthYearDate (2017, 11) //Filed ASAP, 62 and 1 month
@@ -973,8 +945,8 @@ describe('tests calculateCouplePV', () => {
         personB.actualBirthDate = new Date (1975, 11, 27) //December 1975
         personA.SSbirthDate = new MonthYearDate(1974, 9)
         personB.SSbirthDate = new MonthYearDate(1975, 11)
-        mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-        mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+        mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+        mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
         personA.retirementBenefitDate = new MonthYearDate(2038, 9) //files at 64
         personB.retirementBenefitDate = new MonthYearDate(2038, 1) //files at 62 and 2 months
         personA.spousalBenefitDate = new MonthYearDate(2038, 9) //later of two retirement benefit dates
@@ -1006,8 +978,8 @@ describe('tests calculateCouplePV', () => {
         personB.actualBirthDate = new Date (1982, 6, 21) //July 1982
         personA.SSbirthDate = new MonthYearDate(1980, 2)
         personB.SSbirthDate = new MonthYearDate(1982, 6)
-        mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-        mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+        mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+        mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
         personA.retirementBenefitDate = new MonthYearDate(2043, 2) //files at 63
         personB.retirementBenefitDate = new MonthYearDate(2047, 6) //files at 65
         personA.spousalBenefitDate = new MonthYearDate(2047, 6) //later of two retirement benefit dates
@@ -1042,8 +1014,8 @@ describe('tests calculateCouplePV', () => {
         personB.actualBirthDate = new Date (1982, 6, 21) //July 1982
         personA.SSbirthDate = new MonthYearDate(1982, 2)
         personB.SSbirthDate = new MonthYearDate(1982, 6)
-        mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-        mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+        mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+        mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
         personA.retirementBenefitDate = new MonthYearDate(2045, 2) //files at 63
         personB.retirementBenefitDate = new MonthYearDate(2047, 6) //files at 65
         personA.spousalBenefitDate = new MonthYearDate(2047, 6) //later of two retirement benefit dates (65 and 4 months)
@@ -1080,8 +1052,8 @@ describe('tests calculateCouplePV', () => {
         personB.actualBirthDate = new Date (1960, 2, 21) //March 1960
         personA.SSbirthDate = new MonthYearDate(1960, 2)
         personB.SSbirthDate = new MonthYearDate(1960, 2)
-        mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-        mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+        mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+        mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
         personA.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63
         personB.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63
         personA.spousalBenefitDate = new MonthYearDate(2025, 2) //This date doesn't matter, given PIAs. But same reasoning as field for personB
@@ -1138,8 +1110,8 @@ describe('tests calculateCouplePV', () => {
         personA.spousalBenefitDate = new MonthYearDate(2025, 2) //This date doesn't matter, given PIAs. But same reasoning as field for personB
         personB.spousalBenefitDate = new MonthYearDate(2025, 2)
         //^^Spousal benefit begins March 2023 when personA starts retirement. But it's child in care spousal benefit until child turns 16 in March 2025. Here we are having them file Form SSA-25 immediately at that date.
-        mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-        mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+        mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+        mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
         personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
         personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
         expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(381552, 0)
@@ -1197,8 +1169,8 @@ describe('tests calculateCouplePV', () => {
           personB.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63
           personA.spousalBenefitDate = new MonthYearDate(2027, 0) //Doesn't matter but uses same logic as field for personB
           personB.spousalBenefitDate = new MonthYearDate(2027, 0) //child3 is under 16 until Jan 2027, so spousal benefit will be child-in-care spousal until then. Here we're having personB file Form SSA-26 immediately Jan 2027
-          mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-          mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+          mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+          mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           expect(service.calculateCouplePV(personA, personB, scenario, true))
@@ -1266,8 +1238,8 @@ describe('tests calculateCouplePV', () => {
           personA.spousalBenefitDate = new MonthYearDate(2034, 2) //when personB's retirement starts (not that this date really matters)
           personB.spousalBenefitDate = new MonthYearDate(2034, 2)
           //^^personB starts their spousal benefit when they start their retirement benefit. (They also get child-in-care spousal benefits earlier, but those end in March 2026 when child turns 16.)
-          mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-          mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+          mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+          mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(445624, 0)
@@ -1316,8 +1288,8 @@ describe('tests calculateCouplePV', () => {
           personB.retirementBenefitDate = new MonthYearDate(2025, 3) //Files at 62 and 1 month
           personA.spousalBenefitDate = new MonthYearDate(2025, 3) //when personB's retirement starts (not that this date really matters)
           personB.spousalBenefitDate = new MonthYearDate(2026, 2) //child turns 16 in March 2026. personB files Form SSA-25 at that time.
-          mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-          mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+          mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+          mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           expect(service.calculateCouplePV(personA, personB, scenario, true)).toBeCloseTo(440179, 0)
@@ -1384,8 +1356,8 @@ describe('tests calculateCouplePV', () => {
           personA.spousalBenefitDate = new MonthYearDate(personA.FRA) //This date doesn't matter, given PIAs. But same reasoning as field for personB
           personB.spousalBenefitDate = new MonthYearDate(personB.FRA)
           //^^Spousal benefit begins March 2023 when personA starts retirement. But it's child in care spousal benefit at all ages, given disabled child.
-          mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-          mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+          mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+          mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           service.calculateCouplePV(personA, personB, scenario, true)
@@ -1449,6 +1421,7 @@ describe('tests calculateCouplePV', () => {
     })
 
     it ('should tell a high-PIA spouse to wait until 70, with low discount rate and long lifespans', () => {
+      service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
@@ -1456,14 +1429,8 @@ describe('tests calculateCouplePV', () => {
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1)
       personB.actualBirthDate = new Date(1964, 9, 11) //Spouse B born in October 1964
       personB.SSbirthDate = new MonthYearDate(1964, 9, 1)
-      personA.initialAge = 60
-      personB.initialAge = 60
-      personA.initialAgeRounded = 60
-      personB.initialAgeRounded = 60
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 1200
       personB.PIA = 1900
       personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
@@ -1476,6 +1443,7 @@ describe('tests calculateCouplePV', () => {
     })
   
     it ('should tell a high-PIA spouse to file a restricted app when possible', () => {
+      service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0) 
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) 
@@ -1483,14 +1451,8 @@ describe('tests calculateCouplePV', () => {
       personA.SSbirthDate = new MonthYearDate(1953, 8, 1)
       personB.actualBirthDate = new Date(1953, 9, 11) //Spouse B born in October 1953
       personB.SSbirthDate = new MonthYearDate(1953, 9, 1)
-      personA.initialAge = 64
-      personB.initialAge = 64
-      personA.initialAgeRounded = 64
-      personB.initialAgeRounded = 64
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 2200
       personB.PIA = 1400
       personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
@@ -1505,6 +1467,7 @@ describe('tests calculateCouplePV', () => {
     })
   
     it ('should tell personA to wait until 70, even with slightly lower PIA, if personB filed early at 62, given low discount rate and long life expectancies', () => {
+      service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       personB.hasFiled = true
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
@@ -1514,14 +1477,8 @@ describe('tests calculateCouplePV', () => {
       personB.actualBirthDate = new Date(1954, 9, 11) //personB born in October 1954
       personB.SSbirthDate = new MonthYearDate(1954, 9, 1)
       personB.fixedRetirementBenefitDate = new MonthYearDate (2016, 10, 1) //personB filed at 62 and 1 month
-      personA.initialAge = 62
-      personB.initialAge = 63
-      personA.initialAgeRounded = 62
-      personB.initialAgeRounded = 63
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 1000
       personB.PIA = 1150
       personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
@@ -1533,6 +1490,7 @@ describe('tests calculateCouplePV', () => {
     })
   
     it('should tell personA to file ASAP, even if personB filed early at 62, if personA has lower PIA (such that even delaying wouldnnt result in higher last-to-die benefit', () => {
+      service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       personB.hasFiled = true
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -1542,14 +1500,8 @@ describe('tests calculateCouplePV', () => {
       personB.actualBirthDate = new Date(1954, 9, 11) //personB born in October 1954
       personB.SSbirthDate = new MonthYearDate(1954, 9, 1)
       personB.fixedRetirementBenefitDate = new MonthYearDate (2016, 10, 1) //personB filed at 62 and 1 month
-      personA.initialAge = 62
-      personB.initialAge = 63
-      personA.initialAgeRounded = 62
-      personB.initialAgeRounded = 63
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 1100
       personB.PIA = 2000
       personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
@@ -1562,6 +1514,7 @@ describe('tests calculateCouplePV', () => {
     })
   
     it('should tell personA to suspend until 70, if personA filed early at 62 and has the much higher PIA', () => {
+      service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       personA.hasFiled = true
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -1571,14 +1524,8 @@ describe('tests calculateCouplePV', () => {
       personB.actualBirthDate = new Date(1960, 9, 15) //personB born in October 1960
       personB.SSbirthDate = new MonthYearDate(1960, 9, 1)
       personA.fixedRetirementBenefitDate = new MonthYearDate (2016, 10, 1) //personA filed at 62
-      personA.initialAge = 63
-      personB.initialAge = 62
-      personA.initialAgeRounded = 63
-      personB.initialAgeRounded = 62
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 2000
       personB.PIA = 1100
       personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
@@ -1590,6 +1537,7 @@ describe('tests calculateCouplePV', () => {
     })
   
     it('should tell personA not to suspend, if personA filed early at 64, has lower PIA, personB hasnt filed, and both have short life expectancy, high-ish discount rate', () => {
+      service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       personA.hasFiled = true
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0)
@@ -1599,14 +1547,8 @@ describe('tests calculateCouplePV', () => {
       personB.actualBirthDate = new Date(1954, 2, 15) //personB born in March 1954
       personB.SSbirthDate = new MonthYearDate(1954, 2, 1)
       personA.fixedRetirementBenefitDate = new MonthYearDate (2018, 3, 1) //personA filed at 64
-      personA.initialAge = 64
-      personB.initialAge = 64
-      personA.initialAgeRounded = 64
-      personB.initialAgeRounded = 64
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 600
       personB.PIA = 2100
       personA.quitWorkDate = new MonthYearDate(2015,3,1) //already quit working
@@ -1619,6 +1561,7 @@ describe('tests calculateCouplePV', () => {
     })
   
     it('should tell personA to file at 68, if they have higher PIA, personB has normal life expectancy, and they are using A-dies-at-68 assumption', () => {
+      service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed", 68)
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
@@ -1626,14 +1569,8 @@ describe('tests calculateCouplePV', () => {
       personA.SSbirthDate = new MonthYearDate(1960, 2, 1)
       personB.actualBirthDate = new Date(1960, 2, 15) //personB born in March 1960
       personB.SSbirthDate = new MonthYearDate(1960, 2, 1)
-      personA.initialAge = 58
-      personB.initialAge = 58
-      personA.initialAgeRounded = 58
-      personB.initialAgeRounded = 58
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 2000
       personB.PIA = 1100
       personA.quitWorkDate = new MonthYearDate(2015,3,1) //already quit working
@@ -1646,6 +1583,7 @@ describe('tests calculateCouplePV', () => {
     })
   
     it('should tell personA to suspend from FRA to 70, if personA is disabled, personA has higher PIA, both have normal life expectancies', () => {
+      service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
@@ -1653,14 +1591,8 @@ describe('tests calculateCouplePV', () => {
       personA.SSbirthDate = new MonthYearDate(1960, 2, 1)
       personB.actualBirthDate = new Date(1960, 2, 15) //personB born in March 1960
       personB.SSbirthDate = new MonthYearDate(1960, 2, 1)
-      personA.initialAge = 58
-      personB.initialAge = 58
-      personA.initialAgeRounded = 58
-      personB.initialAgeRounded = 58
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 2000
       personB.PIA = 1100
       personA.isOnDisability = true
@@ -1678,6 +1610,7 @@ describe('tests calculateCouplePV', () => {
     })
   
     it('should tell personB to file for spousal benefits ASAP (even though personA is younger than 62 at the time), if personA is disabled, personA has much higher PIA, one has a short life expectancy, and high-ish discount rate. Should also tell personA to suspend at FRA', () => {
+      service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0) //originally SM2
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) //originally SSA
@@ -1685,14 +1618,8 @@ describe('tests calculateCouplePV', () => {
       personA.SSbirthDate = new MonthYearDate(1964, 3, 1)
       personB.actualBirthDate = new Date(1960, 3, 15) //personB born in April 1960
       personB.SSbirthDate = new MonthYearDate(1960, 3, 1)
-      personA.initialAge = 54
-      personB.initialAge = 58
-      personA.initialAgeRounded = 54
-      personB.initialAgeRounded = 58
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 2800
       personB.PIA = 1000
       personA.isOnDisability = true
@@ -1720,14 +1647,8 @@ describe('tests calculateCouplePV', () => {
       personA.SSbirthDate = new MonthYearDate(1952, 8)
       personB.actualBirthDate = new Date(1952, 9, 11) //Spouse B born in October 1952
       personB.SSbirthDate = new MonthYearDate(1952, 9)
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
-      personA.initialAge = birthdayService.findAgeOnDate(personA, service.today)
-      personA.initialAgeRounded = Math.round(personA.initialAge)
-      personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
-      personB.initialAgeRounded = Math.round(personB.initialAge)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 1000
       personB.PIA = 1400
       scenario.discountRate = 3
@@ -1756,14 +1677,10 @@ describe('tests calculateCouplePV', () => {
       personA.SSbirthDate = new MonthYearDate(1960, 3)
       personB.actualBirthDate = new Date(1970, 3, 11) //Spouse B born in April 1970
       personB.SSbirthDate = new MonthYearDate(1970, 3)
-      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-      personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
       personA.PIA = 2500
       personB.PIA = 400
-      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService)
-      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService)
+      mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+      mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
       let results = service.maximizeCouplePViterateBothPeople(personA, personB, scenario)
       expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2022, 4))
       expect(results.solutionsArray[1].date).toEqual(new MonthYearDate(2022, 4))
@@ -1784,6 +1701,7 @@ describe('tests calculateCouplePV', () => {
 
   describe('Tests for maximizeCouplePViterateOnePerson', () => {
     let service:PresentValueService
+    let benefitService:BenefitService
     let mortalityService:MortalityService
     let birthdayService:BirthdayService
     let scenario:CalculationScenario
@@ -1795,6 +1713,7 @@ describe('tests calculateCouplePV', () => {
         providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
       })
       service = TestBed.get(PresentValueService)
+      benefitService = TestBed.get(BenefitService)
       mortalityService = TestBed.get(MortalityService)
       birthdayService = TestBed.get(BirthdayService)
       scenario = new CalculationScenario()
@@ -1803,6 +1722,7 @@ describe('tests calculateCouplePV', () => {
     })
 
   it ('should tell a divorced user with significantly lower PIA to file ASAP', () => {
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     scenario.maritalStatus = "divorced"
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
@@ -1811,14 +1731,8 @@ describe('tests calculateCouplePV', () => {
     personB.actualBirthDate = new Date(1960, 9, 11) //Spouse B born in October 1960
     personB.SSbirthDate = new MonthYearDate(1960, 9, 1)
     personB.fixedRetirementBenefitDate = new MonthYearDate (2028, 9, 1) //Filing at exactly age 68
-    personA.initialAge = birthdayService.findAgeOnDate(personA, service.today)
-    personA.initialAgeRounded = Math.round(personA.initialAge)
-    personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
-    personB.initialAgeRounded = Math.round(personB.initialAge)
-    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
     personA.PIA = 700
     personB.PIA = 1900
     personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
@@ -1831,6 +1745,7 @@ describe('tests calculateCouplePV', () => {
   })
   
   it ('should tell a divorced user with higher PIA and an ex who filed early (so essentially a single person) to file at 70 given long life expectancy and low discount rate', () => {
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     scenario.maritalStatus = "divorced"
     personA.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
@@ -1839,14 +1754,8 @@ describe('tests calculateCouplePV', () => {
     personB.actualBirthDate = new Date(1954, 9, 11) //Spouse B born in October 1954
     personB.SSbirthDate = new MonthYearDate(1954, 9, 1)
     personB.fixedRetirementBenefitDate = new MonthYearDate (2016, 10, 1) //Ex filing at 62
-    personA.initialAge = birthdayService.findAgeOnDate(personA, service.today)
-    personA.initialAgeRounded = Math.round(personA.initialAge)
-    personB.initialAge = birthdayService.findAgeOnDate(personB, service.today)
-    personB.initialAgeRounded = Math.round(personB.initialAge)
-    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
     personA.PIA = 1200
     personB.PIA = 800
     personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
@@ -1858,6 +1767,7 @@ describe('tests calculateCouplePV', () => {
   })
 
   it ('should tell personB to wait until 70 if personA is over 70 and filed early, personB has the much higher PIA, both have long life expectancies, and low discount rate', () => {
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     personA.hasFiled = true
     scenario.maritalStatus = "married"
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS1", 0)
@@ -1867,15 +1777,8 @@ describe('tests calculateCouplePV', () => {
     personB.actualBirthDate = new Date(1960, 9, 15) //personB born October 1960
     personB.SSbirthDate = new MonthYearDate(1960, 9, 1)
     personA.fixedRetirementBenefitDate = new MonthYearDate (2010, 4, 1) //personA filed at 62 and 1 month
-    let today:MonthYearDate = new MonthYearDate()
-    personA.initialAge =  ( today.getMonth() - personA.SSbirthDate.getMonth() + 12 * (today.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
-    personA.initialAgeRounded = Math.round(personA.initialAge)
-    personB.initialAge =  ( today.getMonth() - personB.SSbirthDate.getMonth() + 12 * (today.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
-    personB.initialAgeRounded = Math.round(personB.initialAge)
-    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
     personA.PIA = 400
     personB.PIA = 2000
     personA.quitWorkDate = new MonthYearDate(2010,3,1) //already quit working
@@ -1887,6 +1790,7 @@ describe('tests calculateCouplePV', () => {
   })
 
   it ('should tell personA to file ASAP if they have lower PIA and personB is much older (over 70), highish discount rate', () => {
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     personB.hasFiled = true
     scenario.maritalStatus = "married"
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -1895,15 +1799,9 @@ describe('tests calculateCouplePV', () => {
     personA.SSbirthDate = new MonthYearDate(1960, 9, 1)
     personB.actualBirthDate = new Date(1948, 3, 11) //personB born April 1948
     personB.SSbirthDate = new MonthYearDate(1948, 3, 1)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
     personB.fixedRetirementBenefitDate = new MonthYearDate (personB.FRA) //personB filed at FRA
-    personA.initialAge = 58
-    personB.initialAge = 70.5
-    personA.initialAgeRounded = 58
-    personB.initialAgeRounded = 70
-    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
     personA.PIA = 400
     personB.PIA = 2000
     personA.quitWorkDate = new MonthYearDate(2010,3,1) //already quit working
@@ -1915,6 +1813,7 @@ describe('tests calculateCouplePV', () => {
   })
 
   it ('should tell personB to suspend until 70 if they already filed at FRA, personA is over 70 and filed early, personB has much higher PIA, both have long life expectancies, and low discount rate', () => {
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     personA.hasFiled = true
     personB.hasFiled = true
     scenario.maritalStatus = "married"
@@ -1922,18 +1821,12 @@ describe('tests calculateCouplePV', () => {
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
     personA.actualBirthDate = new Date(1948, 3, 11) //personA born April 1948
     personA.SSbirthDate = new MonthYearDate(1948, 3, 1)
-    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
     personB.actualBirthDate = new Date(1952, 3, 15) //personB born April 1952
     personB.SSbirthDate = new MonthYearDate(1952, 3, 1)
-    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
     personA.fixedRetirementBenefitDate = new MonthYearDate (2010, 4, 1) //personA filed at 62 and 1 month
     personB.fixedRetirementBenefitDate = new MonthYearDate (personB.FRA) //personB filed at FRA
-    personA.initialAge = 70.5
-    personB.initialAge = 66
-    personA.initialAgeRounded = 70
-    personB.initialAgeRounded = 66
     personA.PIA = 400
     personB.PIA = 2000
     personA.quitWorkDate = new MonthYearDate(2010,3,1) //already quit working
@@ -1945,6 +1838,7 @@ describe('tests calculateCouplePV', () => {
   })
 
   it ('should tell personB not to suspend, if personB filed early at 64, has lower PIA, personA is over 70, and both have short life expectancy, high-ish discount rate', () => {
+    service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     personA.hasFiled = true
     personB.hasFiled = true
     scenario.maritalStatus = "married"
@@ -1956,14 +1850,8 @@ describe('tests calculateCouplePV', () => {
     personB.SSbirthDate = new MonthYearDate(1954, 2, 1)
     personA.fixedRetirementBenefitDate = new MonthYearDate (2015, 2, 11) //personA filed at 68
     personB.fixedRetirementBenefitDate = new MonthYearDate (2018, 3, 1) //personB filed at 64
-    personA.initialAge = 71
-    personB.initialAge = 64
-    personA.initialAgeRounded = 71
-    personB.initialAgeRounded = 64
-    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
     personA.PIA = 2000
     personB.PIA = 700
     personA.quitWorkDate = new MonthYearDate(2010,3,1) //already quit working
@@ -1984,14 +1872,8 @@ describe('tests calculateCouplePV', () => {
     personA.SSbirthDate = new MonthYearDate(1954, 2, 1)
     personB.actualBirthDate = new Date(1954, 2, 15) //personB born in March 1954
     personB.SSbirthDate = new MonthYearDate(1954, 2, 1)
-    personA.initialAge =  ( service.today.getMonth() - personA.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
-    personA.initialAgeRounded = Math.round(personA.initialAge)
-    personB.initialAge =  ( service.today.getMonth() - personB.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
-    personB.initialAgeRounded = Math.round(personB.initialAge)
-    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
     personA.PIA = 2000
     personB.PIA = 700
     personA.quitWorkDate = new MonthYearDate(2010,3,1) //already quit working
@@ -2016,14 +1898,8 @@ describe('tests calculateCouplePV', () => {
     personA.SSbirthDate = new MonthYearDate(1948, 8)
     personB.actualBirthDate = new Date(1952, 9, 11) //Spouse B born in October 1952
     personB.SSbirthDate = new MonthYearDate(1952, 9)
-    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
-    personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
-    personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-    personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
-    personA.initialAge =  ( service.today.getMonth() - personA.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personA.SSbirthDate.getFullYear()) )/12
-    personA.initialAgeRounded = Math.round(personA.initialAge)
-    personB.initialAge =  ( service.today.getMonth() - personB.SSbirthDate.getMonth() + 12 * (service.today.getFullYear() - personB.SSbirthDate.getFullYear()) )/12
-    personB.initialAgeRounded = Math.round(personB.initialAge)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
     personA.PIA = 1800
     personB.PIA = 1400
     scenario.discountRate = 8

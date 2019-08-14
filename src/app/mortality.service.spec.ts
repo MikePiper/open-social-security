@@ -43,9 +43,9 @@ describe('MortalityService', () => {
     let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "single"
     let person:Person = new Person("A")
-    person.baseMortalityFactor = 62
+    person.initialAgeRounded = 62
     person.mortalityTable = service.determineMortalityTable("female", "SSA", 0)
-    person.baseMortalityFactor = 1 / person.mortalityTable[62]
+    person.baseMortalityFactor = service.calculateBaseMortalityFactor(person)
     let age = 80
     expect(service.calculateProbabilityAlive(scenario, person, age))
         .toBeCloseTo(0.6791, 4) //Lives at 62 is 90,017. Lives at 81 (i.e., end of age 80) is 61,131. 61131/90017 = 0.6791

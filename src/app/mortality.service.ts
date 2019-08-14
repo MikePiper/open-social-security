@@ -21,7 +21,7 @@ export class MortalityService {
   }
 
 
-  calculateBaseMortalityFactor(scenario:CalculationScenario, person:Person, otherPerson?:Person):number{
+  calculateBaseMortalityFactor(person:Person):number{
     let baseMortalityFactor:number
     baseMortalityFactor = 1 / person.mortalityTable[person.initialAgeRounded]
     return baseMortalityFactor
