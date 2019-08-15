@@ -1911,3 +1911,19 @@ describe('tests calculateCouplePV', () => {
   })
 
 })
+
+fdescribe('test discountToPresentValue', () => {
+  let service:PresentValueService
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [PresentValueService]
+    })
+    service = TestBed.get(PresentValueService)
+  })
+
+  it('should correctly calculate present value', () => {
+    let PV:number = service.discountToPresentValue(1, 1000, 2019, 2030) 
+    expect(PV).toBeCloseTo(99999999, 0)
+  })
+
+})

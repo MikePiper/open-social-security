@@ -33,9 +33,6 @@ export class PresentValueService {
       //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
       if (person.isOnDisability === true){person = this.familyMaximumService.calculateFamilyMaximum(person, this.today)}
 
-    // //Determine baseMortalityFactor
-    //     person.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(scenario, person)          
-
     //calculate initial retirement benefit
       person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
 
@@ -162,9 +159,6 @@ export class PresentValueService {
     this.benefitService.checkWhichPIAtoUse(personA, this.today)//checks whether person is *entitled* to gov pension (by checking eligible and pension beginning date) and sets PIA accordingly based on one of two PIA inputs
     this.benefitService.checkWhichPIAtoUse(personB, this.today)
 
-    // //Determine baseMortalityFactor for each person
-    //     personA.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(scenario, personA, personB)
-    //     personB.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(scenario, personB, personA)
 
     //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
       if (personA.isOnDisability === true){personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)}
@@ -329,7 +323,12 @@ export class PresentValueService {
                 (1 - probabilityAalive) * (1 - probabilityBalive) * calcYear.annualBenefitBothDeceased
 
 
-
+            // if (printOutputTable === true){
+            //   console.log("monthly loop year: " + calcYear.date.getFullYear())
+            //   console.log("probability A alive: " + probabilityAalive)
+            //   console.log("probability B alive: " + probabilityBalive)
+            //   console.log("undiscounted annualPV: " + annualPV)
+            // }
 
             //Discount that probability-weighted annual benefit amount to age 62
                 //Find which spouse is older, because we're discounting back to date on which older spouse is age 62. (Have to use age-1 here because we want their age as of beginning of year.)
@@ -337,14 +336,6 @@ export class PresentValueService {
                 if (personA.age > personB.age) {
                   olderAge = personA.age-1
                 } else {olderAge = personB.age-1}
-
-                // if (printOutputTable === true){
-                //   console.log("monthly loop year: " + calcYear.date.getFullYear())
-                //   console.log("probability A alive: " + probabilityAalive)
-                //   console.log("probability B alive: " + probabilityBalive)
-                //   console.log("undiscounted annualPV: " + annualPV)
-                // }
-
                 //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
                 annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
 
@@ -1118,5 +1109,23 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       }
     }  
     return startDate
+  }
+
+  discountToPresentValue(discountRate:number, futureValue:number, thisYear:number, futureYear:number):number{
+    let presentValue:number
+    //discountRate comes in as whole number, convert to decimal
+    discountRate = discountRate / 100
+    //Just go by difference in year values, ignoring months (i.e., we're assuming benefits are received mid-year, but also assuming that it's the end of June right now)
+    presentValue = futureValue / (1 + discountRate/2) / Math.pow((1 + discountRate),(futureYear - thisYear))
+    //If it's a retroactive benefit, it should not be reverse-discounted. It should just be taken at their face value.
+    if (futureYear < thisYear){
+      presentValue = futureValue
+    }
+    //If this year is 2019:
+      //How much should 2018 benefits be discounted?
+      //How much should 2019 benefits be discounted?
+      //How much should 2020 benefits be discounted?
+      //How much should 2021 benefits be discounted?
+    return presentValue
   }
 }
