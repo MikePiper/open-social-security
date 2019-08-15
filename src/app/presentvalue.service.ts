@@ -115,9 +115,8 @@ export class PresentValueService {
           let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(scenario, person, person.age)
           calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * probabilityPersonAlive + calcYear.annualBenefitSinglePersonDeceased * (1 - probabilityPersonAlive)
 
-          //Discount that probability-weighted annual benefit amount to age 62
-          calcYear.annualPV = calcYear.annualPV / (1 + scenario.discountRate/100/2) //e.g., benefits received during age 62 must be discounted for 0.5 years
-          calcYear.annualPV = calcYear.annualPV / Math.pow((1 + scenario.discountRate/100),(person.age - 62)) //e.g., benefits received during age 63 must be discounted for 1.5 years
+          //Discount that probability-weighted annual benefit amount back to this year
+          calcYear.annualPV = this.discountToPresentValue(scenario.discountRate, calcYear.annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
 
           //Add discounted benefit to ongoing sum
           retirementPV = retirementPV + calcYear.annualPV
@@ -330,14 +329,8 @@ export class PresentValueService {
             //   console.log("undiscounted annualPV: " + annualPV)
             // }
 
-            //Discount that probability-weighted annual benefit amount to age 62
-                //Find which spouse is older, because we're discounting back to date on which older spouse is age 62. (Have to use age-1 here because we want their age as of beginning of year.)
-                let olderAge: number
-                if (personA.age > personB.age) {
-                  olderAge = personA.age-1
-                } else {olderAge = personB.age-1}
-                //Here is where actual discounting happens. Discounting by half a year, because we assume all benefits received mid-year. Then discounting for any additional years needed to get back to PV at 62.
-                annualPV = annualPV / (1 + scenario.discountRate/100/2) / Math.pow((1 + scenario.discountRate/100),(olderAge - 62))
+            //Discount that probability-weighted annual benefit amount back to this year
+              annualPV = this.discountToPresentValue(scenario.discountRate, annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
 
                 // if (printOutputTable === true){
                 //   console.log("discounted annualPV: " + annualPV)
@@ -1111,21 +1104,19 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     return startDate
   }
 
-  discountToPresentValue(discountRate:number, futureValue:number, thisYear:number, futureYear:number):number{
+  discountToPresentValue(discountRate:number, futureValue:number, thisYear:number, cashflowYear:number):number{
     let presentValue:number
     //discountRate comes in as whole number, convert to decimal
     discountRate = discountRate / 100
-    //Just go by difference in year values, ignoring months (i.e., we're assuming benefits are received mid-year, but also assuming that it's the end of June right now)
-    presentValue = futureValue / (1 + discountRate/2) / Math.pow((1 + discountRate),(futureYear - thisYear))
-    //If it's a retroactive benefit, it should not be reverse-discounted. It should just be taken at their face value.
-    if (futureYear < thisYear){
-      presentValue = futureValue
+    //If it's a benefit from last year (retroactive) or a benefit from this year, it should just be taken at face value.
+    if (cashflowYear < thisYear){
+        presentValue = futureValue
+      }
+    else {
+      //Just go by difference in year values, ignoring months.
+        //For example, next year's benefits should be discounted by 1 year. Some might be as much as 23 months in future. But some might only be 1 month in future.
+      presentValue = futureValue / Math.pow((1 + discountRate),(cashflowYear - thisYear))
     }
-    //If this year is 2019:
-      //How much should 2018 benefits be discounted?
-      //How much should 2019 benefits be discounted?
-      //How much should 2020 benefits be discounted?
-      //How much should 2021 benefits be discounted?
     return presentValue
   }
 }
