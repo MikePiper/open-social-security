@@ -9,6 +9,15 @@ body{
     margin-bottom:150px;
 }
 
+h1 { /* making h1 elements blue */
+    color: #1b64a3;
+}
+
+p, ol, ul, blockquote{ /* a little more whitespace between paragraphs etc */
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
 #jumbolink { /* removes underline from the link in jumbotron */
     text-decoration:none;
 }
@@ -19,6 +28,11 @@ body{
     font-family: Roboto, sans-serif;
     padding-bottom:0px;
     text-decoration:none;
+}
+
+.jumbotron p { /* styling for the p element within the jumbotron (i.e., the subtitle of site) */
+    margin-top: 0em;
+    margin-bottom: 0em;
 }
 
 label {
@@ -64,6 +78,10 @@ label {
 
 #contentarea {
     margin-bottom:100px;
+}
+
+.container{
+    max-width: 1080px;
 }
 
 @media only screen and (max-width: 600px) {
