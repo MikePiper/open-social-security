@@ -281,7 +281,10 @@ export class BenefitService {
   }
 
   applyAssumedBenefitCut(scenario:CalculationScenario, calcYear:CalculationYear){
-    if (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() >= scenario.benefitCutYear) {
+    if (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() >= scenario.benefitCutYear && calcYear.date.getMonth() === 11) {
+    //If there's a benefit cut assumption...
+    //...and we've reached the year in question...
+    //...and it's December (because we only want to apply this cut at the end of the year, given that it's a multiplication to annual sums)
       //Apply cut to sums included in PV calculation
       calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive * (1 - scenario.benefitCutPercentage/100)
       calcYear.annualBenefitSinglePersonDeceased = calcYear.annualBenefitSinglePersonDeceased * (1 - scenario.benefitCutPercentage/100)

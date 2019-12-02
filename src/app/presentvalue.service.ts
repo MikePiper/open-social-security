@@ -285,6 +285,9 @@ export class PresentValueService {
             //Earnings test not necessary
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitBothDeceased)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, false, printOutputTable)
+
+      //Apply assumed benefit cut, if applicable
+            this.benefitService.applyAssumedBenefitCut(scenario, calcYear)
       }
 
       //After month is over increase age of everybody by 1 month
@@ -297,10 +300,6 @@ export class PresentValueService {
       if (calcYear.date.getMonth() == 11){
             //Add back any overwithholding from earnings test
             this.earningsTestService.addBackOverwithholding(calcYear, scenario)
-
-
-            //Apply assumed benefit cut, if applicable (use function from BenefitService, not from PVservice)
-            this.benefitService.applyAssumedBenefitCut(scenario, calcYear)
 
             //If printOutputTable is true, add row to output table.
               if (printOutputTable === true && scenario.maritalStatus == "married"){
