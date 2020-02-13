@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MonthYearDate } from './data model classes/monthyearDate';
 
 @Component({
   selector: 'app-root',
@@ -6,4 +7,5 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  today:MonthYearDate = new MonthYearDate()
 }
