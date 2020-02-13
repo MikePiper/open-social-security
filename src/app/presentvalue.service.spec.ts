@@ -220,11 +220,12 @@ describe('test calculateSinglePersonPV', () => {
   
       it('should show appropriate adjustedRetirementBenefitDate, when a single person files before FRA and has earnings to cause some but not complete withholding', () => {
         service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+        earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
         person.SSbirthDate = new MonthYearDate(1956, 5)//Born June 1956
         person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
         person.quitWorkDate = new MonthYearDate (2028, 0, 1) //quitting work after FRA
-        person.monthlyEarnings = 1500
+        person.monthlyEarnings = 1500 //Annual earnings = $18,000
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2018, 9, 1) //Applying for retirement benefit October 2018 (48 months prior to FRA -> monthly benefit is 750 before ARF)
         service.calculateSinglePersonPV(person, scenario, false)
