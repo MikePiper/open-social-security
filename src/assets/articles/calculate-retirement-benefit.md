@@ -7,7 +7,7 @@ A reader writes in, asking:
   How could I find what my benefit would be if, for example, I work until 60 but then wait until 70 to start taking my retirement benefit?"
 </blockquote>
 
-The SSA has a few tools on their website that can help answer this question. (The open-source <a href="https://socialsecurity.tools/" target="_blank">"Social Security Tools" website</a> is another good option.)
+The SSA has a few tools on their website that can help answer this question. (The open-source <a href="https://SSA.tools/" target="_blank">"Social Security Tools" website</a> is another good option.)
 
 The <a href="https://www.ssa.gov/OACT/anypia/anypia.html" target="_blank">SSA's "AnyPIA" Detailed Calculator</a> would do the job, but it has a steep learning curve and does not work for Macs.
 
