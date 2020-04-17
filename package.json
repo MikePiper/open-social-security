@@ -29,7 +29,6 @@
     "@angular/platform-server": "^7.2.6",
     "@angular/router": "^7.2.6",
     "@nguniversal/express-engine": "^7.1.0",
-    "@nguniversal/module-map-ngfactory-loader": "0.0.0",
     "core-js": "^2.4.1",
     "express": "^4.15.2",
     "ngx-bootstrap": "^3.0.1",
