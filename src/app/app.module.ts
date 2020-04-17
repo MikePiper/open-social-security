@@ -13,7 +13,6 @@ import { EarningsTestService } from './earningstest.service';
 import { MortalityService } from './mortality.service';
 import { SolutionSetService } from './solutionset.service';
 import { OutputTableComponent } from './output-table/output-table.component';
-import { CsvModule } from '@ctrl/ngx-csv';
 import { ChildinputsComponent } from './childinputs/childinputs.component';
 import { SharedModule } from './shared/shared.module';
 import { AboutComponent } from './staticpages/about/about.component';
@@ -51,7 +50,6 @@ import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-w
     FormsModule,
     CollapseModule.forRoot(),
     BsDropdownModule.forRoot(),
-    CsvModule,
     SharedModule,
     AppRoutingModule,
   ],
