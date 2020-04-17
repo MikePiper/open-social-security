@@ -33,7 +33,7 @@
     "@angular/platform-server": "^9.1.2",
     "@angular/router": "^9.1.2",
     "@nguniversal/express-engine": "^9.1.0",
-    "core-js": "^2.4.1",
+    "core-js": "^3.6.5",
     "express": "^4.15.2",
     "ngx-bootstrap": "^5.6.1",
     "rxjs": "^6.5.5",
