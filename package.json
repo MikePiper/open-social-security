@@ -19,7 +19,9 @@
     "dev:ssr": "ng run open-social-security:serve-ssr",
     "serve:ssr": "node dist/server/main.js",
     "build:ssr": "ng build --prod && ng run open-social-security:server:production",
-    "prerender": "ng run open-social-security:prerender"
+    "prerender": "ng run open-social-security:prerender",
+    "scully": "scully",
+    "scully:serve": "scully serve"
   },
   "private": true,
   "dependencies": {
@@ -33,6 +35,9 @@
     "@angular/platform-server": "^9.1.2",
     "@angular/router": "^9.1.2",
     "@nguniversal/express-engine": "^9.1.0",
+    "@scullyio/init": "0.0.25",
+    "@scullyio/ng-lib": "latest",
+    "@scullyio/scully": "latest",
     "core-js": "^3.6.5",
     "express": "^4.17.1",
     "ngx-bootstrap": "^5.6.1",

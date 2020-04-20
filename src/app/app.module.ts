@@ -26,6 +26,7 @@ import { SpousalBenefitCalculationComponent } from './staticpages/articles/spous
 import { ChildInCareSpousalComponent } from './staticpages/articles/child-in-care-spousal/child-in-care-spousal.component';
 import { CalculateRetirementBenefitComponent } from './staticpages/articles/calculate-retirement-benefit/calculate-retirement-benefit.component';
 import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-with-retirement/spousal-with-retirement.component';
+import { ScullyLibModule } from '@scullyio/ng-lib';
 
 
 @NgModule({
@@ -53,6 +54,7 @@ import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-w
     BsDropdownModule.forRoot(),
     SharedModule,
     AppRoutingModule,
+    ScullyLibModule,
   ],
   exports: [],
   providers: [BenefitService, BirthdayService, PresentValueService, EarningsTestService, MortalityService, SolutionSetService],

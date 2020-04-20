@@ -1,5 +1,8 @@
-# Why Delaying Social Security Doesn't Provide an 8% Return
+---
+title: 'Why Delaying Social Security Doesn't Provide an 8% Return'
+published: true
 
+---
 One of the most commonly given reasons for delaying Social Security is that doing so "provides you an 8% return." But that's just not true. It doesn't.
 
 Firstly, the increase in benefits from delaying is not 8% for most years. By delaying from 62 to 70, you get about 76-77% more per month than you would get if you started your benefit at age 62. (The exact percentage depends on whether your FRA is 66, 67, or somewhere in between.) That works out to an average annual increase of about 7.4%. For the exact details of how your filing age affects your retirement benefit, <a href="https://obliviousinvestor.com/how-social-security-benefits-are-calculated/" target="_blank">see here</a>.
