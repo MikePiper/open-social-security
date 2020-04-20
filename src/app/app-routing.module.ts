@@ -14,6 +14,11 @@ import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-w
 
 const routes: Routes = [
   // { path: '', loadChildren: './staticpages/staticpages.module#StaticPagesModule' },
+              { path: 'about', pathMatch:'full', component: AboutComponent },
+              { path: 'contact', pathMatch:'full', component: ContactComponent },
+              { path: 'legal', pathMatch:'full', component: LegalComponent },
+              { path: 'articles', pathMatch:'full', component: ArticlesHomeComponent },
+
               // { path: 'about/.', component: AboutComponent},
               //   { path: 'about', redirectTo: 'about/.', pathMatch: 'full'},
               // { path: 'contact/.', component: ContactComponent},
