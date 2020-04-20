@@ -3,9 +3,9 @@ exports.config = {
   projectName: "open-social-security",
   outDir: './dist/static',
   routes: {
-    '/articles/:title': {
+    '/articles/:slug': {
       type: 'contentFolder',
-      title: {
+      slug: {
         folder: "./articlesmarkdown"
       }
     },

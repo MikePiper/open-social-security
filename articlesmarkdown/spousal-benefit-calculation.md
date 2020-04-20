@@ -1,3 +1,8 @@
+---
+title: How Are Social Security Spousal Benefits Calculated?
+slug: spousal-benefit-calculation
+published: true
+---
 # How Are Social Security Spousal Benefits Calculated?
 
 To understand Social Security benefit calculations, you first need to understand one piece of jargon: "primary insurance amount" (PIA). A person's primary insurance amount is the amount of their monthly retirement benefit, if they file for that benefit exactly at their <a href="https://obliviousinvestor.com/how-social-security-benefits-are-calculated/" target="_blank">full retirement age</a>.

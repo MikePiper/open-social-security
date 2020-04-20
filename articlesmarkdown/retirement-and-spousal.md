@@ -1,3 +1,8 @@
+---
+title: Can You Receive Social Security Spousal Benefits AND Retirement Benefits at the Same Time?
+slug: retirement-and-spousal
+published: true
+---
 # Can You Receive Social Security Spousal Benefits AND Retirement Benefits at the Same Time?
 
 A reader writes in, asking:

@@ -5,7 +5,7 @@ import {ArticlesComponent} from './articles.component';
 
 const routes: Routes = [
   {
-    path: ':title',
+    path: ':slug',
     component: ArticlesComponent,
   },
   {

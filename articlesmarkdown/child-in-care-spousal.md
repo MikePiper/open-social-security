@@ -1,3 +1,8 @@
+---
+title: How Do Child-in-Care Spousal Social Security Benefits Work?
+slug: child-in-care-spousal
+published: true
+---
 # How Do Child-in-Care Spousal Social Security Benefits Work?
 
 In order to qualify for child-in-care spousal benefits:
@@ -26,3 +31,4 @@ When you lose eligibility for child-in-care spousal benefits (i.e., when your yo
 If you are younger than full retirement age when your youngest child reaches age 16, your child-in-care spousal benefit will be suspended. If you are at least age 62 (or when you do reach age 62), you have the option to begin regular spousal benefits by filing <a href="https://www.ssa.gov/forms/ssa-25.pdf" target="_blank" rel="noopener noreferrer">Form SSA-25</a>. If you do so, your benefit will be reduced for early filing. When you file Form SSA-25, the normal deemed filing rules will kick in. (That is, you will automatically be deemed to have filed for your own retirement benefit as well, if you had not already done so.) If you don't file Form SSA-25, your regular spousal benefit will still begin automatically upon reaching full retirement age, and the normal deemed filing rules will apply at that time.
 
 If you have reached your full retirement age by the time your youngest child reaches age 16, your child-in-care spousal benefit will simply become a regular spousal benefit (i.e., will continue at the same amount). And the normal deemed filing rules will apply at that time.
+

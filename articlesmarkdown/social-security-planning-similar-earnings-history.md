@@ -1,3 +1,8 @@
+---
+title: Social Security Planning for a Couple with Similar Earnings History
+slug: social-security-planning-similar-earnings-history
+published: true
+---
 # Social Security Planning for a Couple with Similar Earnings History
 
 A reader writes in, asking:

@@ -1,3 +1,8 @@
+---
+title: How to Calculate a Social Security Benefit, When You Retire at a Different Age Than You File for Retirement Benefits
+slug: calculate-retirement-benefit
+published: true
+---
 # How to Calculate a Social Security Benefit, When You Retire at a Different Age Than You File for Retirement Benefits
 
 A reader writes in, asking:
