@@ -19,13 +19,7 @@ import { SharedModule } from './shared/shared.module';
 import { AboutComponent } from './staticpages/about/about.component';
 import { ContactComponent } from './staticpages/contact/contact.component';
 import { LegalComponent } from './staticpages/legal/legal.component';
-import { DelayingSocialSecurity8ReturnComponent } from './staticpages/articles/delaying-social-security8-return/delaying-social-security8-return.component';
-import { ArticlesHomeComponent } from './staticpages/articles/articles-home/articles-home.component';
-import { SimilarPIAsComponent } from './staticpages/articles/similar-pias/similar-pias.component';
-import { SpousalBenefitCalculationComponent } from './staticpages/articles/spousal-benefit-calculation/spousal-benefit-calculation.component';
-import { ChildInCareSpousalComponent } from './staticpages/articles/child-in-care-spousal/child-in-care-spousal.component';
-import { CalculateRetirementBenefitComponent } from './staticpages/articles/calculate-retirement-benefit/calculate-retirement-benefit.component';
-import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-with-retirement/spousal-with-retirement.component';
+import { ArticlesHomeComponent } from './staticpages/articles-home/articles-home.component';
 import { ScullyLibModule } from '@scullyio/ng-lib';
 
 
@@ -38,13 +32,7 @@ import { ScullyLibModule } from '@scullyio/ng-lib';
     AboutComponent,
     ContactComponent,
     LegalComponent,
-    DelayingSocialSecurity8ReturnComponent,
-    ArticlesHomeComponent,
-    SimilarPIAsComponent,
-    SpousalBenefitCalculationComponent,
-    ChildInCareSpousalComponent,
-    CalculateRetirementBenefitComponent,
-    SpousalWithRetirementComponent
+    ArticlesHomeComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'serverApp' }),

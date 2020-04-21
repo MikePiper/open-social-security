@@ -4,7 +4,7 @@ import { HomeComponent } from './home/home.component'
 import { AboutComponent } from './staticpages/about/about.component';
 import { ContactComponent } from './staticpages/contact/contact.component';
 import { LegalComponent } from './staticpages/legal/legal.component';
-import { ArticlesHomeComponent } from './staticpages/articles/articles-home/articles-home.component';
+import { ArticlesHomeComponent } from './staticpages/articles-home/articles-home.component';
 
 const routes: Routes = [
   // { path: '', loadChildren: './staticpages/staticpages.module#StaticPagesModule' },
