@@ -14,11 +14,13 @@ import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-w
 
 const routes: Routes = [
   // { path: '', loadChildren: './staticpages/staticpages.module#StaticPagesModule' },
-              { path: 'about', pathMatch:'full', component: AboutComponent },
-              { path: 'contact', pathMatch:'full', component: ContactComponent },
-              { path: 'legal', pathMatch:'full', component: LegalComponent },
-              { path: 'articles', pathMatch:'full', component: ArticlesHomeComponent },
+            //scully is working with these four below
+            { path: 'articles', pathMatch:'full', component: ArticlesHomeComponent },
+            { path: 'about', component: AboutComponent },
+            { path: 'contact', component: ContactComponent },
+            { path: 'legal', component: LegalComponent },
 
+            ///this is old setup with Angular Universal
               // { path: 'about/.', component: AboutComponent},
               //   { path: 'about', redirectTo: 'about/.', pathMatch: 'full'},
               // { path: 'contact/.', component: ContactComponent},
@@ -39,6 +41,7 @@ const routes: Routes = [
               //   { path: 'articles/calculate-retirement-benefit', redirectTo: 'articles/calculate-retirement-benefit/.', pathMatch: 'full'},
               // { path: 'articles/retirement-and-spousal/.', component: SpousalWithRetirementComponent },
               //   { path: 'articles/retirement-and-spousal', redirectTo: 'articles/retirement-and-spousal/.', pathMatch: 'full'},
+
               { path: 'articles', loadChildren: () => import('./articles/articles.module').then(m => m.ArticlesModule) },
               { path: '', pathMatch:'full', component: HomeComponent },
   //{ path: '**', redirectTo: '', pathMatch: 'full'}
