@@ -5,12 +5,6 @@ import { AboutComponent } from './staticpages/about/about.component';
 import { ContactComponent } from './staticpages/contact/contact.component';
 import { LegalComponent } from './staticpages/legal/legal.component';
 import { ArticlesHomeComponent } from './staticpages/articles/articles-home/articles-home.component';
-import { DelayingSocialSecurity8ReturnComponent } from './staticpages/articles/delaying-social-security8-return/delaying-social-security8-return.component';
-import { SimilarPIAsComponent } from './staticpages/articles/similar-pias/similar-pias.component';
-import { SpousalBenefitCalculationComponent } from './staticpages/articles/spousal-benefit-calculation/spousal-benefit-calculation.component';
-import { ChildInCareSpousalComponent } from './staticpages/articles/child-in-care-spousal/child-in-care-spousal.component';
-import { CalculateRetirementBenefitComponent } from './staticpages/articles/calculate-retirement-benefit/calculate-retirement-benefit.component';
-import { SpousalWithRetirementComponent } from './staticpages/articles/spousal-with-retirement/spousal-with-retirement.component';
 
 const routes: Routes = [
   // { path: '', loadChildren: './staticpages/staticpages.module#StaticPagesModule' },
