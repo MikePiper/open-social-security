@@ -1,4 +1,12 @@
 RewriteEngine on
+# Redirects for old article url structure
+Redirect 301 /articles/8-return/ https://articles.opensocialsecurity.com/8-return/
+Redirect 301 /articles/social-security-planning-similar-earnings-history/ https://articles.opensocialsecurity.com/social-security-planning-similar-earnings-history/
+Redirect 301 /articles/spousal-benefit-calculation/ https://articles.opensocialsecurity.com/spousal-benefit-calculation/
+Redirect 301 /articles/child-in-care-spousal/ https://articles.opensocialsecurity.com/child-in-care-spousal/
+Redirect 301 /articles/calculate-retirement-benefit/ https://articles.opensocialsecurity.com/calculate-retirement-benefit/
+Redirect 301 /articles/retirement-and-spousal/ https://articles.opensocialsecurity.com/retirement-and-spousal/
+
 # Remove www from any URLs that have them:
 RewriteCond %{HTTP_HOST} ^www\.
 RewriteRule ^(.*)$ https://opensocialsecurity.com/$1 [R=301,L]
