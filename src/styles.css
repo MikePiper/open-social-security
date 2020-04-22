@@ -4,7 +4,7 @@
 
 
 body{
-    font: 400 18px Lato, sans-serif;
+    font: 18px Lato, sans-serif;
     line-height: 2;
     margin-bottom:150px;
 }
@@ -33,6 +33,7 @@ p, ol, ul, blockquote{ /* a little more whitespace between paragraphs etc */
 .jumbotron p { /* styling for the p element within the jumbotron (i.e., the subtitle of site) */
     margin-top: 0em;
     margin-bottom: 0em;
+    font-weight:18880;
 }
 
 label {
@@ -47,13 +48,13 @@ label {
     font-size: 80% !important;
     font-family: Roboto, sans-serif;
     line-height: 1.42857143 !important;
-    letter-spacing: 4px;
     border-radius: 0;
     padding-bottom:0;
 }
 
 .navbar li a, .navbar .navbar-brand {
     color: #fff !important;
+    letter-spacing: 4px;
 }
 
 .navbar-nav li a:hover, .navbar-nav li.active a {
