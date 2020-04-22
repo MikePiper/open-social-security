@@ -19,7 +19,6 @@ import { SharedModule } from './shared/shared.module';
 import { AboutComponent } from './staticpages/about/about.component';
 import { ContactComponent } from './staticpages/contact/contact.component';
 import { LegalComponent } from './staticpages/legal/legal.component';
-import { ArticlesHomeComponent } from './staticpages/articles-home/articles-home.component';
 import { ScullyLibModule } from '@scullyio/ng-lib';
 
 
@@ -32,7 +31,6 @@ import { ScullyLibModule } from '@scullyio/ng-lib';
     AboutComponent,
     ContactComponent,
     LegalComponent,
-    ArticlesHomeComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'serverApp' }),
