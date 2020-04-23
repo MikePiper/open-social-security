@@ -4,7 +4,8 @@
 
 
 body{
-    font: 18px Lato, sans-serif;
+    font-size: 16px;
+	font-family: Verdana, Geneva, sans-serif;
     line-height: 2;
     margin-bottom:150px;
 }
@@ -27,13 +28,28 @@ p, ol, ul, blockquote{ /* a little more whitespace between paragraphs etc */
     color: #fff;
     font-family: Roboto, sans-serif;
     padding-bottom:0px;
+    margin:0;
     text-decoration:none;
 }
-
 .jumbotron p { /* styling for the p element within the jumbotron (i.e., the subtitle of site) */
     margin-top: 0em;
     margin-bottom: 0em;
-    font-weight:18880;
+    font-weight:100;
+    position: relative;
+}
+@media screen and (max-width: 768px) {
+	.jumbotron p {
+		font-size:15px;
+  }
+}
+.jumbotron h1{
+    position: relative;
+}
+#page-sub-header{
+    padding-top:0;
+    padding-right:0;
+    padding-bottom:1rem;
+    padding-left: 0;
 }
 
 label {
@@ -56,7 +72,11 @@ label {
     color: #fff !important;
     letter-spacing: 4px;
 }
-
+.navbar-nav li a{
+    padding-top:0;
+    padding-bottom:0;
+    line-height: 4rem;
+}
 .navbar-nav li a:hover, .navbar-nav li.active a {
     color: #267bc5 !important;
     background-color: #fff !important;
@@ -70,11 +90,12 @@ label {
     background-color: #267bc5;
     color: white;
     text-align: center;
+    font-size:14px;
 }
 
 .footer a {
     color: white;
-    text-decoration:underline;
+    text-decoration:none;
 }
 
 #contentarea {
@@ -86,9 +107,6 @@ label {
 }
 
 @media only screen and (max-width: 600px) {
-    .jumbotron p {
-            display:none;
-        }
     .footer {
         position:static;
     }
