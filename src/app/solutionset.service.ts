@@ -20,7 +20,8 @@ export class SolutionSetService {
   generateSingleSolutionSet(scenario:CalculationScenario, person:Person, savedPV:number){
     let solutionSet:SolutionSet = {
       "solutionPV":savedPV,
-      "solutionsArray": []
+      "solutionsArray": [],
+      "computationComplete": false // this property added to hide previous results while calculating
     }
     if (person.isOnDisability === true) {
       //create disability-converts-to-retirement solution object
@@ -109,7 +110,8 @@ export class SolutionSetService {
   generateCoupleSolutionSet(scenario:CalculationScenario, personA:Person, personB:Person, savedPV: number){
     let solutionSet: SolutionSet = {
       "solutionPV":savedPV,
-      solutionsArray: []
+      solutionsArray: [],
+      "computationComplete": false      
     }
 
     //declare solution object variables

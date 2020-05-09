@@ -20,7 +20,7 @@ import { AboutComponent } from './staticpages/about/about.component';
 import { ContactComponent } from './staticpages/contact/contact.component';
 import { LegalComponent } from './staticpages/legal/legal.component';
 import { ScullyLibModule } from '@scullyio/ng-lib';
-
+import { RangeComponent } from './range/range.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +31,7 @@ import { ScullyLibModule } from '@scullyio/ng-lib';
     AboutComponent,
     ContactComponent,
     LegalComponent,
+    RangeComponent,
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'serverApp' }),

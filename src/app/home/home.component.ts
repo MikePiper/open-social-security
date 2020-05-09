@@ -11,6 +11,7 @@ import {ErrorCollection} from '../data model classes/errorcollection'
 import {InputValidationService} from '../inputvalidation.service'
 import {MonthYearDate} from "../data model classes/monthyearDate"
 import { BenefitService } from '../benefit.service'
+import { ClaimDates } from '../data model classes/claimDates'
 
 
 @Component({
@@ -122,37 +123,45 @@ export class HomeComponent implements OnInit {
     personBquitWorkYear: number
     personBquitWorkMonth: number
 
-  //Inputs from custom date form
-  customPersonAretirementBenefitMonth: number = this.today.getMonth()+1
-  customPersonAretirementBenefitYear: number = this.today.getFullYear()
-  customPersonAspousalBenefitMonth: number = this.today.getMonth()+1
-  customPersonAspousalBenefitYear: number = this.today.getFullYear()
-  customPersonBretirementBenefitMonth: number = this.today.getMonth()+1
-  customPersonBretirementBenefitYear: number = this.today.getFullYear()
-  customPersonBspousalBenefitMonth: number = this.today.getMonth()+1
-  customPersonBspousalBenefitYear: number = this.today.getFullYear()
-  customPersonAbeginSuspensionMonth: number = this.today.getMonth()+1
-  customPersonAbeginSuspensionYear: number = this.today.getFullYear()
-  customPersonAendSuspensionMonth: number = this.today.getMonth()+1
-  customPersonAendSuspensionYear: number = this.today.getFullYear()
-  customPersonBbeginSuspensionMonth: number = this.today.getMonth()+1
-  customPersonBbeginSuspensionYear: number = this.today.getFullYear()
-  customPersonBendSuspensionMonth: number = this.today.getMonth()+1
-  customPersonBendSuspensionYear: number = this.today.getFullYear()
+  // Defaults for later inputs from custom date form
+  // and to simplify assignment statements
+    todayMonth: number = this.today.getMonth()+1
+    todayYear:number = this.today.getFullYear()
+
+      //Inputs from custom date form
+  customPersonAretirementBenefitMonth: number = this.todayMonth
+  customPersonAretirementBenefitYear: number = this.todayYear
+  customPersonAspousalBenefitMonth: number = this.todayMonth
+  customPersonAspousalBenefitYear: number = this.todayYear
+  customPersonBretirementBenefitMonth: number = this.todayMonth
+  customPersonBretirementBenefitYear: number = this.todayYear
+  customPersonBspousalBenefitMonth: number = this.todayMonth
+  customPersonBspousalBenefitYear: number = this.todayYear
+  customPersonAbeginSuspensionMonth: number = this.todayMonth
+  customPersonAbeginSuspensionYear: number = this.todayYear
+  customPersonAendSuspensionMonth: number = this.todayMonth
+  customPersonAendSuspensionYear: number = this.todayYear
+  customPersonBbeginSuspensionMonth: number = this.todayMonth
+  customPersonBbeginSuspensionYear: number = this.todayYear
+  customPersonBendSuspensionMonth: number = this.todayMonth
+  customPersonBendSuspensionYear: number = this.todayYear
 
 
   //solution variables
   customPV: number
   differenceInPV: number
+  differenceInPVPct: number
   solutionSet: SolutionSet = {
     "solutionPV":null,
-    "solutionsArray": []
+    "solutionsArray": [],
+    "computationComplete": false
   }
 
 
 
    onSubmit() {
     this.waitCursor()
+    this.solutionSet.computationComplete = false;
     setTimeout( () => {//whole rest of this function is in a setTimeout statement, to have 10 millisecond delay, to give DOM time to update with status message from waitCursor()
     let startTime = performance.now() //for testing performance
     console.log("-------------")
@@ -165,6 +174,11 @@ export class HomeComponent implements OnInit {
 
     //If there are no fixedRetirementDate errors, call appropriate "maximizePV" function to find best solution
     if (this.errorCollection.hasErrors === false){
+      this.solutionSet = {
+        "solutionPV":null,
+        "solutionsArray": [],
+        "computationComplete": false
+      };
       if (this.scenario.maritalStatus == "single") {
         this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(this.personA, this.scenario)
       }
@@ -183,6 +197,8 @@ export class HomeComponent implements OnInit {
             this.solutionSet = this.presentvalueService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
       }
     }
+    // computation is finished
+    this.solutionSet.computationComplete = true;
     this.normalCursor()
     this.primaryFormHasChanged = false//Set this to false so that customDates() doesn't rerun onSubmit() next time it is run, unless another change is made to primary inputs
     if (this.customPV){//If customDates() has already been run (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs
@@ -219,6 +235,7 @@ export class HomeComponent implements OnInit {
         this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
       }
       this.differenceInPV = this.solutionSet.solutionPV - this.customPV
+      this.differenceInPVPct = (this.differenceInPV / this.solutionSet.solutionPV) * 100
   }
 
   //Use inputs to calculate ages, SSbirthdates, FRAs, etc. Happens every time an input in the primary form is changed.

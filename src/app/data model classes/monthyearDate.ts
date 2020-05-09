@@ -37,7 +37,7 @@ export class MonthYearDate {
     }
 
 
-
+    
     getFullYear():number{
         return Number(this.year)
     }
@@ -79,11 +79,29 @@ export class MonthYearDate {
         }
     }
 
+    plusMonths(months: number): MonthYearDate {
+        let newDate: MonthYearDate = new MonthYearDate(this);
+        newDate.setMonth(this.getMonth() + months);
+        return newDate;
+    }
+
+    yearMonthString(): string { // month at end for easier sorting, e,g, 2015/09 or 2015/10
+        return this.year + '/' + ("0" + (this.month + 1)).slice(-2)
+    }
+
+    toString(): string { // e.g. 9/2015 or 10/2015
+        return (this.month + 1) + '/' + this.year;
+    }
+
     //for the sake of using greaterthan/lessthan/equalto comparisons
     //For greater than or less than, can just compare the two date objects
     //To check if equal, use == and valueOf() DONT FORGET THE PARENTHESES ex if (monthYearDateObject1.valueOf() == monthYearDateObject2.valueOf())
     valueOf():number{
         return Number(this.year * 12 + this.month)
+    }
+
+    equals(other: MonthYearDate): boolean {
+        return (this.year == other.year) && (this.month == other.month);
     }
 
 
