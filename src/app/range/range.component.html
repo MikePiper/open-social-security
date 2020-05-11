@@ -1,0 +1,26 @@
+<!-- <div class='parent'> -->
+<div>
+    <h2>Range of Options</h2>
+  <div class='container'>
+    <div class="left" style="max-width:900">
+      <canvas #canvas0 id="canvas0" title="Percent of Maximum canvas" (click)="selectCell($event, 0)" (mousemove)="update($event, 0)"
+        (mouseenter)="startUpdating()" (mouseleave)="stopUpdating()" style="margin-right:20px">
+      </canvas>
+    </div>
+    
+    <p *ngIf="scenario.earlySpousalBenefitPossible">NOTE: Spousal benefit may be claimed before retirement benefit.</p>
+    <p *ngIf="selectedRow < 0">Click on graph to see more information about a possible claim strategy.
+    </p>
+    <p *ngIf="selectedRow >= 0"><span style="font-weight:bold">Selected Option: </span>  <span>{{this.pctSelStr}}</span>
+      <!-- TODO: revise below IF CLAIM DATES ARE DIFFERENT FOR CUT AND NO_CUT CASES -->
+      <br>&nbsp;&nbsp;&nbsp;&nbsp;Claim dates: <span>{{this.selectedClaimDatesStrNoCut}}</span>
+    </p> 
+
+  </div>
+<!-- FOR POSSIBLE USE IF CLAIM DATES ARE DIFFERENT FOR CUT VS. NO_CUT CASES
+  <p>Claim dates at selection<span *ngIf="scenario.benefitCutAssumption === true"> (no cut)</span>: <span>{{this.selectedClaimDatesStrNoCut}}</span></p>
+  <p *ngIf="scenario.benefitCutAssumption === true">Claim dates at selection (cut): <span>{{this.selectedClaimDatesStrCut}}</span></p>
+  <p>Claim dates at pointer<span *ngIf="scenario.benefitCutAssumption === true"> (no cut)</span>: <span>{{this.pointerClaimDatesStrNoCut}}</span></p>
+  <p *ngIf="scenario.benefitCutAssumption === true">Claim dates at pointer: (cut) <span>{{this.pointerClaimDatesStrCut}}</span></p>
+ -->
+</div>
