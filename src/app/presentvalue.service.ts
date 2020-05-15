@@ -479,7 +479,13 @@ export class PresentValueService {
       let endingTestDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth())
       endingTestDate.setMonth(endingTestDate.getMonth()-1)
 
-    scenario.range = new Range(person.retirementBenefitDate, endingTestDate);      
+
+    //Create new range object, with earliest start date and endingTestDate
+    let earliestStart: MonthYearDate = person.retirementBenefitDate;
+    if (person.beginSuspensionDate > earliestStart) {
+      earliestStart = person.beginSuspensionDate;
+    }
+    scenario.range = new Range(earliestStart, endingTestDate);      
     // store data for the initial combination of claim dates
     scenario.range.processPVs(scenario.pvNoCut, savedPV, new ClaimDates(person));
     

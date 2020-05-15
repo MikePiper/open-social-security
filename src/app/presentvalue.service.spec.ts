@@ -323,7 +323,7 @@ describe('test maximizeSinglePersonPV', () => {
 
   it('should tell a single person who has already filed and who has disabled child not to do anything (no suspension)', () => {
     person.actualBirthDate = new Date(1960, 3, 15) //Person born April 16 1960
-    person.SSbirthDate = new MonthYearDate(1954, 3, 1)
+    person.SSbirthDate = new MonthYearDate(1960, 3, 1)
     person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
     person.PIA = 1000
     person.hasFiled = true
@@ -342,7 +342,7 @@ describe('test maximizeSinglePersonPV', () => {
 
   it('When child is eligible for benefit now but has not yet filed, should tell child to file immediately', () => {
     person.actualBirthDate = new Date(1960, 3, 15) //Person born April 16 1960
-    person.SSbirthDate = new MonthYearDate(1954, 3, 1)
+    person.SSbirthDate = new MonthYearDate(1960, 3, 1)
     person.FRA = new MonthYearDate (2027, 3, 1) //FRA April 2027 (age 67)
     person.PIA = 1000
     person.hasFiled = true
@@ -1555,7 +1555,7 @@ describe('tests calculateCouplePV', () => {
       personB.quitWorkDate = new MonthYearDate(2015,3,1) //already quit working
       scenario.discountRate = 2
       expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[2])
-      .toBeUndefined
+      .toBeUndefined()
       //We're looking at item [2] in the array. This array should have 2 items in it: retirementDate for personB, and (matching) spousalDate for personA.
       //If there *were* a suspension solution, it would have more than 2 items. So we're testing that 3rd is undefined
     })

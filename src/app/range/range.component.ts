@@ -398,6 +398,8 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
   showSelStarts(row: number, col: number, ) {
     let selectedClaimDatesNoCut = this.range.claimDatesArrays[this.currentCondition][row][col];
+    console.log("row: " + row)
+    console.log("col: " + col)
     this.selectedClaimDatesStrNoCut = selectedClaimDatesNoCut.benefitDatesString();
     // this.homeSetCustomDates(selectedClaimDatesNoCut)
     // let expectedPvStr: string = Math.round(this.range.getPv(this.currentCondition, row, col)).toLocaleString();
@@ -476,7 +478,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
       }
       let expectedPvStr: string = Math.round(this.range.getPv(condition, selectRow, selectCol)).toLocaleString();
       let expectedPvPct: string = this.fracToPct(this.range.getPvFrac(this.currentCondition, selectRow, selectCol), 1);
-      this.pctSelStr = "Expected PV = $" + expectedPvStr + ", " + expectedPvPct + "% of max. PV";
+      this.pctSelStr = "Expected PV = $" + expectedPvStr + ", " + expectedPvPct + "% of maximum PV";
       if (this.currentCondition > NO_CUT) {
         let expectedPvPctNoCut: string = this.fracToPct(this.range.getPvFrac(NO_CUT, selectRow, selectCol), 1);
         this.pctSelStr += " (" + expectedPvPctNoCut + "% if no cut)";

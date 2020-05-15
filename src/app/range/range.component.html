@@ -13,10 +13,14 @@
     </p>
     <p *ngIf="selectedRow < 0">Click any spot on the graph to see how the selected alternative compares to the recommended filing date(s).</p>
     <p *ngIf="scenario.restrictedApplicationPossible">NOTE: Spousal benefit may be claimed before retirement benefit.</p>
-    <p *ngIf="selectedRow >= 0"><span style="font-weight:bold">Selected Option: </span>  <span>{{this.pctSelStr}}</span>
-      <!-- TODO: revise below IF CLAIM DATES ARE DIFFERENT FOR CUT AND NO_CUT CASES -->
-      <br>&nbsp;&nbsp;&nbsp;&nbsp;Claim dates: <span>{{this.selectedClaimDatesStrNoCut}}</span>
-    </p> 
+    <span *ngIf="selectedRow >= 0">
+      <p style="font-weight:bold">Selected Option: </p>
+      <ul>
+        <!-- TODO: revise below IF CLAIM DATES ARE DIFFERENT FOR CUT AND NO_CUT CASES -->
+        <li>{{this.selectedClaimDatesStrNoCut}}</li>
+        <li>{{this.pctSelStr}}</li>
+      </ul>
+    </span> 
 
   </div>
 <!-- FOR POSSIBLE USE IF CLAIM DATES ARE DIFFERENT FOR CUT VS. NO_CUT CASES
