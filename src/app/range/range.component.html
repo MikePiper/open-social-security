@@ -8,9 +8,11 @@
       </canvas>
     </div>
     
-    <p *ngIf="scenario.restrictedApplicationPossible">NOTE: Spousal benefit may be claimed before retirement benefit.</p>
-    <p *ngIf="selectedRow < 0">Click on graph to see more information about a possible claim strategy.
+    <p>This color-coded graph shows the desirability of various alternative claiming dates.
+      For instance, the dark green range includes filing dates that would provide an expected present value of at least 99% of that of the recommended strategy.
     </p>
+    <p *ngIf="selectedRow < 0">Click any spot on the graph to see how the selected alternative compares to the recommended filing date(s).</p>
+    <p *ngIf="scenario.restrictedApplicationPossible">NOTE: Spousal benefit may be claimed before retirement benefit.</p>
     <p *ngIf="selectedRow >= 0"><span style="font-weight:bold">Selected Option: </span>  <span>{{this.pctSelStr}}</span>
       <!-- TODO: revise below IF CLAIM DATES ARE DIFFERENT FOR CUT AND NO_CUT CASES -->
       <br>&nbsp;&nbsp;&nbsp;&nbsp;Claim dates: <span>{{this.selectedClaimDatesStrNoCut}}</span>

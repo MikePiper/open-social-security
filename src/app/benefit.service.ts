@@ -293,8 +293,7 @@ export class BenefitService {
     calcYear.annualBenefitBothAlive *= cutFactor
     calcYear.annualBenefitOnlyPersonAalive *= cutFactor
     calcYear.annualBenefitOnlyPersonBalive *= cutFactor
-    // TODO: apply cut for this case not included in original source
-    // calcYear.annualBenefitBothDeceased *= cutFactor
+    calcYear.annualBenefitBothDeceased *= cutFactor
     //Apply cut to sums included in output table
     calcYear.tablePersonAannualRetirementBenefit *= cutFactor
     calcYear.tablePersonAannualSpousalBenefit *= cutFactor
