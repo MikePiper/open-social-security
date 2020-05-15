@@ -400,7 +400,7 @@
               The default here is the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>.
               See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a discussion of why that is chosen as the default.
             </p>
-            <label>Consider effect of cut to Social Security benefits in the future?</label>
+            <label>Consider effect of a cut to Social Security benefits in the future?</label>
             <input type="radio" id="benefitCutAssumptionNo" [(ngModel)]="scenario.benefitCutAssumption" name="scenario.benefitCutAssumption" [value]="false">
             <label for="benefitCutAssumptionNo">No</label>
             <input type="radio" id="benefitCutAssumptionYes" [(ngModel)]="scenario.benefitCutAssumption" name="scenario.benefitCutAssumption" [value]="true">
@@ -429,11 +429,6 @@
     </span>
 </form>
 
-<!-- previous version
-  <span *ngIf="this.solutionSet.solutionPV">
-    left elements on the screen while solution was being calculated
-    appropriate use of computationComplete field added to solutionSet resolves that issue
-  -->
   <span *ngIf="this.solutionSet.computationComplete">
 
   <!--Recommended Strategy Output-->
@@ -442,15 +437,9 @@
   <ul>
     <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
   </ul>
-  <!-- test of solutionPV (to determine if computation complete) is 
-    not necessary - already checked above
-    <span  *ngIf="this.solutionSet.solutionPV"> 
-  -->
-  <span>
     <p><strong>The present value of this proposed solution would be {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}</strong>.</p>
     <p> This means that with this strategy you could expect to receive, on average, {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} of total Social Security benefits over the course of your lifetime, after adjusting for the fact that a dollar received in the future is worth less than a dollar received today (because the sooner you receive a dollar the sooner you can invest it).
       <a href="https://obliviousinvestor.com/what-does-present-value-mean/" target="_blank">See this article</a> for a more thorough explanation of the "present value" concept.</p>
-  </span>
   <app-range [scenario]="scenario" [personA]="personA" [personB]="personB" [homeSetCustomDates]="setCustomDates"></app-range>
   <app-output-table [scenario]="scenario" [personA]="personA" [personB]="personB"></app-output-table>
 
@@ -627,7 +616,7 @@
     </div>
     <!--Custom Date Output -->
     <span *ngIf="this.customPV">
-      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} from the recommended strategy, a difference of {{this.differenceInPVPct.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%.
+      The present value of the strategy you selected is {{this.customPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}, as compared to a present value of {{this.solutionSet.solutionPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} from the recommended strategy, a difference of {{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%.
       <app-output-table [scenario]="customDateScenario" [personA]="personA" [personB]="personB"></app-output-table>
     </span>
     <!--End Custom Date Output -->

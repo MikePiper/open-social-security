@@ -150,7 +150,7 @@ export class HomeComponent implements OnInit {
   //solution variables
   customPV: number
   differenceInPV: number
-  differenceInPVPct: number
+  differenceInPV_asPercent: number
   solutionSet: SolutionSet = {
     "solutionPV":null,
     "solutionsArray": [],
@@ -235,7 +235,7 @@ export class HomeComponent implements OnInit {
         this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
       }
       this.differenceInPV = this.solutionSet.solutionPV - this.customPV
-      this.differenceInPVPct = (this.differenceInPV / this.solutionSet.solutionPV) * 100
+      this.differenceInPV_asPercent = (this.differenceInPV / this.solutionSet.solutionPV) * 100
   }
 
   //Use inputs to calculate ages, SSbirthdates, FRAs, etc. Happens every time an input in the primary form is changed.

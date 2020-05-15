@@ -8,7 +8,7 @@
       </canvas>
     </div>
     
-    <p *ngIf="scenario.earlySpousalBenefitPossible">NOTE: Spousal benefit may be claimed before retirement benefit.</p>
+    <p *ngIf="scenario.restrictedApplicationPossible">NOTE: Spousal benefit may be claimed before retirement benefit.</p>
     <p *ngIf="selectedRow < 0">Click on graph to see more information about a possible claim strategy.
     </p>
     <p *ngIf="selectedRow >= 0"><span style="font-weight:bold">Selected Option: </span>  <span>{{this.pctSelStr}}</span>

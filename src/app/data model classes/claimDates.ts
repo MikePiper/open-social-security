@@ -5,7 +5,7 @@ import { MonthYearDate } from "./monthyearDate";
 let minimumEndSuspensionDate: MonthYearDate = new MonthYearDate(1950, 1);
 
 export class ClaimDates {
-    // stores information about claims for a person or a couple
+    //This class stores information about claims for a person or a couple
 
     personARetirementDate: MonthYearDate;
     personASpousalDate: MonthYearDate;
@@ -74,18 +74,18 @@ export class ClaimDates {
             benefitDatesArray.push(['You (end suspension) ', this.personAEndSuspensionDate]);
         }
         if (hasPersonB) {
-            benefitDatesArray.push(['Spouse (retirement) ', this.personBRetirementDate]);
+            benefitDatesArray.push(['Your spouse (retirement) ', this.personBRetirementDate]);
             if (this.personBSpousalDate.getFullYear() > 1950) { // a real date - not a placeholder
                 // if (this.personBSpousalDate.valueOf() != this.personBRetirementDate.valueOf()) {
                 if (!this.personBSpousalDate.equals(this.personBRetirementDate)) {
                     // include spousalDate only if different from retirementDate
                     // because if they are the same, it usually means the spousalDate is just a placeholder 
-                    benefitDatesArray.push(['Spouse (spousal) ', this.personBSpousalDate]);
+                    benefitDatesArray.push(['Your spouse (spousal) ', this.personBSpousalDate]);
                 }
             }
             if (this.personBBeginSuspensionDate.valueOf() < this.personBEndSuspensionDate.valueOf()) {
-                benefitDatesArray.push(['Spouse (begin suspension) ', this.personBBeginSuspensionDate]);
-                benefitDatesArray.push(['Spouse (end suspension) ', this.personBEndSuspensionDate]);
+                benefitDatesArray.push(['Your spouse (begin suspension) ', this.personBBeginSuspensionDate]);
+                benefitDatesArray.push(['Your spouse (end suspension) ', this.personBEndSuspensionDate]);
             }
         }
 

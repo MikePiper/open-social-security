@@ -59,7 +59,7 @@ export class PresentValueService {
       child.age = this.birthdayService.findAgeOnDate(child, calcYear.date)
     }
 
-    let cutThisYear = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
+    let cutThisYear:boolean = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
     
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (person.age < 115) {
@@ -146,11 +146,11 @@ export class PresentValueService {
           person.age = person.age + 1
 
           //increment month by 1 and create new CalculationYear object because it's now January
-          // (we started these calculations with month === 11 
+          // (we started these calculations with month === 11)
           calcYear.date.setMonth(calcYear.date.getMonth()+1)
           calcYear = new CalculationYear(calcYear.date)
 
-          if (!cutThisYear) { // we don't need to check if the benefit has already been cut
+          if (!cutThisYear) { //Check if there will be a cut this year. (But we don't need to check again if cutThisYear is already true.)
             cutThisYear = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
           }
 
@@ -174,8 +174,7 @@ export class PresentValueService {
       scenario.setBenefitCutFactors();
     }
     scenario.pvNoCut = 0
-    let cutThisYear: boolean = (scenario.benefitCutAssumption === true) && 
-      (this.today.getFullYear() >= scenario.benefitCutYear)
+    let cutThisYear: boolean = (scenario.benefitCutAssumption === true) && (this.today.getFullYear() >= scenario.benefitCutYear)
   
     let savedCalculationYear: CalculationYear
     scenario.outputTable = []
@@ -325,11 +324,6 @@ export class PresentValueService {
             //Earnings test not necessary
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitBothDeceased)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, false, printOutputTable)
-
-      	//Apply assumed benefit cut, if applicable
-      	// this.benefitService.applyAssumedBenefitCut(scenario, calcYear)
-		// NOTE: This call moved below, because it only needs
-		// to happen on month 11
       }
 
       //After month is over increase age of everybody by 1 month
@@ -421,7 +415,7 @@ export class PresentValueService {
       calcYear.date.setMonth(calcYear.date.getMonth()+1)
       if (calcYear.date.getMonth() == 0){
       calcYear = new CalculationYear(calcYear.date)
-        if (!cutThisYear) { // We don't need to check if the cut has already started.
+        if (!cutThisYear) { //Check if there will be a cut this year. (But we don't need to check again if cutThisYear is already true.)
           cutThisYear = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
         }
       }
@@ -435,7 +429,7 @@ export class PresentValueService {
 
   maximizeSinglePersonPV(person:Person, scenario:CalculationScenario) : SolutionSet{
 
-    scenario.earlySpousalBenefitPossible = false;
+    scenario.restrictedApplicationPossible = false;
 
     //find initial retirementBenefitDate for age 62 (or, more often, 62 and 1 month)
     person.retirementBenefitDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth())
@@ -525,7 +519,7 @@ export class PresentValueService {
   maximizeCouplePViterateBothPeople(personA:Person, personB:Person, scenario:CalculationScenario) : SolutionSet{
 
     let deemedFilingCutoff: Date = new Date(1954, 0, 1); 
-    scenario.earlySpousalBenefitPossible = 
+    scenario.restrictedApplicationPossible = 
       ((personA.actualBirthDate < deemedFilingCutoff) || (personB.actualBirthDate < deemedFilingCutoff))
 
     //find initial retirementBenefitDate for personA (first month for which they are considered 62 for entire month)
@@ -732,7 +726,7 @@ export class PresentValueService {
 maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Person, fixedSpouse:Person) : SolutionSet{
 
   let deemedFilingCutoff: Date = new Date(1954, 0, 1); 
-  scenario.earlySpousalBenefitPossible = (flexibleSpouse.actualBirthDate < deemedFilingCutoff);
+  scenario.restrictedApplicationPossible = (flexibleSpouse.actualBirthDate < deemedFilingCutoff);
 
     fixedSpouse.retirementBenefitDate = new MonthYearDate(fixedSpouse.fixedRetirementBenefitDate)
 
