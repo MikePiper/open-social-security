@@ -221,9 +221,10 @@ export class HomeComponent implements OnInit {
     this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
 
     //Calc PV with input dates
-        //Create a new ClaimingScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one. (This is necessary so that it can have a separate "outputTable" field from the original.)
+        //Create a new ClaimingScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one.
+        //(This is necessary so that it can have a separate "outputTable" field from the original.)
           //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
-          this.customDateScenario = Object.assign({}, this.scenario)
+          this.customDateScenario = Object.assign(new CalculationScenario(), this.scenario)
           this.customDateScenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
       if (this.scenario.maritalStatus == "single" && this.errorCollection.hasErrors === false) {
         this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.customDateScenario, true)
