@@ -1,6 +1,14 @@
 import { MonthYearDate } from './monthyearDate';
 import { ClaimDates } from './claimDates';
-import { ThrowStmt } from '@angular/compiler';
+
+/* 
+This class provides fields and methods for the storage and manipulation
+of data related to the range of possible options of Social Security
+claim dates, and the expected PV (present value) of each of those options.
+It can store data for two possible scenarios at the same time:
+ - with no cut in future benefits and
+ - with a cut in future benefits
+*/ 
 
 export class Range {
     firstDateA: MonthYearDate; // first date for person A
@@ -13,7 +21,7 @@ export class Range {
 
     firstDateB: MonthYearDate; // first date for person B
     lastDateB: MonthYearDate; // last date for person B
-    cols: number; // number of columnss in this range
+    columns: number; // number of columnss in this range
     firstValueB: number;
     firstYearB: number; // year of first date for person B
     firstMonthB: number; // month of first date for person B
@@ -22,21 +30,15 @@ export class Range {
     pvMaxNoCut: number; // maximum pV if future benefits are not cut
     pvMaxCut: number; // maximum pV if future benefits are cut
 
-    // pvNoCutArray: number[][];
-    // pvCutArray: number[][];
-
     // identifiers (and array indices) for the various conditions
     static NO_CUT = 0;
     static CUT = 1;
 
     static conditionNames = ["NO_CUT", "CUT"];
 
-    // identfiers of HTML elements for the various conditions
-    // static IDtags = ['_NO_CUT', '_CUT'];
-    
     // one array (size rows x cols) in these arrays for conditions NO_CUT and CUT
     pvArrays = new Array(2);
-    pvFracArrays = new Array(2);    // pvFrac is fraction of the maximum PV at each date combination
+    pvFractionArrays = new Array(2);    // pvFraction is fraction of the maximum PV at each date combination
     colorNumberArrays = new Array(2);
     claimDatesArrays = new Array(2)
 
@@ -45,9 +47,8 @@ export class Range {
     pvMaxRowArray = [0, 0]; // pvMaxRowArray[NO_CUT] is the row where the maximum PV in the NO_CUT condition is found
     pvMaxColArray = [0, 0];
 
-    fracBreak: number[] = [0.99, 0.95, 0.9, -1000000]; // values of pvFrac minimum limits for different display colors
-    fracLabels: string[] = ["100", "99", "95", "90", "0"];
-    // fracLabelsStr: string = "100  99  95  90  0";
+    fractionBreak: number[] = [0.99, 0.95, 0.9, -1000000]; // values of pvFraction minima for different display colors
+    fractionLabels: string[] = ["100", "99", "95", "90", "0"];
 
     maxColor: string = '#b3ffb3'; // light green, color of cell with maximum PV
     colorByNumber: string[][] =
@@ -77,7 +78,7 @@ export class Range {
     [this.maxColor, '#ff1818', '#ff5050', '#ff6666', '#ffb3b3']
  */    
 
-    topBreak = this.fracBreak[0];
+    topBreak = this.fractionBreak[0];
     topCount: number[] = [0, 0];  // how many NO_CUT & CUT pv's are in the top percentage
 
     constructor(firstDateA: MonthYearDate, lastDateA: MonthYearDate, firstDateB?: MonthYearDate, lastDateB?: MonthYearDate) {
@@ -88,16 +89,16 @@ export class Range {
         this.firstMonthA = firstDateA.getMonth();
 
         // personA does columns
-        this.cols = lastDateA.valueOf() - this.firstValueA + 1;
+        this.columns = lastDateA.valueOf() - this.firstValueA + 1;
 
         // generate location of marks at year transitions
         this.yearMarksA[0] = 0;
         let nextMark:number = 12 - firstDateA.getMonth();
-        while (nextMark < this.cols) {
+        while (nextMark < this.columns) {
             this.yearMarksA.push(nextMark);
             nextMark += 12;
         }
-        this.yearMarksA.push(this.cols);
+        this.yearMarksA.push(this.columns);
         
         if (firstDateB && lastDateB) { // this is for a couple 
             this.firstDateB = firstDateB;
@@ -117,7 +118,7 @@ export class Range {
         } else { // this is for one person
             this.rows = 1;
         }
-        this.initializeArrays(this.rows, this.cols);
+        this.initializeArrays(this.rows, this.columns);
     }
 
     addedMonthsString(month: number, year: number, addMonths: number): string {
@@ -159,7 +160,7 @@ export class Range {
             pvArray = new Array(rows);
             this.pvArrays[condition] = pvArray;
             pvFracArray = new Array(rows);
-            this.pvFracArrays[condition] = pvFracArray;
+            this.pvFractionArrays[condition] = pvFracArray;
             claimDatesArray = new Array(rows);
             this.claimDatesArrays[condition] = claimDatesArray;
             for (let row = 0; row < rows; row++) {
@@ -218,7 +219,7 @@ export class Range {
         console.log(heading);
         for (let row = 0; row < this.rows; row++) {
             line = 'r' + row + ', ';
-            for (let col = 0; col < this.cols; col++) {
+            for (let col = 0; col < this.columns; col++) {
                 val = array[row][col];
                 line += val.toFixed(decimalPlaces) + ', ';
             }
@@ -235,14 +236,14 @@ export class Range {
         let pv: number;
         let array: number[][];
         let condition: number;
-        let cellCount = (this.rows * this.cols);
+        let cellCount = (this.rows * this.columns);
         for (condition = Range.NO_CUT; condition <= Range.CUT; condition++) {
             this.logArray(Range.conditionNames[condition] +
                 ": pvMax = " + Math.round(this.pvMaxArray[condition]) +
                 " at (" + this.pvMaxRowArray[condition] +
                 ", " + this.pvMaxColArray[condition] + ")", this.pvArrays[condition], 0);
             console.log("cells in 'topBreak': " + this.topCount[condition] + " / " + cellCount);
-            this.logArray("pvFrac", this.pvFracArrays[condition], 4);
+            this.logArray("pvFrac", this.pvFractionArrays[condition], 4);
             this.logArray("colorNumber", this.colorNumberArrays[condition], 2);
             // log claimDates?
         }
@@ -251,7 +252,7 @@ export class Range {
     logSummary(): void {
         let pv: number;
         let array: number[][];
-        let cellCount = (this.rows * this.cols);
+        let cellCount = (this.rows * this.columns);
         let condition: number;
         for (condition = Range.NO_CUT; condition <= Range.CUT; condition++) {
             console.log(Range.conditionNames[condition] +
@@ -272,7 +273,7 @@ export class Range {
 
     inRangeRowCol(row: number, col: number): boolean {
         return (row >= 0) && (col >= 0)
-            && (row <= this.rows) && (col < this.cols);
+            && (row <= this.rows) && (col < this.columns);
     }
 
     inRangeDates(dateA: MonthYearDate, dateB: MonthYearDate): boolean {
@@ -296,18 +297,18 @@ export class Range {
 
         for (let condition = Range.NO_CUT; condition <= Range.CUT; condition++) {
             pvArray = this.pvArrays[condition];
-            pvFracArray = this.pvFracArrays[condition];
+            pvFracArray = this.pvFractionArrays[condition];
             colorNumberArray = this.colorNumberArrays[condition];
             pvMax = this.pvMaxArray[condition];
 
             // For pv at each (row,col), determine fraction of maximum pv and corresponding color number
             for (let row = 0; row < this.rows; row++) {
-                for (let col = 0; col < this.cols; col++) {
+                for (let col = 0; col < this.columns; col++) {
                     pvFrac = pvArray[row][col] / pvMax;
                     pvFracArray[row][col] = pvFrac;
 
-                    for (let i = 0; i < this.fracBreak.length; i++) {
-                        if (pvFrac > this.fracBreak[i]) {
+                    for (let i = 0; i < this.fractionBreak.length; i++) {
+                        if (pvFrac > this.fractionBreak[i]) {
                             colorNumber = i + 1;
                             if (i == 0) {
                                 this.topCount[condition]++;
@@ -333,8 +334,8 @@ export class Range {
         return this.pvArrays[condition][row][col];
     }
       
-    getPvFrac(condition: number, row: number, col: number): number {
-        return this.pvFracArrays[condition][row][col];
+    getPvFraction(condition: number, row: number, col: number): number {
+        return this.pvFractionArrays[condition][row][col];
     }
       
 

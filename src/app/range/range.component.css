@@ -21,6 +21,10 @@ canvas {
     display: block;
 }
 
+form { 
+    margin: 0 auto; 
+    width:"{{canvasWidth+50}}";
+}
 
 .left {
     float: left;

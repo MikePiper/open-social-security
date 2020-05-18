@@ -2,7 +2,19 @@
 <div>
     <h2>Range of Options</h2>
   <div class='container'>
-    <div class="left" style="max-width:900">
+<!--
+  possible future enhancement - to switch views
+  radio buttons not working as supposed to
+    <form>
+      <span style="font-weight:bold">Showing result:&nbsp;&nbsp;</span>
+        <input type="radio" id="showCut" (click)="showCut()">
+        <label for="showCut">If cut of 23% at 2034&nbsp;&nbsp;&nbsp;&nbsp;</label>
+    
+        <input type="radio" id="showNoCut" (click)="showNoCut()">
+        <label for="showNoCut">If no cut</label>
+    </form>
+ -->    
+ <div class="left" style="max-width:900">
       <canvas #canvas0 id="canvas0" title="Percent of Maximum canvas" (click)="selectCell($event, 0)" (mousemove)="update($event, 0)"
         (mouseenter)="startUpdating()" (mouseleave)="stopUpdating()" style="margin-right:20px">
       </canvas>
@@ -17,8 +29,8 @@
       <p style="font-weight:bold">Selected Option: </p>
       <ul>
         <!-- TODO: revise below IF CLAIM DATES ARE DIFFERENT FOR CUT AND NO_CUT CASES -->
-        <li>{{this.selectedClaimDatesStrNoCut}}</li>
-        <li>{{this.pctSelStr}}</li>
+        <li>{{this.selectedClaimDatesString}}</li>
+        <li>{{this.selectedPercentString}}</li>
       </ul>
     </span> 
 
