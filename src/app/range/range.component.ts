@@ -4,6 +4,9 @@ import { MonthYearDate } from '../data model classes/monthyearDate'
 import { Person } from '../data model classes/person'
 import { Range } from '../data model classes/range'
 import { ClaimDates } from '../data model classes/claimDates'
+import { SolutionSet } from '../data model classes/solutionset'
+import { SolutionSetService } from '../solutionset.service'
+import { BirthdayService } from '../birthday.service'
 
 /* 
 This component provides a means of graphically displaying the quality of
@@ -16,6 +19,7 @@ claiming strategy, and they can select a specific strategy for further informati
 // convenience constants to avoid references to a different class
 const NO_CUT = Range.NO_CUT
 const CUT = Range.CUT
+const today:MonthYearDate = new MonthYearDate()
 
 @Component({
   selector: 'app-range',
@@ -31,6 +35,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
   @ViewChild('canvas0') canvasRef: ElementRef;
 
   @Input() scenario: CalculationScenario
+  @Input() recommendedSolutionSet: SolutionSet
   @Input() personA: Person
   @Input() personB: Person
   @Input() homeSetCustomDates: Function
@@ -146,7 +151,18 @@ export class RangeComponent implements OnInit, AfterViewInit {
   selectedColor = 'black'; // mark of selected cell
   pointerColor = 'rgb(250, 250, 20)'; // yellow, border around cell at pointer location
 
-  constructor() {
+
+  //solution variables
+    selectedStrategyPV: number
+    differenceInPV: number
+    differenceInPV_asPercent: number
+    solutionSet: SolutionSet = {
+      "solutionPV":null,
+      "solutionsArray": [],
+      "computationComplete": false
+    }
+
+  constructor(private solutionSetService:SolutionSetService, private birthdayService:BirthdayService) {
   }
 
   ngOnInit() {
@@ -480,30 +496,57 @@ export class RangeComponent implements OnInit, AfterViewInit {
     return (num * 100).toFixed(places);
   }
 
-  showSelectedOption(selectRow: number, selectColumn: number, ) {
-    let selectedClaimDates: ClaimDates = this.range.claimDatesArrays[this.currentCondition][selectRow][selectColumn];
-    console.log("row: " + selectRow)
-    console.log("col: " + selectColumn)
+  showSelectedOption(row: number, col: number, ) {
+    let selectedClaimDates: ClaimDates = this.range.claimDatesArrays[this.currentCondition][row][col];
     this.selectedClaimDatesString = selectedClaimDates.benefitDatesString();
-    // let expectedPvPercent: string = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, selectRow, selectColumn), 1);
-    // this.selectedPercentString = "Expected PV = " + expectedPvPercent + "% of maximum PV";
-    // if (this.currentCondition == CUT) {
-    //   let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(CUT, selectRow, selectColumn), 1);
-    //   this.selectedPercentString += 
-    //     " if cut of " +
-    //     this.scenario.benefitCutPercentage + "% at " +
-    //     this.scenario.benefitCutYear +
-    //     expectedPvPercentNoCut + 
-    //     " if no cut"; 
-    // }
-    let expectedPvString: string = Math.round(this.range.getPv(this.currentCondition, selectRow, selectColumn)).toLocaleString();
-    let expectedPvPercentString: string = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, selectRow, selectColumn), 1);
-    this.selectedPercentString = "Expected PV = $" + expectedPvString + ", " + expectedPvPercentString + "% of maximum PV";
+    //have to set retirementBenefitDate, spousal date, begin/endSuspensionDates on person objects if going to use functions from solutionset.service to generate solution sets
+      //Note that here we're pulling those dates from a ClaimDates object, which saved them from the person object(s) during the maximize PV function.
+      //And now we're setting those fields on the person objects back to those saved dates, so we can use solutionset.service's functions
+      this.personA.retirementBenefitDate = new MonthYearDate(selectedClaimDates.personARetirementDate)
+      this.personA.beginSuspensionDate = new MonthYearDate(selectedClaimDates.personABeginSuspensionDate)
+      this.personA.endSuspensionDate = new MonthYearDate(selectedClaimDates.personAEndSuspensionDate)
+      this.personA.spousalBenefitDate = new MonthYearDate(selectedClaimDates.personASpousalDate)
+      this.personB.retirementBenefitDate = new MonthYearDate(selectedClaimDates.personBRetirementDate)
+      this.personB.beginSuspensionDate = new MonthYearDate(selectedClaimDates.personBBeginSuspensionDate)
+      this.personB.endSuspensionDate = new MonthYearDate(selectedClaimDates.personBEndSuspensionDate)
+      this.personB.spousalBenefitDate = new MonthYearDate(selectedClaimDates.personBSpousalDate)
+
+      if (this.scenario.maritalStatus == "single"){
+          this.solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, this.range.pvArrays[this.currentCondition][row][col])
+      }
+      else if (this.scenario.maritalStatus == "married"){
+        //If one spouse is already age 70, the ClaimDates object has that spouse's dates as personB dates ("because they're fixedSpouse from maximize function"), regardless of which person it was.
+        //So we have to swap them if it was actually personA who was over 70.
+          if (this.birthdayService.findAgeOnDate(this.personA, today) > 70 ){
+            this.personB.retirementBenefitDate = new MonthYearDate(selectedClaimDates.personARetirementDate)
+            this.personB.beginSuspensionDate = new MonthYearDate(selectedClaimDates.personABeginSuspensionDate)
+            this.personB.endSuspensionDate = new MonthYearDate(selectedClaimDates.personAEndSuspensionDate)
+            this.personB.spousalBenefitDate = new MonthYearDate(selectedClaimDates.personASpousalDate)
+            this.personA.retirementBenefitDate = new MonthYearDate(selectedClaimDates.personBRetirementDate)
+            this.personA.beginSuspensionDate = new MonthYearDate(selectedClaimDates.personBBeginSuspensionDate)
+            this.personA.endSuspensionDate = new MonthYearDate(selectedClaimDates.personBEndSuspensionDate)
+            this.personA.spousalBenefitDate = new MonthYearDate(selectedClaimDates.personBSpousalDate)
+          }
+          this.solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
+      }
+      else if (this.scenario.maritalStatus == "divorced"){
+          this.solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
+      }
+    
+    this.selectedStrategyPV = this.range.pvArrays[this.currentCondition][row][col]
+    this.differenceInPV = this.recommendedSolutionSet.solutionPV - this.selectedStrategyPV
+    this.differenceInPV_asPercent = (1 - (this.selectedStrategyPV / this.recommendedSolutionSet.solutionPV)) * 100
+
+/* 
+    let expectedPvPercent: string = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, row, col), 1);
+    // this.pctSelStr = "Expected PV = $" + expectedPvStr + ", " + expectedPvPct + "% of max. PV";
+    this.selectedPercentString = "Expected PV = " + expectedPvPercent + "% of maximum PV";
     if (this.currentCondition == CUT) {
       let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(NO_CUT, selectRow, selectColumn), 1);
       this.selectedPercentString += " (" + expectedPvPercentNoCut + "% if no cut)";
     }
-  // if (this.currentCondition == CUT) {
+ */
+    // if (this.currentCondition == CUT) {
     //   let selectedClaimDatesCut = this.range.claimDatesArrays[CUT][row][col];
     //   // TODO: show only if dates different for CUT case
     //   this.selectedClaimDatesStringCut = selectedClaimDatesCut.benefitDatesString();
