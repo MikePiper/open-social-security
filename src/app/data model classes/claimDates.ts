@@ -6,6 +6,8 @@ let minimumEndSuspensionDate: MonthYearDate = new MonthYearDate(1950, 1);
 
 export class ClaimDates {
     //This class stores information about claims for a person or a couple
+    //Takes one or more person objects in the constructor, pulls the relevant dates off that/those object(s), and saves the dates as fields on this object
+    //Then we can reference this single object as a collection of filing dates later
 
     personARetirementDate: MonthYearDate;
     personASpousalDate: MonthYearDate;

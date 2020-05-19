@@ -104,7 +104,6 @@ export class SolutionSetService {
     return solutionSet
   }
 
-  //For two-person scenarios, other than a) divorce or b) one person being over 70
   //In this method first we create all the possible solution objects, but then only push the ones we want into the solutionsArray.
     //For example if personB can't actually qualify for spousal benefits at any time, we don't push personBspousalSolution
   generateCoupleSolutionSet(scenario:CalculationScenario, personA:Person, personB:Person, savedPV: number){

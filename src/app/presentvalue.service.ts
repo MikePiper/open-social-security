@@ -796,7 +796,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       // scenario.range = new Range(flexibleSpouse.retirementBenefitDate, flexibleSpouse.retirementBenefitDate, flexibleSpouse.retirementBenefitDate, endTestDate);      
       scenario.range = new Range(flexibleSpouse.retirementBenefitDate, endTestDate);      
       // store data for the initial combination of claim dates
-      scenario.range.processPVs(scenario.pvNoCut, savedPV, new ClaimDates(flexibleSpouse));
+      scenario.range.processPVs(scenario.pvNoCut, savedPV, new ClaimDates(flexibleSpouse, fixedSpouse));
 
     while (flexibleSpouse.retirementBenefitDate <= endTestDate && flexibleSpouse.endSuspensionDate <= endTestDate) {
       //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
@@ -808,7 +808,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       }
 
       // store data for this combination of claim dates
-      scenario.range.processPVs(scenario.pvNoCut, currentTestPV, new ClaimDates(flexibleSpouse));
+      scenario.range.processPVs(scenario.pvNoCut, currentTestPV, new ClaimDates(flexibleSpouse, fixedSpouse));
 
       //If PV is greater than or equal to saved PV, save new PV and save new testDates
       if (currentTestPV >= savedPV) {

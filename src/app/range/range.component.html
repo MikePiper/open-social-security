@@ -14,23 +14,31 @@
         <label for="showNoCut">If no cut</label>
     </form>
  -->    
- <div class="left" style="max-width:900">
+    <div class="left" style="max-width:900">
       <canvas #canvas0 id="canvas0" title="Percent of Maximum canvas" (click)="selectCell($event, 0)" (mousemove)="update($event, 0)"
         (mouseenter)="startUpdating()" (mouseleave)="stopUpdating()" style="margin-right:20px">
       </canvas>
     </div>
     
-    <p>This color-coded graph shows the desirability of various alternative claiming dates.
-      For instance, the dark green range includes filing dates that would provide an expected present value of at least 99% of that of the recommended strategy.
-    </p>
-    <p *ngIf="selectedRow < 0">Click any spot on the graph to see how the selected alternative compares to the recommended filing date(s).</p>
-    <p *ngIf="scenario.restrictedApplicationPossible">NOTE: Spousal benefit may be claimed before retirement benefit.</p>
+    <span *ngIf="selectedRow < 0">
+      <p>This color-coded graph shows the desirability of various alternative claiming dates.
+        For instance, the dark green range includes filing dates that would provide an expected present value of at least 99% of that of the recommended strategy.
+      </p>
+      <p>Click any spot on the graph to see how the selected alternative compares to the recommended filing date(s).</p>
+    </span>
+    <p *ngIf="scenario.restrictedApplicationPossible">NOTE: A restricted application (i.e., an application for just spousal benefits) will be assumed, whenever it is available given the retirement filing dates selected.</p>
     <span *ngIf="selectedRow >= 0">
       <p style="font-weight:bold">Selected Option: </p>
       <ul>
         <!-- TODO: revise below IF CLAIM DATES ARE DIFFERENT FOR CUT AND NO_CUT CASES -->
-        <li>{{this.selectedClaimDatesString}}</li>
+      <!-- Commenting these two lines out for now, since they are tenatively replaced by output below
+        <li>{{this.selectedClaimDatesString}}</li> 
         <li>{{this.selectedPercentString}}</li>
+      -->
+        <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
+        <li>The present value of the strategy you selected is {{this.selectedStrategyPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.</li>
+        <li>That is a difference of {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
+          ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%) relative to the suggested filing strategy.</li>
       </ul>
     </span> 
 
