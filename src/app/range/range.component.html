@@ -1,28 +1,47 @@
-<!-- <div class='parent'> -->
 <div>
     <h2>Range of Options</h2>
+    <span *ngIf="!scenario.benefitCutAssumption">
+      <p>For this case:</p>
+      <ul> 
+        <li>The highest expected present value is ${{this.maximumPvString}}, as noted above. </li>
+        <li>The lowest expected present value is ${{this.minimumPvString}}. </li>
+        <li>It occurs with: {{this.minimumPvClaimDatesString}}. </li>
+      </ul>
+    </span>
+    <span *ngIf="scenario.benefitCutAssumption">
+      <p>For this case, if there is a {{this.getCutString()}}:</p>
+      <ul> 
+        <li>The highest expected present value is ${{this.maximumPvStringCut}}, as noted above. </li>
+        <li>The lowest expected present value is ${{this.minimumPvStringCut}}. </li>
+        <li>It occurs with: {{this.minimumPvClaimDatesStringCut}}. </li>
+      </ul>
+      <p>If there is no cut:</p>
+      <ul> 
+        <li>The highest expected present value is ${{this.maximumPvString}}.</li>
+        <li>The lowest expected present value is ${{this.minimumPvString}}. </li>
+        <li>It occurs with: {{this.minimumPvClaimDatesString}}. </li>
+      </ul>
+    </span>
+    <p>The color-coded graph below shows the desirability of various alternative claiming dates.
+      For instance, the 95 - 99 range (color&nbsp;<span style="background-color:#56b4e9;">&nbsp;&nbsp;&nbsp;&nbsp;</span>) includes filing dates that would provide an expected present value from 95% to 99% of that of the recommended strategy.
+    </p>
   <div class='container'>
-<!--
-  possible future enhancement - to switch views
-  radio buttons not working as supposed to
-    <form>
+   
+    <form id="showCutForm">
       <span style="font-weight:bold">Showing result:&nbsp;&nbsp;</span>
-        <input type="radio" id="showCut" (click)="showCut()">
-        <label for="showCut">If cut of 23% at 2034&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="radio" id="showCut" (click)="showCutChart(true)">
+        <label for="showCut">if {{this.getCutString()}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
     
-        <input type="radio" id="showNoCut" (click)="showNoCut()">
-        <label for="showNoCut">If no cut</label>
+        <input type="radio" id="showNoCut" (click)="showCutChart(false)">
+        <label for="showNoCut">if no cut</label>
     </form>
- -->    
- <div class="left" style="max-width:900">
+
+    <div class="left" style="max-width:900">
       <canvas #canvas0 id="canvas0" title="Percent of Maximum canvas" (click)="selectCell($event, 0)" (mousemove)="update($event, 0)"
         (mouseenter)="startUpdating()" (mouseleave)="stopUpdating()" style="margin-right:20px">
       </canvas>
     </div>
-    
-    <p>This color-coded graph shows the desirability of various alternative claiming dates.
-      For instance, the dark green range includes filing dates that would provide an expected present value of at least 99% of that of the recommended strategy.
-    </p>
+
     <p *ngIf="selectedRow < 0">Click any spot on the graph to see how the selected alternative compares to the recommended filing date(s).</p>
     <p *ngIf="scenario.restrictedApplicationPossible">NOTE: Spousal benefit may be claimed before retirement benefit.</p>
     <span *ngIf="selectedRow >= 0">

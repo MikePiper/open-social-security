@@ -39,11 +39,12 @@ export class RangeComponent implements OnInit, AfterViewInit {
   canvas: HTMLCanvasElement;
   canvasContext: CanvasRenderingContext2D
 
-/* 
-  // for possible future view-switch enhancement
+  // for view-switch enhancement
+  showCut: boolean = false;
   showCutButton: HTMLInputElement;
   showNoCutButton: HTMLInputElement;
- */
+
+  cutString: string = "";
 
   updating: boolean = false; // true if user has pointer over the graph
   
@@ -61,6 +62,22 @@ export class RangeComponent implements OnInit, AfterViewInit {
   pointerClaimDatesStringNoCut: string;
   pointerClaimDatesStringCut: string;
 
+  // items relating to minimum and maximum
+  minimumPv: number;
+  minimumPvCut: number;
+  minimumPvString: string; // string with minimum PV for no-cut condition
+  minimumPvStringCut: string; // string with minimum PV for cut condition
+  minimumPvClaimDatesString: string; // string with claim dates for no-cut condition at minimum PV
+  minimumPvClaimDatesStringCut: string; // string with claim dates for cut condition at minimum PV
+
+  maximumPv: number;
+  maximumPvCut: number;
+  maximumPvString: string; // string with maximum PV for no-cut condition
+  maximumPvStringCut: string; // string with maximum PV for cut condition
+  maximumPvClaimDatesString: string; // string with claim dates for no-cut condition at maximum PV
+  maximumPvClaimDatesStringCut: string; // string with claim dates for cut condition at maximum PV
+
+
   range: Range; // the object holding data for the range of options
   startDateA: MonthYearDate; // date at which personA first receives benefits, to be used when converting row to date
   startDateB: MonthYearDate; // date at which personB first receives benefits, to be used when converting column to date
@@ -71,7 +88,9 @@ export class RangeComponent implements OnInit, AfterViewInit {
   cellHeight: number;
   minimumCellWidth: number = 6;
   minimumCellHeight: number = 6;
-  chartTitleStr: string;
+  chartTitle: string;
+  // chartTitleNoCut: string;
+  // chartTitleCut: string;
 
   axisWidth: number = 2; // width of x- or y-axis
   halfAxisWidth: number = this.axisWidth / 2;
@@ -134,7 +153,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    console.log("range.component.ngAfterViewInit");
+    // console.log("range.component.ngAfterViewInit");
     this.initDisplay();
   }
 
@@ -150,25 +169,32 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.selectedRow = -1;
       this.selectedCol = -1;
 
+      this.chartTitle = "% of Maximum PV";
       if (this.scenario.benefitCutAssumption === false) {
         this.currentCondition = NO_CUT;
-        this.chartTitleStr = "% of Maximum PV"
+        this.cutString = "";
       } else {
-        this.currentCondition = CUT;
-        this.chartTitleStr = "% of Maximum PV (If Cut of " + 
+        this.cutString = "cut of " + 
           this.scenario.benefitCutPercentage + "% at " +
-          this.scenario.benefitCutYear + ")"
+          this.scenario.benefitCutYear;
+        this.currentCondition = CUT;
+        // this.chartTitleCut = "% of Maximum PV " + this.cutString;
       }
 
       // get elements where information will be displayed
       this.canvas = this.canvasRef.nativeElement;
       this.canvasContext = this.canvas.getContext("2d");
 
-/* 
-  // for possible future view-switch enhancement
+
+  // for view-switch enhancement
       this.showCutButton = <HTMLInputElement> document.getElementById("showCut");
       this.showNoCutButton = <HTMLInputElement> document.getElementById("showNoCut");
-*/
+      this.showCutButton.checked = true; // default if user is considering effect of cut
+      if (this.scenario.benefitCutAssumption) {
+        document.getElementById("showCutForm").style.display = "inline";
+      } else {
+        document.getElementById("showCutForm").style.display = "none";
+      }
 
       this.setSizes(this.range.rows, this.range.columns);
 
@@ -180,26 +206,51 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.pointerClaimDatesStringNoCut = "";
       this.pointerClaimDatesStringCut = "";
 
-      this.paintCanvas(this.currentCondition);
-  }
-}
-/* 
-// for possible future view-switch enhancement
-showCut(): void {
-  this.showCutButton.checked = true;
-  this.showNoCutButton.checked = false;
-  console.log("showing Cut");
-}
+      // get range of possibilities
+      this.minimumPv = this.range.pvMinArray[NO_CUT];
+      this.minimumPvCut = this.range.pvMinArray[CUT];
+      this.maximumPv = this.range.pvMaxArray[NO_CUT];
+      this.maximumPvCut = this.range.pvMaxArray[CUT];
+      
+      this.minimumPvString = Math.round(this.minimumPv).toLocaleString();
+      this.minimumPvStringCut = Math.round(this.minimumPvCut).toLocaleString();
+      this.maximumPvString = Math.round(this.maximumPv).toLocaleString();
+      this.maximumPvStringCut = Math.round(this.maximumPvCut).toLocaleString();
+      
+      let claimDates: ClaimDates;
+      claimDates = this.range.getMinimumPvClaimDates(NO_CUT);
+      this.minimumPvClaimDatesString = claimDates.benefitDatesString();
+      claimDates = this.range.getMinimumPvClaimDates(CUT);
+      this.minimumPvClaimDatesStringCut = claimDates.benefitDatesString();
+      claimDates = this.range.getMaximumPvClaimDates(NO_CUT);
+      this.maximumPvClaimDatesString = claimDates.benefitDatesString();
+      claimDates = this.range.getMaximumPvClaimDates(CUT);
+      this.maximumPvClaimDatesStringCut = claimDates.benefitDatesString();
 
-showNoCut(): void {
-  this.showNoCutButton.checked = true;
-  this.showCutButton.checked = false;
-  console.log("showing NoCut");
-}
-*/
+      this.paintCanvas(this.currentCondition);
+    }
+  }
+
+  // for view-switch enhancement
+  showCutChart(showIt: boolean): void {
+    this.showCut = showIt;
+    this.showCutButton.checked = showIt;
+    this.showNoCutButton.checked = !showIt;
+    console.log("showCut = " + this.showCut);
+    if (this.showCut) {
+      this.currentCondition = CUT;
+    } else {
+      this.currentCondition = NO_CUT;
+    }
+    this.paintCells(this.currentCondition);
+  }
 
   updateDisplay(event: Event) {
     this.initDisplay();
+  }
+
+  getCutString(): string {
+    return this.cutString;
   }
 
   setSizes(rows: number, cols: number): void {
@@ -338,7 +389,7 @@ showNoCut(): void {
     context.textAlign = 'center';
     titleY += this.chartTitleHeight;
     titleX = this.canvasWidth / 2;
-    context.fillText(this.chartTitleStr, titleX, titleY);
+    context.fillText(this.chartTitle, titleX, titleY);
 
     // add key
     this.drawKey(this.currentCondition, titleX - (this.keyWidth / 2), titleY + this.chartTitleFontSize);
@@ -401,17 +452,21 @@ showNoCut(): void {
     }
   }
 
-  paintCanvas(condition: number) {
-    this.canvasContext.strokeStyle = this.axisColor;
-    this.canvasContext.lineWidth = this.axisWidth;
-
-    this.paintMargins();
-    
+  paintCells(condition: number): void {
     for (let row = 0; row < this.range.rows; row++) {
       for (let col = 0; col < this.range.columns; col++) {
         this.paintCell(condition, row, col);
       }
     }
+  }
+
+  paintCanvas(condition: number) {
+    this.canvasContext.strokeStyle = this.axisColor;
+    this.canvasContext.lineWidth = this.axisWidth;
+
+    this.paintMargins();
+    this.paintCells(condition);
+
   }
 
   clearData() {
@@ -425,24 +480,30 @@ showNoCut(): void {
     return (num * 100).toFixed(places);
   }
 
-  showSelectedOption(row: number, col: number, ) {
-    let selectedClaimDates: ClaimDates = this.range.claimDatesArrays[this.currentCondition][row][col];
-    console.log("row: " + row)
-    console.log("col: " + col)
+  showSelectedOption(selectRow: number, selectColumn: number, ) {
+    let selectedClaimDates: ClaimDates = this.range.claimDatesArrays[this.currentCondition][selectRow][selectColumn];
+    console.log("row: " + selectRow)
+    console.log("col: " + selectColumn)
     this.selectedClaimDatesString = selectedClaimDates.benefitDatesString();
-    let expectedPvPercent: string = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, row, col), 1);
-    // this.pctSelStr = "Expected PV = $" + expectedPvStr + ", " + expectedPvPct + "% of max. PV";
-    this.selectedPercentString = "Expected PV = " + expectedPvPercent + "% of maximum PV";
-    if (this.currentCondition == CUT) {
-      let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(CUT, row, col), 1);
-      this.selectedPercentString += 
-        " if cut of " +
-        this.scenario.benefitCutPercentage + "% at " +
-        this.scenario.benefitCutYear;
-        expectedPvPercentNoCut + 
-        " if no cut"; 
-    }
+    // let expectedPvPercent: string = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, selectRow, selectColumn), 1);
+    // this.selectedPercentString = "Expected PV = " + expectedPvPercent + "% of maximum PV";
     // if (this.currentCondition == CUT) {
+    //   let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(CUT, selectRow, selectColumn), 1);
+    //   this.selectedPercentString += 
+    //     " if cut of " +
+    //     this.scenario.benefitCutPercentage + "% at " +
+    //     this.scenario.benefitCutYear +
+    //     expectedPvPercentNoCut + 
+    //     " if no cut"; 
+    // }
+    let expectedPvString: string = Math.round(this.range.getPv(this.currentCondition, selectRow, selectColumn)).toLocaleString();
+    let expectedPvPercentString: string = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, selectRow, selectColumn), 1);
+    this.selectedPercentString = "Expected PV = $" + expectedPvString + ", " + expectedPvPercentString + "% of maximum PV";
+    if (this.currentCondition == CUT) {
+      let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(NO_CUT, selectRow, selectColumn), 1);
+      this.selectedPercentString += " (" + expectedPvPercentNoCut + "% if no cut)";
+    }
+  // if (this.currentCondition == CUT) {
     //   let selectedClaimDatesCut = this.range.claimDatesArrays[CUT][row][col];
     //   // TODO: show only if dates different for CUT case
     //   this.selectedClaimDatesStringCut = selectedClaimDatesCut.benefitDatesString();
@@ -504,17 +565,17 @@ showNoCut(): void {
       this.selectedCol = selectColumn;
       this.showSelectedOption(this.selectedRow, this.selectedCol);
       // this.showPct(this.selectedRow, this.selectedCol, this.pctSelStr);
-      let condition: number = NO_CUT;
-      if (this.scenario.benefitCutAssumption) {
-        condition = CUT;
-      }
-      let expectedPvString: string = Math.round(this.range.getPv(condition, selectRow, selectColumn)).toLocaleString();
-      let expectedPvPercentString: string = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, selectRow, selectColumn), 1);
-      this.selectedPercentString = "Expected PV = $" + expectedPvString + ", " + expectedPvPercentString + "% of maximum PV";
-      if (this.currentCondition > NO_CUT) {
-        let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(NO_CUT, selectRow, selectColumn), 1);
-        this.selectedPercentString += " (" + expectedPvPercentNoCut + "% if no cut)";
-      }
+      // let condition: number = NO_CUT;
+      // if (this.scenario.benefitCutAssumption) {
+      //   condition = CUT;
+      // }
+      // let expectedPvString: string = Math.round(this.range.getPv(this.currentCondition, selectRow, selectColumn)).toLocaleString();
+      // let expectedPvPercentString: string = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, selectRow, selectColumn), 1);
+      // this.selectedPercentString = "Expected PV = $" + expectedPvString + ", " + expectedPvPercentString + "% of maximum PV";
+      // if (this.currentCondition > NO_CUT) {
+      //   let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(NO_CUT, selectRow, selectColumn), 1);
+      //   this.selectedPercentString += " (" + expectedPvPercentNoCut + "% if no cut)";
+      // }
     }
 }
 
@@ -544,6 +605,7 @@ update(e: MouseEvent) {
     let column = rowColumn[1];
 
     this.unmarkPointer();
+    this.canvas.title = ""; // blank tooltip when outside of graph
 
     if ((row >= 0) && (column >= 0)) { // pointer is within the graph area (not the margin)
       // mark the pointer location, even if it is the selected cell
@@ -552,8 +614,9 @@ update(e: MouseEvent) {
       this.previousPointerColumn = column;
       let claimsString = this.range.rowColumnDatesString(row, column);
       this.pointerPercentString = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, row, column), 1) + "% of maximum, " + claimsString;
-      if (this.currentCondition > NO_CUT) {
-        let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(NO_CUT, row, column), 1);
+      // if (this.currentCondition > NO_CUT) {
+      if (this.showCut) {
+          let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(NO_CUT, row, column), 1);
         this.pointerPercentString += " (" + expectedPvPercentNoCut + "% if no cut)";
       }
       this.canvas.title = this.pointerPercentString; // show tooltip with % of maximum
@@ -563,7 +626,7 @@ update(e: MouseEvent) {
   }
 
   setKeySize() {
-    // determine location and size of key components
+    // determine location and size of components of the key
 
     this.keyCellsWidth = (this.keyCellWidth * this.range.fractionLabels.length);
     this.keyWidth = this.keyCellsWidth + this.keyBorderWidth * 2;
