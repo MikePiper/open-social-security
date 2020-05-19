@@ -90,10 +90,10 @@ export class RangeComponent implements OnInit, AfterViewInit {
   chartTitleHeight: number;
   axisTickSize: number = 10;
   axisLabelSpace: number = 5;
-  xAxisTitleSingle: string = "You Start Retirement";
-  xAxisTitleCouple: string = "You Start Own Retirement";
-  xAxisTitle: string = this.xAxisTitleSingle;
-  yAxisTitle: string = "Spouse Starts Own Retirement";
+  personAaxisTitle: string = "Your Retirement Benefit Begins";
+  personBaxisTitle: string = "Your Spouse's Retirement Benefit Begins";
+  xAxisTitle: string = this.personAaxisTitle;
+  yAxisTitle: string = this.personBaxisTitle;
   xTitleWidth: number;
   xTitleHeight: number;
   yTitleWidth: number;
@@ -235,13 +235,14 @@ showNoCut(): void {
 
     if (rows === 1) {
       // single person
-      this.xAxisTitle = this.xAxisTitleSingle;
       if (this.cellHeight < 20) {
         // increase height for better visibility of single-row (one-person) display
         this.cellHeight = 20;
       }
-    } else {
-      this.xAxisTitle = this.xAxisTitleCouple;
+    }
+    //If personA is already 70, we're only iterating one person (only one axis on graph), but that person is personB
+    if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70){
+      this.xAxisTitle = this.personBaxisTitle
     }
 
     // Calculate chart element dimensions to fit actual axis contents
@@ -462,7 +463,7 @@ showNoCut(): void {
       else if (this.scenario.maritalStatus == "married"){
         //If one spouse is already age 70, the ClaimDates object has that spouse's dates as personB dates ("because they're fixedSpouse from maximize function"), regardless of which person it was.
         //So we have to swap them if it was actually personA who was over 70.
-          if (this.birthdayService.findAgeOnDate(this.personA, today) > 70 ){
+          if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70 ){
             this.personB.retirementBenefitDate = new MonthYearDate(selectedClaimDates.personARetirementDate)
             this.personB.beginSuspensionDate = new MonthYearDate(selectedClaimDates.personABeginSuspensionDate)
             this.personB.endSuspensionDate = new MonthYearDate(selectedClaimDates.personAEndSuspensionDate)
