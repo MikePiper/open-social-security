@@ -9,7 +9,7 @@
     <span *ngIf="scenario.benefitCutAssumption">
       <p>Under the conditions defined for this case:</p>
       <ul>
-        <li>If there is a {{this.getCutString()}}, the expected present value ranges from ${{this.minimumPvStringCut}} 
+        <li>If benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}, the expected present value ranges from ${{this.minimumPvStringCut}} 
           to ${{this.maximumPvStringCut}}</li>
         <li>If there is no cut,
           the expected present value ranges from ${{this.minimumPvString}} 
@@ -25,10 +25,10 @@
     <form id="showCutForm">
       <span style="font-weight:bold">Showing result:&nbsp;&nbsp;</span>
         <input type="radio" id="showCut" (click)="showCutChart(true)">
-        <label for="showCut">if {{this.getCutString()}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <label for="showCut">if benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
     
         <input type="radio" id="showNoCut" (click)="showCutChart(false)">
-        <label for="showNoCut">if no cut</label>
+        <label for="showNoCut">if benefits are not cut</label>
     </form>
    
     <div class="left" style="max-width:900">
@@ -55,7 +55,9 @@
         <ul>
           <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
         </ul>
-        <p style="font-weight:bold">{{this.cutOrNoCutString[this.currentCondition]}}:</p>
+        <!-- <p style="font-weight:bold">{{this.cutOrNoCutString[this.currentCondition]}}:</p> -->
+        <p *ngIf="this.showCut === true" style="font-weight:bold">If benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}:</p>
+        <p *ngIf="this.showCut === false" style="font-weight:bold">If benefits are not cut:</p>
         <ul>
           <li>The present value of the strategy you selected is {{this.selectedStrategyPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.</li>
           <li>That is {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}

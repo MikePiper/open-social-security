@@ -55,7 +55,7 @@
     "@types/jasmine": "~3.5.10",
     "@types/jasminewd2": "~2.0.8",
     "@types/node": "~13.11.1",
-    "bootstrap": "^4.4.1",
+    "bootstrap": "^4.5.0",
     "codelyzer": "^5.2.2",
     "http-server": "^0.12.1",
     "jasmine-core": "~3.5.0",

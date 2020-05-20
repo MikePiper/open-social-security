@@ -45,7 +45,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
   canvasContext: CanvasRenderingContext2D
 
   // for view-switch enhancement
-  showCut: boolean = false;
+  showCut: boolean = true;
   showCutButton: HTMLInputElement;
   showNoCutButton: HTMLInputElement;
 
@@ -192,7 +192,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
         this.cutString = "";
       } else {
         this.cutString = "cut of " + 
-          this.scenario.benefitCutPercentage + "% at " +
+          this.scenario.benefitCutPercentage + "% in " +
           this.scenario.benefitCutYear;
         this.currentCondition = CUT;
         this.cutOrNoCutString[NO_CUT] = "If there is no cut"
