@@ -1,21 +1,22 @@
 <div>
     <h2>Range of Options</h2>
     <span *ngIf="!scenario.benefitCutAssumption">
-      <p>For this case,
+      <p>Under the conditions defined for this case,
         the expected present value ranges from ${{this.minimumPvString}} 
         to ${{this.maximumPvString}}
       </p>
     </span>
     <span *ngIf="scenario.benefitCutAssumption">
-      <p>For this case, if there is a {{this.getCutString()}}, 
-        the expected present value ranges from ${{this.minimumPvStringCut}} 
-        to ${{this.maximumPvStringCut}}
-      </p>
-      <p>If there is no cut,
-        the expected present value ranges from ${{this.minimumPvString}} 
-        to ${{this.maximumPvString}}
-      </p>
+      <p>Under the conditions defined for this case:</p>
+      <ul>
+        <li>If there is a {{this.getCutString()}}, the expected present value ranges from ${{this.minimumPvStringCut}} 
+          to ${{this.maximumPvStringCut}}</li>
+        <li>If there is no cut,
+          the expected present value ranges from ${{this.minimumPvString}} 
+          to ${{this.maximumPvString}}</li>
+      </ul>
     </span>
+    <!-- Moved the description to make more room beside the graph -->
     <p>The color-coded graph below shows the desirability of various alternative claiming dates.
       For instance, the 95 - 99 range (color&nbsp;<span style="background-color:#56b4e9;">&nbsp;&nbsp;&nbsp;&nbsp;</span>) includes filing dates that would provide an expected present value from 95% to 99% of that of the recommended strategy.
     </p>
@@ -37,32 +38,31 @@
     </div>
     
     <span *ngIf="selectedRow < 0">
-      <p>This color-coded graph shows the desirability of various alternative claiming dates.
-        For instance, the dark green range includes filing dates that would provide an expected present value of at least 99% of that of the recommended strategy.
-      </p>
       <p>Click any spot on the graph to see how the selected alternative compares to the recommended filing date(s).</p>
     </span>
     <p *ngIf="scenario.restrictedApplicationPossible">NOTE: A restricted application (i.e., an application for just spousal benefits) will be assumed, whenever it is available given the retirement filing dates selected.</p>
     <span *ngIf="selectedRow >= 0">
       <p style="font-weight:bold">Selected Option: </p>
-      <ul>
-        <!-- TODO: revise below IF CLAIM DATES ARE DIFFERENT FOR CUT AND NO_CUT CASES -->
-      <!-- Commenting these two lines out for now, since they are tenatively replaced by output below
-        <li>{{this.selectedClaimDatesString}}</li> 
-        <li>{{this.selectedPercentString}}</li>
-      -->
+      <span *ngIf="!scenario.benefitCutAssumption">
+        <ul>
         <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
         <li>The present value of the strategy you selected is {{this.selectedStrategyPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.</li>
-        <li>That is a difference of {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
-          ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%) relative to the suggested filing strategy.</li>
-      </ul>
-    </span> 
+        <li>That is {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
+            ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%) less than the suggested filing strategy.</li>
+        </ul>
+      </span>
+      <span *ngIf="scenario.benefitCutAssumption">
+        <ul>
+          <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
+        </ul>
+        <p style="font-weight:bold">{{this.cutOrNoCutString[this.currentCondition]}}:</p>
+        <ul>
+          <li>The present value of the strategy you selected is {{this.selectedStrategyPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.</li>
+          <li>That is {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
+              ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%) less than the maximum.</li>
+        </ul>
+      </span> 
+    </span>
 
   </div>
-<!-- FOR POSSIBLE USE IF CLAIM DATES ARE DIFFERENT FOR CUT VS. NO_CUT CASES
-  <p>Claim dates at selection<span *ngIf="scenario.benefitCutAssumption === true"> (no cut)</span>: <span>{{this.selectedClaimDatesStrNoCut}}</span></p>
-  <p *ngIf="scenario.benefitCutAssumption === true">Claim dates at selection (cut): <span>{{this.selectedClaimDatesStrCut}}</span></p>
-  <p>Claim dates at pointer<span *ngIf="scenario.benefitCutAssumption === true"> (no cut)</span>: <span>{{this.pointerClaimDatesStrNoCut}}</span></p>
-  <p *ngIf="scenario.benefitCutAssumption === true">Claim dates at pointer: (cut) <span>{{this.pointerClaimDatesStrCut}}</span></p>
- -->
 </div>

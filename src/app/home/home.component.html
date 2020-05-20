@@ -433,7 +433,13 @@
 
   <!--Recommended Strategy Output-->
   <h2>Recommended Strategy</h2>
-  <p>The strategy that maximizes the total dollars you can be expected to spend over your lifetime<span *ngIf="scenario.maritalStatus == 'married'">s</span> is as follows:</p>
+<!--   <p>The strategy that maximizes the total dollars you can be expected to spend over your lifetime<span *ngIf="scenario.maritalStatus == 'married'">s</span> is as follows:</p>
+  Also changed "spend" to "receive". Maybe the person will save some of those dollars.
+-->  
+  <p>
+    <span *ngIf="scenario.benefitCutAssumption">If the possible cut in benefits occurs, the </span>
+    <span *ngIf="!this.scenario.benefitCutAssumption">The </span>
+    strategy that maximizes the total dollars you can be expected to receive over your lifetime<span *ngIf="scenario.maritalStatus == 'married'">s</span> is as follows:</p>
   <ul>
     <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
   </ul>

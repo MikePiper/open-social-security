@@ -50,12 +50,13 @@ export class RangeComponent implements OnInit, AfterViewInit {
   showNoCutButton: HTMLInputElement;
 
   cutString: string = "";
+  cutOrNoCutString: string[] = new Array(2);
 
   updating: boolean = false; // true if user has pointer over the graph
   
   // items relating to the selected option (clicked by user)
   selectedRow: number = -1;
-  selectedCol: number = -1;
+  selectedColumn: number = -1;
   selectedPercentString: string = ""; // string with percent of maximum PV at selected option
   selectedClaimDatesString: string; // string with claim dates for no-cut condition at selected option
   selectedClaimDatesStringCut: string; // string with claim dates for cut condition at selected option
@@ -183,7 +184,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.startDateB = this.range.firstDateB;
       this.selectedPercentString = "";
       this.selectedRow = -1;
-      this.selectedCol = -1;
+      this.selectedColumn = -1;
 
       this.chartTitle = "% of Maximum PV";
       if (this.scenario.benefitCutAssumption === false) {
@@ -194,6 +195,8 @@ export class RangeComponent implements OnInit, AfterViewInit {
           this.scenario.benefitCutPercentage + "% at " +
           this.scenario.benefitCutYear;
         this.currentCondition = CUT;
+        this.cutOrNoCutString[NO_CUT] = "If there is no cut"
+        this.cutOrNoCutString[CUT] = "If there is a " + this.cutString;
         // this.chartTitleCut = "% of Maximum PV " + this.cutString;
       }
 
@@ -252,13 +255,20 @@ export class RangeComponent implements OnInit, AfterViewInit {
     this.showCut = showIt;
     this.showCutButton.checked = showIt;
     this.showNoCutButton.checked = !showIt;
-    console.log("showCut = " + this.showCut);
+    // console.log("showCut = " + this.showCut);
     if (this.showCut) {
       this.currentCondition = CUT;
     } else {
       this.currentCondition = NO_CUT;
     }
     this.paintCells(this.currentCondition);
+    if (this.selectedRow >= 0) {
+      // a cell was already selected
+      // mark the previously-selected cell, because it was painted over
+      this.markCell(this.selectedColor, this.selectedRow, this.selectedColumn);      
+      //  update the output for the current condition
+      this.showSelectedOption(this.selectedRow, this.selectedColumn);
+    }
   }
 
   updateDisplay(event: Event) {
@@ -533,24 +543,10 @@ export class RangeComponent implements OnInit, AfterViewInit {
           this.solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
       }
     
+    let pvMax = this.range.pvMaxArray[this.currentCondition]
     this.selectedStrategyPV = this.range.pvArrays[this.currentCondition][row][col]
-    this.differenceInPV = this.recommendedSolutionSet.solutionPV - this.selectedStrategyPV
-    this.differenceInPV_asPercent = (1 - (this.selectedStrategyPV / this.recommendedSolutionSet.solutionPV)) * 100
-
-/* 
-    let expectedPvPercent: string = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, row, col), 1);
-    // this.pctSelStr = "Expected PV = $" + expectedPvStr + ", " + expectedPvPct + "% of max. PV";
-    this.selectedPercentString = "Expected PV = " + expectedPvPercent + "% of maximum PV";
-    if (this.currentCondition == CUT) {
-      let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(NO_CUT, selectRow, selectColumn), 1);
-      this.selectedPercentString += " (" + expectedPvPercentNoCut + "% if no cut)";
-    }
- */
-    // if (this.currentCondition == CUT) {
-    //   let selectedClaimDatesCut = this.range.claimDatesArrays[CUT][row][col];
-    //   // TODO: show only if dates different for CUT case
-    //   this.selectedClaimDatesStringCut = selectedClaimDatesCut.benefitDatesString();
-    // }
+    this.differenceInPV = pvMax - this.selectedStrategyPV
+    this.differenceInPV_asPercent = (1 - (this.selectedStrategyPV / pvMax)) * 100
   }
 
   getRowColumn(e: MouseEvent) { // returnValue[0] = x, returnValue[1] = y
@@ -600,25 +596,13 @@ export class RangeComponent implements OnInit, AfterViewInit {
     let selectColumn = rowColumn[1];
     if ((selectRow >= 0) && (selectColumn >= 0)) {
       // unmark the previously-selected cell
-      this.unmarkCell(this.selectedRow, this.selectedCol);
+      this.unmarkCell(this.selectedRow, this.selectedColumn);
       // mark the newly-selected cell
       this.markCell(this.selectedColor, selectRow, selectColumn);
       // save selected cell row & col for other operations 
       this.selectedRow = selectRow;
-      this.selectedCol = selectColumn;
-      this.showSelectedOption(this.selectedRow, this.selectedCol);
-      // this.showPct(this.selectedRow, this.selectedCol, this.pctSelStr);
-      // let condition: number = NO_CUT;
-      // if (this.scenario.benefitCutAssumption) {
-      //   condition = CUT;
-      // }
-      // let expectedPvString: string = Math.round(this.range.getPv(this.currentCondition, selectRow, selectColumn)).toLocaleString();
-      // let expectedPvPercentString: string = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, selectRow, selectColumn), 1);
-      // this.selectedPercentString = "Expected PV = $" + expectedPvString + ", " + expectedPvPercentString + "% of maximum PV";
-      // if (this.currentCondition > NO_CUT) {
-      //   let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(NO_CUT, selectRow, selectColumn), 1);
-      //   this.selectedPercentString += " (" + expectedPvPercentNoCut + "% if no cut)";
-      // }
+      this.selectedColumn = selectColumn;
+      this.showSelectedOption(this.selectedRow, this.selectedColumn);
     }
 }
 
@@ -630,9 +614,9 @@ export class RangeComponent implements OnInit, AfterViewInit {
   // unmark the pointer location
   unmarkPointer() {
     this.unmarkCell(this.previousPointerRow, this.previousPointerColumn);
-    if ((this.previousPointerRow === this.selectedRow) && (this.previousPointerColumn === this.selectedCol)) {
+    if ((this.previousPointerRow === this.selectedRow) && (this.previousPointerColumn === this.selectedColumn)) {
       // if the most recent pointer location was the selected cell, re-mark it
-      this.markCell(this.selectedColor, this.selectedRow, this.selectedCol);
+      this.markCell(this.selectedColor, this.selectedRow, this.selectedColumn);
     }
   }
 
