@@ -29,6 +29,8 @@ export class Range {
 
     pvMaxNoCut: number; // maximum pV if future benefits are not cut
     pvMaxCut: number; // maximum pV if future benefits are cut
+    pvMinNoCut: number; // minimum pV if future benefits are not cut
+    pvMinCut: number; // minimum pV if future benefits are cut
 
     // identifiers (and array indices) for the various conditions
     static NO_CUT = 0;
@@ -46,6 +48,9 @@ export class Range {
     pvMaxArray = [0, 0]; // pvMaxArray[NO_CUT] is the maximum PV in the NO_CUT condition
     pvMaxRowArray = [0, 0]; // pvMaxRowArray[NO_CUT] is the row where the maximum PV in the NO_CUT condition is found
     pvMaxColArray = [0, 0];
+    pvMinArray = [1000000, 1000000]; // pvMinArray[NO_CUT] is the minimum PV in the NO_CUT condition
+    pvMinRowArray = [0, 0]; // pvMinRowArray[NO_CUT] is the row where the minimum PV in the NO_CUT condition is found
+    pvMinColArray = [0, 0];
 
     fractionBreak: number[] = [0.99, 0.95, 0.9, -1000000]; // values of pvFraction minima for different display colors
     fractionLabels: string[] = ["100", "99", "95", "90", "0"];
@@ -208,8 +213,25 @@ export class Range {
                     this.pvMaxColArray[condition] = col;
                 }
             }
+            if (pv < this.pvMinArray[condition]) {
+                this.pvMinArray[condition] = pv;
+                this.pvMinRowArray[condition] = row;
+                this.pvMinColArray[condition] = col;
+            }
 
         }
+    }
+
+    getMinimumPvClaimDates(condition: number) {
+        let row = this.pvMinRowArray[condition];
+        let column = this.pvMinColArray[condition];
+        return this.claimDatesArrays[condition][row][column]; 
+    }
+
+    getMaximumPvClaimDates(condition: number) {
+        let row = this.pvMaxRowArray[condition];
+        let column = this.pvMaxColArray[condition];
+        return this.claimDatesArrays[condition][row][column]; 
     }
 
     logArray(heading: string, array: number[][], decimalPlaces: number): void {
@@ -283,17 +305,15 @@ export class Range {
     initFracsAndColors(): void {
 
         let pvFrac: number;
-        let pvFracNoCut: number;
-        let pvFracCut: number;
-        let pvFrac2: number;
+        // let pvFracNoCut: number;
+        // let pvFracCut: number;
+        // let pvFrac2: number;
 
         let pvArray: number[][];
         let pvFracArray: number[][];
         let colorNumberArray: number[][];
         let pvMax: number;
         let colorNumber: number;
-        // let defaultColorNumber: number = this.fracBreak.length + 1;
-        // let pvFracDiff: number;
 
         for (let condition = Range.NO_CUT; condition <= Range.CUT; condition++) {
             pvArray = this.pvArrays[condition];
