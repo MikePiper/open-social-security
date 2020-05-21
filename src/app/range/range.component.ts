@@ -67,15 +67,11 @@ export class RangeComponent implements OnInit, AfterViewInit {
   minimumPvCut: number;
   minimumPvString: string; // string with minimum PV for no-cut condition
   minimumPvStringCut: string; // string with minimum PV for cut condition
-  minimumPvClaimDatesString: string; // string with claim dates for no-cut condition at minimum PV
-  minimumPvClaimDatesStringCut: string; // string with claim dates for cut condition at minimum PV
 
   maximumPv: number;
   maximumPvCut: number;
   maximumPvString: string; // string with maximum PV for no-cut condition
   maximumPvStringCut: string; // string with maximum PV for cut condition
-  maximumPvClaimDatesString: string; // string with claim dates for no-cut condition at maximum PV
-  maximumPvClaimDatesStringCut: string; // string with claim dates for cut condition at maximum PV
 
 
   range: Range; // the object holding data for the range of options
@@ -220,16 +216,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.minimumPvStringCut = Math.round(this.minimumPvCut).toLocaleString();
       this.maximumPvString = Math.round(this.maximumPv).toLocaleString();
       this.maximumPvStringCut = Math.round(this.maximumPvCut).toLocaleString();
-      
-      let claimDates: ClaimDates;
-      claimDates = this.range.getMinimumPvClaimDates(NO_CUT);
-      this.minimumPvClaimDatesString = claimDates.benefitDatesString();
-      claimDates = this.range.getMinimumPvClaimDates(CUT);
-      this.minimumPvClaimDatesStringCut = claimDates.benefitDatesString();
-      claimDates = this.range.getMaximumPvClaimDates(NO_CUT);
-      this.maximumPvClaimDatesString = claimDates.benefitDatesString();
-      claimDates = this.range.getMaximumPvClaimDates(CUT);
-      this.maximumPvClaimDatesStringCut = claimDates.benefitDatesString();
 
       this.paintCanvas(this.currentCondition);
     }
