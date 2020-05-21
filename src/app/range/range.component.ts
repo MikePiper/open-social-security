@@ -54,9 +54,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
   // items relating to the selected option (clicked by user)
   selectedRow: number = -1;
   selectedColumn: number = -1;
-  selectedPercentString: string = ""; // string with percent of maximum PV at selected option
-  selectedClaimDatesString: string; // string with claim dates for no-cut condition at selected option
-  selectedClaimDatesStringCut: string; // string with claim dates for cut condition at selected option
 
   // items relating to the option under the pointer (as user hovers)
   previousPointerRow: number = -1; 
@@ -179,7 +176,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
       this.startDateA = this.range.firstDateA;
       this.startDateB = this.range.firstDateB;
-      this.selectedPercentString = "";
       this.selectedRow = -1;
       this.selectedColumn = -1;
 
@@ -211,7 +207,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.cellBaseY = this.cellHeight * (this.range.rows - 1);
       this.rowBaseY = (this.cellHeight * this.range.rows) - 1;
 
-      this.selectedClaimDatesString = "";
       this.pointerClaimDatesStringNoCut = "";
       this.pointerClaimDatesStringCut = "";
 
@@ -495,7 +490,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
   showSelectedOption(row: number, col: number, ) {
     let selectedClaimDates: ClaimDates = this.range.claimDatesArrays[this.currentCondition][row][col];
-    this.selectedClaimDatesString = selectedClaimDates.benefitDatesString();
     //have to set retirementBenefitDate, spousal date, begin/endSuspensionDates on person objects if going to use functions from solutionset.service to generate solution sets
       //Note that here we're pulling those dates from a ClaimDates object, which saved them from the person object(s) during the maximize PV function.
       //And now we're setting those fields on the person objects back to those saved dates, so we can use solutionset.service's functions

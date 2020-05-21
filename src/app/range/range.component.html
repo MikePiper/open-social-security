@@ -3,17 +3,17 @@
     <span *ngIf="!scenario.benefitCutAssumption">
       <p>Under the conditions defined for this case,
         the expected present value ranges from ${{this.minimumPvString}} 
-        to ${{this.maximumPvString}}
+        to ${{this.maximumPvString}}.
       </p>
     </span>
     <span *ngIf="scenario.benefitCutAssumption">
       <p>Under the conditions defined for this case:</p>
       <ul>
         <li>If benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}, the expected present value ranges from ${{this.minimumPvStringCut}} 
-          to ${{this.maximumPvStringCut}}</li>
+          to ${{this.maximumPvStringCut}}.</li>
         <li>If there is no cut,
           the expected present value ranges from ${{this.minimumPvString}} 
-          to ${{this.maximumPvString}}</li>
+          to ${{this.maximumPvString}}.</li>
       </ul>
     </span>
     <!-- Moved the description to make more room beside the graph -->
