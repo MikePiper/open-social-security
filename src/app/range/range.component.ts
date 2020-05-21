@@ -49,9 +49,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
   showCutButton: HTMLInputElement;
   showNoCutButton: HTMLInputElement;
 
-  cutString: string = "";
-  cutOrNoCutString: string[] = new Array(2);
-
   updating: boolean = false; // true if user has pointer over the graph
   
   // items relating to the selected option (clicked by user)
@@ -189,15 +186,8 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.chartTitle = "% of Maximum PV";
       if (this.scenario.benefitCutAssumption === false) {
         this.currentCondition = NO_CUT;
-        this.cutString = "";
       } else {
-        this.cutString = "cut of " + 
-          this.scenario.benefitCutPercentage + "% in " +
-          this.scenario.benefitCutYear;
         this.currentCondition = CUT;
-        this.cutOrNoCutString[NO_CUT] = "If there is no cut"
-        this.cutOrNoCutString[CUT] = "If there is a " + this.cutString;
-        // this.chartTitleCut = "% of Maximum PV " + this.cutString;
       }
 
       // get elements where information will be displayed
@@ -273,10 +263,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
   updateDisplay(event: Event) {
     this.initDisplay();
-  }
-
-  getCutString(): string {
-    return this.cutString;
   }
 
   setSizes(rows: number, cols: number): void {

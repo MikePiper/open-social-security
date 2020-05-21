@@ -55,7 +55,6 @@
         <ul>
           <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
         </ul>
-        <!-- <p style="font-weight:bold">{{this.cutOrNoCutString[this.currentCondition]}}:</p> -->
         <p *ngIf="this.showCut === true" style="font-weight:bold">If benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}:</p>
         <p *ngIf="this.showCut === false" style="font-weight:bold">If benefits are not cut:</p>
         <ul>
