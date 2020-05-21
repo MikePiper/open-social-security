@@ -45,21 +45,15 @@ export class RangeComponent implements OnInit, AfterViewInit {
   canvasContext: CanvasRenderingContext2D
 
   // for view-switch enhancement
-  showCut: boolean = false;
+  showCut: boolean = true;
   showCutButton: HTMLInputElement;
   showNoCutButton: HTMLInputElement;
-
-  cutString: string = "";
-  cutOrNoCutString: string[] = new Array(2);
 
   updating: boolean = false; // true if user has pointer over the graph
   
   // items relating to the selected option (clicked by user)
   selectedRow: number = -1;
   selectedColumn: number = -1;
-  selectedPercentString: string = ""; // string with percent of maximum PV at selected option
-  selectedClaimDatesString: string; // string with claim dates for no-cut condition at selected option
-  selectedClaimDatesStringCut: string; // string with claim dates for cut condition at selected option
 
   // items relating to the option under the pointer (as user hovers)
   previousPointerRow: number = -1; 
@@ -73,15 +67,11 @@ export class RangeComponent implements OnInit, AfterViewInit {
   minimumPvCut: number;
   minimumPvString: string; // string with minimum PV for no-cut condition
   minimumPvStringCut: string; // string with minimum PV for cut condition
-  minimumPvClaimDatesString: string; // string with claim dates for no-cut condition at minimum PV
-  minimumPvClaimDatesStringCut: string; // string with claim dates for cut condition at minimum PV
 
   maximumPv: number;
   maximumPvCut: number;
   maximumPvString: string; // string with maximum PV for no-cut condition
   maximumPvStringCut: string; // string with maximum PV for cut condition
-  maximumPvClaimDatesString: string; // string with claim dates for no-cut condition at maximum PV
-  maximumPvClaimDatesStringCut: string; // string with claim dates for cut condition at maximum PV
 
 
   range: Range; // the object holding data for the range of options
@@ -110,10 +100,10 @@ export class RangeComponent implements OnInit, AfterViewInit {
   chartTitleHeight: number;
   axisTickSize: number = 10;
   axisLabelSpace: number = 5;
-  xAxisTitleSingle: string = "You Start Retirement";
-  xAxisTitleCouple: string = "You Start Own Retirement";
-  xAxisTitle: string = this.xAxisTitleSingle;
-  yAxisTitle: string = "Spouse Starts Own Retirement";
+  personAaxisTitle: string = "Your Retirement Benefit Begins";
+  personBaxisTitle: string = "Your Spouse's Retirement Benefit Begins";
+  xAxisTitle: string = this.personAaxisTitle;
+  yAxisTitle: string = this.personBaxisTitle;
   xTitleWidth: number;
   xTitleHeight: number;
   yTitleWidth: number;
@@ -182,22 +172,14 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
       this.startDateA = this.range.firstDateA;
       this.startDateB = this.range.firstDateB;
-      this.selectedPercentString = "";
       this.selectedRow = -1;
       this.selectedColumn = -1;
 
       this.chartTitle = "% of Maximum PV";
       if (this.scenario.benefitCutAssumption === false) {
         this.currentCondition = NO_CUT;
-        this.cutString = "";
       } else {
-        this.cutString = "cut of " + 
-          this.scenario.benefitCutPercentage + "% at " +
-          this.scenario.benefitCutYear;
         this.currentCondition = CUT;
-        this.cutOrNoCutString[NO_CUT] = "If there is no cut"
-        this.cutOrNoCutString[CUT] = "If there is a " + this.cutString;
-        // this.chartTitleCut = "% of Maximum PV " + this.cutString;
       }
 
       // get elements where information will be displayed
@@ -221,7 +203,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.cellBaseY = this.cellHeight * (this.range.rows - 1);
       this.rowBaseY = (this.cellHeight * this.range.rows) - 1;
 
-      this.selectedClaimDatesString = "";
       this.pointerClaimDatesStringNoCut = "";
       this.pointerClaimDatesStringCut = "";
 
@@ -235,16 +216,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.minimumPvStringCut = Math.round(this.minimumPvCut).toLocaleString();
       this.maximumPvString = Math.round(this.maximumPv).toLocaleString();
       this.maximumPvStringCut = Math.round(this.maximumPvCut).toLocaleString();
-      
-      let claimDates: ClaimDates;
-      claimDates = this.range.getMinimumPvClaimDates(NO_CUT);
-      this.minimumPvClaimDatesString = claimDates.benefitDatesString();
-      claimDates = this.range.getMinimumPvClaimDates(CUT);
-      this.minimumPvClaimDatesStringCut = claimDates.benefitDatesString();
-      claimDates = this.range.getMaximumPvClaimDates(NO_CUT);
-      this.maximumPvClaimDatesString = claimDates.benefitDatesString();
-      claimDates = this.range.getMaximumPvClaimDates(CUT);
-      this.maximumPvClaimDatesStringCut = claimDates.benefitDatesString();
 
       this.paintCanvas(this.currentCondition);
     }
@@ -275,10 +246,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
     this.initDisplay();
   }
 
-  getCutString(): string {
-    return this.cutString;
-  }
-
   setSizes(rows: number, cols: number): void {
     // need to call this whenever change in rows or columns
     // i.e., different number of possible claim date combinations 
@@ -296,13 +263,14 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
     if (rows === 1) {
       // single person
-      this.xAxisTitle = this.xAxisTitleSingle;
       if (this.cellHeight < 20) {
         // increase height for better visibility of single-row (one-person) display
         this.cellHeight = 20;
       }
-    } else {
-      this.xAxisTitle = this.xAxisTitleCouple;
+    }
+    //If personA is already 70, we're only iterating one person (only one axis on graph), but that person is personB
+    if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70){
+      this.xAxisTitle = this.personBaxisTitle
     }
 
     // Calculate chart element dimensions to fit actual axis contents
@@ -508,7 +476,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
   showSelectedOption(row: number, col: number, ) {
     let selectedClaimDates: ClaimDates = this.range.claimDatesArrays[this.currentCondition][row][col];
-    this.selectedClaimDatesString = selectedClaimDates.benefitDatesString();
     //have to set retirementBenefitDate, spousal date, begin/endSuspensionDates on person objects if going to use functions from solutionset.service to generate solution sets
       //Note that here we're pulling those dates from a ClaimDates object, which saved them from the person object(s) during the maximize PV function.
       //And now we're setting those fields on the person objects back to those saved dates, so we can use solutionset.service's functions
@@ -527,7 +494,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
       else if (this.scenario.maritalStatus == "married"){
         //If one spouse is already age 70, the ClaimDates object has that spouse's dates as personB dates ("because they're fixedSpouse from maximize function"), regardless of which person it was.
         //So we have to swap them if it was actually personA who was over 70.
-          if (this.birthdayService.findAgeOnDate(this.personA, today) > 70 ){
+          if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70 ){
             this.personB.retirementBenefitDate = new MonthYearDate(selectedClaimDates.personARetirementDate)
             this.personB.beginSuspensionDate = new MonthYearDate(selectedClaimDates.personABeginSuspensionDate)
             this.personB.endSuspensionDate = new MonthYearDate(selectedClaimDates.personAEndSuspensionDate)
