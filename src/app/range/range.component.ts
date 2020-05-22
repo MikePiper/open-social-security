@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, AfterViewInit, ViewChild, ElementRef } from '@angular/core'
+import { Component, OnInit, Input, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core'
 import { CalculationScenario } from '../data model classes/calculationscenario'
 import { MonthYearDate } from '../data model classes/monthyearDate'
 import { Person } from '../data model classes/person'
@@ -153,7 +153,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
       "computationComplete": false
     }
 
-  constructor(private solutionSetService:SolutionSetService, private birthdayService:BirthdayService) {
+  constructor(private changeDetectorRef: ChangeDetectorRef, private solutionSetService:SolutionSetService, private birthdayService:BirthdayService) {
   }
 
   ngOnInit() {
@@ -162,6 +162,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     // console.log("range.component.ngAfterViewInit");
     this.initDisplay();
+    this.changeDetectorRef.detectChanges();
   }
 
   initDisplay() {
