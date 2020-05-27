@@ -484,8 +484,6 @@ export class PresentValueService {
       earliestStart = person.beginSuspensionDate;
     }
     scenario.range = new Range(earliestStart, endingTestDate);      
-    // store data for the initial combination of claim dates
-    scenario.range.processPVs(scenario.pvNoCut, savedPV, new ClaimStrategy(person));
     
     while (person.retirementBenefitDate <= endingTestDate && person.endSuspensionDate <= endingTestDate){
       //run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
@@ -632,6 +630,7 @@ export class PresentValueService {
       earliestStartB = personB.endSuspensionDate;
     }
 
+    //Create new range object for storage of data
     scenario.range = new Range(earliestStartA, spouseAendTestDate, earliestStartB, spouseBendTestDate);
     let solutionSet: SolutionSet;
 
@@ -792,10 +791,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       flexibleSpouse = this.familyMaximumService.calculateFamilyMaximum(flexibleSpouse, this.today)
       fixedSpouse = this.familyMaximumService.calculateFamilyMaximum(fixedSpouse, this.today)
 
-      // scenario.range = new Range(flexibleSpouse.retirementBenefitDate, flexibleSpouse.retirementBenefitDate, flexibleSpouse.retirementBenefitDate, endTestDate);      
+    //Create new range object for storage of data   
       scenario.range = new Range(flexibleSpouse.retirementBenefitDate, endTestDate);      
-      // store data for the initial combination of claim dates
-      scenario.range.processPVs(scenario.pvNoCut, savedPV, new ClaimStrategy(flexibleSpouse, fixedSpouse));
 
     while (flexibleSpouse.retirementBenefitDate <= endTestDate && flexibleSpouse.endSuspensionDate <= endTestDate) {
       //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
