@@ -7,6 +7,9 @@ import { ClaimDates } from '../data model classes/claimDates'
 import { SolutionSet } from '../data model classes/solutionset'
 import { SolutionSetService } from '../solutionset.service'
 import { BirthdayService } from '../birthday.service'
+import { strict } from 'assert'
+import { stringify } from 'querystring'
+import { ClaimingSolution } from '../data model classes/claimingsolution'
 
 /* 
 This component provides a means of graphically displaying the quality of
@@ -44,8 +47,8 @@ export class RangeComponent implements OnInit, AfterViewInit {
   canvas: HTMLCanvasElement;
   canvasContext: CanvasRenderingContext2D
 
-  // for view-switch enhancement
-  showCut: boolean = true;
+  // for view-switch
+  showCut: boolean = false;
   showCutButton: HTMLInputElement;
   showNoCutButton: HTMLInputElement;
 
@@ -143,15 +146,25 @@ export class RangeComponent implements OnInit, AfterViewInit {
   pointerColor = 'rgb(250, 250, 20)'; // yellow, border around cell at pointer location
 
 
-  //solution variables
-    selectedStrategyPV: number
-    differenceInPV: number
-    differenceInPV_asPercent: number
-    solutionSet: SolutionSet = {
-      "solutionPV":null,
-      "solutionsArray": [],
-      "computationComplete": false
-    }
+  // solution variables at selected location
+  selectedStrategyPV: number
+  differenceInPV: number
+  differenceInPV_asPercent: number
+  solutionSet: SolutionSet = {
+    "solutionPV":null,
+    "solutionsArray": [],
+    "computationComplete": false
+  }
+
+  // solution variables at pointer location
+  pointerStrategyPV: number
+  pointerDifferenceInPV: number
+  pointerDifferenceInPV_asPercent: number
+  pointerSolutionSet: SolutionSet = {
+    "solutionPV":null,
+    "solutionsArray": [],
+    "computationComplete": false
+  }
 
   constructor(private changeDetectorRef: ChangeDetectorRef, private solutionSetService:SolutionSetService, private birthdayService:BirthdayService) {
   }
@@ -188,10 +201,10 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.canvasContext = this.canvas.getContext("2d");
 
 
-  // for view-switch enhancement
+  // for view-switch
       this.showCutButton = <HTMLInputElement> document.getElementById("showCut");
       this.showNoCutButton = <HTMLInputElement> document.getElementById("showNoCut");
-      this.showCutButton.checked = true; // default if user is considering effect of cut
+      this.showCutChart(this.scenario.benefitCutAssumption);
       if (this.scenario.benefitCutAssumption) {
         document.getElementById("showCutForm").style.display = "inline";
       } else {
@@ -222,12 +235,11 @@ export class RangeComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // for view-switch enhancement
+  // for view-switch
   showCutChart(showIt: boolean): void {
     this.showCut = showIt;
     this.showCutButton.checked = showIt;
     this.showNoCutButton.checked = !showIt;
-    // console.log("showCut = " + this.showCut);
     if (this.showCut) {
       this.currentCondition = CUT;
     } else {
@@ -475,7 +487,9 @@ export class RangeComponent implements OnInit, AfterViewInit {
     return (num * 100).toFixed(places);
   }
 
-  showSelectedOption(row: number, col: number, ) {
+  getSolutionSet(row: number, col: number): SolutionSet {
+    let solutionSet: SolutionSet;
+
     let selectedClaimDates: ClaimDates = this.range.claimDatesArrays[this.currentCondition][row][col];
     //have to set retirementBenefitDate, spousal date, begin/endSuspensionDates on person objects if going to use functions from solutionset.service to generate solution sets
       //Note that here we're pulling those dates from a ClaimDates object, which saved them from the person object(s) during the maximize PV function.
@@ -490,7 +504,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.personB.spousalBenefitDate = new MonthYearDate(selectedClaimDates.personBSpousalDate)
 
       if (this.scenario.maritalStatus == "single"){
-          this.solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, this.range.pvArrays[this.currentCondition][row][col])
+          solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, this.range.pvArrays[this.currentCondition][row][col])
       }
       else if (this.scenario.maritalStatus == "married"){
         //If one spouse is already age 70, the ClaimDates object has that spouse's dates as personB dates ("because they're fixedSpouse from maximize function"), regardless of which person it was.
@@ -505,12 +519,16 @@ export class RangeComponent implements OnInit, AfterViewInit {
             this.personA.endSuspensionDate = new MonthYearDate(selectedClaimDates.personBEndSuspensionDate)
             this.personA.spousalBenefitDate = new MonthYearDate(selectedClaimDates.personBSpousalDate)
           }
-          this.solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
+          solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
       }
       else if (this.scenario.maritalStatus == "divorced"){
-          this.solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
+          solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
       }
-    
+    return solutionSet;
+  }
+
+  showSelectedOption(row: number, col: number, ) {
+    this.solutionSet = this.getSolutionSet(row, col);
     let pvMax = this.range.pvMaxArray[this.currentCondition]
     this.selectedStrategyPV = this.range.pvArrays[this.currentCondition][row][col]
     this.differenceInPV = pvMax - this.selectedStrategyPV
@@ -574,7 +592,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
     }
 }
 
-  startUpdating(e) {
+  startUpdating(e: any) {
     // Start updating displayed values, per location of pointer
     this.updating = true;
   }
@@ -607,14 +625,29 @@ update(e: MouseEvent) {
       this.markCell(this.pointerColor, row, column)
       this.previousPointerRow = row;
       this.previousPointerColumn = column;
-      let claimsString = this.range.rowColumnDatesString(row, column);
-      this.pointerPercentString = this.fractionToPercent(this.range.getPvFraction(this.currentCondition, row, column), 1) + "% of maximum, " + claimsString;
-      // if (this.currentCondition > NO_CUT) {
+
+      // this version gives almost the same filing information as shown for the selected cell,
+      // in a condensed format
+      this.pointerPercentString = this.range.getPvPercentString(this.currentCondition, row, column) + "% of maximum";
       if (this.showCut) {
-          let expectedPvPercentNoCut: string = this.fractionToPercent(this.range.getPvFraction(NO_CUT, row, column), 1);
+          let expectedPvPercentNoCut: string = this.range.getPvPercentString(NO_CUT, row, column);
         this.pointerPercentString += " (" + expectedPvPercentNoCut + "% if no cut)";
+      } 
+      let pointerSolutionSet: SolutionSet = this.getSolutionSet(row, column);
+      let title: string = this.pointerPercentString + "\n";
+      let solutionMessage: string;
+      let solutionCount: number = pointerSolutionSet.solutionsArray.length;
+      for (let i: number = 0; i < solutionCount; i++) {
+        solutionMessage = (pointerSolutionSet.solutionsArray[i].message).split(',')[0] // delete age portion (after comma)
+        .replace("file for your retirement benefit to begin", "(retirement)")
+        .replace("files for his/her retirement benefit to begin", "(retirement)")
+        .replace("file for your spousal benefit to begin", "(spousal)")
+        .replace("files for his/her spousal benefit to begin", "(spousal)")
+        .replace("Your spouse", "Spouse")
+        .replace(" (retroactively) as of", "");
+        title = title.concat(solutionMessage, "\n");
       }
-      this.canvas.title = this.pointerPercentString; // show tooltip with % of maximum
+      this.canvas.title = title;
     } else {
       this.canvas.title = ""; // blank tooltip when outside of graph
     }

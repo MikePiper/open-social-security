@@ -27,11 +27,6 @@ export class Range {
     firstMonthB: number; // month of first date for person B
     yearMarksB: number[] = new Array(); // column number of start of each year, to mark y-axis
 
-    pvMaxNoCut: number; // maximum pV if future benefits are not cut
-    pvMaxCut: number; // maximum pV if future benefits are cut
-    pvMinNoCut: number; // minimum pV if future benefits are not cut
-    pvMinCut: number; // minimum pV if future benefits are cut
-
     // identifiers (and array indices) for the various conditions
     static NO_CUT = 0;
     static CUT = 1;
@@ -40,12 +35,12 @@ export class Range {
 
     // one array (size rows x cols) in these arrays for conditions NO_CUT and CUT
     pvArrays = new Array(2);
-    pvFractionArrays = new Array(2);    // pvFraction is fraction of the maximum PV at each date combination
-    colorNumberArrays = new Array(2);
+    colorArrays = new Array(2);
     claimDatesArrays = new Array(2)
 
     // one value in these arrays for each condition
     pvMaxArray = [0, 0]; // pvMaxArray[NO_CUT] is the maximum PV in the NO_CUT condition
+    pvPercentFactorArray = [0, 0]; // (100 / pvMax) for each case - multiply case's PV times this to get percent of pvMax 
     pvMaxRowArray = [0, 0]; // pvMaxRowArray[NO_CUT] is the row where the maximum PV in the NO_CUT condition is found
     pvMaxColArray = [0, 0];
     pvMinArray = [1000000, 1000000]; // pvMinArray[NO_CUT] is the minimum PV in the NO_CUT condition
@@ -58,7 +53,7 @@ export class Range {
     maxColor: string = '#b3ffb3'; // light green, color of cell with maximum PV
     colorByNumber: string[][] =
     [ 
-    // NO_CUT and CUT are the same, so users don't need to learn two sets of colors
+    // NO_CUT and CUT are the same here, so users don't need to learn two sets of colors
     // these colors are from https://jfly.uni-koeln.de/color/, 
     // intended to avoid confusion by colorblind individuals
     [this.maxColor, '#009e73', '#56b4e9', '#e69f00', '#cc79a7'],
@@ -143,7 +138,7 @@ export class Range {
         return this.addedMonthsString(this.firstMonthB, this.firstYearB, row);
     }
 
-    rowColumnDatesString(row: number, col: number) {
+    rowColumnDatesString(row: number, col: number): string {
         if (this.rows > 1) {
             return "You " + this.columnDateString(col) + ", Spouse " + this.rowDateString(row);
         } else {
@@ -154,26 +149,22 @@ export class Range {
     initializeArrays(rows: number, cols: number) {
         // we wouldn't need two-dimensional arrays for one person, but we'll make them, 
         // so we can use the same code for both single and married cases 
-        let colorNumberArray: number[][];
+        let colorArray: string[][];
         let pvArray: number[][];
-        let pvFracArray: number[][];
         let claimDatesArray: ClaimDates[][];
 
         for (let condition = Range.NO_CUT; condition <= Range.CUT; condition++) {
-            colorNumberArray = new Array(rows);
-            this.colorNumberArrays[condition] = colorNumberArray;
+            colorArray = new Array(rows);
+            this.colorArrays[condition] = colorArray;
             pvArray = new Array(rows);
             this.pvArrays[condition] = pvArray;
-            pvFracArray = new Array(rows);
-            this.pvFractionArrays[condition] = pvFracArray;
             claimDatesArray = new Array(rows);
             this.claimDatesArrays[condition] = claimDatesArray;
             for (let row = 0; row < rows; row++) {
-                colorNumberArray[row] = new Array(cols);
-                pvFracArray[row] = new Array(cols);
+                colorArray[row] = new Array(cols);
                 pvArray[row] = new Array(cols);
                 claimDatesArray[row] = new Array(cols);
-                // colorNumber, pvFrac, claimDatesArray will be calculated/assigned
+                // colorArray, claimDatesArray will be calculated/assigned
                 // but we need to initialize the pvArrays values, 
                 // in case some entries are not provided, and for initial comparisons
                 for (let col = 0; col < cols; col++) {
@@ -234,57 +225,6 @@ export class Range {
         return this.claimDatesArrays[condition][row][column]; 
     }
 
-    logArray(heading: string, array: number[][], decimalPlaces: number): void {
-        let line: string;
-        let val: number;
-        let out: string;
-        console.log(heading);
-        for (let row = 0; row < this.rows; row++) {
-            line = 'r' + row + ', ';
-            for (let col = 0; col < this.columns; col++) {
-                val = array[row][col];
-                line += val.toFixed(decimalPlaces) + ', ';
-            }
-            console.log(line);
-            // per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toLocaleString
-            // When formatting large numbers of numbers, it is better to create a 
-            // NumberFormat object and use the function provided by its NumberFormat.format property.
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NumberFormat
-        }    
-    }
-
-    // bcourts debug
-    logDetails(): void {
-        let pv: number;
-        let array: number[][];
-        let condition: number;
-        let cellCount = (this.rows * this.columns);
-        for (condition = Range.NO_CUT; condition <= Range.CUT; condition++) {
-            this.logArray(Range.conditionNames[condition] +
-                ": pvMax = " + Math.round(this.pvMaxArray[condition]) +
-                " at (" + this.pvMaxRowArray[condition] +
-                ", " + this.pvMaxColArray[condition] + ")", this.pvArrays[condition], 0);
-            console.log("cells in 'topBreak': " + this.topCount[condition] + " / " + cellCount);
-            this.logArray("pvFrac", this.pvFractionArrays[condition], 4);
-            this.logArray("colorNumber", this.colorNumberArrays[condition], 2);
-            // log claimDates?
-        }
-    }
-
-    logSummary(): void {
-        let pv: number;
-        let array: number[][];
-        let cellCount = (this.rows * this.columns);
-        let condition: number;
-        for (condition = Range.NO_CUT; condition <= Range.CUT; condition++) {
-            console.log(Range.conditionNames[condition] +
-                ": pvMax = " + Math.floor(this.pvMaxArray[condition]) +
-                " at (" + this.pvMaxRowArray[condition] +
-                ", " + this.pvMaxColArray[condition] + ")");
-            console.log("cells in 'topBreak': " + this.topCount[condition] + " / " + cellCount);
-        }
-    }
-
     getColAtDate(dateA: MonthYearDate): number {
         return dateA.valueOf() - this.firstValueA;
     }
@@ -304,31 +244,27 @@ export class Range {
 
     initFracsAndColors(): void {
 
-        let pvFrac: number;
-        // let pvFracNoCut: number;
-        // let pvFracCut: number;
-        // let pvFrac2: number;
+        let pvFraction: number;
 
         let pvArray: number[][];
-        let pvFracArray: number[][];
-        let colorNumberArray: number[][];
+        let colorArray: string[][];
         let pvMax: number;
         let colorNumber: number;
 
         for (let condition = Range.NO_CUT; condition <= Range.CUT; condition++) {
             pvArray = this.pvArrays[condition];
-            pvFracArray = this.pvFractionArrays[condition];
-            colorNumberArray = this.colorNumberArrays[condition];
+            colorArray = this.colorArrays[condition];
             pvMax = this.pvMaxArray[condition];
+            this.pvPercentFactorArray[condition] = 100 / pvMax;
 
             // For pv at each (row,col), determine fraction of maximum pv and corresponding color number
             for (let row = 0; row < this.rows; row++) {
                 for (let col = 0; col < this.columns; col++) {
-                    pvFrac = pvArray[row][col] / pvMax;
-                    pvFracArray[row][col] = pvFrac;
+                    pvFraction = pvArray[row][col] / pvMax;
 
+                    // determine which segment of the range for this pvFraction
                     for (let i = 0; i < this.fractionBreak.length; i++) {
-                        if (pvFrac > this.fractionBreak[i]) {
+                        if (pvFraction > this.fractionBreak[i]) {
                             colorNumber = i + 1;
                             if (i == 0) {
                                 this.topCount[condition]++;
@@ -336,26 +272,26 @@ export class Range {
                             break;
                         }
                     }
-                    colorNumberArray[row][col] = colorNumber;
+                    colorArray[row][col] = this.colorByNumber[condition][colorNumber];
 
                 }
             }
-            // set colorNumber at the pvMax row/col for the current condition to 0
-            colorNumberArray[this.pvMaxRowArray[condition]][this.pvMaxColArray[condition]] = 0;
+            // set color at the pvMax row/col for the current condition to maxColor
+            colorArray[this.pvMaxRowArray[condition]][this.pvMaxColArray[condition]] = this.maxColor;
         }
     }
 
     getColor(condition: number, row: number, col: number): string {
-        let colorNumber = this.colorNumberArrays[condition][row][col];
-        return this.colorByNumber[condition][colorNumber];
+        return this.colorArrays[condition][row][col];
     }
       
     getPv(condition: number, row: number, col: number): number {
         return this.pvArrays[condition][row][col];
     }
       
-    getPvFraction(condition: number, row: number, col: number): number {
-        return this.pvFractionArrays[condition][row][col];
+    // returns string showing percent of maxPv at given location
+    getPvPercentString(condition: number, row: number, col: number): string {
+        return "" + (this.pvArrays[condition][row][col] * this.pvPercentFactorArray[condition]).toFixed(1);
     }
       
 
