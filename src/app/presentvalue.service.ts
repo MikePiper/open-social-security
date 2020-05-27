@@ -12,7 +12,7 @@ import {OutputTableService} from './outputtable.service'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import {FamilyMaximumService} from './familymaximum.service'
 import {BirthdayService} from './birthday.service'
-import { ClaimDates } from './data model classes/claimDates'
+import { ClaimStrategy } from './data model classes/claimStrategy'
 
 
 @Injectable()
@@ -469,16 +469,14 @@ export class PresentValueService {
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
     person = this.familyMaximumService.calculateFamilyMaximum(person, this.today)
 
-    //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
-    let savedPV: number = this.calculateSinglePersonPV(person, scenario, false)
+    //Initialize savedPV as zero. Save various initial test dates.
+    let savedPV: number = 0
     let savedClaimingDate: MonthYearDate = new MonthYearDate(person.retirementBenefitDate)
     let savedBeginSuspensionDate: MonthYearDate = new MonthYearDate(person.beginSuspensionDate)
     let savedEndSuspensionDate: MonthYearDate = new MonthYearDate(person.endSuspensionDate)
 
-    //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
+    //Set endingTestDate equal to the month they turn 70
       let endingTestDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth())
-      endingTestDate.setMonth(endingTestDate.getMonth()-1)
-
 
     //Create new range object, with earliest start date and endingTestDate
     let earliestStart: MonthYearDate = person.retirementBenefitDate;
@@ -487,15 +485,14 @@ export class PresentValueService {
     }
     scenario.range = new Range(earliestStart, endingTestDate);      
     // store data for the initial combination of claim dates
-    scenario.range.processPVs(scenario.pvNoCut, savedPV, new ClaimDates(person));
+    scenario.range.processPVs(scenario.pvNoCut, savedPV, new ClaimStrategy(person));
     
     while (person.retirementBenefitDate <= endingTestDate && person.endSuspensionDate <= endingTestDate){
-      //Increment claiming date (or suspension date) and run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
-      person = this.incrementRetirementORendSuspensionDate(person, scenario)
+      //run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
       let currentTestPV = this.calculateSinglePersonPV(person, scenario, false)
       
           // store data for this combination of claim dates
-          scenario.range.processPVs(scenario.pvNoCut, currentTestPV, new ClaimDates(person));
+          scenario.range.processPVs(scenario.pvNoCut, currentTestPV, new ClaimStrategy(person));
 
           if (currentTestPV >= savedPV){
           savedPV = currentTestPV
@@ -503,6 +500,8 @@ export class PresentValueService {
           savedBeginSuspensionDate = new MonthYearDate(person.beginSuspensionDate)
           savedEndSuspensionDate = new MonthYearDate(person.endSuspensionDate)
       }
+      //Increment claiming date (or suspension date)
+      person = this.incrementRetirementORendSuspensionDate(person, scenario)
     }
 
     //after loop is finished, set Person's retirementBenefitDate and suspension dates to the saved dates, for sake of running PV calc again for outputTable
@@ -677,7 +676,7 @@ export class PresentValueService {
             let currentTestPV: number = this.calculateCouplePV(personA, personB, scenario, false)
             
              // store data for this combination of claim dates
-            scenario.range.processPVs(scenario.pvNoCut, currentTestPV, new ClaimDates(personA, personB));
+            scenario.range.processPVs(scenario.pvNoCut, currentTestPV, new ClaimStrategy(personA, personB));
 
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTestPV >= savedPV) {
@@ -796,7 +795,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       // scenario.range = new Range(flexibleSpouse.retirementBenefitDate, flexibleSpouse.retirementBenefitDate, flexibleSpouse.retirementBenefitDate, endTestDate);      
       scenario.range = new Range(flexibleSpouse.retirementBenefitDate, endTestDate);      
       // store data for the initial combination of claim dates
-      scenario.range.processPVs(scenario.pvNoCut, savedPV, new ClaimDates(flexibleSpouse, fixedSpouse));
+      scenario.range.processPVs(scenario.pvNoCut, savedPV, new ClaimStrategy(flexibleSpouse, fixedSpouse));
 
     while (flexibleSpouse.retirementBenefitDate <= endTestDate && flexibleSpouse.endSuspensionDate <= endTestDate) {
       //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
@@ -808,7 +807,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       }
 
       // store data for this combination of claim dates
-      scenario.range.processPVs(scenario.pvNoCut, currentTestPV, new ClaimDates(flexibleSpouse, fixedSpouse));
+      scenario.range.processPVs(scenario.pvNoCut, currentTestPV, new ClaimStrategy(flexibleSpouse, fixedSpouse));
 
       //If PV is greater than or equal to saved PV, save new PV and save new testDates
       if (currentTestPV >= savedPV) {
