@@ -33,7 +33,7 @@ export class ClaimDates {
         }
     }
 
-    indexDateA(): MonthYearDate {
+    indexDateA(): MonthYearDate { // date at which person A's own retirment benefits begin (or re-start) 
         if (this.personAEndSuspensionDate > minimumEndSuspensionDate) {
             return this.personAEndSuspensionDate;
         } else {
@@ -41,7 +41,7 @@ export class ClaimDates {
         }
     }
 
-    indexDateB(): MonthYearDate {
+    indexDateB(): MonthYearDate { // date at which person B's own retirment benefits begin (or re-start)
         if (this.personBRetirementDate) {
             if (this.personBEndSuspensionDate > minimumEndSuspensionDate) {
                 return this.personBEndSuspensionDate;

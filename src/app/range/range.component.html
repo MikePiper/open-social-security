@@ -45,11 +45,14 @@
       <p style="font-weight:bold">Selected Option: </p>
       <span *ngIf="!scenario.benefitCutAssumption">
         <ul>
-        <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
-        <li>The present value of the strategy you selected is {{this.selectedStrategyPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.</li>
-        <li>That is {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
-            ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%) less than the suggested filing strategy.</li>
-        </ul>
+          <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
+          <li>The present value of the strategy you selected is {{this.selectedStrategyPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.</li>
+          <li>That is 
+            <span *ngIf="this.differenceInPV > 0">
+              {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
+              ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%) less than </span>
+              the maximum calculated for this case.</li>
+      </ul>
       </span>
       <span *ngIf="scenario.benefitCutAssumption">
         <ul>
@@ -59,8 +62,11 @@
         <p *ngIf="this.showCut === false" style="font-weight:bold">If benefits are not cut:</p>
         <ul>
           <li>The present value of the strategy you selected is {{this.selectedStrategyPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.</li>
-          <li>That is {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
-              ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%) less than the maximum.</li>
+          <li>That is 
+            <span *ngIf="this.differenceInPV > 0">
+              {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
+              ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%) less than </span>
+              the maximum calculated for this case.</li>
         </ul>
       </span> 
     </span>
