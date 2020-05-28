@@ -4,10 +4,11 @@ import { MonthYearDate } from "./monthyearDate";
 // EndSuspensionDates less than this value are placeholders, not actual dates
 let minimumEndSuspensionDate: MonthYearDate = new MonthYearDate(1950, 1);
 
-export class ClaimDates {
+export class ClaimStrategy {
     //This class stores information about claims for a person or a couple
     //Takes one or more person objects in the constructor, pulls the relevant dates off that/those object(s), and saves the dates as fields on this object
     //Then we can reference this single object as a collection of filing dates later
+    //Also saves the PV (and "cut" PV when necessary) that are calculated for the strategy
 
     personARetirementDate: MonthYearDate;
     personASpousalDate: MonthYearDate;
@@ -18,6 +19,10 @@ export class ClaimDates {
     personBSpousalDate: MonthYearDate;
     personBBeginSuspensionDate: MonthYearDate;
     personBEndSuspensionDate: MonthYearDate;
+
+    PV: number //This is the present value calculated for the strategy, given the inputs used.
+    pvNoCut: number //If user chooses to assume a benefit cut, this field is used to save what the PV of the strategy would be if there were NOT a cut, for the sake of the range component output
+    //In a no-cut scenario, pvNoCut will just have same value as the PV field
 
     constructor(personA: Person, personB?: Person) {
         this.personARetirementDate = new MonthYearDate(personA.retirementBenefitDate);

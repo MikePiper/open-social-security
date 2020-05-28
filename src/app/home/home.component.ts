@@ -11,7 +11,7 @@ import {ErrorCollection} from '../data model classes/errorcollection'
 import {InputValidationService} from '../inputvalidation.service'
 import {MonthYearDate} from "../data model classes/monthyearDate"
 import { BenefitService } from '../benefit.service'
-import { ClaimDates } from '../data model classes/claimDates'
+import { ClaimStrategy } from '../data model classes/claimStrategy'
 
 
 @Component({
@@ -221,19 +221,19 @@ export class HomeComponent implements OnInit {
     this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
 
     //Calc PV with input dates
-        //Create a new ClaimingScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one.
+        //Create a new CalculationScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one.
         //(This is necessary so that it can have a separate "outputTable" field from the original.)
           //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
           this.customDateScenario = Object.assign(new CalculationScenario(), this.scenario)
           this.customDateScenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
       if (this.scenario.maritalStatus == "single" && this.errorCollection.hasErrors === false) {
-        this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.customDateScenario, true)
+        this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.customDateScenario, true).PV
         }
       if(this.scenario.maritalStatus == "married" && this.errorCollection.hasErrors === false) {
-        this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
+        this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true).PV
         }
       if(this.scenario.maritalStatus == "divorced" && this.errorCollection.hasErrors === false) {
-        this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
+        this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true).PV
       }
       this.differenceInPV = this.solutionSet.solutionPV - this.customPV
       this.differenceInPV_asPercent = (this.differenceInPV / this.solutionSet.solutionPV) * 100

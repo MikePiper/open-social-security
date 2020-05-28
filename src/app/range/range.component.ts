@@ -3,7 +3,7 @@ import { CalculationScenario } from '../data model classes/calculationscenario'
 import { MonthYearDate } from '../data model classes/monthyearDate'
 import { Person } from '../data model classes/person'
 import { Range } from '../data model classes/range'
-import { ClaimDates } from '../data model classes/claimDates'
+import { ClaimStrategy } from '../data model classes/claimStrategy'
 import { SolutionSet } from '../data model classes/solutionset'
 import { SolutionSetService } from '../solutionset.service'
 import { BirthdayService } from '../birthday.service'
@@ -490,34 +490,34 @@ export class RangeComponent implements OnInit, AfterViewInit {
   getSolutionSet(row: number, col: number): SolutionSet {
     let solutionSet: SolutionSet;
 
-    let selectedClaimDates: ClaimDates = this.range.claimDatesArrays[this.currentCondition][row][col];
+    let selectedClaimStrategy: ClaimStrategy = this.range.claimStrategiesArrays[this.currentCondition][row][col];
     //have to set retirementBenefitDate, spousal date, begin/endSuspensionDates on person objects if going to use functions from solutionset.service to generate solution sets
-      //Note that here we're pulling those dates from a ClaimDates object, which saved them from the person object(s) during the maximize PV function.
+      //Note that here we're pulling those dates from a ClaimStrategy object, which saved them from the person object(s) during the maximize PV function.
       //And now we're setting those fields on the person objects back to those saved dates, so we can use solutionset.service's functions
-      this.personA.retirementBenefitDate = new MonthYearDate(selectedClaimDates.personARetirementDate)
-      this.personA.beginSuspensionDate = new MonthYearDate(selectedClaimDates.personABeginSuspensionDate)
-      this.personA.endSuspensionDate = new MonthYearDate(selectedClaimDates.personAEndSuspensionDate)
-      this.personA.spousalBenefitDate = new MonthYearDate(selectedClaimDates.personASpousalDate)
-      this.personB.retirementBenefitDate = new MonthYearDate(selectedClaimDates.personBRetirementDate)
-      this.personB.beginSuspensionDate = new MonthYearDate(selectedClaimDates.personBBeginSuspensionDate)
-      this.personB.endSuspensionDate = new MonthYearDate(selectedClaimDates.personBEndSuspensionDate)
-      this.personB.spousalBenefitDate = new MonthYearDate(selectedClaimDates.personBSpousalDate)
+      this.personA.retirementBenefitDate = new MonthYearDate(selectedClaimStrategy.personARetirementDate)
+      this.personA.beginSuspensionDate = new MonthYearDate(selectedClaimStrategy.personABeginSuspensionDate)
+      this.personA.endSuspensionDate = new MonthYearDate(selectedClaimStrategy.personAEndSuspensionDate)
+      this.personA.spousalBenefitDate = new MonthYearDate(selectedClaimStrategy.personASpousalDate)
+      this.personB.retirementBenefitDate = new MonthYearDate(selectedClaimStrategy.personBRetirementDate)
+      this.personB.beginSuspensionDate = new MonthYearDate(selectedClaimStrategy.personBBeginSuspensionDate)
+      this.personB.endSuspensionDate = new MonthYearDate(selectedClaimStrategy.personBEndSuspensionDate)
+      this.personB.spousalBenefitDate = new MonthYearDate(selectedClaimStrategy.personBSpousalDate)
 
       if (this.scenario.maritalStatus == "single"){
           solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, this.range.pvArrays[this.currentCondition][row][col])
       }
       else if (this.scenario.maritalStatus == "married"){
-        //If one spouse is already age 70, the ClaimDates object has that spouse's dates as personB dates ("because they're fixedSpouse from maximize function"), regardless of which person it was.
+        //If one spouse is already age 70, the ClaimStrategy object has that spouse's dates as personB dates ("because they're fixedSpouse from maximize function"), regardless of which person it was.
         //So we have to swap them if it was actually personA who was over 70.
           if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70 ){
-            this.personB.retirementBenefitDate = new MonthYearDate(selectedClaimDates.personARetirementDate)
-            this.personB.beginSuspensionDate = new MonthYearDate(selectedClaimDates.personABeginSuspensionDate)
-            this.personB.endSuspensionDate = new MonthYearDate(selectedClaimDates.personAEndSuspensionDate)
-            this.personB.spousalBenefitDate = new MonthYearDate(selectedClaimDates.personASpousalDate)
-            this.personA.retirementBenefitDate = new MonthYearDate(selectedClaimDates.personBRetirementDate)
-            this.personA.beginSuspensionDate = new MonthYearDate(selectedClaimDates.personBBeginSuspensionDate)
-            this.personA.endSuspensionDate = new MonthYearDate(selectedClaimDates.personBEndSuspensionDate)
-            this.personA.spousalBenefitDate = new MonthYearDate(selectedClaimDates.personBSpousalDate)
+            this.personB.retirementBenefitDate = new MonthYearDate(selectedClaimStrategy.personARetirementDate)
+            this.personB.beginSuspensionDate = new MonthYearDate(selectedClaimStrategy.personABeginSuspensionDate)
+            this.personB.endSuspensionDate = new MonthYearDate(selectedClaimStrategy.personAEndSuspensionDate)
+            this.personB.spousalBenefitDate = new MonthYearDate(selectedClaimStrategy.personASpousalDate)
+            this.personA.retirementBenefitDate = new MonthYearDate(selectedClaimStrategy.personBRetirementDate)
+            this.personA.beginSuspensionDate = new MonthYearDate(selectedClaimStrategy.personBBeginSuspensionDate)
+            this.personA.endSuspensionDate = new MonthYearDate(selectedClaimStrategy.personBEndSuspensionDate)
+            this.personA.spousalBenefitDate = new MonthYearDate(selectedClaimStrategy.personBSpousalDate)
           }
           solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
       }

@@ -1,5 +1,5 @@
 import { MonthYearDate } from './monthyearDate';
-import { ClaimDates } from './claimDates';
+import { ClaimStrategy } from './claimStrategy';
 
 /* 
 This class provides fields and methods for the storage and manipulation
@@ -34,9 +34,10 @@ export class Range {
     static conditionNames = ["NO_CUT", "CUT"];
 
     // one array (size rows x cols) in these arrays for conditions NO_CUT and CUT
+        //That is, they're each length=2 because there's the outermost array has two values (each of which is an array of arrays) -- one for NO_CUT and one for CUT
     pvArrays = new Array(2);
     colorArrays = new Array(2);
-    claimDatesArrays = new Array(2)
+    claimStrategiesArrays: ClaimStrategy[][][] = new Array(2)
 
     // one value in these arrays for each condition
     pvMaxArray = [0, 0]; // pvMaxArray[NO_CUT] is the maximum PV in the NO_CUT condition
@@ -151,20 +152,20 @@ export class Range {
         // so we can use the same code for both single and married cases 
         let colorArray: string[][];
         let pvArray: number[][];
-        let claimDatesArray: ClaimDates[][];
+        let claimStrategiesArray: ClaimStrategy[][];
 
         for (let condition = Range.NO_CUT; condition <= Range.CUT; condition++) {
             colorArray = new Array(rows);
             this.colorArrays[condition] = colorArray;
             pvArray = new Array(rows);
             this.pvArrays[condition] = pvArray;
-            claimDatesArray = new Array(rows);
-            this.claimDatesArrays[condition] = claimDatesArray;
+            claimStrategiesArray = new Array(rows);
+            this.claimStrategiesArrays[condition] = claimStrategiesArray;
             for (let row = 0; row < rows; row++) {
                 colorArray[row] = new Array(cols);
                 pvArray[row] = new Array(cols);
-                claimDatesArray[row] = new Array(cols);
-                // colorArray, claimDatesArray will be calculated/assigned
+                claimStrategiesArray[row] = new Array(cols);
+                // colorArray, claimStrategiesArray will be calculated/assigned
                 // but we need to initialize the pvArrays values, 
                 // in case some entries are not provided, and for initial comparisons
                 for (let col = 0; col < cols; col++) {
@@ -174,35 +175,35 @@ export class Range {
         }
     }
 
-    // include the PV data at given date combination at their row & col, if appropriate
-    processPVs(pvNoCut: number, pvCut: number, claimDates: ClaimDates) {
+    //store the PV data for the given date combination at corresponding row & col, and save new max/min info if appropriate
+    processPVs(claimStrategy: ClaimStrategy) {
         let pv: number;
         let row: number;
         let col: number;
 
         for (let condition = Range.NO_CUT; condition <= Range.CUT; condition++) {
             if (condition === Range.NO_CUT) {
-                pv = pvNoCut;
+                pv = claimStrategy.pvNoCut;
             } else {
-                pv = pvCut;
+                pv = claimStrategy.PV;
             }
 
-            col = this.getColAtDate(claimDates.indexDateA());
+            col = this.getColAtDate(claimStrategy.indexDateA());
             if (this.rows === 1) {
                 row = 0;
             } else {
-                row = this.getRowAtDate(claimDates.indexDateB());
+                row = this.getRowAtDate(claimStrategy.indexDateB());
             }
 
-            if (pv > this.pvArrays[condition][row][col]) {
-                // store the pv and the corresponding claimDates if it is higher than the pv already there
-                this.pvArrays[condition][row][col] = pv;
-                this.claimDatesArrays[condition][row][col] = claimDates;
-                if (pv > this.pvMaxArray[condition]) {
-                    this.pvMaxArray[condition] = pv;
-                    this.pvMaxRowArray[condition] = row;
-                    this.pvMaxColArray[condition] = col;
-                }
+            //store the pv and corresponding ClaimStrategy
+            this.pvArrays[condition][row][col] = pv;
+            this.claimStrategiesArrays[condition][row][col] = claimStrategy;
+
+            //Store information about maximum or minimum PV (and corresponding row/column) if it's a new max or minimum
+            if (pv > this.pvMaxArray[condition]) {
+                this.pvMaxArray[condition] = pv;
+                this.pvMaxRowArray[condition] = row;
+                this.pvMaxColArray[condition] = col;
             }
             if (pv < this.pvMinArray[condition]) {
                 this.pvMinArray[condition] = pv;
@@ -213,16 +214,16 @@ export class Range {
         }
     }
 
-    getMinimumPvClaimDates(condition: number) {
+    getMinimumPvClaimStrategy(condition: number): ClaimStrategy {
         let row = this.pvMinRowArray[condition];
         let column = this.pvMinColArray[condition];
-        return this.claimDatesArrays[condition][row][column]; 
+        return this.claimStrategiesArrays[condition][row][column]; 
     }
 
-    getMaximumPvClaimDates(condition: number) {
+    getMaximumPvClaimStrategy(condition: number): ClaimStrategy {
         let row = this.pvMaxRowArray[condition];
         let column = this.pvMaxColArray[condition];
-        return this.claimDatesArrays[condition][row][column]; 
+        return this.claimStrategiesArrays[condition][row][column]; 
     }
 
     getColAtDate(dateA: MonthYearDate): number {

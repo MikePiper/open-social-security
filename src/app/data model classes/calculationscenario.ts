@@ -21,10 +21,6 @@ export class CalculationScenario {
     // of both Cut and NoCut results for range of options
         cutFactor: number = 1 - (this.benefitCutPercentage / 100)   // multiply benefit by this number to calculate the benefit after cut
         decutFactor: number = 1 / this.cutFactor    // multiply an already-cut benefit to determine the benefit without the cut    
-        // saving extra PV result here for cut/nocut PV calculation
-        // possibly sloppy to save it here, but doing it to avoid the necessity of changing many function calls and returns
-        // this is the value calculated for each run of the presentValue calculation 
-        pvNoCut: number;
 
     restrictedApplicationPossible: boolean = false; // true if, for a given couple, a person may claim their spousal benefit before their own benefit
     
