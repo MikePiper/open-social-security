@@ -205,19 +205,25 @@ export class SolutionSetService {
             if (personA.childInCareSpousal === true){
               if (!(personA.retirementBenefitDate <= personB.retirementBenefitDate && personA.PIA >= 0.5 * personB.PIA)) {//Won't be any spousal benefit for personA if they have already started retirement with PIA > 50% of personB.PIA
                   //create childInCareSpousal solution object
-                  let personAageOnChildInCareSpousalDate:number = this.birthdayService.findAgeOnDate(personA, personB.retirementBenefitDate)
-                  let personAageYearsOnChildInCareSpousalDate:number = Math.floor(personAageOnChildInCareSpousalDate)
-                  let personAageMonthsOnChildInCareSpousalDate:number = Math.round((personAageOnChildInCareSpousalDate%1)*12)
-                  personAchildInCareSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "childInCareSpousal", personA, personB.retirementBenefitDate, personAageYearsOnChildInCareSpousalDate, personAageMonthsOnChildInCareSpousalDate)
+                    //Find age on date that child-in-care spousal benefits begin
+                    let personAageOnChildInCareSpousalDate:number = this.birthdayService.findAgeOnDate(personA, personA.childInCareSpousalBenefitDate)
+                    let personAageYearsOnChildInCareSpousalDate:number = Math.floor(personAageOnChildInCareSpousalDate)
+                    let personAageMonthsOnChildInCareSpousalDate:number = Math.round((personAageOnChildInCareSpousalDate%1)*12)
+                    //Create solution object
+                    personAchildInCareSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "childInCareSpousal", personA, personA.childInCareSpousalBenefitDate, personAageYearsOnChildInCareSpousalDate, personAageMonthsOnChildInCareSpousalDate)
                   //see if need to create spousal suspension/endsuspension solution objects
-                    if (scenario.youngestChildTurns16date < personA.FRA && scenario.disabledChild === false){
+                    if (scenario.youngestChildTurns16date < personA.FRA && scenario.disabledChild === false && personA.childInCareSpousalBenefitDate < personA.FRA){
                         //create childInCareSpousalSuspension
                         let personAageOnYoungest16Date:number = this.birthdayService.findAgeOnDate(personA, scenario.youngestChildTurns16date)
                         let personAageYearsOnYoungest16Date:number = Math.floor(personAageOnYoungest16Date)
                         let personAageMonthsOnYoungest16Date:number = Math.round((personAageOnYoungest16Date%1)*12)
                         personAchildInCareSpousalSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "childInCareSpousalSuspension", personA, scenario.youngestChildTurns16date, personAageYearsOnYoungest16Date, personAageMonthsOnYoungest16Date)
-                        //create automaticSpousalUnsuspension
-                        personAautomaticSpousalUnsuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "automaticSpousalUnsuspension", personA, personA.FRA, 0, 0)//message doesn't include age, so no need to calculate it
+                        //create automaticSpousalUnsuspension. But only do so if
+                        //a) they have a PIA less than half of person B's PIA or at personA's FRA they would not be entitled to a retirement benefit, AND
+                        //b) their regular spousalBenefitDate is not before FRA (i.e., they haven't started regular spousal benefits yet by FRA. They would have started regular spousal if they have applied for retirement benefits by FRA, because deemed filing would happen.)
+                        if ((personA.PIA < 0.5 * personB.PIA || personA.retirementBenefitDate > personA.FRA) && personA.spousalBenefitDate >= personA.FRA){
+                          personAautomaticSpousalUnsuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "automaticSpousalUnsuspension", personA, personA.FRA, 0, 0)//message doesn't include age, so no need to calculate it
+                        }
                     }
               } 
             }
@@ -240,19 +246,25 @@ export class SolutionSetService {
             if (personB.childInCareSpousal === true){
               if (!(personB.retirementBenefitDate <= personA.retirementBenefitDate && personB.PIA >= 0.5 * personA.PIA)) {//Won't be any spousal benefit for personB if they have already started retirement with PIA > 50% of personA.PIA
                   //create childInCareSpousal solution object
-                  let personBageOnChildInCareSpousalDate:number = this.birthdayService.findAgeOnDate(personB, personA.retirementBenefitDate)
-                  let personBageYearsOnChildInCareSpousalDate:number = Math.floor(personBageOnChildInCareSpousalDate)
-                  let personBageMonthsOnChildInCareSpousalDate:number = Math.round((personBageOnChildInCareSpousalDate%1)*12)
-                  personBchildInCareSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "childInCareSpousal", personB, personA.retirementBenefitDate, personBageYearsOnChildInCareSpousalDate, personBageMonthsOnChildInCareSpousalDate)
+                    //Find age on date that child-in-care spousal benefits begin
+                    let personBageOnChildInCareSpousalDate:number = this.birthdayService.findAgeOnDate(personB, personB.childInCareSpousalBenefitDate)
+                    let personBageYearsOnChildInCareSpousalDate:number = Math.floor(personBageOnChildInCareSpousalDate)
+                    let personBageMonthsOnChildInCareSpousalDate:number = Math.round((personBageOnChildInCareSpousalDate%1)*12)
+                    //create solution object
+                    personBchildInCareSpousalSolution = new ClaimingSolution(scenario.maritalStatus, "childInCareSpousal", personB, personB.childInCareSpousalBenefitDate, personBageYearsOnChildInCareSpousalDate, personBageMonthsOnChildInCareSpousalDate)
                   //see if need to create spousal suspension/endsuspension solution objects
-                    if (scenario.youngestChildTurns16date < personB.FRA && scenario.disabledChild === false){
+                    if (scenario.youngestChildTurns16date < personB.FRA && scenario.disabledChild === false && personB.childInCareSpousalBenefitDate < personB.FRA){
                         //create childInCareSpousalSuspension
                         let personBageOnYoungest16Date:number = this.birthdayService.findAgeOnDate(personB, scenario.youngestChildTurns16date)
                         let personBageYearsOnYoungest16Date:number = Math.floor(personBageOnYoungest16Date)
                         let personBageMonthsOnYoungest16Date:number = Math.round((personBageOnYoungest16Date%1)*12)
                         personBchildInCareSpousalSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "childInCareSpousalSuspension", personB, scenario.youngestChildTurns16date, personBageYearsOnYoungest16Date, personBageMonthsOnYoungest16Date)
-                        //create automaticSpousalUnsuspension
-                        personBautomaticSpousalUnsuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "automaticSpousalUnsuspension", personB, personB.FRA, 0, 0)//message doesn't include age, so no need to calculate it
+                        //create automaticSpousalUnsuspension. But only do so if
+                        //a) they have a PIA less than half of person A's PIA or at personB's FRA they would not be entitled to a retirement benefit, AND
+                        //b) their regular spousalBenefitDate is not before FRA (i.e., they haven't started regular spousal benefits yet by FRA. They would have started regular spousal if they have applied for retirement benefits by FRA, because deemed filing would happen.)
+                        if ((personB.PIA < 0.5 * personA.PIA || personB.retirementBenefitDate > personB.FRA) && personB.spousalBenefitDate >= personB.FRA){
+                          personBautomaticSpousalUnsuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "automaticSpousalUnsuspension", personB, personB.FRA, 0, 0)//message doesn't include age, so no need to calculate it
+                        }
                     }
               } 
             }
@@ -310,11 +322,12 @@ export class SolutionSetService {
             }
 
             //personA spousal-related solution(s)
-              //We don't want regular spousal solution object if there are child-in-care spousal solutions
+              if (personAchildInCareSpousalSolution) {solutionSet.solutionsArray.push(personAchildInCareSpousalSolution)}
               if (personAchildInCareSpousalSuspensionSolution) {solutionSet.solutionsArray.push(personAchildInCareSpousalSuspensionSolution)}
               if (personAautomaticSpousalUnsuspensionSolution) {solutionSet.solutionsArray.push(personAautomaticSpousalUnsuspensionSolution)}
-              if (personAchildInCareSpousalSolution) {solutionSet.solutionsArray.push(personAchildInCareSpousalSolution)}
-              else {
+              //We only want regular spousal solution object if there is no child-in-care spousal solution, or if there was an automatic child-in-care suspension, but no unsuspension
+                  //(i.e., didn't unsuspend automatically at FRA, because the person had filed for regular spousal already before then, due to deemed filing when they filed for retirement)
+              if (!personAchildInCareSpousalSolution || (personAchildInCareSpousalSuspensionSolution && !personAautomaticSpousalUnsuspensionSolution)) {
                 //We also don't want a spousal solution if (A is older than 70 or A has filed) AND (B is over 70, B has filed, or B is on disability) -- because in that case we know they've already filed for spousal, if applicable
                 if ( (personA.initialAge >= 70 || personA.hasFiled === true) && (personB.initialAge >= 70 || personB.hasFiled === true || personB.isOnDisability === true) ) {
                   //no spousal solution for personA
@@ -330,11 +343,12 @@ export class SolutionSetService {
             //personB spousal-related solution(s)
               //We don't want personB solutions in divorce scenario
               if (scenario.maritalStatus == "married"){
-                //We don't want regular spousal solution object if there are child-in-care spousal solutions
+                if (personBchildInCareSpousalSolution) {solutionSet.solutionsArray.push(personBchildInCareSpousalSolution)}
                 if (personBchildInCareSpousalSuspensionSolution) {solutionSet.solutionsArray.push(personBchildInCareSpousalSuspensionSolution)}
                 if (personBautomaticSpousalUnsuspensionSolution) {solutionSet.solutionsArray.push(personBautomaticSpousalUnsuspensionSolution)}
-                if (personBchildInCareSpousalSolution) {solutionSet.solutionsArray.push(personBchildInCareSpousalSolution)}
-                else {
+                //We only want regular spousal solution object if there is no child-in-care spousal solution, or if there was an automatic child-in-care suspension, but no unsuspension
+                  //(i.e., didn't unsuspend automatically at FRA, because the person had filed for regular spousal already before then, due to deemed filing when they filed for retirement)
+                if (!personAchildInCareSpousalSolution || (personAchildInCareSpousalSuspensionSolution && !personAautomaticSpousalUnsuspensionSolution)) {
                   //We also don't want a spousal solution if (B is older than 70 or B has filed) AND (A is over 70, A has filed, or A is on disability)  -- because in that case we know they've already filed for spousal, if applicable
                   if ( (personB.initialAge >= 70 || personB.hasFiled === true) && (personA.initialAge >= 70 || personA.hasFiled === true || personA.isOnDisability === true)  ) {
                     //no spousal solution for personB

@@ -865,7 +865,6 @@ describe('tests calculateCouplePV', () => {
           expect(scenario.outputTable[10][1]).toEqual("$14,880")//personA annual retirement benefit after WEP kicks in: 124% of WEP PIA = 1.24 * 1000 * 12 = 14880
           expect(scenario.outputTable[12][0]).toEqual("If your spouse outlives you")
           expect(scenario.outputTable[12][6]).toEqual("$9,456")
-          console.log(scenario.outputTable)
           //deceased filed at 70 with FRA of 67. Benefit would have been 1488, given nonWEP PIA of 1200.
           //Minus survivor's own 700 retirement benefit, gives 788 survivor benefit. 788 x 12 = 9456
         })
@@ -1058,6 +1057,7 @@ describe('tests calculateCouplePV', () => {
         personB.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63
         personA.spousalBenefitDate = new MonthYearDate(2025, 2) //This date doesn't matter, given PIAs. But same reasoning as field for personB
         personB.spousalBenefitDate = new MonthYearDate(2025, 2)
+        personB.childInCareSpousalBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
         //^^Spousal benefit begins March 2023 when personA starts retirement. But it's child in care spousal benefit until child turns 16 in March 2025. Here we are having them file Form SSA-25 immediately at that date.
         personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
         personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
@@ -1169,6 +1169,7 @@ describe('tests calculateCouplePV', () => {
           personB.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63
           personA.spousalBenefitDate = new MonthYearDate(2027, 0) //Doesn't matter but uses same logic as field for personB
           personB.spousalBenefitDate = new MonthYearDate(2027, 0) //child3 is under 16 until Jan 2027, so spousal benefit will be child-in-care spousal until then. Here we're having personB file Form SSA-26 immediately Jan 2027
+          personB.childInCareSpousalBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
           mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
           mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
@@ -1237,6 +1238,7 @@ describe('tests calculateCouplePV', () => {
           personB.retirementBenefitDate = new MonthYearDate(2034, 2) //files at 64
           personA.spousalBenefitDate = new MonthYearDate(2034, 2) //when personB's retirement starts (not that this date really matters)
           personB.spousalBenefitDate = new MonthYearDate(2034, 2)
+          personB.childInCareSpousalBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
           //^^personB starts their spousal benefit when they start their retirement benefit. (They also get child-in-care spousal benefits earlier, but those end in March 2026 when child turns 16.)
           mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
           mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
@@ -1288,6 +1290,7 @@ describe('tests calculateCouplePV', () => {
           personB.retirementBenefitDate = new MonthYearDate(2025, 3) //Files at 62 and 1 month
           personA.spousalBenefitDate = new MonthYearDate(2025, 3) //when personB's retirement starts (not that this date really matters)
           personB.spousalBenefitDate = new MonthYearDate(2026, 2) //child turns 16 in March 2026. personB files Form SSA-25 at that time.
+          personB.childInCareSpousalBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
           mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
           mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
@@ -1554,10 +1557,10 @@ describe('tests calculateCouplePV', () => {
       personA.quitWorkDate = new MonthYearDate(2015,3,1) //already quit working
       personB.quitWorkDate = new MonthYearDate(2015,3,1) //already quit working
       scenario.discountRate = 2
-      expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[2])
-      .toBeUndefined
-      //We're looking at item [2] in the array. This array should have 2 items in it: retirementDate for personB, and (matching) spousalDate for personA.
-      //If there *were* a suspension solution, it would have more than 2 items. So we're testing that 3rd is undefined
+      expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray.length)
+      .toEqual(2)
+      //This array should have 2 items in it: retirementDate for personB, and (matching) spousalDate for personA.
+      //If there *were* a suspension solution, it would have more than 2 items.
     })
   
     it('should tell personA to file at 68, if they have higher PIA, personB has normal life expectancy, and they are using A-dies-at-68 assumption', () => {
@@ -1685,16 +1688,16 @@ describe('tests calculateCouplePV', () => {
       expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2022, 4))
       expect(results.solutionsArray[1].date).toEqual(new MonthYearDate(2022, 4))
       expect(results.solutionsArray[2].date).toEqual(new MonthYearDate(2022, 4))
-      expect(results.solutionsArray[3].date).toEqual(new MonthYearDate(2032, 4))
+      expect(results.solutionsArray[3].date).toEqual(new MonthYearDate(2033, 3))
       expect(results.solutionsArray[4].date).toEqual(new MonthYearDate(2033, 3))
-      expect(results.solutionsArray[5].date).toEqual(new MonthYearDate(2037, 3))
+      expect(results.solutionsArray[5].date).toEqual(new MonthYearDate(2033, 3))
       //This array should have 6 items in it, in this order:
         // personA retirement benefit to begin 5/2022, at age 62 and 1 months.
         // personB files for child-in-care spousal benefits to begin 5/2022, at age 52 and 1 months.
         // child files for benefits on personA's record 5/2022.
-        // personB retirement benefit to begin 5/2032, at age 62 and 1 months.
+        // personB retirement benefit to begin 4/2033, at age 63 and 0 months. (Point being: personB wants the regular spousal benefit to begin immediately, once child-in-care spousal is suspended due to child reaching 16)
         // personB child-in-care spousal benefit is automatically suspended when child reaches age 16 (4/2033), when personB is age 63 and 0 months.
-        // personB spousal benefit begins again automatically at his/her full retirement age (4/2037).
+        // personB spousal benefit begins automatically when she files for retirement before FRA, in 4/2033 at 63 and 0 months.
     })
 
   })
@@ -1908,6 +1911,44 @@ describe('tests calculateCouplePV', () => {
     expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2018, 9)) //retroactive back to personB's FRA
     //This array should have 1 item in it, personB's retirement date. No spousal for either person.
 
+  })
+
+  it('should tell a divorced user with lower PIA, two children already entitled on ex-spouse record, and an assumed age at death of 75 to file at 62 and 1 month for retirement and child-in-care spousal benefits', () => {
+    service.today = new MonthYearDate(2020, 5)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
+    scenario.maritalStatus = "divorced"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed", 75) 
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2016", 0)
+    personA.actualBirthDate = new Date(1960, 8, 15) //Spouse A born in Sept 1960
+    personA.SSbirthDate = new MonthYearDate(1960, 8)
+    personB.actualBirthDate = new Date(1957, 3, 11) //Spouse B born in April 1957
+    personB.SSbirthDate = new MonthYearDate(1957, 3)
+    personB.hasFiled = true
+    personB.fixedRetirementBenefitDate = new MonthYearDate (2019, 5) //ex-spouse filed in past, June 2019
+    personA.PIA = 600
+    personB.PIA = 2300
+    scenario.discountRate = 0
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    scenario.numberOfChildren = 2
+    let child1:Person = new Person("1")
+    let child2:Person = new Person("2")
+    child1.SSbirthDate = new MonthYearDate(2015, 7) //child 1 born August 2015
+    child2.SSbirthDate = new MonthYearDate(2016, 10) //child 2 born November 2016
+    scenario.setChildrenArray([child1,child2], service.today)
+    let results = service.maximizeCouplePViterateOnePerson(scenario, personA, personB)
+    expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2019, 11))
+    expect(results.solutionsArray[1].date).toEqual(new MonthYearDate(2022, 9))
+    expect(results.solutionsArray[2].date).toEqual(new MonthYearDate(2022, 9))
+    //This array should have 3 items in it, in this order:
+      //children file retroactively on personB's record. Max retroactivity is back to 12/2019
+      //personA files for retirement benefit October 2022, at age 62 and 1 months.
+      //personA files for child-in-care spousal benefits October 2022, at age 62 and 1 months.
+    service.calculateCouplePV(personA, personB, scenario, true)
+    expect(scenario.outputTable[0][0]).toEqual(2022)
+    expect(scenario.outputTable[0][1]).toEqual("$1,268")//personA retirement benefit, times 3 months. (600 PIA, filing 59 months early, means he gets 70.41666% of PIA, or $422.50/month)
+    expect(scenario.outputTable[0][2]).toEqual("$1,650")//personA child-in-care spousal, times 3 months. 2300PIA/2 - 600 = $550 per month. Not reduced for early entitlement because there's a child in care.
+    expect(scenario.outputTable[0][4]).toEqual("$22,417")//total children benefit in 2022 is 9 months of $1,724.08 (i.e,. amount left on personB's family max),
+      //plus 3 months of $2,300 (i.e., full 50% of personB PIA for each child, now that combined family max has kicked in)
   })
 
 })

@@ -332,6 +332,7 @@ export class PresentValueService {
               annualPV = this.discountToPresentValue(scenario.discountRate, annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
 
                 // if (printOutputTable === true){
+                //   console.log(calcYear.date.getFullYear())
                 //   console.log("discounted annualPV: " + annualPV)
                 //   console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
                 //   console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
@@ -516,6 +517,8 @@ export class PresentValueService {
       let personBsavedRetirementDate = new MonthYearDate(personB.retirementBenefitDate)
       let personAsavedSpousalDate = new MonthYearDate(personA.spousalBenefitDate)
       let personBsavedSpousalDate = new MonthYearDate(personB.spousalBenefitDate)
+      let personAsavedChildInCareSpousalBenefitDate = new MonthYearDate(personA.childInCareSpousalBenefitDate)
+      let personBsavedChildInCareSpousalBenefitDate = new MonthYearDate(personB.childInCareSpousalBenefitDate)
       let personAsavedBeginSuspensionDate = new MonthYearDate(personA.beginSuspensionDate)
       let personBsavedBeginSuspensionDate = new MonthYearDate(personB.beginSuspensionDate)
       let personAsavedEndSuspensionDate = new MonthYearDate(personA.endSuspensionDate)
@@ -583,6 +586,8 @@ export class PresentValueService {
               personBsavedRetirementDate = new MonthYearDate(personB.retirementBenefitDate)
               personAsavedSpousalDate = new MonthYearDate(personA.spousalBenefitDate)
               personBsavedSpousalDate = new MonthYearDate(personB.spousalBenefitDate)
+              personAsavedChildInCareSpousalBenefitDate = new MonthYearDate(personA.childInCareSpousalBenefitDate)
+              personBsavedChildInCareSpousalBenefitDate = new MonthYearDate(personB.childInCareSpousalBenefitDate)
               personAsavedBeginSuspensionDate = new MonthYearDate(personA.beginSuspensionDate)
               personBsavedBeginSuspensionDate = new MonthYearDate(personB.beginSuspensionDate)
               personAsavedEndSuspensionDate = new MonthYearDate(personA.endSuspensionDate)
@@ -604,10 +609,12 @@ export class PresentValueService {
     //after loop is finished, set person objects' benefit dates to the saved dates, for sake of running PV calc again for outputTable
       personA.retirementBenefitDate = new MonthYearDate(personAsavedRetirementDate)
       personA.spousalBenefitDate = new MonthYearDate(personAsavedSpousalDate)
+      personA.childInCareSpousalBenefitDate = new MonthYearDate(personAsavedChildInCareSpousalBenefitDate)
       personA.beginSuspensionDate = new MonthYearDate(personAsavedBeginSuspensionDate)
       personA.endSuspensionDate = new MonthYearDate(personAsavedEndSuspensionDate)
       personB.retirementBenefitDate = new MonthYearDate(personBsavedRetirementDate)
       personB.spousalBenefitDate = new MonthYearDate(personBsavedSpousalDate)
+      personB.childInCareSpousalBenefitDate = new MonthYearDate(personBsavedChildInCareSpousalBenefitDate)
       personB.beginSuspensionDate = new MonthYearDate(personBsavedBeginSuspensionDate)
       personB.endSuspensionDate = new MonthYearDate(personBsavedEndSuspensionDate)
 
@@ -670,6 +677,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     let savedPV: number = 0
     let flexibleSpouseSavedRetirementDate = new MonthYearDate(flexibleSpouse.retirementBenefitDate)
     let flexibleSpouseSavedSpousalDate = new MonthYearDate(flexibleSpouse.spousalBenefitDate)
+    let flexibleSpouseSavedChildInCareSpousalDate = new MonthYearDate(flexibleSpouse.childInCareSpousalBenefitDate)
     let flexibleSpouseSavedBeginSuspensionDate = new MonthYearDate(flexibleSpouse.beginSuspensionDate)
     let flexibleSpouseSavedEndSuspensionDate = new MonthYearDate(flexibleSpouse.endSuspensionDate)
     let fixedSpouseSavedSpousalDate: MonthYearDate = new MonthYearDate(fixedSpouse.spousalBenefitDate)
@@ -699,6 +707,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         savedPV = currentTestPV
         flexibleSpouseSavedRetirementDate = new MonthYearDate(flexibleSpouse.retirementBenefitDate)
         flexibleSpouseSavedSpousalDate = new MonthYearDate(flexibleSpouse.spousalBenefitDate)
+        flexibleSpouseSavedChildInCareSpousalDate = new MonthYearDate(flexibleSpouse.childInCareSpousalBenefitDate)
         flexibleSpouseSavedBeginSuspensionDate = new MonthYearDate(flexibleSpouse.beginSuspensionDate)
         flexibleSpouseSavedEndSuspensionDate = new MonthYearDate(flexibleSpouse.endSuspensionDate)
         fixedSpouseSavedSpousalDate = new MonthYearDate(fixedSpouse.spousalBenefitDate)
@@ -714,6 +723,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       //after loop is finished, set person objects' benefit dates to the saved dates, for sake of running PV calc again for outputTable
       flexibleSpouse.retirementBenefitDate = new MonthYearDate(flexibleSpouseSavedRetirementDate)
       flexibleSpouse.spousalBenefitDate = new MonthYearDate(flexibleSpouseSavedSpousalDate)
+      flexibleSpouse.childInCareSpousalBenefitDate = new MonthYearDate(flexibleSpouseSavedChildInCareSpousalDate)
       flexibleSpouse.beginSuspensionDate = new MonthYearDate(flexibleSpouseSavedBeginSuspensionDate)
       flexibleSpouse.endSuspensionDate = new MonthYearDate(flexibleSpouseSavedEndSuspensionDate)
       fixedSpouse.spousalBenefitDate = new MonthYearDate(fixedSpouseSavedSpousalDate)
@@ -810,15 +820,50 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         person.spousalBenefitDate = new MonthYearDate(person.retirementBenefitDate)
       }
 
-    //If there are minor or disabled children, spousalBenefitDate must reflect date on which regular spousal benefit (as opposed to child-in-care spousal benefit) begins.
+    //If there are minor or disabled children, spousalBenefitDate represents date on which regular spousal benefit (as opposed to child-in-care spousal benefit) begins.
       if (scenario.children.length > 0){
         //if there is a disabled child or a child under 16 when otherPerson begins retirement benefit, don't let spousalBenefitDate be before own FRA.
           //In other words, we're assuming here that person doesn't file Form SSA-25. We're letting them claim child-in-care spousal benefits, then letting it stop when youngest child reaches 16 (if not yet FRA and no disabled child), then start again at FRA.
         if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, otherPerson.retirementBenefitDate)=== true){
           if (person.spousalBenefitDate < person.FRA){
-            person.spousalBenefitDate = person.FRA
+            person.spousalBenefitDate = new MonthYearDate(person.FRA)
+          }
+          //Unless person files for own retirement benefit before FRA and after child-in-care spousal was suspended, in which case they'd be deemed to file for regular spousal benefits at that time as well.
+          if (person.retirementBenefitDate < person.FRA && person.retirementBenefitDate >= scenario.youngestChildTurns16date && scenario.disabledChild === false){
+            person.spousalBenefitDate = new MonthYearDate(person.retirementBenefitDate)
           }
         }
+        //Find date on which child-in-care spousal benefit begins
+          //If married, is otherPerson.retirementBenefitDate, but no earlier than 6 months ago (12 months if otherPerson is disabled). Can be retroactive before FRA because spousal would not be reduced for age because it's child-in-care.
+          if (scenario.maritalStatus == "married"){
+
+            let sixMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6)
+            let twelveMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
+            twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear()-1)
+
+            person.childInCareSpousalBenefitDate = new MonthYearDate(otherPerson.retirementBenefitDate)
+            if (otherPerson.isOnDisability === false){//otherPerson is NOT on disability
+              if (person.childInCareSpousalBenefitDate < sixMonthsAgo){
+                person.childInCareSpousalBenefitDate = new MonthYearDate(sixMonthsAgo)
+              }
+            }
+            else {//i.e., otherPerson IS on disability
+              if (person.childInCareSpousalBenefitDate < twelveMonthsAgo){
+                person.childInCareSpousalBenefitDate = new MonthYearDate(twelveMonthsAgo)
+              }
+            }
+          }
+          //If divorced, we aren't concerned with when otherPerson files. Also, deemed filing applies here.
+              //That is, the exception to deemed filing for child-in-care spousal only applies to still-married couples. So an application for child-in-care spousal benefits would also be an application for retirement benefits.
+              //As such, childInCareSpousalBenefitDate is own retirementBenefitDate, but no earlier than when otherPerson turns age 62
+          if (scenario.maritalStatus == "divorced"){
+            person.childInCareSpousalBenefitDate = new MonthYearDate(person.retirementBenefitDate)
+            let otherPersonAge62Date:MonthYearDate = new MonthYearDate(otherPerson.SSbirthDate.getFullYear()+62, otherPerson.SSbirthDate.getMonth())
+            if (person.childInCareSpousalBenefitDate < otherPersonAge62Date){
+              person.childInCareSpousalBenefitDate = new MonthYearDate(otherPersonAge62Date)
+            }
+          }
       }  
 
     return person

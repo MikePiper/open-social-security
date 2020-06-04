@@ -459,7 +459,10 @@ export class BenefitService {
               personA.monthlyRetirementPayment = personA.retirementBenefit
             }
             if( (personA.PIA < 0.5 * personB.PIA || personA.entitledToRetirement === false) && //if personA has PIA less than 50% of personB's PIA or is not yet entitled to a retirement benefit, AND
-              ( calcYear.date >= personA.spousalBenefitDate || (personB.entitledToRetirement === true && childUnder16orDisabled === true && personA.childInCareSpousal === true) )){//personA has reached spousalBenefitDate OR personB has started retirement benefit and there is a childUnder16orDisabled and personA.childInCareSpousal is true
+                ( calcYear.date >= personA.spousalBenefitDate  //personA has reached spousalBenefitDate (i.e., they're getting normal spousal benefits)
+                  || (childUnder16orDisabled === true && personA.childInCareSpousal === true && calcYear.date >= personA.childInCareSpousalBenefitDate) //OR personA is getting child-in-care spousal
+                )
+              ){
                 personA.monthlySpousalPayment = this.calculateSpousalOriginalBenefit(personB)
             }
             //personB
@@ -467,7 +470,10 @@ export class BenefitService {
               personB.monthlyRetirementPayment = personB.retirementBenefit
             }
             if( (personB.PIA < 0.5 * personA.PIA || personB.entitledToRetirement === false) && //if personB has PIA less than 50% of personA's PIA or is not yet entitled to a retirement benefit, AND
-              ( calcYear.date >= personB.spousalBenefitDate || (personA.entitledToRetirement === true && childUnder16orDisabled === true && personB.childInCareSpousal === true) )){//personB has reached spousalBenefitDate OR personA has started retirement benefit and there is a childUnder16orDisabled and personB.childInCareSpousal is true
+                ( calcYear.date >= personB.spousalBenefitDate //personB has reached spousalBenefitDate (i.e., they're getting normal spousal benefits)
+                  || (childUnder16orDisabled === true && personB.childInCareSpousal === true && calcYear.date >= personB.childInCareSpousalBenefitDate) //OR personB is getting child-in-care spousal
+                )
+              ){
               personB.monthlySpousalPayment = this.calculateSpousalOriginalBenefit(personA)
             }
             //children

@@ -325,10 +325,12 @@ export class HomeComponent implements OnInit {
     //set everybody's dates to undefined at first. (Clears any values they had from maximize function or anything else. We want them undefined at the end of this function if this function intentionally does not set them.)
     this.personA.retirementBenefitDate = undefined
     this.personA.spousalBenefitDate = undefined
+    this.personA.childInCareSpousalBenefitDate = undefined
     this.personA.beginSuspensionDate = undefined
     this.personA.endSuspensionDate = undefined
     this.personB.retirementBenefitDate = undefined
     this.personB.spousalBenefitDate = undefined
+    this.personB.childInCareSpousalBenefitDate = undefined
     this.personB.beginSuspensionDate = undefined
     this.personB.endSuspensionDate = undefined
 

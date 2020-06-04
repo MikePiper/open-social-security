@@ -34,7 +34,7 @@ export class Person {
     AIME: number //AIME as calculated in the year that entitlement began. Only used in disability scenarios (for calculating disability-related family max)
 
     declineSpousal: boolean = false
-    childInCareSpousal: boolean = false
+    childInCareSpousal: boolean = false//reflects whether a person will be getting child-in-care spousal benefits at any point during the PV calculation. Doesn't reflect whether they're getting them on any particular date.
     declineSuspension:boolean = false
     entitledToRetirement:boolean //just the results of whether calcYear.date >= person.retirementBenefitDate
 
@@ -44,7 +44,8 @@ export class Person {
         beginSuspensionDate: MonthYearDate = new MonthYearDate(1900, 0, 1) //When testing in "one is fixed" maximize functions, this is basically just going to be "FRA but no earlier than today"   Benefit IS suspended for this month
         endSuspensionDate: MonthYearDate = new MonthYearDate(1900, 0, 1) //this is a variable that will be iterated. Benefit is NOT suspended for this month
         suspendingBenefits:boolean = false //Is true if they will be suspending benefits at all during a particular PV calc.
-    spousalBenefitDate: MonthYearDate
+    spousalBenefitDate: MonthYearDate //if there is a child in care, this represents the date on which normal (non-child-in-care spousal benefits) would begin
+    childInCareSpousalBenefitDate: MonthYearDate
     adjustedRetirementBenefitDate: MonthYearDate
     adjustedSpousalBenefitDate: MonthYearDate
 
