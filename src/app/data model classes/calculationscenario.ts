@@ -14,8 +14,6 @@ export class CalculationScenario {
     benefitCutAssumption: boolean = false
         benefitCutYear: number = 2034
         benefitCutPercentage: number = 23
-    outputTable: any[][] = []
-    outputTableComplete:boolean = false
 
     // properties to allow calculation and storage 
     // of both Cut and NoCut results for range of options

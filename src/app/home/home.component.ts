@@ -42,7 +42,7 @@ export class HomeComponent implements OnInit {
   child6:Person = new Person("6")
   childrenObjectsArray:Person[] = [this.child1, this.child2, this.child3, this.child4, this.child5, this.child6]
   scenario:CalculationScenario = new CalculationScenario()
-  customDateScenario:CalculationScenario = new CalculationScenario()
+  customClaimStrategy = new ClaimStrategy(this.personA, this.personB)
   errorCollection:ErrorCollection = new ErrorCollection()
   today:MonthYearDate = new MonthYearDate()
   deemedFilingCutoff: Date = new Date(1954, 0, 1)//January 2, 1954. If date is LESS than cutoff, old rules. If greater than OR EQUAL TO cutoff, new rules.
@@ -148,11 +148,10 @@ export class HomeComponent implements OnInit {
 
 
   //solution variables
-  customPV: number
   differenceInPV: number
   differenceInPV_asPercent: number
   solutionSet: SolutionSet = {
-    "solutionPV":null,
+    "claimStrategy":new ClaimStrategy(this.personA, this.personB),
     "solutionsArray": [],
     "computationComplete": false
   }
@@ -168,14 +167,14 @@ export class HomeComponent implements OnInit {
     console.log(this.personA)
     console.log(this.personB)
     this.getPrimaryFormInputs()
-    this.scenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
+    this.solutionSet.claimStrategy.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
     this.errorCollection = this.inputValidationService.checkForFixedRetirementDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
     this.focusError()
 
     //If there are no fixedRetirementDate errors, call appropriate "maximizePV" function to find best solution
     if (this.errorCollection.hasErrors === false){
       this.solutionSet = {
-        "solutionPV":null,
+        "claimStrategy":new ClaimStrategy(this.personA, this.personB),
         "solutionsArray": [],
         "computationComplete": false
       };
@@ -201,7 +200,7 @@ export class HomeComponent implements OnInit {
     this.solutionSet.computationComplete = true;
     this.normalCursor()
     this.primaryFormHasChanged = false//Set this to false so that customDates() doesn't rerun onSubmit() next time it is run, unless another change is made to primary inputs
-    if (this.customPV){//If customDates() has already been run (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs
+    if (this.customClaimStrategy.PV){//If customDates() has already been run (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs
       this.customDates()
     }
     //For testing performance
@@ -216,7 +215,7 @@ export class HomeComponent implements OnInit {
     if (this.primaryFormHasChanged === true){//Have to rerun the original calculation again if a primary input has changed.
       this.onSubmit()
     }
-    this.customPV = undefined //Makes custom date output disappear until new PV is calc'd. (We don't want a broken-looking half-table appearing if there is an error in new inputs.)
+    this.customClaimStrategy = new ClaimStrategy(this.personA, this.personB)//new object in order to reset outputTable to be undefined, PV to be undefined, and outputTableComplete to be false
     this.getCustomDateFormInputs()
     this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
 
@@ -224,19 +223,17 @@ export class HomeComponent implements OnInit {
         //Create a new CalculationScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one.
         //(This is necessary so that it can have a separate "outputTable" field from the original.)
           //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
-          this.customDateScenario = Object.assign(new CalculationScenario(), this.scenario)
-          this.customDateScenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
       if (this.scenario.maritalStatus == "single" && this.errorCollection.hasErrors === false) {
-        this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.customDateScenario, true).PV
+        this.customClaimStrategy = this.presentvalueService.calculateSinglePersonPV(this.personA, this.scenario, true)
         }
       if(this.scenario.maritalStatus == "married" && this.errorCollection.hasErrors === false) {
-        this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true).PV
+        this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, true)
         }
       if(this.scenario.maritalStatus == "divorced" && this.errorCollection.hasErrors === false) {
-        this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true).PV
+        this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, true)
       }
-      this.differenceInPV = this.solutionSet.solutionPV - this.customPV
-      this.differenceInPV_asPercent = (this.differenceInPV / this.solutionSet.solutionPV) * 100
+      this.differenceInPV = this.solutionSet.claimStrategy.PV - this.customClaimStrategy.PV
+      this.differenceInPV_asPercent = (this.differenceInPV / this.solutionSet.claimStrategy.PV) * 100
   }
 
   //Use inputs to calculate ages, SSbirthdates, FRAs, etc. Happens every time an input in the primary form is changed.

@@ -1,6 +1,8 @@
 import { Person } from "./person"
 import {MonthYearDate} from "./monthyearDate"
 
+  //This class represents the bulleted items in the recommended strategy output. (That is, one ClaimingSolution object for each item in the bulleted list.)
+  //This is in contrast to "ClaimStrategy" which represents a collection of claiming dates, as well as the calculated PV and output table for that collection of dates.
   export class ClaimingSolution {
     maritalStatus: string
     benefitType: string //retirementAlone, retirementReplacingSpousal, spousalAlone, spousalWithRetirement, survivor

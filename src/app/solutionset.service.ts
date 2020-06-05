@@ -6,6 +6,7 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import { BirthdayService } from './birthday.service';
+import { ClaimStrategy } from './data model classes/claimStrategy'
 
 
 @Injectable({
@@ -17,9 +18,9 @@ export class SolutionSetService {
 
   today: MonthYearDate = new MonthYearDate()
 
-  generateSingleSolutionSet(scenario:CalculationScenario, person:Person, savedPV:number){
+  generateSingleSolutionSet(scenario:CalculationScenario, person:Person, claimStrategy:ClaimStrategy){
     let solutionSet:SolutionSet = {
-      "solutionPV":savedPV,
+      "claimStrategy":claimStrategy,
       "solutionsArray": [],
       "computationComplete": false // this property added to hide previous results while calculating
     }
@@ -106,9 +107,9 @@ export class SolutionSetService {
 
   //In this method first we create all the possible solution objects, but then only push the ones we want into the solutionsArray.
     //For example if personB can't actually qualify for spousal benefits at any time, we don't push personBspousalSolution
-  generateCoupleSolutionSet(scenario:CalculationScenario, personA:Person, personB:Person, savedPV: number){
+  generateCoupleSolutionSet(scenario:CalculationScenario, personA:Person, personB:Person, claimStrategy:ClaimStrategy){
     let solutionSet: SolutionSet = {
-      "solutionPV":savedPV,
+      "claimStrategy":claimStrategy,
       solutionsArray: [],
       "computationComplete": false      
     }

@@ -9,6 +9,7 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import {FamilyMaximumService} from './familymaximum.service'
+import { ClaimStrategy } from './data model classes/claimStrategy'
 
 //Util used to replace certain things that would happen in real life application, but which need to be done in tests because getPrimaryFormInputs() never gets called
 function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdayService:BirthdayService, benefitService:BenefitService, mortalityService:MortalityService){
@@ -193,10 +194,10 @@ describe('test calculateSinglePersonPV', () => {
         person.monthlyEarnings = 10000
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2018, 9, 1) //Applying for retirement benefit October 2018 (48 months prior to FRA -> monthly benefit is 750 before ARF)
-        service.calculateSinglePersonPV(person, scenario, true)
-        expect(scenario.outputTable[0][0])
+        let claimStrategy:ClaimStrategy = service.calculateSinglePersonPV(person, scenario, true)
+        expect(claimStrategy.outputTable[0][0])
             .toEqual(2018)
-        expect(scenario.outputTable[0][1])
+        expect(claimStrategy.outputTable[0][1])
             .toEqual("$0")//First row in table should be "2018, 0"
       })
   
@@ -210,10 +211,10 @@ describe('test calculateSinglePersonPV', () => {
         person.monthlyEarnings = 1500
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2018, 9, 1) //Applying for retirement benefit October 2018 (48 months prior to FRA -> monthly benefit is 750 before ARF)
-        service.calculateSinglePersonPV(person, scenario, true)
-        expect(scenario.outputTable[0][0])
+        let claimStrategy:ClaimStrategy = service.calculateSinglePersonPV(person, scenario, true)
+        expect(claimStrategy.outputTable[0][0])
             .toEqual(2018)
-        expect(scenario.outputTable[0][1])
+        expect(claimStrategy.outputTable[0][1])
             .toEqual("$1,770")//First row in table should be "2018, 1770"
         //annual earnings is 18000. (18000 - 17040)/2 = 480 annual withholding. $750 monthly benefit means 1 months withheld, 2 months received. $270 overwithholding added back.
       })
@@ -676,11 +677,11 @@ describe('tests calculateCouplePV', () => {
         personB.retirementBenefitDate = new MonthYearDate(2025, 7) //August 2025 (age 62, 5 years before FRA)
         personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
         personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
-        service.calculateCouplePV(personA, personB, scenario, true)
-        expect(scenario.outputTable[8][0]).toEqual(2033)
-        expect(scenario.outputTable[8][5]).toEqual("$0")
-        expect(scenario.outputTable[9][0]).toEqual("2034 and beyond")
-        expect(scenario.outputTable[9][5]).toEqual("$0")
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.outputTable[8][0]).toEqual(2033)
+        expect(claimStrategy.outputTable[8][5]).toEqual("$0")
+        expect(claimStrategy.outputTable[9][0]).toEqual("2034 and beyond")
+        expect(claimStrategy.outputTable[9][5]).toEqual("$0")
       })
     
       it('should calculate spousal benefit appropriately prior to FRA', () => {
@@ -702,9 +703,9 @@ describe('tests calculateCouplePV', () => {
         personB.retirementBenefitDate = new MonthYearDate(2027, 7) //August 2027 (age 64, 3 years before FRA) Own retirement benefit will be $400
         personA.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
         personB.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
-        service.calculateCouplePV(personA, personB, scenario, true)
-        expect(scenario.outputTable[2][0]).toEqual(2028)
-        expect(scenario.outputTable[2][5]).toEqual("$2,250")
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.outputTable[2][0]).toEqual(2028)
+        expect(claimStrategy.outputTable[2][5]).toEqual("$2,250")
         //Original spousal benefit = 750. Reduced for own entitlement = 250. Multiplied by 0.75 for being 3 years early = 187.50. 187.5 x 12 = 2250
       })
     
@@ -729,9 +730,9 @@ describe('tests calculateCouplePV', () => {
         personB.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
         personB.nonCoveredPensionDate = new MonthYearDate(2027, 0)//Just some date before personB's spousal benefit date, so GPO is applicable
         personB.governmentPension = 150
-        service.calculateCouplePV(personA, personB, scenario, true)
-        expect(scenario.outputTable[2][0]).toEqual(2028)
-        expect(scenario.outputTable[2][5]).toEqual("$1,050")
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.outputTable[2][0]).toEqual(2028)
+        expect(claimStrategy.outputTable[2][5]).toEqual("$1,050")
         //same as prior, minus 2/3 of $150 monthly gov pension = $87.50 spousal per month
       })
     
@@ -756,9 +757,9 @@ describe('tests calculateCouplePV', () => {
         personB.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
         personB.nonCoveredPensionDate = new MonthYearDate(2027, 0)//Just some date before personB's spousal benefit date, so GPO is applicable
         personB.governmentPension = 1000
-        service.calculateCouplePV(personA, personB, scenario, true)
-        expect(scenario.outputTable[2][0]).toEqual(2028)
-        expect(scenario.outputTable[2][5]).toEqual("$0")
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.outputTable[2][0]).toEqual(2028)
+        expect(claimStrategy.outputTable[2][5]).toEqual("$0")
       })
     
       it('should calculate spousal benefit appropriately after FRA', () => {
@@ -780,9 +781,9 @@ describe('tests calculateCouplePV', () => {
         personB.retirementBenefitDate = new MonthYearDate(2031, 7) //Aug 2031 (one year after FRA, retirement benefit will be $864)
         personA.spousalBenefitDate = new MonthYearDate(2031, 7) //later of two retirementBenefitDates
         personB.spousalBenefitDate = new MonthYearDate(2031, 7) //later of two retirementBenefitDates
-        service.calculateCouplePV(personA, personB, scenario, true)
-        expect(scenario.outputTable[1][0]).toEqual(2032)
-        expect(scenario.outputTable[1][5]).toEqual("$1,632")
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.outputTable[1][0]).toEqual(2032)
+        expect(claimStrategy.outputTable[1][5]).toEqual("$1,632")
         //Original spousal benefit = 1000. Reduced by own entitlement (864) = 136. No reduction for age. 136 x 12 = 1632
       })
 
@@ -806,9 +807,9 @@ describe('tests calculateCouplePV', () => {
         personB.retirementBenefitDate = new MonthYearDate(2025, 7) //August 2025 (age 62, 5 years before FRA)
         personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
         personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
-        service.calculateCouplePV(personA, personB, scenario, true)
-        expect(scenario.outputTable[11][0]).toEqual("If your spouse outlives you")
-        expect(scenario.outputTable[11][6]).toEqual("$6,480") //deceased filed at 70 with FRA of 67. Benefit would have been 1240. Minus survivor's own 700 retirement benefit, gives 540 survivor benefit. 12 x 540 = 6480
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.outputTable[11][0]).toEqual("If your spouse outlives you")
+        expect(claimStrategy.outputTable[11][6]).toEqual("$6,480") //deceased filed at 70 with FRA of 67. Benefit would have been 1240. Minus survivor's own 700 retirement benefit, gives 540 survivor benefit. 12 x 540 = 6480
       })
   
       it('should calculate personB survivor benefit appropriately as zero with own larger retirement benefit. Deceased personA filed at age 70', () => {
@@ -830,9 +831,9 @@ describe('tests calculateCouplePV', () => {
         personB.retirementBenefitDate = new MonthYearDate(personB.FRA) //Files at FRA of Aug 2030
         personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
         personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
-        service.calculateCouplePV(personA, personB, scenario, true)
-        expect(scenario.outputTable[6][0]).toEqual("If your spouse outlives you")
-        expect(scenario.outputTable[6][6]).toEqual("$0") //deceased filed at 70 with FRA of 67. Benefit would have been 1240. Minus survivor's own 1500 retirement benefit, gives zero survivor benefit
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.outputTable[6][0]).toEqual("If your spouse outlives you")
+        expect(claimStrategy.outputTable[6][6]).toEqual("$0") //deceased filed at 70 with FRA of 67. Benefit would have been 1240. Minus survivor's own 1500 retirement benefit, gives zero survivor benefit
       })
 
       //Testing calculation of retirement and survivor benefits in scenario where deceased was affected by Windfall Elimination Provision
@@ -858,14 +859,14 @@ describe('tests calculateCouplePV', () => {
           personB.retirementBenefitDate = new MonthYearDate(2025, 7) //Files at 62 (5 years before FRA), so retirement benefit = 700
           personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
           personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
-          service.calculateCouplePV(personA, personB, scenario, true)
-          expect(scenario.outputTable[9][0]).toEqual(2034)
-          expect(scenario.outputTable[9][1]).toEqual("$17,856")//personA annual retirement benefit before WEP kicks in: 124% of non WEP PIA = 1.24 * 1200 * 12 = 17856
-          expect(scenario.outputTable[10][0]).toEqual("2035 and beyond")
-          expect(scenario.outputTable[10][1]).toEqual("$14,880")//personA annual retirement benefit after WEP kicks in: 124% of WEP PIA = 1.24 * 1000 * 12 = 14880
-          expect(scenario.outputTable[12][0]).toEqual("If your spouse outlives you")
-          expect(scenario.outputTable[12][6]).toEqual("$9,456")
-          console.log(scenario.outputTable)
+          let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+          expect(claimStrategy.outputTable[9][0]).toEqual(2034)
+          expect(claimStrategy.outputTable[9][1]).toEqual("$17,856")//personA annual retirement benefit before WEP kicks in: 124% of non WEP PIA = 1.24 * 1200 * 12 = 17856
+          expect(claimStrategy.outputTable[10][0]).toEqual("2035 and beyond")
+          expect(claimStrategy.outputTable[10][1]).toEqual("$14,880")//personA annual retirement benefit after WEP kicks in: 124% of WEP PIA = 1.24 * 1000 * 12 = 14880
+          expect(claimStrategy.outputTable[12][0]).toEqual("If your spouse outlives you")
+          expect(claimStrategy.outputTable[12][6]).toEqual("$9,456")
+          console.log(claimStrategy.outputTable)
           //deceased filed at 70 with FRA of 67. Benefit would have been 1488, given nonWEP PIA of 1200.
           //Minus survivor's own 700 retirement benefit, gives 788 survivor benefit. 788 x 12 = 9456
         })
@@ -892,9 +893,9 @@ describe('tests calculateCouplePV', () => {
           personB.retirementBenefitDate = new MonthYearDate(personB.FRA) //Files at FRA. retirement benefit = 1500
           personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
           personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
-          service.calculateCouplePV(personA, personB, scenario, true)
-          expect(scenario.outputTable[6][0]).toEqual("If your spouse outlives you")
-          expect(scenario.outputTable[6][6]).toEqual("$0")
+          let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+          expect(claimStrategy.outputTable[6][0]).toEqual("If your spouse outlives you")
+          expect(claimStrategy.outputTable[6][6]).toEqual("$0")
             //deceased filed at 70 with FRA of 67. Benefit ignoring WEP would have been 1488, given nonWEP PIA of 1200. Minus survivor's own 1500 retirement benefit, gives zero survivor benefit
         })
 
@@ -919,7 +920,7 @@ describe('tests calculateCouplePV', () => {
         scenario.maritalStatus = "married"
         personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
         personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
-        service.calculateCouplePV(personA, personB, scenario, true)
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
         /*calc by hand for 2019...
         personA's retirement benefit is $1440 (80% of PIA)
         personA's spousal benefit is $0
@@ -930,7 +931,7 @@ describe('tests calculateCouplePV', () => {
         2 months of retirement withheld from A and 2 months of spousal withheld from B, and some overwithholding
         personB should actually *get* one month of spousal benefit (personA filed in October, 2 months withheld)
         */
-        expect(scenario.outputTable[1][5]).toEqual("$300")//First row is 2018. We want 2019, so second row. Spousal benefit for personB is 6th column.
+        expect(claimStrategy.outputTable[1][5]).toEqual("$300")//First row is 2018. We want 2019, so second row. Spousal benefit for personB is 6th column.
       })
 
       it('Should calculate total annual retirement benefit and spousal benefits appropriately when personA is suspended for part of year, affecting their own retirement as well as spousal benefit of personB', () => {
@@ -953,16 +954,17 @@ describe('tests calculateCouplePV', () => {
         personB.spousalBenefitDate = new MonthYearDate(2038, 9) //later of two retirement benefit dates
         personA.beginSuspensionDate = new MonthYearDate(2041, 9) //suspends at FRA of 67
         personA.endSuspensionDate = new MonthYearDate(2042, 3) //ends suspension in following year
-        expect(service.calculateCouplePV(personA, personB, scenario, true).PV).toBeCloseTo(460686, 0)
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.PV).toBeCloseTo(460686, 0)
         //manual calculation
           //personA retirement benefit = 1840 (80% of PIA, due to 36 months early)
           //personB retirement benefit = 425 (70.83333% of PIA due to 58 months early)
           //personB spousal benefit = 380.41 (69.166666% due to 50 months early) x [2300/2 - 600]
           //in 2041, suspension happens in October, so personA gets 9 months of retirement. personB gets 12 months of retirement and 9 months of spousal
           //2038 is first row of table, so 2041 is row [3]
-        expect(scenario.outputTable[3][1]).toEqual("$16,560") //personA retirement amount should be 1840 x 9 = 16,560
-        expect(scenario.outputTable[3][4]).toEqual("$5,100") //personB retirement amount should be 425 x 12 = 5,100
-        expect(scenario.outputTable[3][5]).toEqual("$3,424") //personB spousal amount should be $380.41 x 9 = $3,423.69
+        expect(claimStrategy.outputTable[3][1]).toEqual("$16,560") //personA retirement amount should be 1840 x 9 = 16,560
+        expect(claimStrategy.outputTable[3][4]).toEqual("$5,100") //personB retirement amount should be 425 x 12 = 5,100
+        expect(claimStrategy.outputTable[3][5]).toEqual("$3,424") //personB spousal amount should be $380.41 x 9 = $3,423.69
       })
 
       it('Should calculate annual retirement and spousal benefits appropriately in year in which personB hits FRA, triggering ARF from withholding in some prior year', () => {
@@ -986,7 +988,8 @@ describe('tests calculateCouplePV', () => {
         personB.spousalBenefitDate = new MonthYearDate(2047, 6) //later of two retirement benefit dates
         personB.quitWorkDate = new MonthYearDate(2048, 0) //Working until Jan 2048
         personB.monthlyEarnings = 3000
-        expect(service.calculateCouplePV(personA, personB, scenario, true).PV).toBeCloseTo(377220, 0)
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.PV).toBeCloseTo(377220, 0)
         //manual calculation
           //personA retirement benefit = 600 (75% due to filing 48 months early)
           //personB retirement benefit = 1733.3333 (86.666% of PIA due to filing 24 months early)
@@ -995,10 +998,10 @@ describe('tests calculateCouplePV', () => {
           //available for withholding per month on personB's work record: 1933.33 -> 5 months of withholding necessary
           //at FRA (July 2049) personB has benefit adjusted as if only filed 19 months early. New monthly benefit should be 1788.888888
           //2043 is first row of table, so 2049 is row [6]
-          expect(scenario.outputTable[6][4]).toEqual("$21,133") //personB retirement amount should be 1733.333 x 6 + 1788.8888 x 6 = $21,133.33
+          expect(claimStrategy.outputTable[6][4]).toEqual("$21,133") //personB retirement amount should be 1733.333 x 6 + 1788.8888 x 6 = $21,133.33
           //personA doesn't file for spousal benefit until after FRA, so never gets an ARF
-          expect(scenario.outputTable[6][2]).toEqual("$2,400") //personA gets $200 spousal benefit every month once it begins (except in 2047 when 5 months is withheld)
-          expect(scenario.outputTable[6][1]).toEqual("$7,200") //personA gets $600 retirement benefit every month
+          expect(claimStrategy.outputTable[6][2]).toEqual("$2,400") //personA gets $200 spousal benefit every month once it begins (except in 2047 when 5 months is withheld)
+          expect(claimStrategy.outputTable[6][1]).toEqual("$7,200") //personA gets $600 retirement benefit every month
       })
 
       it('Should calculate annual retirement and spousal benefits appropriately in year in which personA hits FRA, triggering ARF for spousal benefit due to withholding from other personB earnings in prior year', () => {
@@ -1022,7 +1025,8 @@ describe('tests calculateCouplePV', () => {
         personB.spousalBenefitDate = new MonthYearDate(2047, 6) //later of two retirement benefit dates (age 65, not that it's relevant)
         personB.quitWorkDate = new MonthYearDate(2048, 0) //Working until Jan 2048
         personB.monthlyEarnings = 2800
-        expect(service.calculateCouplePV(personA, personB, scenario, true).PV).toBeCloseTo(380003, 0)
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.PV).toBeCloseTo(380003, 0)
         //manual calculation
           //personA retirement benefit = 600 (75% due to filing 48 months early) 
           //personA spousal benefit (20 months early) = 86.111% * (2000/2 - 800) = $172.2222
@@ -1032,8 +1036,8 @@ describe('tests calculateCouplePV', () => {
           //in March 2049, personA gets ARF, and spousal benefit is adjusted as if filed 15 months early instead of 20
           //new spousal benefit should be 0.895833 * (2000/2 - 800) = $179.1666
           //table begins in 2045, so 2049 is row [4]
-          expect(scenario.outputTable[4][2]).toEqual("$2,136") //2 months at $172.222 and 10 months at $179.1666 = $2,136.11
-          expect(scenario.outputTable[4][1]).toEqual("$7,200") //personA gets $600 retirement benefit every month (never had any withholding of retirement benefit, so should be no ARF for it)
+          expect(claimStrategy.outputTable[4][2]).toEqual("$2,136") //2 months at $172.222 and 10 months at $179.1666 = $2,136.11
+          expect(claimStrategy.outputTable[4][1]).toEqual("$7,200") //personA gets $600 retirement benefit every month (never had any withholding of retirement benefit, so should be no ARF for it)
       })
 
       it('Should calculate spousal benefits appropriately in scenario with child in care (during child in care, after 16, after 18, and after ARF)', () => {
@@ -1061,7 +1065,8 @@ describe('tests calculateCouplePV', () => {
         //^^Spousal benefit begins March 2023 when personA starts retirement. But it's child in care spousal benefit until child turns 16 in March 2025. Here we are having them file Form SSA-25 immediately at that date.
         personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
         personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-        expect(service.calculateCouplePV(personA, personB, scenario, true).PV).toBeCloseTo(406206, 0)
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.PV).toBeCloseTo(406206, 0)
         //manual calculation
           //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
           //personB.familyMaximum = 900
@@ -1074,16 +1079,16 @@ describe('tests calculateCouplePV', () => {
             //personB's new spousal benefit: $125 (Age 65 and 0 months. 24 months early = 83.33% full spousal benefit)
           //table begins in 2023
           //each row: year, personAretirement, personAspousal, personAsurvivor, personBretirement, personBspousal, personBsurvivor, total child benefit, total
-          expect(scenario.outputTable[0][5]).toEqual("$1,500") //10 months at $150
-          expect(scenario.outputTable[1][5]).toEqual("$1,800") //12 months at $150
-          expect(scenario.outputTable[2][5]).toEqual("$1,550") //2 months at $150, 10 months at $125
-          expect(scenario.outputTable[3][5]).toEqual("$1,500") //12 months at $125
-          expect(scenario.outputTable[4][5]).toEqual("$1,500") //12 months at $125
-          expect(scenario.outputTable[0][7]).toEqual("$7,500") //2023 child gets 10 months of child benefits on personA
-          expect(scenario.outputTable[1][7]).toEqual("$9,000") //2024 child gets 12 months of child benefits on personA
-          expect(scenario.outputTable[2][7]).toEqual("$9,000") //2025 child gets 12 months of child benefits on personA
-          expect(scenario.outputTable[3][7]).toEqual("$9,000") //2026 child gets 12 months of child benefits on personA
-          expect(scenario.outputTable[4][7]).toEqual("$1,500") //2027 child gets 2 months of child benefits on personA (then turns 18)
+          expect(claimStrategy.outputTable[0][5]).toEqual("$1,500") //10 months at $150
+          expect(claimStrategy.outputTable[1][5]).toEqual("$1,800") //12 months at $150
+          expect(claimStrategy.outputTable[2][5]).toEqual("$1,550") //2 months at $150, 10 months at $125
+          expect(claimStrategy.outputTable[3][5]).toEqual("$1,500") //12 months at $125
+          expect(claimStrategy.outputTable[4][5]).toEqual("$1,500") //12 months at $125
+          expect(claimStrategy.outputTable[0][7]).toEqual("$7,500") //2023 child gets 10 months of child benefits on personA
+          expect(claimStrategy.outputTable[1][7]).toEqual("$9,000") //2024 child gets 12 months of child benefits on personA
+          expect(claimStrategy.outputTable[2][7]).toEqual("$9,000") //2025 child gets 12 months of child benefits on personA
+          expect(claimStrategy.outputTable[3][7]).toEqual("$9,000") //2026 child gets 12 months of child benefits on personA
+          expect(claimStrategy.outputTable[4][7]).toEqual("$1,500") //2027 child gets 2 months of child benefits on personA (then turns 18)
       })
 
       //Same test as above, but with personB working through 2026. So basically should get ARF months up through 12/2026, but make sure there are no double-counted ARF months.
@@ -1114,7 +1119,8 @@ describe('tests calculateCouplePV', () => {
         mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
         personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
         personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-        expect(service.calculateCouplePV(personA, personB, scenario, true).PV).toBeCloseTo(367887, 0)
+        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        expect(claimStrategy.PV).toBeCloseTo(367887, 0)
         //manual calculation:
           //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
           //personB.familyMaximum = 900
@@ -1129,19 +1135,19 @@ describe('tests calculateCouplePV', () => {
           //personB annual earnings: 120k -> (120000 - 17040)/2 = $51,480 withholding necessary in years prior to FRA (from personB's record)
           //Available to withhold per month: $150 spousal for personB and $750 child benefit = $900
             //^^Going with POMS RS 02501.140 here, even though it contradicts SSAct and CFR. (That is, we're making child benefit withholdable on personB's record, even though it's coming on personA's record.)
-          expect(scenario.outputTable[0][5]).toEqual("$0") //2023 personB spousal benefit fully withheld due to earnings test
-          expect(scenario.outputTable[1][5]).toEqual("$0") //2024 personB spousal benefit fully withheld due to earnings test
+          expect(claimStrategy.outputTable[0][5]).toEqual("$0") //2023 personB spousal benefit fully withheld due to earnings test
+          expect(claimStrategy.outputTable[1][5]).toEqual("$0") //2024 personB spousal benefit fully withheld due to earnings test
           //March 2025 child turns 16 and personB files SSA-25. So now spousal benefit would be normal spousal benefit (reduced to $125 due to being 24 months early). But it's withheld due to earnings. So we start counting spousal ARF credits
-          expect(scenario.outputTable[2][5]).toEqual("$0") //2025 personB spousal benefit fully withheld due to earnings test (10 months spousal ARF credits)
-          expect(scenario.outputTable[3][5]).toEqual("$0") //2026 personB spousal benefit fully withheld due to earnings test (12 months spousal ARF credits)
-          expect(scenario.outputTable[4][5]).toEqual("$1,729") //In 2027, no earnings so no withholding. Gets $125 benefit for 2 months, then ARF happens in March. Was 24 months early, but has 22 spousal ARF credits.
+          expect(claimStrategy.outputTable[2][5]).toEqual("$0") //2025 personB spousal benefit fully withheld due to earnings test (10 months spousal ARF credits)
+          expect(claimStrategy.outputTable[3][5]).toEqual("$0") //2026 personB spousal benefit fully withheld due to earnings test (12 months spousal ARF credits)
+          expect(claimStrategy.outputTable[4][5]).toEqual("$1,729") //In 2027, no earnings so no withholding. Gets $125 benefit for 2 months, then ARF happens in March. Was 24 months early, but has 22 spousal ARF credits.
           //2 months early spousal reduction factor = 98.611111%. (1500/2 - 600) * 0.986111 = $147.91
           //$125 x 2 + $147.91 x 10 = $1729.17
-          expect(scenario.outputTable[0][7]).toEqual("$0") //2023 child would get 10 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(scenario.outputTable[1][7]).toEqual("$0") //2024 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(scenario.outputTable[2][7]).toEqual("$0") //2025 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(scenario.outputTable[3][7]).toEqual("$0") //2026 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(scenario.outputTable[4][7]).toEqual("$1,500") //2027 child gets 2 months of child benefits on personA, then turns 18. (personB has no earnings so no withholding.)
+          expect(claimStrategy.outputTable[0][7]).toEqual("$0") //2023 child would get 10 months of child benefits on personA, but it's withheld due to personB earnings
+          expect(claimStrategy.outputTable[1][7]).toEqual("$0") //2024 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
+          expect(claimStrategy.outputTable[2][7]).toEqual("$0") //2025 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
+          expect(claimStrategy.outputTable[3][7]).toEqual("$0") //2026 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
+          expect(claimStrategy.outputTable[4][7]).toEqual("$1,500") //2027 child gets 2 months of child benefits on personA, then turns 18. (personB has no earnings so no withholding.)
       })
 
         it('Should calculate retirement/spousal/child benefits appropriately for everybody in combined family max scenario', () => {
@@ -1173,8 +1179,8 @@ describe('tests calculateCouplePV', () => {
           mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          expect(service.calculateCouplePV(personA, personB, scenario, true).PV)
-            .toBeCloseTo(467825, 0)
+          let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+          expect(claimStrategy.PV).toBeCloseTo(467825, 0)
           //manual calculation:
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900
@@ -1190,13 +1196,13 @@ describe('tests calculateCouplePV', () => {
             //table begins in 2023
             //Events to consider: Child1 hits 18 in Jan 2025. Child2 hits 18 in Jan 2027, and Child3 hits 16 on same date. Child3 hits 18 in Jan 2029.
             //each row: year, personAretirement, personAspousal, personAsurvivor, personBretirement, personBspousal, personBsurvivor, total child benefit, total
-            expect(scenario.outputTable[0]).toEqual([2023, "$11,250", "$0", "$0", "$4,500", "$0", "$0", "$20,843", "$36,593"])
-            expect(scenario.outputTable[1]).toEqual([2024, "$13,500", "$0", "$0", "$5,400", "$0", "$0", "$25,012", "$43,912"]) //Same as 2023, but 12 months instead of 10
+            expect(claimStrategy.outputTable[0]).toEqual([2023, "$11,250", "$0", "$0", "$4,500", "$0", "$0", "$20,843", "$36,593"])
+            expect(claimStrategy.outputTable[1]).toEqual([2024, "$13,500", "$0", "$0", "$5,400", "$0", "$0", "$25,012", "$43,912"]) //Same as 2023, but 12 months instead of 10
             //For 2025, there are now only 2 children. So we divide $2084.32 by 3 people = $694.77 per child but also for personB as spousal original benefit.
             //Subtract 600 for own entitlement. personB spousal benefit = $94.77
             //2084.32 - $94.77 = $1989.55 left for two children, which is more than enough to give each one their full original benefit of $750
-            expect(scenario.outputTable[2]).toEqual([2025, "$13,500", "$0", "$0", "$5,400", "$1,137", "$0", "$18,000", "$38,037"])
-            expect(scenario.outputTable[3]).toEqual([2026, "$13,500", "$0", "$0", "$5,400", "$1,137", "$0", "$18,000", "$38,037"])
+            expect(claimStrategy.outputTable[2]).toEqual([2025, "$13,500", "$0", "$0", "$5,400", "$1,137", "$0", "$18,000", "$38,037"])
+            expect(claimStrategy.outputTable[3]).toEqual([2026, "$13,500", "$0", "$0", "$5,400", "$1,137", "$0", "$18,000", "$38,037"])
             //As of Jan 2027, there is only 1 child. $2084.32 / 2 = $1,042.16 available for child3 and for personB (in both-alive scenario)
             //personB can now get full $150 spousal (after adjusting for own entitlement). child3 gets $750
             //Also in Jan 2027, child3 reaches age 16, so personB spousal benefit is no longer child-in-care spousal. (We are having her file SSA-25 immediately, per spousalBenefitDate above.)
@@ -1204,15 +1210,15 @@ describe('tests calculateCouplePV', () => {
             //personA and personB reach FRA (and survivor FRA) in March 2027
               //So ARF happens, but there were no earnings test withholdings. So ARF not relevant.
               //Survivor benefit begins for personB: (1125 - 450 = $675 prior to considering family max), but that won't show up in the table.
-            expect(scenario.outputTable[4]).toEqual([2027, "$13,500", "$0", "$0", "$5,400", "$1,775", "$0", "$9,000", "$29,675"])
-            expect(scenario.outputTable[5]).toEqual([2028, "$13,500", "$0", "$0", "$5,400", "$1,775", "$0", "$9,000", "$29,675"])
+            expect(claimStrategy.outputTable[4]).toEqual([2027, "$13,500", "$0", "$0", "$5,400", "$1,775", "$0", "$9,000", "$29,675"])
+            expect(claimStrategy.outputTable[5]).toEqual([2028, "$13,500", "$0", "$0", "$5,400", "$1,775", "$0", "$9,000", "$29,675"])
             //As of 2029, no children under 18
-            expect(scenario.outputTable[6]).toEqual([2029, "$13,500", "$0", "$0", "$5,400", "$1,775", "$0", "$0", "$20,675"])
-            expect(scenario.outputTable[7]).toEqual([2030, "$13,500", "$0", "$0", "$5,400", "$1,775", "$0", "$0", "$20,675"])
-            expect(scenario.outputTable[8]).toEqual(["2031 and beyond", "$13,500", "$0", "$0", "$5,400", "$1,775", "$0", "$0", "$20,675"])
-            expect(scenario.outputTable[9]).toEqual(["If you outlive your spouse", "$13,500", "$0", "$0", "$0", "$0", "$0", "$0", "$13,500"])//if personA outlives personB, personA gets no survivor.
-            expect(scenario.outputTable[10]).toEqual(["If your spouse outlives you", "$0", "$0", "$0", "$5,400", "$0", "$9,450", "$0", "$14,850"])//if personB outlives personA, 82.5% of PIA rule kicks in 1500 x .825 = $1237.50
-            expect(scenario.outputTable[11]).toEqual(["After both you and your spouse are deceased", "$0", "$0", "$0", "$0", "$0", "$0", "$0", "$0"])//after both parents deceased
+            expect(claimStrategy.outputTable[6]).toEqual([2029, "$13,500", "$0", "$0", "$5,400", "$1,775", "$0", "$0", "$20,675"])
+            expect(claimStrategy.outputTable[7]).toEqual([2030, "$13,500", "$0", "$0", "$5,400", "$1,775", "$0", "$0", "$20,675"])
+            expect(claimStrategy.outputTable[8]).toEqual(["2031 and beyond", "$13,500", "$0", "$0", "$5,400", "$1,775", "$0", "$0", "$20,675"])
+            expect(claimStrategy.outputTable[9]).toEqual(["If you outlive your spouse", "$13,500", "$0", "$0", "$0", "$0", "$0", "$0", "$13,500"])//if personA outlives personB, personA gets no survivor.
+            expect(claimStrategy.outputTable[10]).toEqual(["If your spouse outlives you", "$0", "$0", "$0", "$5,400", "$0", "$9,450", "$0", "$14,850"])//if personB outlives personA, 82.5% of PIA rule kicks in 1500 x .825 = $1237.50
+            expect(claimStrategy.outputTable[11]).toEqual(["After both you and your spouse are deceased", "$0", "$0", "$0", "$0", "$0", "$0", "$0", "$0"])//after both parents deceased
         })
 
 
@@ -1242,7 +1248,8 @@ describe('tests calculateCouplePV', () => {
           mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          expect(service.calculateCouplePV(personA, personB, scenario, true).PV).toBeCloseTo(429664, 0)
+          let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+          expect(claimStrategy.PV).toBeCloseTo(429664, 0)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900
@@ -1256,15 +1263,15 @@ describe('tests calculateCouplePV', () => {
               //1184.32 / 2 = 592.16 each for child1 and personB
             //personB spousal benefit doesn't get reduced for own entitlement, because not yet entitled to retirement. Doesn't get reduced for age because of child in care.
             //each row: year, personAretirement, personAspousal, personAsurvivor, personBretirement, personBspousal, personBsurvivor, total child benefit, total
-            expect(scenario.outputTable[0]).toEqual([2023, "$11,250", "$0", "$0", "$0", "$5,922", "$0", "$5,922", "$23,093"]) //10 months for everybody
-            expect(scenario.outputTable[1]).toEqual([2024, "$13,500", "$0", "$0", "$0", "$7,106", "$0", "$7,106", "$27,712"]) //12 months for everybody
-            expect(scenario.outputTable[2]).toEqual([2025, "$13,500", "$0", "$0", "$0", "$7,106", "$0", "$7,106", "$27,712"]) //same as 2024
+            expect(claimStrategy.outputTable[0]).toEqual([2023, "$11,250", "$0", "$0", "$0", "$5,922", "$0", "$5,922", "$23,093"]) //10 months for everybody
+            expect(claimStrategy.outputTable[1]).toEqual([2024, "$13,500", "$0", "$0", "$0", "$7,106", "$0", "$7,106", "$27,712"]) //12 months for everybody
+            expect(claimStrategy.outputTable[2]).toEqual([2025, "$13,500", "$0", "$0", "$0", "$7,106", "$0", "$7,106", "$27,712"]) //same as 2024
             //in March 2026 child1 turns 16, so personB's spousal benefit stops. (Child1 can then get full original benefit.)
-            expect(scenario.outputTable[3]).toEqual([2026, "$13,500", "$0", "$0", "$0", "$1,184", "$0", "$8,684", "$23,369"]) //2 months spousal for personB. child gets 2x592.16 + 10x75
+            expect(claimStrategy.outputTable[3]).toEqual([2026, "$13,500", "$0", "$0", "$0", "$1,184", "$0", "$8,684", "$23,369"]) //2 months spousal for personB. child gets 2x592.16 + 10x75
             //in March 2034 personB begins retirement benefit and spousal benefit. At this point there is no child under 18, so family max not a concern.
             //spousal benefit is 36 months early (75% reduction factor) = (1500/2 - 600) * .75 = 112.50
-            expect(scenario.outputTable[11]).toEqual([2034, "$13,500", "$0", "$0", "$4,800", "$1,125", "$0", "$0", "$19,425"])
-            expect(scenario.outputTable[12]).toEqual([2035, "$13,500", "$0", "$0", "$5,760", "$1,350", "$0", "$0", "$20,610"])
+            expect(claimStrategy.outputTable[11]).toEqual([2034, "$13,500", "$0", "$0", "$4,800", "$1,125", "$0", "$0", "$19,425"])
+            expect(claimStrategy.outputTable[12]).toEqual([2035, "$13,500", "$0", "$0", "$5,760", "$1,350", "$0", "$0", "$20,610"])
         })
 
         it("Should calculate everybody's benefits appropriately in pre-62 scenario with child in care (child turns 16 when person is 63. person files SSA-25 on that date, so spousal continues but is reduced for age.)", () => {
@@ -1292,7 +1299,8 @@ describe('tests calculateCouplePV', () => {
           mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          expect(service.calculateCouplePV(personA, personB, scenario, true).PV).toBeCloseTo(424414, 0)
+          let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+          expect(claimStrategy.PV).toBeCloseTo(424414, 0)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900
@@ -1306,8 +1314,8 @@ describe('tests calculateCouplePV', () => {
               //1184.32 / 2 = 592.16 each for child1 and personB
             //personB spousal benefit doesn't get reduced for own entitlement, because not yet entitled to retirement. Doesn't get reduced for age because of child in care.
             //each row: year, personAretirement, personAspousal, personAsurvivor, personBretirement, personBspousal, personBsurvivor, total child benefit, total
-            expect(scenario.outputTable[0]).toEqual([2023, "$11,250", "$0", "$0", "$0", "$5,922", "$0", "$5,922", "$23,093"])
-            expect(scenario.outputTable[1]).toEqual([2024, "$13,500", "$0", "$0", "$0", "$7,106", "$0", "$7,106", "$27,712"])//same as 2023, but 12 months
+            expect(claimStrategy.outputTable[0]).toEqual([2023, "$11,250", "$0", "$0", "$0", "$5,922", "$0", "$5,922", "$23,093"])
+            expect(claimStrategy.outputTable[1]).toEqual([2024, "$13,500", "$0", "$0", "$0", "$7,106", "$0", "$7,106", "$27,712"])//same as 2023, but 12 months
             //April 2025: personB retirement begins -- changes personB's spousal benefit and family max application
             //now we have combined family max of 3584.32.
             //back out personA PIA of $1500. We have $2084.32 left for everybody else. More than enough for each person's "original benefit" amounts.
@@ -1315,16 +1323,16 @@ describe('tests calculateCouplePV', () => {
             //personB retirement benefit (59 months early, 70.41666%) = 600 * 70.41666% = $422.50
             //personB spousal is now reduced for own entitlement beginning in April. Still not reduced for age yet due to child in care. ($750 - $600 = 150)
               //personB spousal for year = $592.16 x 3 months + $150 x 9 months
-            expect(scenario.outputTable[2]).toEqual([2025, "$13,500", "$0", "$0", "$3,803", "$3,126", "$0", "$8,526", "$28,955"])
+            expect(claimStrategy.outputTable[2]).toEqual([2025, "$13,500", "$0", "$0", "$3,803", "$3,126", "$0", "$8,526", "$28,955"])
             //March 2026: child turns 16 and personB files SSA-25, so spousal is now reduced for age. (Age 63 -- 48 months early.)
             //personB spousal is now (1500/2 - 600) * 0.70 = $105
             //personB annual spousal = 150 x 2 months + 105 x 10 months = 1350
-            expect(scenario.outputTable[3]).toEqual([2026, "$13,500", "$0", "$0", "$5,070", "$1,350", "$0", "$9,000", "$28,920"])
+            expect(claimStrategy.outputTable[3]).toEqual([2026, "$13,500", "$0", "$0", "$5,070", "$1,350", "$0", "$9,000", "$28,920"])
             //2027 nothing changes.
             //personB spousal = 105 x 12 = 1260
-            expect(scenario.outputTable[4]).toEqual([2027, "$13,500", "$0", "$0", "$5,070", "$1,260", "$0", "$9,000", "$28,830"])
+            expect(claimStrategy.outputTable[4]).toEqual([2027, "$13,500", "$0", "$0", "$5,070", "$1,260", "$0", "$9,000", "$28,830"])
             //March 2028: child turns 18. Child benefit ends.
-            expect(scenario.outputTable[5]).toEqual([2028, "$13,500", "$0", "$0", "$5,070", "$1,260", "$0", "$1,500", "$21,330"])
+            expect(claimStrategy.outputTable[5]).toEqual([2028, "$13,500", "$0", "$0", "$5,070", "$1,260", "$0", "$1,500", "$21,330"])
         })
 
         it('Should calculate survivor benefits appropriately in family max scenario with 2 disabled children', () => {
@@ -1360,7 +1368,7 @@ describe('tests calculateCouplePV', () => {
           mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          service.calculateCouplePV(personA, personB, scenario, true)
+          let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900
@@ -1385,12 +1393,12 @@ describe('tests calculateCouplePV', () => {
               //1237.50 - 450 own retirement = 787.50 survivor benefit
             //table begins in 2023
             //each row: year, personAretirement, personAspousal, personAsurvivor, personBretirement, personBspousal, personBsurvivor, total child benefit, total
-            expect(scenario.outputTable[10][0]).toEqual("If your spouse outlives you") //12 months of own $450 retirement benefit
-            expect(scenario.outputTable[10][4]).toEqual("$5,400") //12 months of own $450 retirement benefit
-            expect(scenario.outputTable[10][5]).toEqual("$0") //no spousal since personA deceased
-            expect(scenario.outputTable[10][6]).toEqual("$9,450") //12 months of $787.50 survivor benefit
-            expect(scenario.outputTable[10][7]).toEqual("$27,000") //12 months of each getting $1125
-            expect(scenario.outputTable[10][8]).toEqual("$41,850") //total of above amounts
+            expect(claimStrategy.outputTable[10][0]).toEqual("If your spouse outlives you") //12 months of own $450 retirement benefit
+            expect(claimStrategy.outputTable[10][4]).toEqual("$5,400") //12 months of own $450 retirement benefit
+            expect(claimStrategy.outputTable[10][5]).toEqual("$0") //no spousal since personA deceased
+            expect(claimStrategy.outputTable[10][6]).toEqual("$9,450") //12 months of $787.50 survivor benefit
+            expect(claimStrategy.outputTable[10][7]).toEqual("$27,000") //12 months of each getting $1125
+            expect(claimStrategy.outputTable[10][8]).toEqual("$41,850") //total of above amounts
         })
 
 })

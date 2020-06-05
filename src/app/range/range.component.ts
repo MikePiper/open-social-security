@@ -151,7 +151,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
   differenceInPV: number
   differenceInPV_asPercent: number
   solutionSet: SolutionSet = {
-    "solutionPV":null,
+    "claimStrategy":null,
     "solutionsArray": [],
     "computationComplete": false
   }
@@ -161,7 +161,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
   pointerDifferenceInPV: number
   pointerDifferenceInPV_asPercent: number
   pointerSolutionSet: SolutionSet = {
-    "solutionPV":null,
+    "claimStrategy":null,
     "solutionsArray": [],
     "computationComplete": false
   }
