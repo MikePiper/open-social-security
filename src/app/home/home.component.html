@@ -433,23 +433,23 @@
 
   <!--Recommended Strategy Output-->
   <h2>Recommended Strategy</h2>
-<!--   <p>The strategy that maximizes the total dollars you can be expected to spend over your lifetime<span *ngIf="scenario.maritalStatus == 'married'">s</span> is as follows:</p>
-  Also changed "spend" to "receive". Maybe the person will save some of those dollars.
--->  
   <p>
     <span *ngIf="scenario.benefitCutAssumption">If the possible cut in benefits occurs, the </span>
     <span *ngIf="!this.scenario.benefitCutAssumption">The </span>
-    strategy that maximizes the total dollars you can be expected to receive over your lifetime<span *ngIf="scenario.maritalStatus == 'married'">s</span> is as follows:</p>
+    strategy that maximizes the total dollars you can be expected to receive over your lifetime<span *ngIf="scenario.maritalStatus == 'married'">s</span> is as follows:
+  </p>
   <ul>
     <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
   </ul>
     <p><strong>The present value of this proposed solution would be {{this.solutionSet.claimStrategy.PV.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}</strong>.</p>
     <p> This means that with this strategy you could expect to receive, on average, {{this.solutionSet.claimStrategy.PV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} of total Social Security benefits over the course of your lifetime<span *ngIf="scenario.maritalStatus == 'married'">s</span>, after adjusting for the fact that a dollar received in the future is worth less than a dollar received today (because the sooner you receive a dollar the sooner you can invest it).
       <a href="https://obliviousinvestor.com/what-does-present-value-mean/" target="_blank">See this article</a> for a more thorough explanation of the "present value" concept.</p>
-  <app-range [scenario]="scenario" [recommendedSolutionSet]="solutionSet" [personA]="personA" [personB]="personB" [homeSetCustomDates]="setCustomDates"></app-range>
   <app-output-table [personA]="personA" [personB]="personB" [claimStrategy]="solutionSet.claimStrategy" [scenario]="scenario"></app-output-table>
+    <!--End Recommended Strategy Output-->
 
-  <!--End Recommended Strategy Output-->
+  <app-range [scenario]="scenario" [recommendedSolutionSet]="solutionSet" [personA]="personA" [personB]="personB" [homeSetCustomDates]="setCustomDates"></app-range>
+
+
 
   <app-book-promo></app-book-promo>
 
