@@ -313,7 +313,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
     if (rows === 1) {
       this.yMarginWidth = 0;
     } else {
-      this.yMarginWidth = Math.floor(this.labelWidth + this.axisLabelSpace + 1);
+      this.yMarginWidth = Math.floor(this.labelWidth + this.axisLabelSpace + this.yTitleHeight + 10);
     }
     this.yMarginHeight = Math.floor(this.range.rows * this.cellHeight + 1);
 
@@ -369,32 +369,22 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
     if (isCouple) {
       // add y-axis title
-      titleY += this.yTitleHeight;
-      titleX = axisLeft;
-      context.font = this.axisTitleFont;
+      context.save();
+      context.translate(axisLeft, axisBottom);
+      context.rotate(-Math.PI/2);
+      titleX = (axisBottom-axisTop)/2
+      titleY = -this.labelWidth - this.yTitleHeight
       context.fillStyle = 'black';
-      context.textAlign = 'center';
-      context.textAlign = 'left';
-      context.fillText(this.yAxisTitle, titleX, titleY);
-      // draw arrow towards yMargin
-      context.beginPath();
-      let fontSize = this.axisTitleFontSize;
-      let arrowheadBottom = axisBottom + fontSize;
-      context.moveTo(titleX - 5, titleY - (fontSize / 2)); 
-      let turnX: number = titleX - this.yMarginWidth / 2
-      context.lineTo(turnX, titleY - fontSize/2);
-      context.lineTo(turnX, axisBottom);
-      context.lineTo(turnX - fontSize/2, arrowheadBottom);
-      context.lineTo(turnX + fontSize/2, arrowheadBottom);
-      context.lineTo(turnX, axisBottom);
-      context.stroke();
+      context.textAlign = "center";
+      context.fillText(this.personBaxisTitle, titleX, titleY);
+      context.restore();
     }
 
     // add chart title
     context.font = this.chartTitleFont;
     context.fillStyle = 'black';
     context.textAlign = 'center';
-    titleY += this.chartTitleHeight;
+    titleY = axisBottom + this.labelHeight + this.xTitleHeight + this.chartTitleHeight;
     titleX = this.canvasWidth / 2;
     context.fillText(this.chartTitle, titleX, titleY);
 
