@@ -10,6 +10,7 @@ import { BirthdayService } from '../birthday.service'
 import { strict } from 'assert'
 import { stringify } from 'querystring'
 import { ClaimingSolution } from '../data model classes/claimingsolution'
+import { ConsoleReporter } from 'jasmine'
 
 /* 
 This component provides a means of graphically displaying the quality of
@@ -390,7 +391,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
       titleY = -this.labelWidth - this.yTitleHeight
       context.fillStyle = 'black';
       context.textAlign = "center";
-      context.fillText(this.personBaxisTitle, titleX, titleY);
+      context.fillText(this.yAxisTitle, titleX, titleY);
       context.restore();
     }
 
