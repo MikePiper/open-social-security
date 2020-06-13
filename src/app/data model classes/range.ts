@@ -176,7 +176,7 @@ export class Range {
     }
 
     //store the PV data for the given date combination at corresponding row & col, and save new max/min info if appropriate
-    processPVs(claimStrategy: ClaimStrategy) {
+    processPVs(claimStrategy: ClaimStrategy, personAfixed:boolean) {
         let pv: number;
         let row: number;
         let col: number;
@@ -188,7 +188,13 @@ export class Range {
                 pv = claimStrategy.PV;
             }
 
-            col = this.getColAtDate(claimStrategy.indexDateA());
+            if (personAfixed === false){
+                col = this.getColAtDate(claimStrategy.indexDateA());
+            }
+            else {//if personA is fixed (i.e., over age 70), we actually want the index of personB, because personB's date will be the columns in the (single-row) range output
+                col = this.getColAtDate(claimStrategy.indexDateB());
+            }
+
             if (this.rows === 1) {
                 row = 0;
             } else {

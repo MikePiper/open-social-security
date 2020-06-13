@@ -489,7 +489,7 @@ export class PresentValueService {
       //run PV calc (again) and compare results. 
       let currentTest:ClaimStrategy = this.calculateSinglePersonPV(person, scenario, false) //TODO: maybe this has to be two lines? first is constructor instantiating the ClaimStrategy, and second runs PV calc function?
           // store data for this combination of claim dates
-          scenario.range.processPVs(currentTest);
+          scenario.range.processPVs(currentTest, false);
           //Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
           if (currentTest.PV >= savedStrategy.PV){
           savedStrategy = new ClaimStrategy(person)
@@ -664,7 +664,7 @@ export class PresentValueService {
             let currentTest: ClaimStrategy = this.calculateCouplePV(personA, personB, scenario, false)
             
              // store data for this combination of claim dates
-            scenario.range.processPVs(currentTest);
+            scenario.range.processPVs(currentTest, false);
 
             //If PV is greater than saved PV, save new PV and save new testDates.
             if (currentTest.PV >= savedStrategy.PV) {
@@ -779,15 +779,17 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
 
     while (flexibleSpouse.retirementBenefitDate <= endTestDate && flexibleSpouse.endSuspensionDate <= endTestDate) {
       //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
+      //and call processPVs to store data for this combination of claim dates
       if (flexibleSpouse.id == "A"){
         var currentTest: ClaimStrategy = this.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario, false)
+        scenario.range.processPVs(currentTest, false)
       }
       else {
         var currentTest: ClaimStrategy = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, false)
+        scenario.range.processPVs(currentTest, true)
       }
 
-      // store data for this combination of claim dates
-      scenario.range.processPVs(currentTest);
+
 
       //If PV is greater than or equal to saved PV, save new PV and save new testDates
       if (currentTest.PV >= savedStrategy.PV) {

@@ -105,6 +105,8 @@ export class RangeComponent implements OnInit, AfterViewInit {
   axisLabelSpace: number = 5;
   personAaxisTitle: string = "Your Retirement Benefit Begins";
   personBaxisTitle: string = "Your Spouse's Retirement Benefit Begins";
+  personA_zeroPIAaxisTitle: string = "Your Spousal Benefit Begins"
+  personB_zeroPIAaxisTitle: string = "Your Spouse's Spousal Benefit Begins"
   xAxisTitle: string = this.personAaxisTitle;
   yAxisTitle: string = this.personBaxisTitle;
   xTitleWidth: number;
@@ -281,10 +283,22 @@ export class RangeComponent implements OnInit, AfterViewInit {
         this.cellHeight = 20;
       }
     }
-    //If personA is already 70, we're only iterating one person (only one axis on graph), but that person is personB
-    if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70){
-      this.xAxisTitle = this.personBaxisTitle
-    }
+
+    //Change axis titles if necessary
+      //If personA is already 70, we're only iterating one person (only one axis on graph), but that person is personB
+      if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70){
+        this.xAxisTitle = this.personBaxisTitle
+      }
+    //If either person has a zero PIA, we need to reword their axis title appropriately
+      if (this.personA.PIA == 0){
+        this.xAxisTitle = this.personA_zeroPIAaxisTitle
+      }
+      if (this.personB.PIA == 0){
+        this.yAxisTitle = this.personB_zeroPIAaxisTitle
+        if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70){
+          this.xAxisTitle = this.personB_zeroPIAaxisTitle
+        }
+      }
 
     // Calculate chart element dimensions to fit actual axis contents
     let context:CanvasRenderingContext2D = this.canvasContext;
@@ -481,6 +495,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
     let solutionSet: SolutionSet;
 
     let selectedClaimStrategy: ClaimStrategy = this.range.claimStrategiesArrays[this.currentCondition][row][col];
+
     //have to set retirementBenefitDate, spousal date, begin/endSuspensionDates on person objects if going to use functions from solutionset.service to generate solution sets
       //Note that here we're pulling those dates from a ClaimStrategy object, which saved them from the person object(s) during the maximize PV function.
       //And now we're setting those fields on the person objects back to those saved dates, so we can use solutionset.service's functions
@@ -517,7 +532,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
     return solutionSet;
   }
 
-  showSelectedOption(row: number, col: number, ) {
+  showSelectedOption(row: number, col: number) {
     this.solutionSet = this.getSolutionSet(row, col);
     let pvMax = this.range.pvMaxArray[this.currentCondition]
     this.selectedStrategyPV = this.range.pvArrays[this.currentCondition][row][col]
