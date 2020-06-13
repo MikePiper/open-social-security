@@ -7,10 +7,6 @@ import { ClaimStrategy } from '../data model classes/claimStrategy'
 import { SolutionSet } from '../data model classes/solutionset'
 import { SolutionSetService } from '../solutionset.service'
 import { BirthdayService } from '../birthday.service'
-import { strict } from 'assert'
-import { stringify } from 'querystring'
-import { ClaimingSolution } from '../data model classes/claimingsolution'
-import { ConsoleReporter } from 'jasmine'
 
 /* 
 This component provides a means of graphically displaying the quality of
