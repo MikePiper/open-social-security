@@ -121,7 +121,16 @@ label {
     }
   }
 
+
+/* Hide the range component if somebody is using "screen" media (i.e., computer screens, tablets, smart-phones etc) and that screen is 710px or less */  
 @media only screen and (max-width: 710px) {
+    #range{
+        display:none;
+    }
+}
+
+/* Hide the range component if somebody is using "speech" media (i.e., screenreader), because the component only works in a visual context */  
+@media only speech {
     #range{
         display:none;
     }
