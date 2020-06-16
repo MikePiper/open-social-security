@@ -66,6 +66,7 @@ export class SolutionSetService {
       //Determine if there are any children who have not yet filed and who are under 18 or disabled as of their childBenefitDate
       var childWhoNeedsToFile:boolean = false
       for (let child of scenario.children){
+        child.childBenefitDate = this.benefitService.determineChildBenefitDate(scenario, child, person)
         let ageOnChildBenefitDate:number = this.birthdayService.findAgeOnDate(child, child.childBenefitDate)
         if ( (ageOnChildBenefitDate < 17.99 || child.isOnDisability === true) && child.hasFiled === false ){
           childWhoNeedsToFile = true
@@ -356,6 +357,7 @@ export class SolutionSetService {
           //Determine if there are any children who have not yet filed and who are under 18 or disabled as of their childBenefitDate
           var childWhoNeedsToFile:boolean = false
           for (let child of scenario.children){
+            child.childBenefitDate = this.benefitService.determineChildBenefitDate(scenario, child, personA, personB)
             let ageOnChildBenefitDate:number = this.birthdayService.findAgeOnDate(child, child.childBenefitDate)
             if ( (ageOnChildBenefitDate < 17.99 || child.isOnDisability === true) && child.hasFiled === false ){
               childWhoNeedsToFile = true

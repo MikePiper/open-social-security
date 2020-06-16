@@ -159,14 +159,21 @@ export class FamilyMaximumService {
           familyMaximum = personA.familyMaximum
         }
         if(personA.entitledToRetirement === true && personB.entitledToRetirement === true && entitledChild === true){//if there is a child entitled on both personA and personB
-          if (personA.retirementBenefitDate > this.today && personB.retirementBenefitDate > this.today){//if both retirementBenefitDates are in the future, use this year as simultaneous entitlement year (becuase we don't know future year's bend points)
-            familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, this.today.getFullYear())
+          if (personA.retirementBenefitDate >= personB.retirementBenefitDate){//personA's retirementBenefitDate is second (and is therefore date of simultaneous entitlement)
+            if (personA.retirementBenefitDate.getFullYear() < this.today.getFullYear()){//use family max bend points as of personA's retirementBenefitDate if it was in a year before this year
+              familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, personA.retirementBenefitDate.getFullYear())
+            }
+            else {//use family max bend points as of this year if simultaneous entitlement date is this year or in future (since we don't know bend points for future years)
+              familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, this.today.getFullYear())
+            }
           }
-          else if (personA.retirementBenefitDate >= personB.retirementBenefitDate && personA.retirementBenefitDate < this.today){//if personA's entitlement date happens second and is in the past, use that as simultaneous entitlement year
-            familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, personA.retirementBenefitDate.getFullYear())
-          }
-          else if (personB.retirementBenefitDate >= personA.retirementBenefitDate && personB.retirementBenefitDate < this.today){//if personB's entitlement date happens second and is in the past, use that as simultaneous entitlement year
+          else {//i.e., personB's retirementBenefitDate is second (and is therefore date of simultaneous entitlement)
+            if (personB.retirementBenefitDate.getFullYear() < this.today.getFullYear()){//use family max bend points as of personB's retirementBenefitDate if it was in a year before this year
             familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, personB.retirementBenefitDate.getFullYear())
+            }
+            else {//use family max bend points as of this year if simultaneous entitlement date is this year or in future (since we don't know bend points for future years)
+              familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, this.today.getFullYear())
+            }
           }
         }
 
