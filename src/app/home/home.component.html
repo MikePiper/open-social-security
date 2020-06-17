@@ -447,8 +447,6 @@
   <app-output-table [personA]="personA" [personB]="personB" [claimStrategy]="solutionSet.claimStrategy" [scenario]="scenario"></app-output-table>
     <!--End Recommended Strategy Output-->
 
-  <app-range [scenario]="scenario" [recommendedSolutionSet]="solutionSet" [personA]="personA" [personB]="personB" [homeSetCustomDates]="setCustomDates"></app-range>
-
 
 
   <app-book-promo></app-book-promo>
@@ -457,6 +455,7 @@
   <!--Custom Date(s) Form -->
   <form #customDateForm="ngForm" (ngSubmit)="customDates()" (change)="getCustomDateFormInputs()" [ngClass]="{'no-print': !this.customClaimStrategy.PV}">
   <h2>Test an alternative claiming strategy:</h2>
+  <app-range (newClaimStrategySelected)="customDatesViaClickOnRange($event)" [scenario]="scenario" [recommendedSolutionSet]="solutionSet" [personA]="personA" [personB]="personB" [homeSetCustomDates]="setCustomDates"></app-range>
 
         <!--PersonA Custom Date Inputs -->
         <div class="form-inline" *ngIf="personA.hasFiled === false && personA.isOnDisability === false">

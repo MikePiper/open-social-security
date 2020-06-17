@@ -115,20 +115,20 @@ export class HomeComponent implements OnInit {
   advanced: boolean = false
   qualifyingChildrenBoolean:boolean = false
 
-    //earnings test inputs
-    personAworking: boolean = false
-    personAquitWorkYear: number
-    personAquitWorkMonth: number
-    personBworking: boolean = false
-    personBquitWorkYear: number
-    personBquitWorkMonth: number
+//earnings test inputs
+  personAworking: boolean = false
+  personAquitWorkYear: number
+  personAquitWorkMonth: number
+  personBworking: boolean = false
+  personBquitWorkYear: number
+  personBquitWorkMonth: number
 
-  // Defaults for later inputs from custom date form
-  // and to simplify assignment statements
-    todayMonth: number = this.today.getMonth()+1
-    todayYear:number = this.today.getFullYear()
+// Defaults for later inputs from custom date form
+// and to simplify assignment statements
+  todayMonth: number = this.today.getMonth()+1
+  todayYear:number = this.today.getFullYear()
 
-      //Inputs from custom date form
+//Inputs from custom date form
   customPersonAretirementBenefitMonth: number = this.todayMonth
   customPersonAretirementBenefitYear: number = this.todayYear
   customPersonAspousalBenefitMonth: number = this.todayMonth
@@ -613,4 +613,34 @@ export class HomeComponent implements OnInit {
   printPage(){
     window.print()
   }
+
+  customDatesViaClickOnRange(claimStrategy:ClaimStrategy){
+    //When a cell is clicked in the Range component, selectCell() is called there. That emits a ClaimStrategy object to this component.
+    //We use that ClaimStrategy object to set all the custom date inputs.
+    //Then we call the customDates() function to calculate the PV and provide all the output related to that custom ClaimStrategy
+    this.customPersonAretirementBenefitMonth = claimStrategy.personARetirementDate.getMonth()+1
+    this.customPersonAretirementBenefitYear = claimStrategy.personARetirementDate.getFullYear()
+    this.customPersonAspousalBenefitMonth = claimStrategy.personASpousalDate.getMonth()+1
+    this.customPersonAspousalBenefitYear = claimStrategy.personASpousalDate.getFullYear()
+
+    this.customPersonAbeginSuspensionMonth = claimStrategy.personABeginSuspensionDate.getMonth()+1
+    this.customPersonAbeginSuspensionYear = claimStrategy.personABeginSuspensionDate.getFullYear()
+    this.customPersonAendSuspensionMonth = claimStrategy.personAEndSuspensionDate.getMonth()+1
+    this.customPersonAendSuspensionYear = claimStrategy.personAEndSuspensionDate.getFullYear()
+
+    if (this.scenario.maritalStatus == "married" || this.scenario.maritalStatus == "divorced"){
+      this.customPersonBretirementBenefitMonth = claimStrategy.personBRetirementDate.getMonth()+1
+      this.customPersonBretirementBenefitYear = claimStrategy.personBRetirementDate.getFullYear()
+      this.customPersonBspousalBenefitMonth = claimStrategy.personBSpousalDate.getMonth()+1
+      this.customPersonBspousalBenefitYear = claimStrategy.personBSpousalDate.getFullYear()
+  
+      this.customPersonBbeginSuspensionMonth = claimStrategy.personBBeginSuspensionDate.getMonth()+1
+      this.customPersonBbeginSuspensionYear = claimStrategy.personBBeginSuspensionDate.getFullYear()
+      this.customPersonBendSuspensionMonth = claimStrategy.personBEndSuspensionDate.getMonth()+1
+      this.customPersonBendSuspensionYear = claimStrategy.personBEndSuspensionDate.getFullYear()
+    }
+
+    this.customDates()
+  }
+
 }

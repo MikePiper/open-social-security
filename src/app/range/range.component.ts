@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core'
+import { Component, OnInit, Input, Output, EventEmitter, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core'
 import { CalculationScenario } from '../data model classes/calculationscenario'
 import { MonthYearDate } from '../data model classes/monthyearDate'
 import { Person } from '../data model classes/person'
@@ -39,6 +39,8 @@ export class RangeComponent implements OnInit, AfterViewInit {
   @Input() personA: Person
   @Input() personB: Person
   @Input() homeSetCustomDates: Function
+  @Output() newClaimStrategySelected: EventEmitter<ClaimStrategy> = new EventEmitter<ClaimStrategy>()
+
 
   // for display of quality of options
   canvas: HTMLCanvasElement;
@@ -591,6 +593,9 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.selectedRow = selectRow;
       this.selectedColumn = selectColumn;
       this.showSelectedOption(this.selectedRow, this.selectedColumn);
+      //Emit the newly selected ClaimStrategy to parent component
+      let claimStrategyToEmit: ClaimStrategy = this.range.claimStrategiesArrays[this.currentCondition][selectRow][selectColumn];
+      this.newClaimStrategySelected.emit(claimStrategyToEmit)
     }
 }
 
