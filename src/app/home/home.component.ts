@@ -146,8 +146,12 @@ export class HomeComponent implements OnInit {
   customPersonBendSuspensionMonth: number = this.todayMonth
   customPersonBendSuspensionYear: number = this.todayYear
 
+//Inputs from Range component
+  rangeComponentShowCutRadio:boolean = false //This will be set based on a boolean emited by child (Range) component when user flips cut/nocut radio button. False will mean show without a cut, true will mean show with a cut.
+
 
   //solution variables
+  asComparedToPV:number //this is the PV of the recommended strategy, either .PV or .pvNoCut depending on status of rangeComponentShowCutRadio
   differenceInPV: number
   differenceInPV_asPercent: number
   solutionSet: SolutionSet = {
@@ -215,25 +219,34 @@ export class HomeComponent implements OnInit {
     if (this.primaryFormHasChanged === true){//Have to rerun the original calculation again if a primary input has changed.
       this.onSubmit()
     }
+
+    //Create a clone of the normal scenario object, for the purpose of changing the value of benefitCutAssumption when flipping back and forth between "cut" and "nocut" in the Range component (don't want to change the original CalculationScenario object)
+    let customCalculationScenario: CalculationScenario = Object.assign(new CalculationScenario(), this.scenario)
+    //The above line will set benefitCutAssumption to true in customCalculationScenario if it's true in primary form input, so we have to set back to false if "NoCut" radio is selected
+    if (this.rangeComponentShowCutRadio === false){
+      customCalculationScenario.benefitCutAssumption = false
+    }
+
     this.customClaimStrategy = new ClaimStrategy(this.personA, this.personB)//new object in order to reset outputTable to be undefined, PV to be undefined, and outputTableComplete to be false
     this.getCustomDateFormInputs()
-    this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
+    this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, customCalculationScenario, this.personA, this.personB)
 
     //Calc PV with input dates
         //Create a new CalculationScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one.
         //(This is necessary so that it can have a separate "outputTable" field from the original.)
           //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
       if (this.scenario.maritalStatus == "single" && this.errorCollection.hasErrors === false) {
-        this.customClaimStrategy = this.presentvalueService.calculateSinglePersonPV(this.personA, this.scenario, true)
+        this.customClaimStrategy = this.presentvalueService.calculateSinglePersonPV(this.personA, customCalculationScenario, true)
         }
       if(this.scenario.maritalStatus == "married" && this.errorCollection.hasErrors === false) {
-        this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, true)
+        this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
         }
       if(this.scenario.maritalStatus == "divorced" && this.errorCollection.hasErrors === false) {
-        this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.scenario, true)
+        this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
       }
-      this.differenceInPV = this.solutionSet.claimStrategy.PV - this.customClaimStrategy.PV
-      this.differenceInPV_asPercent = (this.differenceInPV / this.solutionSet.claimStrategy.PV) * 100
+      this.asComparedToPV = this.rangeComponentShowCutRadio == true ? this.solutionSet.claimStrategy.PV : this.solutionSet.claimStrategy.pvNoCut
+      this.differenceInPV = this.customClaimStrategy.PV - this.asComparedToPV
+      this.differenceInPV_asPercent = (this.differenceInPV / this.asComparedToPV) * 100
   }
 
   //Use inputs to calculate ages, SSbirthdates, FRAs, etc. Happens every time an input in the primary form is changed.
@@ -614,7 +627,7 @@ export class HomeComponent implements OnInit {
     window.print()
   }
 
-  customDatesViaClickOnRange(claimStrategy:ClaimStrategy){
+  alternativeStrategyPVcalcViaClickOnRange(claimStrategy:ClaimStrategy){
     //When a cell is clicked in the Range component, selectCell() is called there. That emits a ClaimStrategy object to this component.
     //We use that ClaimStrategy object to set all the custom date inputs.
     //Then we call the customDates() function to calculate the PV and provide all the output related to that custom ClaimStrategy
@@ -643,4 +656,15 @@ export class HomeComponent implements OnInit {
     this.customDates()
   }
 
+  alternativeStrategyPVcalcViaRangeBenefitCutBooleanSwitch(showCut:boolean){
+    if (showCut === true){
+      this.rangeComponentShowCutRadio = true
+    }
+    else {
+      this.rangeComponentShowCutRadio = false
+    }
+    if (this.customClaimStrategy.PV > 0){//Run customDates() to calculate new PV. But we only want to run it if it has been run already, otherwise this runs as soon as Range component is initiated, which generates errors
+      this.customDates()
+    }
+  }
 }

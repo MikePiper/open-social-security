@@ -400,7 +400,7 @@
               The default here is the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>.
               See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a discussion of why that is chosen as the default.
             </p>
-            <label>Consider effect of a cut to Social Security benefits in the future?</label>
+            <label>Assume that Social Security benefits will be cut in the future?</label>
             <input type="radio" id="benefitCutAssumptionNo" [(ngModel)]="scenario.benefitCutAssumption" name="scenario.benefitCutAssumption" [value]="false">
             <label for="benefitCutAssumptionNo">No</label>
             <input type="radio" id="benefitCutAssumptionYes" [(ngModel)]="scenario.benefitCutAssumption" name="scenario.benefitCutAssumption" [value]="true">
@@ -455,7 +455,9 @@
   <!--Custom Date(s) Form -->
   <form #customDateForm="ngForm" (ngSubmit)="customDates()" (change)="getCustomDateFormInputs()" [ngClass]="{'no-print': !this.customClaimStrategy.PV}">
   <h2>Test an alternative claiming strategy:</h2>
-  <app-range (newClaimStrategySelected)="customDatesViaClickOnRange($event)" [scenario]="scenario" [recommendedSolutionSet]="solutionSet" [personA]="personA" [personB]="personB" [homeSetCustomDates]="setCustomDates"></app-range>
+
+  <app-range (newClaimStrategySelected)="alternativeStrategyPVcalcViaClickOnRange($event)" (benefitCutAssumptionSwitch)="alternativeStrategyPVcalcViaRangeBenefitCutBooleanSwitch($event)"
+  [scenario]="scenario" [recommendedSolutionSet]="solutionSet" [personA]="personA" [personB]="personB" [homeSetCustomDates]="setCustomDates"></app-range>
 
         <!--PersonA Custom Date Inputs -->
         <div class="form-inline" *ngIf="personA.hasFiled === false && personA.isOnDisability === false">
@@ -621,7 +623,19 @@
     </div>
     <!--Custom Date Output -->
     <span *ngIf="this.customClaimStrategy.PV">
-      The present value of the strategy you selected is {{this.customClaimStrategy.PV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}, as compared to a present value of {{this.solutionSet.claimStrategy.PV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} from the recommended strategy, a difference of {{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%.
+      <span *ngIf="this.scenario.benefitCutAssumption === true && this.rangeComponentShowCutRadio === true">
+        <strong>If benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}</strong>, the
+      </span>
+      <span *ngIf="this.scenario.benefitCutAssumption === true && this.rangeComponentShowCutRadio === false">
+        <strong>If benefits are not cut</strong>, the
+      </span>
+      <span *ngIf="this.scenario.benefitCutAssumption === false">
+        The
+      </span>
+      present value of the strategy you selected is {{this.customClaimStrategy.PV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}},
+      as compared to a present value of {{this.asComparedToPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} from the recommended strategy,
+      a difference of {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
+      ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%).
       <app-output-table [personA]="personA" [personB]="personB" [claimStrategy]="customClaimStrategy" [scenario]="scenario"></app-output-table>
     </span>
     <!--End Custom Date Output -->

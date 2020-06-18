@@ -40,6 +40,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
   @Input() personB: Person
   @Input() homeSetCustomDates: Function
   @Output() newClaimStrategySelected: EventEmitter<ClaimStrategy> = new EventEmitter<ClaimStrategy>()
+  @Output() benefitCutAssumptionSwitch: EventEmitter<boolean> = new EventEmitter<boolean>()
 
 
   // for display of quality of options
@@ -254,6 +255,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
       //  update the output for the current condition
       this.showSelectedOption(this.selectedRow, this.selectedColumn);
     }
+    this.benefitCutAssumptionSwitch.emit(showIt)
   }
 
   updateDisplay(event: Event) {
