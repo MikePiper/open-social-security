@@ -7,6 +7,7 @@ import { ClaimStrategy } from '../data model classes/claimStrategy'
 import { SolutionSet } from '../data model classes/solutionset'
 import { SolutionSetService } from '../solutionset.service'
 import { BirthdayService } from '../birthday.service'
+import { PresentValueService } from '../presentvalue.service'
 
 /* 
 This component provides a means of graphically displaying the quality of
@@ -149,9 +150,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
 
   // solution variables at selected location
-  selectedStrategyPV: number
-  differenceInPV: number
-  differenceInPV_asPercent: number
+  selectedStrategyNotInRangeChartMessage:string
   solutionSet: SolutionSet = {
     "claimStrategy":null,
     "solutionsArray": [],
@@ -168,7 +167,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
     "computationComplete": false
   }
 
-  constructor(private changeDetectorRef: ChangeDetectorRef, private solutionSetService:SolutionSetService, private birthdayService:BirthdayService) {
+  constructor(private changeDetectorRef: ChangeDetectorRef, private solutionSetService:SolutionSetService, private birthdayService:BirthdayService, private presentValueService:PresentValueService) {
   }
 
   ngOnInit() {
@@ -535,10 +534,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
   showSelectedOption(row: number, col: number) {
     this.solutionSet = this.getSolutionSet(row, col);
-    let pvMax = this.range.pvMaxArray[this.currentCondition]
-    this.selectedStrategyPV = this.range.pvArrays[this.currentCondition][row][col]
-    this.differenceInPV = pvMax - this.selectedStrategyPV
-    this.differenceInPV_asPercent = (1 - (this.selectedStrategyPV / pvMax)) * 100
   }
 
   getRowColumn(e: MouseEvent) { // returnValue[0] = x, returnValue[1] = y
@@ -599,7 +594,19 @@ export class RangeComponent implements OnInit, AfterViewInit {
       let claimStrategyToEmit: ClaimStrategy = this.range.claimStrategiesArrays[this.currentCondition][selectRow][selectColumn];
       this.newClaimStrategySelected.emit(claimStrategyToEmit)
     }
-}
+  }
+
+  selectCellFromDropdownInputs(row:number, column:number) {
+    if ((row >= 0) && (column >= 0)) {
+      // mark the newly-selected cell
+      this.markCell(this.selectedColor, row, column);
+      // save selected cell row & col for other operations 
+      this.selectedRow = row;
+      this.selectedColumn = column;
+      this.showSelectedOption(this.selectedRow, this.selectedColumn);
+    }
+  }
+
 
   startUpdating(e: any) {
     // Start updating displayed values, per location of pointer
@@ -704,5 +711,100 @@ update(e: MouseEvent) {
       fractionNumber--;
     }
   }
+
+  findIndexForPerson(person:Person):number{
+    //return -1 as index if there is no corresponding option in the Range
+    let index:number = -1
+
+    //Find earliest date in Range
+    let earliestDateInRange:MonthYearDate
+    if (person.id == "A"){earliestDateInRange = new MonthYearDate(this.range.firstDateA)}
+    if (person.id == "B"){earliestDateInRange = new MonthYearDate(this.range.firstDateB)}
+
+    if (person.hasFiled === false && person.isOnDisability === false){//If person has not filed and is not on disability
+      //We look at person's retirementBenefitDate
+      index = person.retirementBenefitDate.valueOf() - earliestDateInRange.valueOf()
+    }
+    else {//i.e., person has filed or is on disability but is younger than 70 
+      //We look at person's begin/end suspension dates and declineSuspension field
+      if (person.declineSuspension === true){
+        index = 0 //essentially "starting" benefit as soon as possible (since not stopping it at all)
+      }
+      else {//i.e, they are planning to suspend
+        let laterOfFRAorToday:MonthYearDate = new MonthYearDate()
+        laterOfFRAorToday = person.FRA > today? person.FRA : today
+        if (person.beginSuspensionDate.valueOf() == laterOfFRAorToday.valueOf()){//they are suspending at later of FRA or today (which is what is necessary in order for there to be a corresponding selection in Range)
+            index = person.endSuspensionDate.valueOf() - earliestDateInRange.valueOf()
+        }
+        else {//i.e., they're suspending, but starting later than "later of FRA or today"
+          //just going to return -1, since no corresponding selection in Range
+        }
+      }
+    }
+    return index
+  }
+
+  updateRangeComponentBasedOnDropDownInputs(){//This is called when "submit" is clicked with customDate inputs, in order to update Range component so that the input dates are selected in graph
+  //remove message about previously-selected strategy not being in the Range, if such a message was present
+  this.selectedStrategyNotInRangeChartMessage = undefined
+
+  // unmark the previously-selected cell
+  this.unmarkCell(this.selectedRow, this.selectedColumn);
+ 
+  let row: number
+  let column: number
+
+  //Find if the Range contains a ClaimStrategy object that corresponds to the input dates
+    //getCustomDateFormInputs() has already set various date fields on person objects based on the inputs selected.
+    //So we can create clones of personA and personB, then call adjustSpousalBenefitDate() and see if it actually changed their spousal date.
+      //Create clones of personA and personB
+      let cloneOfPersonA:Person = Object.assign(new Person("A"), this.personA)
+      let cloneOfPersonB:Person = Object.assign(new Person("B"), this.personB)
+      //call presentvalueservice.adjustSpousalBenefitDate() on each person
+      this.presentValueService.adjustSpousalBenefitDate(cloneOfPersonA, this.personB, this.scenario)
+      this.presentValueService.adjustSpousalBenefitDate(cloneOfPersonB, this.personA, this.scenario)
+      //Check whether the fields on those cloned persons are equal to the fields on the actual persons
+      if (this.scenario.maritalStatus == "single" ||
+          (cloneOfPersonA.spousalBenefitDate.valueOf() == this.personA.spousalBenefitDate.valueOf()
+          && cloneOfPersonB.spousalBenefitDate.valueOf() == this.personB.spousalBenefitDate.valueOf()
+          //And also make sure that neither person is declining spousal in a situation in which they could file a restricted application
+          && !(this.personA.declineSpousal === true && this.personA.retirementBenefitDate > this.personB.retirementBenefitDate && this.personA.retirementBenefitDate > this.personA.FRA)
+          && !(this.personB.declineSpousal === true && this.personB.retirementBenefitDate > this.personA.retirementBenefitDate && this.personB.retirementBenefitDate > this.personB.FRA)
+          )
+        ){//i.e., the spousal inputs selected are an option in the Range
+            //Find the corresponding row and column.
+              //Find column
+                if (this.birthdayService.findAgeOnDate(this.personA, today) < 70){//if personA is younger than 70
+                  column = this.findIndexForPerson(this.personA)
+                }
+                else {//i.e., personA is over 70
+                  //We look at appropriate date from personB
+                  column = this.findIndexForPerson(this.personB)
+                }
+              //Find row
+                if (this.scenario.maritalStatus == "single"
+                    || this.scenario.maritalStatus == "divorced"
+                    || this.birthdayService.findAgeOnDate(this.personA, today) >= 70
+                    || this.birthdayService.findAgeOnDate(this.personB, today) >= 70
+                    ){//If single or divorce or personA is >= age 70 or personB is >= age 70
+                      row = 0
+                    }
+                else{
+                    row = this.findIndexForPerson(this.personB)
+                }
+            if (row == -1 || column == -1){//i.e., the suspension inputs selected are NOT an option in the range 
+              this.selectedStrategyNotInRangeChartMessage = "Note: The strategy you have selected is not represented in the color-coded chart, because the chart always assumes that, if you voluntarily suspend benefits, you will suspend them as early as possible."
+              this.solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, new ClaimStrategy(this.personA))
+              this.solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, new ClaimStrategy(this.personA, this.personB))
+            }
+            else {//i.e., the inputs selected really are in the range!
+              this.selectCellFromDropdownInputs(row, column)
+            }
+        }
+      else {//i.e., the spousal inputs selected are NOT an option in the Range
+        this.selectedStrategyNotInRangeChartMessage = "Note: The strategy you have selected is not represented in the color-coded chart, because the chart always assumes that, if you are eligible for a restricted application for spousal benefits, you will file for such as early as possible."
+        this.solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, new ClaimStrategy(this.personA, this.personB))
+      }
+}
 
 }

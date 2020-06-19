@@ -1,4 +1,6 @@
 <div id="range">
+     <!-- Currently eliminating this because the lowest-saved PV in the range isn't really the lowest PV in many cases (since we did not test dominated strategies).
+        And when a person tests various inputs with the dropdowns, they could well find PVs lower than the lowest-stated PV (from the Range).
     <span *ngIf="!scenario.benefitCutAssumption">
       <p>Given the inputs that you have provided,
         the expected present value ranges from ${{this.minimumPvString}} (for the least desirable <span *ngIf="scenario.maritalStatus=='married'">combination of </span>filing date<span *ngIf="scenario.maritalStatus=='married'">s</span>)
@@ -16,7 +18,7 @@
           to ${{this.maximumPvString}}.</li>
       </ul>
     </span>
-    <!-- Moved the description to make more room beside the graph -->
+    -->
     <p>The color-coded graph below shows the desirability of various alternative filing dates.
       For instance, the 95 - 99 range (color&nbsp;<span style="background-color:#56b4e9;">&nbsp;&nbsp;&nbsp;&nbsp;</span>) includes filing dates that would provide an expected present value from 95% to 99% of that of the recommended strategy.
     </p>
@@ -42,32 +44,10 @@
     <p *ngIf="scenario.restrictedApplicationPossible"><strong>NOTE:</strong> A restricted application (i.e., an application for just spousal benefits) will be assumed, whenever it is available given the retirement filing dates selected.</p>
     <span *ngIf="selectedRow >= 0">
       <p style="font-weight:bold">Selected Option: </p>
-      <span *ngIf="!scenario.benefitCutAssumption">
         <ul>
+          <li *ngIf="selectedStrategyNotInRangeChartMessage">{{selectedStrategyNotInRangeChartMessage}}</li>
           <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
-          <li>The present value of the strategy you selected is {{this.selectedStrategyPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.</li>
-          <li>That is 
-            <span *ngIf="this.differenceInPV > 0">
-              {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
-              ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%) less than </span>
-              the present value of the recommended strategy.</li>
       </ul>
-      </span>
-      <span *ngIf="scenario.benefitCutAssumption">
-        <ul>
-          <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
-        </ul>
-        <p *ngIf="this.showCut === true" style="font-weight:bold">If benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}:</p>
-        <p *ngIf="this.showCut === false" style="font-weight:bold">If benefits are not cut:</p>
-        <ul>
-          <li>The present value of the strategy you selected is {{this.selectedStrategyPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}.</li>
-          <li>That is 
-            <span *ngIf="this.differenceInPV > 0">
-              {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
-              ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%) less than </span>
-              the present value of the recommended strategy.</li>
-        </ul>
-      </span> 
     </span>
 
   </div>

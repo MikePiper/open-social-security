@@ -100,7 +100,7 @@ import {MonthYearDate} from "./monthyearDate"
           }
         }
         if (this.benefitType == "doNothing"){
-          this.message = "Given the inputs provided, there is no recommended action for you to take other than what you have already done."
+          this.message = "Nobody in the household files for any additional benefits or voluntarily suspends their benefit at any time."
         }
     }
   }

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core'
+import {Component, OnInit, ViewChild} from '@angular/core'
 import {BirthdayService} from '../birthday.service'
 import {PresentValueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
@@ -12,6 +12,7 @@ import {InputValidationService} from '../inputvalidation.service'
 import {MonthYearDate} from "../data model classes/monthyearDate"
 import { BenefitService } from '../benefit.service'
 import { ClaimStrategy } from '../data model classes/claimStrategy'
+import { RangeComponent } from '../range/range.component'
 
 
 @Component({
@@ -31,6 +32,9 @@ export class HomeComponent implements OnInit {
       error => {this.scenario.discountRate = 1}
     )
   }
+
+  @ViewChild(RangeComponent)
+  private rangeComponent:RangeComponent
 
   personA:Person = new Person("A")
   personB:Person = new Person("B")
@@ -221,6 +225,7 @@ export class HomeComponent implements OnInit {
     }
 
     //Create a clone of the normal scenario object, for the purpose of changing the value of benefitCutAssumption when flipping back and forth between "cut" and "nocut" in the Range component (don't want to change the original CalculationScenario object)
+              //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
     let customCalculationScenario: CalculationScenario = Object.assign(new CalculationScenario(), this.scenario)
     //The above line will set benefitCutAssumption to true in customCalculationScenario if it's true in primary form input, so we have to set back to false if "NoCut" radio is selected
     if (this.rangeComponentShowCutRadio === false){
@@ -232,21 +237,22 @@ export class HomeComponent implements OnInit {
     this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, customCalculationScenario, this.personA, this.personB)
 
     //Calc PV with input dates
-        //Create a new CalculationScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one.
-        //(This is necessary so that it can have a separate "outputTable" field from the original.)
-          //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
-      if (this.scenario.maritalStatus == "single" && this.errorCollection.hasErrors === false) {
-        this.customClaimStrategy = this.presentvalueService.calculateSinglePersonPV(this.personA, customCalculationScenario, true)
+      if (this.errorCollection.hasErrors === false){
+        if (this.scenario.maritalStatus == "single") {
+          this.customClaimStrategy = this.presentvalueService.calculateSinglePersonPV(this.personA, customCalculationScenario, true)
+          }
+        if(this.scenario.maritalStatus == "married") {
+          this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
+          }
+        if(this.scenario.maritalStatus == "divorced") {
+          this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
         }
-      if(this.scenario.maritalStatus == "married" && this.errorCollection.hasErrors === false) {
-        this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
-        }
-      if(this.scenario.maritalStatus == "divorced" && this.errorCollection.hasErrors === false) {
-        this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
+        this.asComparedToPV = this.rangeComponentShowCutRadio == true ? this.solutionSet.claimStrategy.PV : this.solutionSet.claimStrategy.pvNoCut
+        this.differenceInPV = this.customClaimStrategy.PV - this.asComparedToPV
+        this.differenceInPV_asPercent = (this.differenceInPV / this.asComparedToPV) * 100
+        //Update the range component view
+        this.rangeComponent.updateRangeComponentBasedOnDropDownInputs()
       }
-      this.asComparedToPV = this.rangeComponentShowCutRadio == true ? this.solutionSet.claimStrategy.PV : this.solutionSet.claimStrategy.pvNoCut
-      this.differenceInPV = this.customClaimStrategy.PV - this.asComparedToPV
-      this.differenceInPV_asPercent = (this.differenceInPV / this.asComparedToPV) * 100
   }
 
   //Use inputs to calculate ages, SSbirthdates, FRAs, etc. Happens every time an input in the primary form is changed.
@@ -653,6 +659,12 @@ export class HomeComponent implements OnInit {
       this.customPersonBendSuspensionYear = claimStrategy.personBEndSuspensionDate.getFullYear()
     }
 
+    //reset "decline" inputs
+      this.personA.declineSpousal = false
+      this.personA.declineSuspension = false
+      this.personB.declineSpousal = false
+      this.personB.declineSuspension = false
+
     this.customDates()
   }
 
@@ -667,4 +679,5 @@ export class HomeComponent implements OnInit {
       this.customDates()
     }
   }
+
 }

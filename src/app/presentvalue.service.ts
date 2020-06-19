@@ -476,15 +476,15 @@ export class PresentValueService {
     savedStrategy.PV = 0
 
     //Set endingTestDate equal to the month they turn 70
-      let endingTestDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth())
+      let endingTestDate:MonthYearDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth())
 
     //Create new range object, with earliest start date and endingTestDate
-    let earliestStart: MonthYearDate = person.retirementBenefitDate;
+    let earliestStart: MonthYearDate = new MonthYearDate(person.retirementBenefitDate)
     if (person.beginSuspensionDate > earliestStart) {
       earliestStart = person.beginSuspensionDate;
     }
-    scenario.range = new Range(earliestStart, endingTestDate);      
-    
+    scenario.range = new Range(earliestStart, endingTestDate);
+      
     while (person.retirementBenefitDate <= endingTestDate && person.endSuspensionDate <= endingTestDate){
       //run PV calc (again) and compare results. 
       let currentTest:ClaimStrategy = this.calculateSinglePersonPV(person, scenario, false) //TODO: maybe this has to be two lines? first is constructor instantiating the ClaimStrategy, and second runs PV calc function?
