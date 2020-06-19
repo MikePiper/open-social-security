@@ -45,6 +45,9 @@ import {MonthYearDate} from "./monthyearDate"
           if (this.benefitType == "suspendAtFRA") {
             this.message = "You suspend your retirement benefit at your full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + ")."
           }
+          if (this.benefitType == "suspendAtSomeOtherDate") {
+            this.message = "You suspend your retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+          }
           if (this.benefitType == "unsuspend") {
             this.message = "You unsuspend your retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
@@ -85,6 +88,9 @@ import {MonthYearDate} from "./monthyearDate"
           }
           if (this.benefitType == "suspendAtFRA") {
             this.message = "Your spouse suspends his/her retirement benefit at full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + ")."
+          }
+          if (this.benefitType == "suspendAtSomeOtherDate") {
+            this.message = "Your spouse suspends his/her retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
           if (this.benefitType == "unsuspend") {
             this.message = "Your spouse unsuspends his/her retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."

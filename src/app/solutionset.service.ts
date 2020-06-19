@@ -40,8 +40,15 @@ export class SolutionSetService {
         var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", person, person.beginSuspensionDate, 0, 0)
         var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
       }
-      else {
+      else if (person.beginSuspensionDate.valueOf() == this.today.valueOf()){
         var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", person, person.beginSuspensionDate, 0, 0)
+        var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
+      }
+      else {//person is suspending at some date other than FRA or today
+        var beginSuspensionAge: number = this.birthdayService.findAgeOnDate(person, person.beginSuspensionDate)
+        var beginSuspensionAgeYears: number = Math.floor(beginSuspensionAge)
+        var beginSuspensionAgeMonths: number = Math.round((beginSuspensionAge%1)*12)
+        var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtSomeOtherDate", person, person.beginSuspensionDate, beginSuspensionAgeYears, beginSuspensionAgeMonths)
         var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
       }
       if (person.beginSuspensionDate.valueOf() != person.endSuspensionDate.valueOf()){//If suspension solution, only push if begin/end suspension dates are different
@@ -149,8 +156,15 @@ export class SolutionSetService {
                 personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personA, personA.beginSuspensionDate, 0, 0)
                 personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personA.endSuspensionDate, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
               }
-              else {
+              else if (personA.beginSuspensionDate.valueOf() == this.today.valueOf()) {
                 personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personA, personA.beginSuspensionDate, 0, 0)
+                personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personA.endSuspensionDate, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
+              }
+              else {//personA is suspending at some date other than FRA or today
+                var personAbeginSuspensionAge: number = this.birthdayService.findAgeOnDate(personA, personA.beginSuspensionDate)
+                var personAbeginSuspensionAgeYears: number = Math.floor(personAbeginSuspensionAge)
+                var personAbeginSuspensionAgeMonths: number = Math.round((personAbeginSuspensionAge%1)*12)
+                personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtSomeOtherDate", personA, personA.beginSuspensionDate, personAbeginSuspensionAgeYears, personAbeginSuspensionAgeMonths)
                 personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personA.endSuspensionDate, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
               }
           }
@@ -180,10 +194,17 @@ export class SolutionSetService {
                 personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personB, personB.beginSuspensionDate, 0, 0)
                 personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personB.endSuspensionDate, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
               }
-              else {
+              else if (personB.beginSuspensionDate.valueOf() == this.today.valueOf()) {
                 personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personB, personB.beginSuspensionDate, 0, 0)
                 personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personB.endSuspensionDate, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
-              }      
+              }
+              else {//personB is suspending at some date other than FRA or today
+                var personBbeginSuspensionAge: number = this.birthdayService.findAgeOnDate(personB, personB.beginSuspensionDate)
+                var personBbeginSuspensionAgeYears: number = Math.floor(personBbeginSuspensionAge)
+                var personBbeginSuspensionAgeMonths: number = Math.round((personBbeginSuspensionAge%1)*12)
+                personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtSomeOtherDate", personB, personB.beginSuspensionDate, personBbeginSuspensionAgeYears, personBbeginSuspensionAgeMonths)
+                personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personB.endSuspensionDate, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
+              }
           }
           else {//normal retirement benefit solution
               var personBsavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(personB, personB.retirementBenefitDate)

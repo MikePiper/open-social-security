@@ -42,7 +42,7 @@
     <p>Click any spot on the graph, or use the dropdown-style inputs below, to see how the selected alternative compares to the recommended filing date(s).</p>
     
     <p *ngIf="scenario.restrictedApplicationPossible"><strong>NOTE:</strong> A restricted application (i.e., an application for just spousal benefits) will be assumed, whenever it is available given the retirement filing dates selected.</p>
-    <span *ngIf="selectedRow >= 0">
+    <span *ngIf="this.solutionSet.solutionsArray.length > 0">
       <p style="font-weight:bold">Selected Option: </p>
         <ul>
           <li *ngIf="selectedStrategyNotInRangeChartMessage">{{selectedStrategyNotInRangeChartMessage}}</li>

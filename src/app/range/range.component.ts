@@ -793,16 +793,20 @@ update(e: MouseEvent) {
                     row = this.findIndexForPerson(this.personB)
                 }
             if (row == -1 || column == -1){//i.e., the suspension inputs selected are NOT an option in the range 
-              this.selectedStrategyNotInRangeChartMessage = "Note: The strategy you have selected is not represented in the color-coded chart, because the chart always assumes that, if you voluntarily suspend benefits, you will suspend them as early as possible."
-              this.solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, new ClaimStrategy(this.personA))
-              this.solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, new ClaimStrategy(this.personA, this.personB))
+              this.selectedStrategyNotInRangeChartMessage = "Note: The strategy you have selected is not represented in the color-coded graph, because the graph always assumes that, if you voluntarily suspend benefits, you will suspend them as early as possible."
+              if (this.scenario.maritalStatus == "single"){
+                this.solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, new ClaimStrategy(this.personA))
+              }
+              else {
+                this.solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, new ClaimStrategy(this.personA, this.personB))
+              }
             }
             else {//i.e., the inputs selected really are in the range!
               this.selectCellFromDropdownInputs(row, column)
             }
         }
       else {//i.e., the spousal inputs selected are NOT an option in the Range
-        this.selectedStrategyNotInRangeChartMessage = "Note: The strategy you have selected is not represented in the color-coded chart, because the chart always assumes that, if you are eligible for a restricted application for spousal benefits, you will file for such as early as possible."
+        this.selectedStrategyNotInRangeChartMessage = "Note: The strategy you have selected is not represented in the color-coded graph, because the graph always assumes that, if you are eligible for a restricted application for spousal benefits, you will file for such as early as possible."
         this.solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, new ClaimStrategy(this.personA, this.personB))
       }
 }
