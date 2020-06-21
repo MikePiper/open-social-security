@@ -592,6 +592,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.showSelectedOption(this.selectedRow, this.selectedColumn);
       //Emit the newly selected ClaimStrategy to parent component
       let claimStrategyToEmit: ClaimStrategy = this.range.claimStrategiesArrays[this.currentCondition][selectRow][selectColumn];
+      console.log(claimStrategyToEmit)
       this.newClaimStrategySelected.emit(claimStrategyToEmit)
     }
   }
@@ -713,8 +714,8 @@ update(e: MouseEvent) {
   }
 
   findIndexForPerson(person:Person):number{
-    //return -1 as index if there is no corresponding option in the Range
-    let index:number = -1
+    //return -999 as index if there is no corresponding option in the Range
+    let index:number = -999
 
     //Find earliest date in Range
     let earliestDateInRange:MonthYearDate
@@ -737,7 +738,7 @@ update(e: MouseEvent) {
             index = person.endSuspensionDate.valueOf() - earliestDateInRange.valueOf()
         }
         else {//i.e., they're suspending, but starting later than "later of FRA or today"
-          //just going to return -1, since no corresponding selection in Range
+          //just going to return -999, since no corresponding selection in Range
         }
       }
     }
@@ -792,7 +793,7 @@ update(e: MouseEvent) {
                 else{
                     row = this.findIndexForPerson(this.personB)
                 }
-            if (row == -1 || column == -1){//i.e., the suspension inputs selected are NOT an option in the range 
+            if (row == -999 || column == -999){//i.e., the suspension inputs selected are NOT an option in the range 
               this.selectedStrategyNotInRangeChartMessage = "Note: The strategy you have selected is not represented in the color-coded graph, because the graph always assumes that, if you voluntarily suspend benefits, you will suspend them as early as possible."
               if (this.scenario.maritalStatus == "single"){
                 this.solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, new ClaimStrategy(this.personA))
