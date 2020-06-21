@@ -1,6 +1,8 @@
 import { Person } from "./person"
 import {MonthYearDate} from "./monthyearDate"
 
+  //This class represents the bulleted items in the recommended strategy output. (That is, one ClaimingSolution object for each item in the bulleted list.)
+  //This is in contrast to "ClaimStrategy" which represents a collection of claiming dates, as well as the calculated PV and output table for that collection of dates.
   export class ClaimingSolution {
     maritalStatus: string
     benefitType: string //retirementAlone, retirementReplacingSpousal, spousalAlone, spousalWithRetirement, survivor
@@ -43,6 +45,9 @@ import {MonthYearDate} from "./monthyearDate"
           if (this.benefitType == "suspendAtFRA") {
             this.message = "You suspend your retirement benefit at your full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + ")."
           }
+          if (this.benefitType == "suspendAtSomeOtherDate") {
+            this.message = "You suspend your retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+          }
           if (this.benefitType == "unsuspend") {
             this.message = "You unsuspend your retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
@@ -84,6 +89,9 @@ import {MonthYearDate} from "./monthyearDate"
           if (this.benefitType == "suspendAtFRA") {
             this.message = "Your spouse suspends his/her retirement benefit at full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + ")."
           }
+          if (this.benefitType == "suspendAtSomeOtherDate") {
+            this.message = "Your spouse suspends his/her retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+          }
           if (this.benefitType == "unsuspend") {
             this.message = "Your spouse unsuspends his/her retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
           }
@@ -98,7 +106,7 @@ import {MonthYearDate} from "./monthyearDate"
           }
         }
         if (this.benefitType == "doNothing"){
-          this.message = "Given the inputs provided, there is no recommended action for you to take other than what you have already done."
+          this.message = "Nobody in the household files for any additional benefits or voluntarily suspends their benefit at any time."
         }
     }
   }

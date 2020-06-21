@@ -1,5 +1,6 @@
 import { Person } from "./person";
 import { MonthYearDate } from "./monthyearDate";
+import { Range } from "./range";
 
 export class CalculationScenario {
 //This is just variables/fields that don't fit under Person object or under CalculationYear object (i.e., things that don't get reset each year, but which don't belong to a Person object)
@@ -13,9 +14,21 @@ export class CalculationScenario {
     benefitCutAssumption: boolean = false
         benefitCutYear: number = 2034
         benefitCutPercentage: number = 23
-    outputTable: any[][] = []
-    outputTableComplete:boolean = false
 
+    // properties to allow calculation and storage 
+    // of both Cut and NoCut results for range of options
+        cutFactor: number = 1 - (this.benefitCutPercentage / 100)   // multiply benefit by this number to calculate the benefit after cut
+        decutFactor: number = 1 / this.cutFactor    // multiply an already-cut benefit to determine the benefit without the cut    
+
+    restrictedApplicationPossible: boolean = false; // true if, for a given couple, a person may claim their spousal benefit before their own benefit
+    
+    // object containing data on the range of possible options 
+    range: Range; 
+
+    setBenefitCutFactors(): void {
+        this.cutFactor = 1 - (this.benefitCutPercentage / 100);
+        this.decutFactor = 1 / this.cutFactor;
+    }
 
     setChildrenArray(childrenArray:Person[], today:MonthYearDate){
         this.children = []

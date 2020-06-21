@@ -285,26 +285,29 @@ export class BenefitService {
     //If there's a benefit cut assumption...
     //...and we've reached the year in question...
     //...and it's December (because we only want to apply this cut at the end of the year, given that it's a multiplication to annual sums)
-      //Apply cut to sums included in PV calculation
-      calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive * (1 - scenario.benefitCutPercentage/100)
-      calcYear.annualBenefitSinglePersonDeceased = calcYear.annualBenefitSinglePersonDeceased * (1 - scenario.benefitCutPercentage/100)
-      calcYear.annualBenefitBothAlive = calcYear.annualBenefitBothAlive * (1 - scenario.benefitCutPercentage/100)
-      calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive * (1 - scenario.benefitCutPercentage/100)
-      calcYear.annualBenefitOnlyPersonBalive = calcYear.annualBenefitOnlyPersonBalive * (1 - scenario.benefitCutPercentage/100)
-      //Apply cut to sums included in output table
-      calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tablePersonAannualSpousalBenefit = calcYear.tablePersonAannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tablePersonAannualSurvivorBenefit = calcYear.tablePersonAannualSurvivorBenefit * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tablePersonBannualRetirementBenefit = calcYear.tablePersonBannualRetirementBenefit * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tablePersonBannualSpousalBenefit = calcYear.tablePersonBannualSpousalBenefit * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tablePersonBannualSurvivorBenefit = calcYear.tablePersonBannualSurvivorBenefit * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tableTotalAnnualChildBenefitsSingleParentAlive = calcYear.tableTotalAnnualChildBenefitsSingleParentAlive * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased = calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tableTotalAnnualChildBenefitsBothParentsAlive = calcYear.tableTotalAnnualChildBenefitsBothParentsAlive * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased = calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive = calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive * (1 - scenario.benefitCutPercentage/100)
-      calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive = calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive * (1 - scenario.benefitCutPercentage/100)
-    }
+
+    let cutFactor: number = scenario.cutFactor; // pre-calculate and use *= operation to simplify calculations
+    //Apply cut to sums included in PV calculation
+    calcYear.annualBenefitSinglePersonAlive *= cutFactor
+    calcYear.annualBenefitSinglePersonDeceased *= cutFactor
+    calcYear.annualBenefitBothAlive *= cutFactor
+    calcYear.annualBenefitOnlyPersonAalive *= cutFactor
+    calcYear.annualBenefitOnlyPersonBalive *= cutFactor
+    calcYear.annualBenefitBothDeceased *= cutFactor
+    //Apply cut to sums included in output table
+    calcYear.tablePersonAannualRetirementBenefit *= cutFactor
+    calcYear.tablePersonAannualSpousalBenefit *= cutFactor
+    calcYear.tablePersonAannualSurvivorBenefit *= cutFactor
+    calcYear.tablePersonBannualRetirementBenefit *= cutFactor
+    calcYear.tablePersonBannualSpousalBenefit *= cutFactor
+    calcYear.tablePersonBannualSurvivorBenefit *= cutFactor
+    calcYear.tableTotalAnnualChildBenefitsSingleParentAlive *= cutFactor
+    calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased *= cutFactor
+    calcYear.tableTotalAnnualChildBenefitsBothParentsAlive *= cutFactor
+    calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased *= cutFactor
+    calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive *= cutFactor
+    calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive *= cutFactor
+	}
   }
 
   

@@ -6,6 +6,7 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import { BirthdayService } from './birthday.service';
+import { ClaimStrategy } from './data model classes/claimStrategy'
 
 
 describe('SolutionSetService', () => {
@@ -28,10 +29,11 @@ describe('SolutionSetService', () => {
     person.SSbirthDate = new MonthYearDate(1960, 3, 1) //April 1, 1960
     person.FRA = new MonthYearDate(2027, 3, 1) //FRA April 1, 2027
     person.PIA = 2000
-    let savedPV:number = 180000 //Just completely making this PV up
+    let claimStrategy:ClaimStrategy = new ClaimStrategy(person)
+    claimStrategy.PV = 180000 //Just completely making this PV up
     person.retirementBenefitDate = new MonthYearDate(2029, 5, 1) //2 years and 2 months after FRA, for no particular reason
-    expect(service.generateSingleSolutionSet(scenario, person, savedPV).solutionPV)
-      .toEqual(savedPV)
+    expect(service.generateSingleSolutionSet(scenario, person, claimStrategy).claimStrategy.PV)
+      .toEqual(180000)
   }))
 
   it('SolutionSet object should have appropriate date saved', inject([SolutionSetService], (service: SolutionSetService) => {
@@ -41,12 +43,13 @@ describe('SolutionSetService', () => {
     person.SSbirthDate = new MonthYearDate(1960, 3, 1) //April 1, 1960
     person.FRA = new MonthYearDate(2027, 3, 1) //FRA April 1, 2027
     person.PIA = 2000
-    let savedPV:number = 180000 //Just completely making this PV up
+    let claimStrategy:ClaimStrategy = new ClaimStrategy(person)
+    claimStrategy.PV = 180000 //Just completely making this PV up
     person.retirementBenefitDate = new MonthYearDate(2029, 5, 1) //2 years and 2 months after FRA, for no particular reason
     let wrongDate:MonthYearDate = new MonthYearDate (2028, 4, 1)
-    expect(service.generateSingleSolutionSet(scenario, person, savedPV).solutionsArray[0].date)
+    expect(service.generateSingleSolutionSet(scenario, person, claimStrategy).solutionsArray[0].date)
       .toEqual(person.retirementBenefitDate)
-    expect(service.generateSingleSolutionSet(scenario, person, savedPV).solutionsArray[0].date)
+    expect(service.generateSingleSolutionSet(scenario, person, claimStrategy).solutionsArray[0].date)
       .not.toEqual(wrongDate)
   }))
   
@@ -73,10 +76,11 @@ describe('SolutionSetService', () => {
     personA.endSuspensionDate = new MonthYearDate(1900, 0, 1)
     personB.beginSuspensionDate = new MonthYearDate(1900, 0, 1)
     personB.endSuspensionDate = new MonthYearDate(1900, 0, 1)
-    let savedPV: number = 380000 //completely making this up
+    let claimStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
+    claimStrategy.PV = 380000 //completely making this up
     personA.governmentPension = 0
     personB.governmentPension = 0
-    expect(service.generateCoupleSolutionSet(scenario, personA, personB, savedPV).solutionsArray[0].date)
+    expect(service.generateCoupleSolutionSet(scenario, personA, personB, claimStrategy).solutionsArray[0].date)
       .toEqual(personB.retirementBenefitDate)
   }))
 

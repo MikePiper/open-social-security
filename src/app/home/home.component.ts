@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core'
+import {Component, OnInit, ViewChild} from '@angular/core'
 import {BirthdayService} from '../birthday.service'
 import {PresentValueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
@@ -11,6 +11,8 @@ import {ErrorCollection} from '../data model classes/errorcollection'
 import {InputValidationService} from '../inputvalidation.service'
 import {MonthYearDate} from "../data model classes/monthyearDate"
 import { BenefitService } from '../benefit.service'
+import { ClaimStrategy } from '../data model classes/claimStrategy'
+import { RangeComponent } from '../range/range.component'
 
 
 @Component({
@@ -31,6 +33,9 @@ export class HomeComponent implements OnInit {
     )
   }
 
+  @ViewChild(RangeComponent)
+  private rangeComponent:RangeComponent
+
   personA:Person = new Person("A")
   personB:Person = new Person("B")
   child1:Person = new Person("1")
@@ -41,7 +46,7 @@ export class HomeComponent implements OnInit {
   child6:Person = new Person("6")
   childrenObjectsArray:Person[] = [this.child1, this.child2, this.child3, this.child4, this.child5, this.child6]
   scenario:CalculationScenario = new CalculationScenario()
-  customDateScenario:CalculationScenario = new CalculationScenario()
+  customClaimStrategy = new ClaimStrategy(this.personA, this.personB)
   errorCollection:ErrorCollection = new ErrorCollection()
   today:MonthYearDate = new MonthYearDate()
   deemedFilingCutoff: Date = new Date(1954, 0, 1)//January 2, 1954. If date is LESS than cutoff, old rules. If greater than OR EQUAL TO cutoff, new rules.
@@ -114,57 +119,73 @@ export class HomeComponent implements OnInit {
   advanced: boolean = false
   qualifyingChildrenBoolean:boolean = false
 
-    //earnings test inputs
-    personAworking: boolean = false
-    personAquitWorkYear: number
-    personAquitWorkMonth: number
-    personBworking: boolean = false
-    personBquitWorkYear: number
-    personBquitWorkMonth: number
+//earnings test inputs
+  personAworking: boolean = false
+  personAquitWorkYear: number
+  personAquitWorkMonth: number
+  personBworking: boolean = false
+  personBquitWorkYear: number
+  personBquitWorkMonth: number
 
-  //Inputs from custom date form
-  customPersonAretirementBenefitMonth: number = this.today.getMonth()+1
-  customPersonAretirementBenefitYear: number = this.today.getFullYear()
-  customPersonAspousalBenefitMonth: number = this.today.getMonth()+1
-  customPersonAspousalBenefitYear: number = this.today.getFullYear()
-  customPersonBretirementBenefitMonth: number = this.today.getMonth()+1
-  customPersonBretirementBenefitYear: number = this.today.getFullYear()
-  customPersonBspousalBenefitMonth: number = this.today.getMonth()+1
-  customPersonBspousalBenefitYear: number = this.today.getFullYear()
-  customPersonAbeginSuspensionMonth: number = this.today.getMonth()+1
-  customPersonAbeginSuspensionYear: number = this.today.getFullYear()
-  customPersonAendSuspensionMonth: number = this.today.getMonth()+1
-  customPersonAendSuspensionYear: number = this.today.getFullYear()
-  customPersonBbeginSuspensionMonth: number = this.today.getMonth()+1
-  customPersonBbeginSuspensionYear: number = this.today.getFullYear()
-  customPersonBendSuspensionMonth: number = this.today.getMonth()+1
-  customPersonBendSuspensionYear: number = this.today.getFullYear()
+// Defaults for later inputs from custom date form
+// and to simplify assignment statements
+  todayMonth: number = this.today.getMonth()+1
+  todayYear:number = this.today.getFullYear()
+
+//Inputs from custom date form
+  customPersonAretirementBenefitMonth: number = this.todayMonth
+  customPersonAretirementBenefitYear: number = this.todayYear
+  customPersonAspousalBenefitMonth: number = this.todayMonth
+  customPersonAspousalBenefitYear: number = this.todayYear
+  customPersonBretirementBenefitMonth: number = this.todayMonth
+  customPersonBretirementBenefitYear: number = this.todayYear
+  customPersonBspousalBenefitMonth: number = this.todayMonth
+  customPersonBspousalBenefitYear: number = this.todayYear
+  customPersonAbeginSuspensionMonth: number = this.todayMonth
+  customPersonAbeginSuspensionYear: number = this.todayYear
+  customPersonAendSuspensionMonth: number = this.todayMonth
+  customPersonAendSuspensionYear: number = this.todayYear
+  customPersonBbeginSuspensionMonth: number = this.todayMonth
+  customPersonBbeginSuspensionYear: number = this.todayYear
+  customPersonBendSuspensionMonth: number = this.todayMonth
+  customPersonBendSuspensionYear: number = this.todayYear
+
+//Inputs from Range component
+  rangeComponentShowCutRadio:boolean = false //This will be set based on a boolean emited by child (Range) component when user flips cut/nocut radio button. False will mean show without a cut, true will mean show with a cut.
 
 
   //solution variables
-  customPV: number
+  asComparedToPV:number //this is the PV of the recommended strategy, either .PV or .pvNoCut depending on status of rangeComponentShowCutRadio
   differenceInPV: number
+  differenceInPV_asPercent: number
   solutionSet: SolutionSet = {
-    "solutionPV":null,
-    "solutionsArray": []
+    "claimStrategy":new ClaimStrategy(this.personA, this.personB),
+    "solutionsArray": [],
+    "computationComplete": false
   }
 
 
 
    onSubmit() {
     this.waitCursor()
+    this.solutionSet.computationComplete = false;
     setTimeout( () => {//whole rest of this function is in a setTimeout statement, to have 10 millisecond delay, to give DOM time to update with status message from waitCursor()
     let startTime = performance.now() //for testing performance
     console.log("-------------")
     console.log(this.personA)
     console.log(this.personB)
     this.getPrimaryFormInputs()
-    this.scenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
+    this.solutionSet.claimStrategy.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
     this.errorCollection = this.inputValidationService.checkForFixedRetirementDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
     this.focusError()
 
     //If there are no fixedRetirementDate errors, call appropriate "maximizePV" function to find best solution
     if (this.errorCollection.hasErrors === false){
+      this.solutionSet = {
+        "claimStrategy":new ClaimStrategy(this.personA, this.personB),
+        "solutionsArray": [],
+        "computationComplete": false
+      };
       if (this.scenario.maritalStatus == "single") {
         this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(this.personA, this.scenario)
       }
@@ -183,9 +204,11 @@ export class HomeComponent implements OnInit {
             this.solutionSet = this.presentvalueService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
       }
     }
+    // computation is finished
+    this.solutionSet.computationComplete = true;
     this.normalCursor()
     this.primaryFormHasChanged = false//Set this to false so that customDates() doesn't rerun onSubmit() next time it is run, unless another change is made to primary inputs
-    if (this.customPV){//If customDates() has already been run (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs
+    if (this.customClaimStrategy.PV){//If customDates() has already been run (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs
       this.customDates()
     }
     //For testing performance
@@ -200,25 +223,36 @@ export class HomeComponent implements OnInit {
     if (this.primaryFormHasChanged === true){//Have to rerun the original calculation again if a primary input has changed.
       this.onSubmit()
     }
-    this.customPV = undefined //Makes custom date output disappear until new PV is calc'd. (We don't want a broken-looking half-table appearing if there is an error in new inputs.)
+
+    //Create a clone of the normal scenario object, for the purpose of changing the value of benefitCutAssumption when flipping back and forth between "cut" and "nocut" in the Range component (don't want to change the original CalculationScenario object)
+              //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
+    let customCalculationScenario: CalculationScenario = Object.assign(new CalculationScenario(), this.scenario)
+    //The above line will set benefitCutAssumption to true in customCalculationScenario if it's true in primary form input, so we have to set back to false if "NoCut" radio is selected
+    if (this.rangeComponentShowCutRadio === false){
+      customCalculationScenario.benefitCutAssumption = false
+    }
+
+    this.customClaimStrategy = new ClaimStrategy(this.personA, this.personB)//new object in order to reset outputTable to be undefined, PV to be undefined, and outputTableComplete to be false
     this.getCustomDateFormInputs()
-    this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
+    this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, customCalculationScenario, this.personA, this.personB)
 
     //Calc PV with input dates
-        //Create a new ClaimingScenario object that is a clone of the original one. It isn't a reference but a whole new one. So changes to original don't change this one. (This is necessary so that it can have a separate "outputTable" field from the original.)
-          //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
-          this.customDateScenario = Object.assign({}, this.scenario)
-          this.customDateScenario.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
-      if (this.scenario.maritalStatus == "single" && this.errorCollection.hasErrors === false) {
-        this.customPV = this.presentvalueService.calculateSinglePersonPV(this.personA, this.customDateScenario, true)
+      if (this.errorCollection.hasErrors === false){
+        if (this.scenario.maritalStatus == "single") {
+          this.customClaimStrategy = this.presentvalueService.calculateSinglePersonPV(this.personA, customCalculationScenario, true)
+          }
+        if(this.scenario.maritalStatus == "married") {
+          this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
+          }
+        if(this.scenario.maritalStatus == "divorced") {
+          this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
         }
-      if(this.scenario.maritalStatus == "married" && this.errorCollection.hasErrors === false) {
-        this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
-        }
-      if(this.scenario.maritalStatus == "divorced" && this.errorCollection.hasErrors === false) {
-        this.customPV = this.presentvalueService.calculateCouplePV(this.personA, this.personB, this.customDateScenario, true)
+        this.asComparedToPV = this.rangeComponentShowCutRadio == true ? this.solutionSet.claimStrategy.PV : this.solutionSet.claimStrategy.pvNoCut
+        this.differenceInPV = this.customClaimStrategy.PV - this.asComparedToPV
+        this.differenceInPV_asPercent = (this.differenceInPV / this.asComparedToPV) * 100
+        //Update the range component view
+        this.rangeComponent.updateRangeComponentBasedOnDropDownInputs()
       }
-      this.differenceInPV = this.solutionSet.solutionPV - this.customPV
   }
 
   //Use inputs to calculate ages, SSbirthdates, FRAs, etc. Happens every time an input in the primary form is changed.
@@ -600,4 +634,52 @@ export class HomeComponent implements OnInit {
   printPage(){
     window.print()
   }
+
+  alternativeStrategyPVcalcViaClickOnRange(claimStrategy:ClaimStrategy){
+    //When a cell is clicked in the Range component, selectCell() is called there. That emits a ClaimStrategy object to this component.
+    //We use that ClaimStrategy object to set all the custom date inputs.
+    //Then we call the customDates() function to calculate the PV and provide all the output related to that custom ClaimStrategy
+    this.customPersonAretirementBenefitMonth = claimStrategy.personARetirementDate.getMonth()+1
+    this.customPersonAretirementBenefitYear = claimStrategy.personARetirementDate.getFullYear()
+    this.customPersonAspousalBenefitMonth = claimStrategy.personASpousalDate.getMonth()+1
+    this.customPersonAspousalBenefitYear = claimStrategy.personASpousalDate.getFullYear()
+
+    this.customPersonAbeginSuspensionMonth = claimStrategy.personABeginSuspensionDate.getMonth()+1
+    this.customPersonAbeginSuspensionYear = claimStrategy.personABeginSuspensionDate.getFullYear()
+    this.customPersonAendSuspensionMonth = claimStrategy.personAEndSuspensionDate.getMonth()+1
+    this.customPersonAendSuspensionYear = claimStrategy.personAEndSuspensionDate.getFullYear()
+
+    if (this.scenario.maritalStatus == "married" || this.scenario.maritalStatus == "divorced"){
+      this.customPersonBretirementBenefitMonth = claimStrategy.personBRetirementDate.getMonth()+1
+      this.customPersonBretirementBenefitYear = claimStrategy.personBRetirementDate.getFullYear()
+      this.customPersonBspousalBenefitMonth = claimStrategy.personBSpousalDate.getMonth()+1
+      this.customPersonBspousalBenefitYear = claimStrategy.personBSpousalDate.getFullYear()
+  
+      this.customPersonBbeginSuspensionMonth = claimStrategy.personBBeginSuspensionDate.getMonth()+1
+      this.customPersonBbeginSuspensionYear = claimStrategy.personBBeginSuspensionDate.getFullYear()
+      this.customPersonBendSuspensionMonth = claimStrategy.personBEndSuspensionDate.getMonth()+1
+      this.customPersonBendSuspensionYear = claimStrategy.personBEndSuspensionDate.getFullYear()
+    }
+
+    //reset "decline" inputs
+      this.personA.declineSpousal = false
+      this.personA.declineSuspension = false
+      this.personB.declineSpousal = false
+      this.personB.declineSuspension = false
+
+    this.customDates()
+  }
+
+  alternativeStrategyPVcalcViaRangeBenefitCutBooleanSwitch(showCut:boolean){
+    if (showCut === true){
+      this.rangeComponentShowCutRadio = true
+    }
+    else {
+      this.rangeComponentShowCutRadio = false
+    }
+    if (this.customClaimStrategy.PV > 0){//Run customDates() to calculate new PV. But we only want to run it if it has been run already, otherwise this runs as soon as Range component is initiated, which generates errors
+      this.customDates()
+    }
+  }
+
 }

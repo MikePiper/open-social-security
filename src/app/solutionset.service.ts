@@ -6,6 +6,7 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import { BirthdayService } from './birthday.service';
+import { ClaimStrategy } from './data model classes/claimStrategy'
 
 
 @Injectable({
@@ -17,10 +18,11 @@ export class SolutionSetService {
 
   today: MonthYearDate = new MonthYearDate()
 
-  generateSingleSolutionSet(scenario:CalculationScenario, person:Person, savedPV:number){
+  generateSingleSolutionSet(scenario:CalculationScenario, person:Person, claimStrategy:ClaimStrategy){
     let solutionSet:SolutionSet = {
-      "solutionPV":savedPV,
-      "solutionsArray": []
+      "claimStrategy":claimStrategy,
+      "solutionsArray": [],
+      "computationComplete": false // this property added to hide previous results while calculating
     }
     if (person.isOnDisability === true) {
       //create disability-converts-to-retirement solution object
@@ -38,8 +40,15 @@ export class SolutionSetService {
         var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", person, person.beginSuspensionDate, 0, 0)
         var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
       }
-      else {
+      else if (person.beginSuspensionDate.valueOf() == this.today.valueOf()){
         var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", person, person.beginSuspensionDate, 0, 0)
+        var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
+      }
+      else {//person is suspending at some date other than FRA or today
+        var beginSuspensionAge: number = this.birthdayService.findAgeOnDate(person, person.beginSuspensionDate)
+        var beginSuspensionAgeYears: number = Math.floor(beginSuspensionAge)
+        var beginSuspensionAgeMonths: number = Math.round((beginSuspensionAge%1)*12)
+        var beginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtSomeOtherDate", person, person.beginSuspensionDate, beginSuspensionAgeYears, beginSuspensionAgeMonths)
         var endSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", person, person.endSuspensionDate, savedEndSuspensionAgeYears, savedEndSuspensionAgeMonths)
       }
       if (person.beginSuspensionDate.valueOf() != person.endSuspensionDate.valueOf()){//If suspension solution, only push if begin/end suspension dates are different
@@ -64,6 +73,7 @@ export class SolutionSetService {
       //Determine if there are any children who have not yet filed and who are under 18 or disabled as of their childBenefitDate
       var childWhoNeedsToFile:boolean = false
       for (let child of scenario.children){
+        child.childBenefitDate = this.benefitService.determineChildBenefitDate(scenario, child, person)
         let ageOnChildBenefitDate:number = this.birthdayService.findAgeOnDate(child, child.childBenefitDate)
         if ( (ageOnChildBenefitDate < 17.99 || child.isOnDisability === true) && child.hasFiled === false ){
           childWhoNeedsToFile = true
@@ -103,13 +113,13 @@ export class SolutionSetService {
     return solutionSet
   }
 
-  //For two-person scenarios, other than a) divorce or b) one person being over 70
   //In this method first we create all the possible solution objects, but then only push the ones we want into the solutionsArray.
     //For example if personB can't actually qualify for spousal benefits at any time, we don't push personBspousalSolution
-  generateCoupleSolutionSet(scenario:CalculationScenario, personA:Person, personB:Person, savedPV: number){
+  generateCoupleSolutionSet(scenario:CalculationScenario, personA:Person, personB:Person, claimStrategy:ClaimStrategy){
     let solutionSet: SolutionSet = {
-      "solutionPV":savedPV,
-      solutionsArray: []
+      "claimStrategy":claimStrategy,
+      solutionsArray: [],
+      "computationComplete": false      
     }
 
     //declare solution object variables
@@ -146,8 +156,15 @@ export class SolutionSetService {
                 personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personA, personA.beginSuspensionDate, 0, 0)
                 personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personA.endSuspensionDate, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
               }
-              else {
+              else if (personA.beginSuspensionDate.valueOf() == this.today.valueOf()) {
                 personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personA, personA.beginSuspensionDate, 0, 0)
+                personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personA.endSuspensionDate, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
+              }
+              else {//personA is suspending at some date other than FRA or today
+                var personAbeginSuspensionAge: number = this.birthdayService.findAgeOnDate(personA, personA.beginSuspensionDate)
+                var personAbeginSuspensionAgeYears: number = Math.floor(personAbeginSuspensionAge)
+                var personAbeginSuspensionAgeMonths: number = Math.round((personAbeginSuspensionAge%1)*12)
+                personAbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtSomeOtherDate", personA, personA.beginSuspensionDate, personAbeginSuspensionAgeYears, personAbeginSuspensionAgeMonths)
                 personAendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personA, personA.endSuspensionDate, personAsavedEndSuspensionAgeYears, personAsavedEndSuspensionAgeMonths)
               }
           }
@@ -177,10 +194,17 @@ export class SolutionSetService {
                 personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtFRA", personB, personB.beginSuspensionDate, 0, 0)
                 personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personB.endSuspensionDate, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
               }
-              else {
+              else if (personB.beginSuspensionDate.valueOf() == this.today.valueOf()) {
                 personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendToday", personB, personB.beginSuspensionDate, 0, 0)
                 personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personB.endSuspensionDate, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
-              }      
+              }
+              else {//personB is suspending at some date other than FRA or today
+                var personBbeginSuspensionAge: number = this.birthdayService.findAgeOnDate(personB, personB.beginSuspensionDate)
+                var personBbeginSuspensionAgeYears: number = Math.floor(personBbeginSuspensionAge)
+                var personBbeginSuspensionAgeMonths: number = Math.round((personBbeginSuspensionAge%1)*12)
+                personBbeginSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "suspendAtSomeOtherDate", personB, personB.beginSuspensionDate, personBbeginSuspensionAgeYears, personBbeginSuspensionAgeMonths)
+                personBendSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "unsuspend", personB, personB.endSuspensionDate, personBsavedEndSuspensionAgeYears, personBsavedEndSuspensionAgeMonths)
+              }
           }
           else {//normal retirement benefit solution
               var personBsavedRetirementBenefit: number = this.benefitService.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
@@ -368,6 +392,7 @@ export class SolutionSetService {
           //Determine if there are any children who have not yet filed and who are under 18 or disabled as of their childBenefitDate
           var childWhoNeedsToFile:boolean = false
           for (let child of scenario.children){
+            child.childBenefitDate = this.benefitService.determineChildBenefitDate(scenario, child, personA, personB)
             let ageOnChildBenefitDate:number = this.birthdayService.findAgeOnDate(child, child.childBenefitDate)
             if ( (ageOnChildBenefitDate < 17.99 || child.isOnDisability === true) && child.hasFiled === false ){
               childWhoNeedsToFile = true

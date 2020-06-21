@@ -25,7 +25,7 @@
         <th *ngIf="scenario.children.length > 0">Total Annual Child Benefit</th>
         <th *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced' || scenario.children.length > 0">Total</th>
       </tr>
-      <tr *ngFor="let row of scenario.outputTable">
+      <tr *ngFor="let row of claimStrategy.outputTable">
           <td *ngFor="let data of row">
             {{data}}
           </td>

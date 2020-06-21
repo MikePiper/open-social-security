@@ -4,6 +4,7 @@ import {MortalityService} from './mortality.service'
 import {EarningsTestService} from './earningstest.service'
 import {SolutionSetService} from './solutionset.service'
 import {SolutionSet} from './data model classes/solutionset'
+import {Range} from './data model classes/range'
 import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {CalculationYear} from './data model classes/calculationyear'
@@ -11,6 +12,7 @@ import {OutputTableService} from './outputtable.service'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import {FamilyMaximumService} from './familymaximum.service'
 import {BirthdayService} from './birthday.service'
+import { ClaimStrategy } from './data model classes/claimStrategy'
 
 
 @Injectable()
@@ -21,19 +23,27 @@ export class PresentValueService {
 
   today: MonthYearDate = new MonthYearDate()
 
-  calculateSinglePersonPV(person:Person, scenario:CalculationScenario, printOutputTable:boolean):number{
+  calculateSinglePersonPV(person:Person, scenario:CalculationScenario, printOutputTable:boolean) : ClaimStrategy{
+    //Create ClaimStrategy object for saving PVs
+    let claimStrategy:ClaimStrategy = new ClaimStrategy(person)
     //reset values for new PV calc
-      let retirementPV:number = 0
+      claimStrategy.PV = 0
+      claimStrategy.pvNoCut = 0
+      claimStrategy.outputTable = []
       person.hasHadGraceYear = false
       person.adjustedRetirementBenefitDate = new MonthYearDate(person.retirementBenefitDate)
       person.DRCsViaSuspension = 0
       person.retirementARFcreditingMonths = 0
-      scenario.outputTable = []
       this.benefitService.checkWhichPIAtoUse(person, this.today)//checks whether person is *entitled* to gov pension (by checking eligible and pension beginning date) and sets PIA accordingly based on one of two PIA inputs
       //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
       if (person.isOnDisability === true){person = this.familyMaximumService.calculateFamilyMaximum(person, this.today)}
 
-    //calculate initial retirement benefit
+      // values used to provide results for both cut and noCut scenarios
+      if (scenario.benefitCutAssumption) {
+        scenario.setBenefitCutFactors();
+      }
+
+      //calculate initial retirement benefit
       person.retirementBenefit = this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
 
     //Find childBenefitDate for any children
@@ -51,6 +61,8 @@ export class PresentValueService {
       child.age = this.birthdayService.findAgeOnDate(child, calcYear.date)
     }
 
+    let cutThisYear:boolean = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
+    
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
     while (person.age < 115) {
       //Do we have to recalculate any benefits? (e.g., due to reaching FRA and ARF happening, or due to suspension ending) (Never have to recalculate a child's benefit amount.)
@@ -104,11 +116,13 @@ export class PresentValueService {
             this.earningsTestService.addBackOverwithholding(calcYear, scenario)
 
           //Apply assumed benefit cut, if applicable
+          if (cutThisYear) {
             this.benefitService.applyAssumedBenefitCut(scenario, calcYear)
+          }
 
           //If printOutputTable is true, add row to output table.
             if (printOutputTable === true){
-              this.outputTableService.generateOutputTableSingle(person, scenario, calcYear)
+              claimStrategy = this.outputTableService.generateOutputTableSingle(person, claimStrategy, scenario, calcYear)
             }
 
           //Apply probability alive to annual benefit amounts
@@ -118,27 +132,54 @@ export class PresentValueService {
           //Discount that probability-weighted annual benefit amount back to this year
           calcYear.annualPV = this.discountToPresentValue(scenario.discountRate, calcYear.annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
 
-          //Add discounted benefit to ongoing sum
-          retirementPV = retirementPV + calcYear.annualPV
+          //Add discounted benefits to ongoing sums
+          claimStrategy.PV += calcYear.annualPV;
+
+          // for calculation of both cut and noCut PV's
+          if (cutThisYear) {
+            // PV has been adjusted this year
+            // We need to de-adjust it for the noCut case
+            claimStrategy.pvNoCut += (calcYear.annualPV * scenario.decutFactor);
+          } else {
+            claimStrategy.pvNoCut += calcYear.annualPV;
+          }
 
           //increment person's age by 1 year
           person.age = person.age + 1
-        }
 
-        //increment month by 1 and create new CalculationYear object if it's now January
-        calcYear.date.setMonth(calcYear.date.getMonth()+1)
-        if (calcYear.date.getMonth() == 0){
-        calcYear = new CalculationYear(calcYear.date)
+          //increment month by 1 and create new CalculationYear object because it's now January
+          // (we started these calculations with month === 11)
+          calcYear.date.setMonth(calcYear.date.getMonth()+1)
+          calcYear = new CalculationYear(calcYear.date)
+
+          if (!cutThisYear) { //Check if there will be a cut this year. (But we don't need to check again if cutThisYear is already true.)
+            cutThisYear = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
+          }
+
+        } else {
+          //increment month by 1.
+          // It's not a new year - we got here because month is not 11
+          calcYear.date.setMonth(calcYear.date.getMonth()+1)
         }
     }
-    return retirementPV
+        return claimStrategy
   }
 
-  calculateCouplePV(personA:Person, personB:Person, scenario:CalculationScenario, printOutputTable:boolean) : number{
+  calculateCouplePV(personA:Person, personB:Person, scenario:CalculationScenario, printOutputTable:boolean) : ClaimStrategy{
+    //Create ClaimStrategy object for saving PVs
+    let claimStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
     //reset values for new PV calc
-    let couplePV: number = 0
-    let savedCalculationYear: CalculationYear = new CalculationYear(this.today)
-    scenario.outputTable = []
+      claimStrategy.PV = 0
+      claimStrategy.pvNoCut = 0
+      claimStrategy.outputTable = []
+
+    // cutFactor & pvNoCut are used to adjust annual benefits to provide results for both cut and nocut scenarios
+    if (scenario.benefitCutAssumption) {
+      scenario.setBenefitCutFactors();
+    }
+    let cutThisYear: boolean = (scenario.benefitCutAssumption === true) && (this.today.getFullYear() >= scenario.benefitCutYear)
+  
+    let savedCalculationYear: CalculationYear
     personA.hasHadGraceYear = false
     personB.hasHadGraceYear = false
     personA.retirementBenefit = 0
@@ -219,7 +260,7 @@ export class PresentValueService {
     while (personA.age < 115 || personB.age < 115){
 
       //Use savedCalculationYear sums if parents over 70, children over 18 or disabled, and assumed benfit cut year (if applicable) has been reached
-      if (savedCalculationYear.annualBenefitBothAlive > 0){
+      if (savedCalculationYear){
         this.useSavedCalculationYearForFasterLoop(calcYear, savedCalculationYear)
       }
       else {
@@ -285,9 +326,6 @@ export class PresentValueService {
             //Earnings test not necessary
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitBothDeceased)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, false, printOutputTable)
-
-      //Apply assumed benefit cut, if applicable
-            this.benefitService.applyAssumedBenefitCut(scenario, calcYear)
       }
 
       //After month is over increase age of everybody by 1 month
@@ -298,15 +336,21 @@ export class PresentValueService {
             }
       //if it's December...
       if (calcYear.date.getMonth() == 11){
-            //Add back any overwithholding from earnings test
-            this.earningsTestService.addBackOverwithholding(calcYear, scenario)
+        //Apply assumed benefit cut, if applicable
+        if (!savedCalculationYear && cutThisYear) {
+          // if we have a savedCalculationYear, the benefit cuts have already been applied
+          this.benefitService.applyAssumedBenefitCut(scenario, calcYear)
+        }
+      
+        //Add back any overwithholding from earnings test
+        this.earningsTestService.addBackOverwithholding(calcYear, scenario)
 
             //If printOutputTable is true, add row to output table.
               if (printOutputTable === true && scenario.maritalStatus == "married"){
-                this.outputTableService.generateOutputTableCouple(personA, personB, scenario, calcYear)
+                claimStrategy = this.outputTableService.generateOutputTableCouple(personA, personB, claimStrategy, scenario, calcYear)
               }
               if (printOutputTable === true && scenario.maritalStatus == "divorced"){
-                this.outputTableService.generateOutputTableDivorced(personA, scenario, calcYear)
+                claimStrategy = this.outputTableService.generateOutputTableDivorced(personA, claimStrategy, scenario, calcYear)
               }
 
             //Calculate each person's probability of being alive at end of age in question. (Have to use age-1 here because we want their age as of beginning of year.)
@@ -351,10 +395,22 @@ export class PresentValueService {
                 // }
 
             //Add discounted benefit to ongoing sum
-              couplePV = couplePV + annualPV
+              claimStrategy.PV = claimStrategy.PV + annualPV
 
-            //Created saved CalculationYear object if we can do so
-            if (this.readyForSavedCalculationYearForFasterLoop(scenario, calcYear, personA, personB) === true){
+
+          // for calculation of both cut and noCut PV's
+          if (cutThisYear) { 
+			      // PV has been adjusted this year
+			      // We need to de-adjust it to get the NoCut value
+            claimStrategy.pvNoCut += (annualPV * scenario.decutFactor)
+          } else {
+            claimStrategy.pvNoCut += annualPV
+          }
+
+        //Create saved CalculationYear object if 
+        // (a) we haven't already done so, and 
+        // (b) conditions are appropriate for us to do so            
+        if (!savedCalculationYear && (this.readyForSavedCalculationYearForFasterLoop(scenario, calcYear, personA, personB)) === true){
               savedCalculationYear = this.createSavedCalculationYearForFasterLoop(calcYear)
             }
       }
@@ -362,16 +418,21 @@ export class PresentValueService {
       calcYear.date.setMonth(calcYear.date.getMonth()+1)
       if (calcYear.date.getMonth() == 0){
       calcYear = new CalculationYear(calcYear.date)
+        if (!cutThisYear) { //Check if there will be a cut this year. (But we don't need to check again if cutThisYear is already true.)
+          cutThisYear = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
+        }
       }
       if (!(calcYear.isInPast === false) && calcYear.date < this.today){calcYear.isInPast = true}//if calcYear.isInPast is already false, no need to check again as date gets incremented forward (using "not false" rather than "is true" because we want it to trigger if it isn't set yet also)
       else {calcYear.isInPast = false}
     }
 
-    return couplePV
+    return claimStrategy
   }
 
 
   maximizeSinglePersonPV(person:Person, scenario:CalculationScenario) : SolutionSet{
+
+    scenario.restrictedApplicationPossible = false;
 
     //find initial retirementBenefitDate for age 62 (or, more often, 62 and 1 month)
     person.retirementBenefitDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth())
@@ -411,43 +472,56 @@ export class PresentValueService {
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
     person = this.familyMaximumService.calculateFamilyMaximum(person, this.today)
 
-    //Run calculateSinglePersonPV for their earliest possible claiming date, save the PV and the date.
-    let savedPV: number = this.calculateSinglePersonPV(person, scenario, false)
-    let savedClaimingDate: MonthYearDate = new MonthYearDate(person.retirementBenefitDate)
-    let savedBeginSuspensionDate: MonthYearDate = new MonthYearDate(person.beginSuspensionDate)
-    let savedEndSuspensionDate: MonthYearDate = new MonthYearDate(person.endSuspensionDate)
+    //Initialize savedStrategy, with zero PV, using person's current dates
+    let savedStrategy: ClaimStrategy = new ClaimStrategy(person)
+    savedStrategy.PV = 0
 
-    //Set endingTestDate equal to the month before they turn 70 (because loop starts with adding a month and then testing new values)
-      let endingTestDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth())
-      endingTestDate.setMonth(endingTestDate.getMonth()-1)
+    //Set endingTestDate equal to the month they turn 70
+      let endingTestDate:MonthYearDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth())
+
+    //Create new range object, with earliest start date and endingTestDate
+    let earliestStart: MonthYearDate = new MonthYearDate(person.retirementBenefitDate)
+    if (person.beginSuspensionDate > earliestStart) {
+      earliestStart = person.beginSuspensionDate;
+    }
+    scenario.range = new Range(earliestStart, endingTestDate);
+      
     while (person.retirementBenefitDate <= endingTestDate && person.endSuspensionDate <= endingTestDate){
-      //Increment claiming date (or suspension date) and run both calculations again and compare results. Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
-      person = this.incrementRetirementORendSuspensionDate(person, scenario)
-      let currentTestPV = this.calculateSinglePersonPV(person, scenario, false)
-      if (currentTestPV >= savedPV){
-          savedPV = currentTestPV
-          savedClaimingDate = new MonthYearDate(person.retirementBenefitDate)
-          savedBeginSuspensionDate = new MonthYearDate(person.beginSuspensionDate)
-          savedEndSuspensionDate = new MonthYearDate(person.endSuspensionDate)
+      //run PV calc (again) and compare results. 
+      let currentTest:ClaimStrategy = this.calculateSinglePersonPV(person, scenario, false) //TODO: maybe this has to be two lines? first is constructor instantiating the ClaimStrategy, and second runs PV calc function?
+          // store data for this combination of claim dates
+          scenario.range.processPVs(currentTest, false);
+          //Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
+          if (currentTest.PV >= savedStrategy.PV){
+          savedStrategy = new ClaimStrategy(person)
+          savedStrategy.PV = currentTest.PV
       }
+      //Increment claiming date (or suspension date)
+      person = this.incrementRetirementORendSuspensionDate(person, scenario)
     }
 
     //after loop is finished, set Person's retirementBenefitDate and suspension dates to the saved dates, for sake of running PV calc again for outputTable
-    person.retirementBenefitDate = new MonthYearDate(savedClaimingDate)
-    person.beginSuspensionDate = new MonthYearDate(savedBeginSuspensionDate)
-    person.endSuspensionDate = new MonthYearDate(savedEndSuspensionDate)
-    let outputTablePVcalc: number = this.calculateSinglePersonPV(person, scenario, true)
+    person.retirementBenefitDate = new MonthYearDate(savedStrategy.personARetirementDate)
+    person.beginSuspensionDate = new MonthYearDate(savedStrategy.personABeginSuspensionDate)
+    person.endSuspensionDate = new MonthYearDate(savedStrategy.personAEndSuspensionDate)
+    savedStrategy = this.calculateSinglePersonPV(person, scenario, true)//running the calc again on savedStrategy, just to generate the outputTable
 
     //Generate solution set (for sake of output) from saved values
-    let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(scenario, person, Number(savedPV))
+    let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(scenario, person, savedStrategy)
 
     console.log(solutionSet)
+
+    scenario.range.initFracsAndColors();
 
     return solutionSet
   }
 
 
   maximizeCouplePViterateBothPeople(personA:Person, personB:Person, scenario:CalculationScenario) : SolutionSet{
+
+    let deemedFilingCutoff: Date = new Date(1954, 0, 1); 
+    scenario.restrictedApplicationPossible = 
+      ((personA.actualBirthDate < deemedFilingCutoff) || (personB.actualBirthDate < deemedFilingCutoff))
 
     //find initial retirementBenefitDate for personA (first month for which they are considered 62 for entire month)
     personA.retirementBenefitDate = new MonthYearDate(personA.actualBirthDate.getFullYear()+62, personA.actualBirthDate.getMonth())
@@ -511,18 +585,9 @@ export class PresentValueService {
     personA = this.adjustSpousalBenefitDate(personA, personB, scenario)
     personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
 
-    //Initialize savedPV as zero. Save various initial test dates.
-      let savedPV: number = 0
-      let personAsavedRetirementDate = new MonthYearDate(personA.retirementBenefitDate)
-      let personBsavedRetirementDate = new MonthYearDate(personB.retirementBenefitDate)
-      let personAsavedSpousalDate = new MonthYearDate(personA.spousalBenefitDate)
-      let personBsavedSpousalDate = new MonthYearDate(personB.spousalBenefitDate)
-      let personAsavedChildInCareSpousalBenefitDate = new MonthYearDate(personA.childInCareSpousalBenefitDate)
-      let personBsavedChildInCareSpousalBenefitDate = new MonthYearDate(personB.childInCareSpousalBenefitDate)
-      let personAsavedBeginSuspensionDate = new MonthYearDate(personA.beginSuspensionDate)
-      let personBsavedBeginSuspensionDate = new MonthYearDate(personB.beginSuspensionDate)
-      let personAsavedEndSuspensionDate = new MonthYearDate(personA.endSuspensionDate)
-      let personBsavedEndSuspensionDate = new MonthYearDate(personB.endSuspensionDate)
+    //Initialize savedStrategy, with zero PV, using personA's and personB's current dates
+      let savedStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
+      savedStrategy.PV = 0
 
     //Set endingTestDate for each spouse equal to the month they turn 70. Or if using fixed-death-age-assumption younger than 70, set to assumed month of death
     let spouseAendTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth())
@@ -539,6 +604,26 @@ export class PresentValueService {
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
     personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)
     personB = this.familyMaximumService.calculateFamilyMaximum(personB, this.today)
+
+    // get limits for storage of PV for range of claim options
+    let earliestStartA: MonthYearDate = personA.spousalBenefitDate;
+    if (earliestStartA > personA.retirementBenefitDate) {
+      earliestStartA = personA.retirementBenefitDate;
+    }
+    if (personA.endSuspensionDate > earliestStartA) {
+      earliestStartA = personA.endSuspensionDate;
+    }
+    let earliestStartB: MonthYearDate = personB.spousalBenefitDate;
+    if (earliestStartB > personB.retirementBenefitDate) {
+      earliestStartB = personB.retirementBenefitDate;
+    }
+    if (personB.endSuspensionDate > earliestStartB) {
+      earliestStartB = personB.endSuspensionDate;
+    }
+
+    //Create new range object for storage of data
+    scenario.range = new Range(earliestStartA, spouseAendTestDate, earliestStartB, spouseBendTestDate);
+    let solutionSet: SolutionSet;
 
     while (personA.retirementBenefitDate <= spouseAendTestDate && personA.endSuspensionDate <= spouseAendTestDate) {
         //Reset personB.retirementBenefitDate to earliest possible (i.e., their "age 62 for whole month" month, or today's month if they're currently older than 62, or earliest retroactive date if they're older than FRA)
@@ -577,21 +662,15 @@ export class PresentValueService {
 
         while (personB.retirementBenefitDate <= spouseBendTestDate && personB.endSuspensionDate <= spouseBendTestDate) {
           //Calculate PV using current testDates
-            let currentTestPV: number = this.calculateCouplePV(personA, personB, scenario, false)
+            let currentTest: ClaimStrategy = this.calculateCouplePV(personA, personB, scenario, false)
+            
+             // store data for this combination of claim dates
+            scenario.range.processPVs(currentTest, false);
 
             //If PV is greater than saved PV, save new PV and save new testDates.
-            if (currentTestPV >= savedPV) {
-              savedPV = currentTestPV
-              personAsavedRetirementDate = new MonthYearDate(personA.retirementBenefitDate)
-              personBsavedRetirementDate = new MonthYearDate(personB.retirementBenefitDate)
-              personAsavedSpousalDate = new MonthYearDate(personA.spousalBenefitDate)
-              personBsavedSpousalDate = new MonthYearDate(personB.spousalBenefitDate)
-              personAsavedChildInCareSpousalBenefitDate = new MonthYearDate(personA.childInCareSpousalBenefitDate)
-              personBsavedChildInCareSpousalBenefitDate = new MonthYearDate(personB.childInCareSpousalBenefitDate)
-              personAsavedBeginSuspensionDate = new MonthYearDate(personA.beginSuspensionDate)
-              personBsavedBeginSuspensionDate = new MonthYearDate(personB.beginSuspensionDate)
-              personAsavedEndSuspensionDate = new MonthYearDate(personA.endSuspensionDate)
-              personBsavedEndSuspensionDate = new MonthYearDate(personB.endSuspensionDate)
+            if (currentTest.PV >= savedStrategy.PV) {
+              savedStrategy = new ClaimStrategy(personA, personB)
+              savedStrategy.PV = currentTest.PV
               }
 
           //Find next possible claiming combination for spouseB
@@ -607,23 +686,22 @@ export class PresentValueService {
         
       }
     //after loop is finished, set person objects' benefit dates to the saved dates, for sake of running PV calc again for outputTable
-      personA.retirementBenefitDate = new MonthYearDate(personAsavedRetirementDate)
-      personA.spousalBenefitDate = new MonthYearDate(personAsavedSpousalDate)
-      personA.childInCareSpousalBenefitDate = new MonthYearDate(personAsavedChildInCareSpousalBenefitDate)
-      personA.beginSuspensionDate = new MonthYearDate(personAsavedBeginSuspensionDate)
-      personA.endSuspensionDate = new MonthYearDate(personAsavedEndSuspensionDate)
-      personB.retirementBenefitDate = new MonthYearDate(personBsavedRetirementDate)
-      personB.spousalBenefitDate = new MonthYearDate(personBsavedSpousalDate)
-      personB.childInCareSpousalBenefitDate = new MonthYearDate(personBsavedChildInCareSpousalBenefitDate)
-      personB.beginSuspensionDate = new MonthYearDate(personBsavedBeginSuspensionDate)
-      personB.endSuspensionDate = new MonthYearDate(personBsavedEndSuspensionDate)
-
-      let outputTablePVcalc: number = this.calculateCouplePV(personA, personB, scenario, true)
+      personA.retirementBenefitDate = new MonthYearDate(savedStrategy.personARetirementDate)
+      personA.spousalBenefitDate = new MonthYearDate(savedStrategy.personASpousalDate)
+      personA.beginSuspensionDate = new MonthYearDate(savedStrategy.personABeginSuspensionDate)
+      personA.endSuspensionDate = new MonthYearDate(savedStrategy.personAEndSuspensionDate)
+      personB.retirementBenefitDate = new MonthYearDate(savedStrategy.personBRetirementDate)
+      personB.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
+      personB.beginSuspensionDate = new MonthYearDate(savedStrategy.personBBeginSuspensionDate)
+      personB.endSuspensionDate = new MonthYearDate(savedStrategy.personBEndSuspensionDate)
+      savedStrategy = this.calculateCouplePV(personA, personB, scenario, true)//running the calc again on savedStrategy, just to generate the outputTable
 
       //Generate solution set (for sake of output) from saved values
-      let solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, personA, personB, Number(savedPV))
+      solutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, personA, personB, savedStrategy)
       
-      console.log(solutionSet)
+      console.log(solutionSet);
+
+      scenario.range.initFracsAndColors();
 
       return solutionSet
   }
@@ -632,6 +710,9 @@ export class PresentValueService {
 //This function is for when one spouse is over 70 (and therefore has no retirement age or suspension age to iterate).
 //Also is the function for a divorcee, because we take the ex-spouse's filing date as a given (i.e., as an input)
 maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Person, fixedSpouse:Person) : SolutionSet{
+
+  let deemedFilingCutoff: Date = new Date(1954, 0, 1); 
+  scenario.restrictedApplicationPossible = (flexibleSpouse.actualBirthDate < deemedFilingCutoff);
 
     fixedSpouse.retirementBenefitDate = new MonthYearDate(fixedSpouse.fixedRetirementBenefitDate)
 
@@ -672,15 +753,16 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       flexibleSpouse = this.adjustSpousalBenefitDate(flexibleSpouse, fixedSpouse, scenario)
       fixedSpouse = this.adjustSpousalBenefitDate(fixedSpouse, flexibleSpouse, scenario)
 
-
-    //Initialize savedPV as zero. Set saved dates equal to their current testDates.
-    let savedPV: number = 0
-    let flexibleSpouseSavedRetirementDate = new MonthYearDate(flexibleSpouse.retirementBenefitDate)
-    let flexibleSpouseSavedSpousalDate = new MonthYearDate(flexibleSpouse.spousalBenefitDate)
-    let flexibleSpouseSavedChildInCareSpousalDate = new MonthYearDate(flexibleSpouse.childInCareSpousalBenefitDate)
-    let flexibleSpouseSavedBeginSuspensionDate = new MonthYearDate(flexibleSpouse.beginSuspensionDate)
-    let flexibleSpouseSavedEndSuspensionDate = new MonthYearDate(flexibleSpouse.endSuspensionDate)
-    let fixedSpouseSavedSpousalDate: MonthYearDate = new MonthYearDate(fixedSpouse.spousalBenefitDate)
+      
+    //Initialize savedStrategy, with zero PV, using each spouse's current dates
+    let savedStrategy:ClaimStrategy
+    if (flexibleSpouse.id == "A"){
+      savedStrategy = new ClaimStrategy(flexibleSpouse, fixedSpouse)
+    }
+    else {
+      savedStrategy = new ClaimStrategy(fixedSpouse, flexibleSpouse)
+    }
+    savedStrategy.PV = 0
 
     //Set endTestDate equal to the month flexibleSpouse turns 70. Or, if flexible spouse chose a fixed-death-age assumption younger than age 70, set ending test date to that fixed death age.
     let endTestDate = new MonthYearDate(flexibleSpouse.SSbirthDate.getFullYear()+70, flexibleSpouse.SSbirthDate.getMonth())
@@ -693,24 +775,32 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       flexibleSpouse = this.familyMaximumService.calculateFamilyMaximum(flexibleSpouse, this.today)
       fixedSpouse = this.familyMaximumService.calculateFamilyMaximum(fixedSpouse, this.today)
 
+    //Create new range object for storage of data   
+      scenario.range = new Range(flexibleSpouse.retirementBenefitDate, endTestDate);      
+
     while (flexibleSpouse.retirementBenefitDate <= endTestDate && flexibleSpouse.endSuspensionDate <= endTestDate) {
       //Calculate PV using current test dates for flexibleSpouse and fixed dates for fixedSpouse
+      //and call processPVs to store data for this combination of claim dates
       if (flexibleSpouse.id == "A"){
-        var currentTestPV: number = this.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario, false)
+        var currentTest: ClaimStrategy = this.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario, false)
+        scenario.range.processPVs(currentTest, false)
       }
       else {
-        var currentTestPV: number = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, false)
+        var currentTest: ClaimStrategy = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, false)
+        scenario.range.processPVs(currentTest, true)
       }
 
+
+
       //If PV is greater than or equal to saved PV, save new PV and save new testDates
-      if (currentTestPV >= savedPV) {
-        savedPV = currentTestPV
-        flexibleSpouseSavedRetirementDate = new MonthYearDate(flexibleSpouse.retirementBenefitDate)
-        flexibleSpouseSavedSpousalDate = new MonthYearDate(flexibleSpouse.spousalBenefitDate)
-        flexibleSpouseSavedChildInCareSpousalDate = new MonthYearDate(flexibleSpouse.childInCareSpousalBenefitDate)
-        flexibleSpouseSavedBeginSuspensionDate = new MonthYearDate(flexibleSpouse.beginSuspensionDate)
-        flexibleSpouseSavedEndSuspensionDate = new MonthYearDate(flexibleSpouse.endSuspensionDate)
-        fixedSpouseSavedSpousalDate = new MonthYearDate(fixedSpouse.spousalBenefitDate)
+      if (currentTest.PV >= savedStrategy.PV) {
+        if (flexibleSpouse.id == "A"){
+          savedStrategy = new ClaimStrategy(flexibleSpouse, fixedSpouse)
+        }
+        else {
+          savedStrategy = new ClaimStrategy(fixedSpouse, flexibleSpouse)
+        }
+        savedStrategy.PV = currentTest.PV
         }
       
       //Increment flexibleSpouse's dates (and fixedSpouse's spousal date, which is usually just set to be same as flexible spouse's retirement date)
@@ -721,28 +811,35 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     }
 
       //after loop is finished, set person objects' benefit dates to the saved dates, for sake of running PV calc again for outputTable
-      flexibleSpouse.retirementBenefitDate = new MonthYearDate(flexibleSpouseSavedRetirementDate)
-      flexibleSpouse.spousalBenefitDate = new MonthYearDate(flexibleSpouseSavedSpousalDate)
-      flexibleSpouse.childInCareSpousalBenefitDate = new MonthYearDate(flexibleSpouseSavedChildInCareSpousalDate)
-      flexibleSpouse.beginSuspensionDate = new MonthYearDate(flexibleSpouseSavedBeginSuspensionDate)
-      flexibleSpouse.endSuspensionDate = new MonthYearDate(flexibleSpouseSavedEndSuspensionDate)
-      fixedSpouse.spousalBenefitDate = new MonthYearDate(fixedSpouseSavedSpousalDate)
       if (flexibleSpouse.id == "A"){
-      let outputTablePVcalc: number = this.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario, true)
+        flexibleSpouse.retirementBenefitDate = new MonthYearDate(savedStrategy.personARetirementDate)
+        flexibleSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personASpousalDate)
+        flexibleSpouse.beginSuspensionDate = new MonthYearDate(savedStrategy.personABeginSuspensionDate)
+        flexibleSpouse.endSuspensionDate = new MonthYearDate(savedStrategy.personAEndSuspensionDate)
+        fixedSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
+        savedStrategy = this.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario, true)//running the calc again on savedStrategy, just to generate the outputTable
       }
-      else {
-      let outputTablePVcalc: number = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, true)
+      else {//flexible spouse is personB
+        flexibleSpouse.retirementBenefitDate = new MonthYearDate(savedStrategy.personBRetirementDate)
+        flexibleSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
+        flexibleSpouse.beginSuspensionDate = new MonthYearDate(savedStrategy.personBBeginSuspensionDate)
+        flexibleSpouse.endSuspensionDate = new MonthYearDate(savedStrategy.personBEndSuspensionDate)
+        fixedSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personASpousalDate)
+        savedStrategy = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, true)//running the calc again on savedStrategy, just to generate the outputTable
       }
   
       //generate solutionSet
       if (flexibleSpouse.id == "A"){
-        var solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, flexibleSpouse, fixedSpouse, Number(savedPV))
+        var solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, flexibleSpouse, fixedSpouse, savedStrategy)
       }
       else {
-        var solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, fixedSpouse, flexibleSpouse, Number(savedPV))
+        var solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, fixedSpouse, flexibleSpouse, savedStrategy)
       }
 
       console.log(solutionSet)
+
+      scenario.range.initFracsAndColors();
+
       return solutionSet
   }
 
