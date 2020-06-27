@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core'
+import {Component, OnInit, ViewChild, AfterViewInit} from '@angular/core'
 import {BirthdayService} from '../birthday.service'
 import {PresentValueService} from '../presentvalue.service'
 import {MortalityService} from '../mortality.service'
@@ -13,6 +13,7 @@ import {MonthYearDate} from "../data model classes/monthyearDate"
 import { BenefitService } from '../benefit.service'
 import { ClaimStrategy } from '../data model classes/claimStrategy'
 import { RangeComponent } from '../range/range.component'
+import { ActivatedRoute } from '@angular/router'
 
 
 @Component({
@@ -22,16 +23,23 @@ import { RangeComponent } from '../range/range.component'
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private inputValidationService:InputValidationService, private birthdayService: BirthdayService, private presentvalueService: PresentValueService,
+  constructor(private route: ActivatedRoute, private inputValidationService:InputValidationService, private birthdayService: BirthdayService, private presentvalueService: PresentValueService,
     private mortalityService: MortalityService, private benefitService: BenefitService, private http: HttpClient) { }
 
   ngOnInit() {
-    this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")
-    .subscribe(
-      data => {this.scenario.discountRate = data.dataset.data[0][1]},
-      error => {this.scenario.discountRate = 1}
-    )
+    //Get inputs from URL parameters, if applicable
+      this.getInputsFromURLparameters()
+    //Get TIPS yield for discount rate
+      //But first check if discount rate was set via URL parameter, in which case we want to stick with that instead of TIPS yield
+      if (!this.scenario.discountRate){
+        this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")
+        .subscribe(
+          data => {this.scenario.discountRate = data.dataset.data[0][1]},
+          error => {this.scenario.discountRate = 1}
+        )
+      }
   }
+
 
   @ViewChild(RangeComponent)
   private rangeComponent:RangeComponent
@@ -208,7 +216,7 @@ export class HomeComponent implements OnInit {
     this.solutionSet.computationComplete = true;
     this.normalCursor()
     this.primaryFormHasChanged = false//Set this to false so that customDates() doesn't rerun onSubmit() next time it is run, unless another change is made to primary inputs
-    if (this.customClaimStrategy.PV){//If customDates() has already been run (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs
+    if (this.customClaimStrategy.PV > 0){//If customDates() has already been run (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs
       this.customDates()
     }
     //For testing performance
@@ -220,9 +228,6 @@ export class HomeComponent implements OnInit {
   }
 
   customDates() {
-    if (this.primaryFormHasChanged === true){//Have to rerun the original calculation again if a primary input has changed.
-      this.onSubmit()
-    }
 
     //Create a clone of the normal scenario object, for the purpose of changing the value of benefitCutAssumption when flipping back and forth between "cut" and "nocut" in the Range component (don't want to change the original CalculationScenario object)
               //Note though that any fields that are themselves objects will just be copied by reference. So changes to that object would change both ClaimingScenario objects.
@@ -251,7 +256,7 @@ export class HomeComponent implements OnInit {
         this.differenceInPV = this.customClaimStrategy.PV - this.asComparedToPV
         this.differenceInPV_asPercent = (this.differenceInPV / this.asComparedToPV) * 100
         //Update the range component view
-        this.rangeComponent.updateRangeComponentBasedOnDropDownInputs()
+          this.rangeComponent.updateRangeComponentBasedOnDropDownInputs()
       }
   }
 
@@ -680,6 +685,158 @@ export class HomeComponent implements OnInit {
     if (this.customClaimStrategy.PV > 0){//Run customDates() to calculate new PV. But we only want to run it if it has been run already, otherwise this runs as soon as Range component is initiated, which generates errors
       this.customDates()
     }
+  }
+
+  getInputsFromURLparameters(){
+    this.route.queryParams.subscribe(params => {
+      if (params['advanced']){
+        this.advanced = params['advanced'] == "true" ? true : false
+      }
+      //Scenario inputs
+          if (params['marital']){
+            this.scenario.maritalStatus = params['marital']
+          }
+          if (params['discount']){
+            this.scenario.discountRate = params['discount']
+          }
+          if (params['cutAssumption']){
+            this.scenario.benefitCutAssumption = params['cutAssumption'] == "true" ? true : false
+          }
+          if (params['cutYear']){
+            this.scenario.benefitCutYear = params['cutYear']
+          }
+          if (params['cutPercent']){
+            this.scenario.benefitCutPercentage = params['cutPercent']
+          }
+      //personA inputs
+          if (params['aGender']){
+            this.personAgender = params['aGender']
+          }
+          if (params['aDOBm']){
+            this.personAinputMonth = params['aDOBm']
+          }
+          if (params['aDOBd']){
+            this.personAinputDay = params['aDOBd']
+          }
+          if (params['aDOBy']){
+            this.personAinputYear = params['aDOBy']
+          }
+          if (params['aDisability']){
+            this.personA.isOnDisability = params['aDisability'] == "true" ? true : false
+          }
+          if (params['aPIA']){
+            this.personAprimaryPIAinput = params['aPIA']
+          }
+          if (params['aFixedRBm']){
+            this.personAfixedRetirementBenefitMonth = params['aFixedRBm']
+          }
+          if (params['aFixedRBy']){
+            this.personAfixedRetirementBenefitYear = params['aFixedRBy']
+          }
+          if (params['aWorking']){
+            this.personAworking = params['aWorking'] == "true" ? true : false
+          }
+          if (params['aQuitm']){
+            this.personAquitWorkMonth = params['aQuitm']
+          }
+          if (params['aQuity']){
+            this.personAquitWorkYear = params['aQuity']
+          }
+          if (params['aEarnings']){
+            this.personA.monthlyEarnings = params['aEarnings']
+          }
+          if (params['aFiled']){
+            this.personA.hasFiled = params['aFiled'] == "true" ? true : false
+          }
+          if (params['aEligiblePension']){
+            this.personA.eligibleForNonCoveredPension = params['aEligiblePension'] == "true" ? true : false
+          }
+          if (params['aPensionm']){
+            this.personAnonCoveredPensionMonth = params['aPensionm']
+          }
+          if (params['aPensiony']){
+            this.personAnonCoveredPensionYear = params['aPensiony']
+          }
+          if (params['aGovPension']){
+            this.personA.governmentPension = params['aGovPension']
+          }
+          if (params['aPIA2']){
+            this.personAsecondaryPIAinput = params['aPIA2']
+          }
+          if (params['aMortality']){
+            this.personAmortalityInput = params['aMortality']
+          }
+          if (params['aDeathAge']){
+            this.personAassumedDeathAge = params['aDeathAge']
+          }
+
+      //personB inputs
+          if (params['bGender']){
+            this.personBgender = params['bGender']
+          }
+          if (params['bDOBm']){
+            this.personBinputMonth = params['bDOBm']
+          }
+          if (params['bDOBd']){
+            this.personBinputDay = params['bDOBd']
+          }
+          if (params['bDOBy']){
+            this.personBinputYear = params['bDOBy']
+          }
+          if (params['bDisability']){
+            this.personB.isOnDisability = params['bDisability'] == "true" ? true : false
+          }
+          if (params['bPIA']){
+            this.personBprimaryPIAinput = params['bPIA']
+          }
+          if (params['bFixedRBm']){
+            this.personBfixedRetirementBenefitMonth = params['bFixedRBm']
+          }
+          if (params['bFixedRBy']){
+            this.personBfixedRetirementBenefitYear = params['bFixedRBy']
+          }
+          if (params['bWorking']){
+            this.personBworking = params['bWorking'] == "true" ? true : false
+          }
+          if (params['bQuitm']){
+            this.personBquitWorkMonth = params['bQuitm']
+          }
+          if (params['bQuity']){
+            this.personBquitWorkYear = params['bQuity']
+          }
+          if (params['bEarnings']){
+            this.personB.monthlyEarnings = params['bEarnings']
+          }
+          if (params['bFiled']){
+            this.personB.hasFiled = params['bFiled'] == "true" ? true : false
+          }
+          if (params['bEligiblePension']){
+            this.personB.eligibleForNonCoveredPension = params['bEligiblePension'] == "true" ? true : false
+          }
+          if (params['bPensionm']){
+            this.personBnonCoveredPensionMonth = params['bPensionm']
+          }
+          if (params['bPensiony']){
+            this.personBnonCoveredPensionYear = params['bPensiony']
+          }
+          if (params['bGovPension']){
+            this.personB.governmentPension = params['bGovPension']
+          }
+          if (params['bPIA2']){
+            this.personBsecondaryPIAinput = params['bPIA2']
+          }
+          if (params['bMortality']){
+            this.personBmortalityInput = params['bMortality']
+          }
+          if (params['bDeathAge']){
+            this.personBassumedDeathAge = params['bDeathAge']
+          }
+
+      //Not sure how to handle per-child inputs, since they're coming through in a separate component
+      if (params['children']){
+        this.qualifyingChildrenBoolean = params['children'] == "true" ? true : false
+      }
+    })
   }
 
 }

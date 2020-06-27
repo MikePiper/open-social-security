@@ -1,6 +1,11 @@
 import { Person } from "./person";
 import { MonthYearDate } from "./monthyearDate";
 
+/*
+This code is contributed to the project by Brian Courts, copyright 2020, released under MIT license.
+https://github.com/brian-courts
+*/
+
 // EndSuspensionDates less than this value are placeholders, not actual dates
 let minimumEndSuspensionDate: MonthYearDate = new MonthYearDate(1950, 1);
 

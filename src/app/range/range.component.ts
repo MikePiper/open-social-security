@@ -9,7 +9,10 @@ import { SolutionSetService } from '../solutionset.service'
 import { BirthdayService } from '../birthday.service'
 import { PresentValueService } from '../presentvalue.service'
 
-/* 
+/*
+This code is contributed to the project by Brian Courts, copyright 2020, released under MIT license.
+https://github.com/brian-courts
+
 This component provides a means of graphically displaying the quality of
 any possible claiming date (or, for a couple, combination of claiming dates).
 The "quality" measured is the percentage of the maximum expected PV calculated.
