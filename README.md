@@ -24,16 +24,13 @@ For a married couple, it's the same sort of process, but with more going on. Spe
 2) Probability weighting the various benefits each period involves separate calculations for "probability only Spouse A is alive", "probability only Spouse B is alive", and "probability both spouses are still alive."
 3) Each combination of possible claiming ages must be considered, for both spouses, and for both types of benefits (i.e., retirement and spousal).
 
-
-**Flow of Information**
-
-When a user clicks the "submit" button, the "onsubmit" method from home.component.ts is triggered. This is the "parent" function in which the whole process happens.
-
-First, we use the findSSbirthDate and findFRA functions from birthday.service.ts to find the user(s) Social Security birthdate, full retirement age, and full retirement age for the sake of survivor benefits.
-
-Then, either maximizeSinglePersonPV, maximizeCouplePV, or maximizeDivorceePV functions are called from presentvalue.service.ts, depending on the user's marital status.
-
-The "maximizePV" functions call either calculateSinglePersonPV or calculateCouplePV for each possible claiming age (or set of claiming ages) to find that claiming age's present value.
-    In the process of doing this step, the various functions from benefit.service.ts are called in order to calculate applicable monthly benefit amounts.
-
-Then the claiming age (or set of claiming ages) with the highest PV is returned to the user, as well as the corresponding PV.
+When calculating monthly benefit amounts, as long as the user provides the necessary inputs, the calculator will account for an assortment of complicating factors, including:
+*Government Pension Offset (GPO) and Windfall Elimination Provision (WEP);
+*Child benefits for minor children or adult disabled children;
+*Disability benefits;
+*Child-in-care spousal benefits;
+*The fact that people born prior to January 2, 1954 have a different set of deemed filing rules than people born on or after that date;
+*Voluntary suspension;
+*Family maximum and combined family maximum rules;
+*The earnings test, for people who are younger than full retirement age and still working;
+*Retroactive applications.

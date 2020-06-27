@@ -122,7 +122,7 @@
 
         <!--personA Non-covered Pension Inputs -->
         <div *ngIf="this.advanced === true">
-          <label for="personAnonCoveredPensionYes">Do you receive (or will you receive) a pension from employment that was not covered by Social Security taxes?</label>
+          <label>Do you receive (or will you receive) a pension from employment that was not covered by Social Security taxes?</label>
           <input type="radio" id="personAnonCoveredPensionYes" [(ngModel)]="personA.eligibleForNonCoveredPension" name="personA.eligibleForNonCoveredPension" [value]="true">
           <label for="personAnonCoveredPensionYes">Yes</label>
           <input type="radio" id="personAnonCoveredPensionNo" [(ngModel)]="personA.eligibleForNonCoveredPension" name="personA.eligibleForNonCoveredPension" [value]="false">
@@ -292,7 +292,7 @@
 
         <!--personB Non-covered Pension Inputs -->
         <div *ngIf="this.advanced === true && scenario.maritalStatus == 'married'">
-          <label for="personBnonCoveredPensionYes">Does your spouse receive (or will he/she receive) a pension from employment that was not covered by Social Security taxes?</label>
+          <label>Does your spouse receive (or will he/she receive) a pension from employment that was not covered by Social Security taxes?</label>
           <input type="radio" id="personBnonCoveredPensionYes" [(ngModel)]="personB.eligibleForNonCoveredPension" name="personB.eligibleForNonCoveredPension" [value]="true">
           <label for="personBnonCoveredPensionYes">Yes</label>
           <input type="radio" id="personBnonCoveredPensionNo" [(ngModel)]="personB.eligibleForNonCoveredPension" name="personB.eligibleForNonCoveredPension" [value]="false">
@@ -429,7 +429,11 @@
     </span>
 </form>
 
-  <span *ngIf="this.solutionSet.computationComplete">
+  <!-- BEGIN OUTPUT SECTION-->
+  <p *ngIf="this.solutionSet.computationComplete && this.primaryFormHasChanged === true" class="alert alert-danger">
+    Please click "submit" again, in order to rerun the calculation with your revised inputs.
+  </p>
+  <span *ngIf="this.solutionSet.computationComplete && this.primaryFormHasChanged === false">
 
   <!--Recommended Strategy Output-->
   <h2>Recommended Strategy</h2>
@@ -457,7 +461,7 @@
   <h2>Test an alternative claiming strategy:</h2>
 
   <app-range (newClaimStrategySelected)="alternativeStrategyPVcalcViaClickOnRange($event)" (benefitCutAssumptionSwitch)="alternativeStrategyPVcalcViaRangeBenefitCutBooleanSwitch($event)"
-  [scenario]="scenario" [recommendedSolutionSet]="solutionSet" [personA]="personA" [personB]="personB" [homeSetCustomDates]="setCustomDates"></app-range>
+  [scenario]="scenario" [recommendedSolutionSet]="solutionSet" [personA]="personA" [personB]="personB"></app-range>
 
         <!--PersonA Custom Date Inputs -->
         <div class="form-inline" *ngIf="personA.hasFiled === false && personA.isOnDisability === false">
@@ -646,4 +650,57 @@
    
 </span>
 
+<p>
+If you want to save your inputs, you can 
+<a href="
+?advanced={{advanced}}
+&&marital={{scenario.maritalStatus}}
+&&discount={{scenario.discountRate}}
+&&cutAssumption={{scenario.benefitCutAssumption}}
+&&cutYear={{scenario.benefitCutYear}}
+&&cutPercent={{scenario.benefitCutPercentage}}
+&&aGender={{personAgender}}
+&&aDOBm={{personAinputMonth}}
+&&aDOBd={{personAinputDay}}
+&&aDOBy={{personAinputYear}}
+&&aDisability={{personA.isOnDisability}}
+&&aPIA={{personAprimaryPIAinput}}
+&&aFixedRBm={{personAfixedRetirementBenefitMonth}}
+&&aFixedRBy={{personAfixedRetirementBenefitYear}}
+&&aWorking={{personAworking}}
+&&aQuitm={{personAquitWorkMonth}}
+&&aQuity={{personAquitWorkYear}}
+&&aEarnings={{personA.monthlyEarnings}}
+&&aFiled={{personA.hasFiled}}
+&&aEligiblePension={{personA.eligibleForNonCoveredPension}}
+&&aPensionm={{personAnonCoveredPensionMonth}}
+&&aPensiony={{personAnonCoveredPensionYear}}
+&&aGovPension={{personA.governmentPension}}
+&&aPIA2={{personAsecondaryPIAinput}}
+&&aMortality={{personAmortalityInput}}
+&&aDeathAge={{personAassumedDeathAge}}
+&&bGender={{personBgender}}
+&&bDOBm={{personBinputMonth}}
+&&bDOBd={{personBinputDay}}
+&&bDOBy={{personBinputYear}}
+&&bDisability={{personB.isOnDisability}}
+&&bPIA={{personBprimaryPIAinput}}
+&&bFixedRBm={{personBfixedRetirementBenefitMonth}}
+&&bFixedRBy={{personBfixedRetirementBenefitYear}}
+&&bWorking={{personBworking}}
+&&bQuitm={{personBquitWorkMonth}}
+&&bQuity={{personBquitWorkYear}}
+&&bEarnings={{personB.monthlyEarnings}}
+&&bFiled={{personB.hasFiled}}
+&&bEligiblePension={{personB.eligibleForNonCoveredPension}}
+&&bPensionm={{personBnonCoveredPensionMonth}}
+&&bPensiony={{personBnonCoveredPensionYear}}
+&&bGovPension={{personB.governmentPension}}
+&&bPIA2={{personBsecondaryPIAinput}}
+&&bMortality={{personBmortalityInput}}
+&&bDeathAge={{personBassumedDeathAge}}
+&&children={{qualifyingChildrenBoolean}}
+">right-click this link</a>
+ and save the URL. When you paste the URL into your browser later, your inputs will be pre-filled.
+</p>
 </div>

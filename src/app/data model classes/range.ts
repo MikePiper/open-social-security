@@ -2,6 +2,9 @@ import { MonthYearDate } from './monthyearDate';
 import { ClaimStrategy } from './claimStrategy';
 
 /* 
+This code is contributed to the project by Brian Courts, copyright 2020, released under MIT license.
+https://github.com/brian-courts
+
 This class provides fields and methods for the storage and manipulation
 of data related to the range of possible options of Social Security
 claim dates, and the expected PV (present value) of each of those options.
