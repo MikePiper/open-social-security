@@ -283,36 +283,36 @@ export class HomeComponent implements OnInit {
     //Get PIA inputs
       //personA
       if (this.personA.eligibleForNonCoveredPension === false){
-        this.personA.PIA = this.personAprimaryPIAinput
+        this.personA.PIA = Number(this.personAprimaryPIAinput)
       }
       else {//i.e., personA will be getting noncovered pension
         //create nonCoveredPensionDate
         this.personA.nonCoveredPensionDate = new MonthYearDate(this.personAnonCoveredPensionYear, this.personAnonCoveredPensionMonth-1)
         //set WEP_PIA and nonWEP_PIA based on primary/secondary PIAinput
         if (this.personA.isOnDisability === true && this.personA.nonCoveredPensionDate > this.today){//if person is on disability and pension has not yet begun, primaryPIAinput represents their nonWEP_PIA
-          this.personA.nonWEP_PIA = this.personAprimaryPIAinput
-          this.personA.WEP_PIA = this.personAsecondaryPIAinput
+          this.personA.nonWEP_PIA = Number(this.personAprimaryPIAinput)
+          this.personA.WEP_PIA = Number(this.personAsecondaryPIAinput)
         }
         else {//in all other cases in which person is eligible for noncovered pension, primaryPIAinput is their WEP PIA
-          this.personA.WEP_PIA = this.personAprimaryPIAinput
-          this.personA.nonWEP_PIA = this.personAsecondaryPIAinput
+          this.personA.WEP_PIA = Number(this.personAprimaryPIAinput)
+          this.personA.nonWEP_PIA = Number(this.personAsecondaryPIAinput)
         }
       }
       //personB
       if (this.personB.eligibleForNonCoveredPension === false){
-        this.personB.PIA = this.personBprimaryPIAinput
+        this.personB.PIA = Number(this.personBprimaryPIAinput)
       }
       else {//i.e., personB will be getting noncovered pension
         //create nonCoveredPensionDate
         this.personB.nonCoveredPensionDate = new MonthYearDate(this.personBnonCoveredPensionYear, this.personBnonCoveredPensionMonth-1)
         //set WEP_PIA and nonWEP_PIA based on primary/secondary PIAinput
         if (this.personB.isOnDisability === true && this.personB.nonCoveredPensionDate > this.today){//if person is on disability and pension has not yet begun, primaryPIAinput represents their nonWEP_PIA
-          this.personB.nonWEP_PIA = this.personBprimaryPIAinput
-          this.personB.WEP_PIA = this.personBsecondaryPIAinput
+          this.personB.nonWEP_PIA = Number(this.personBprimaryPIAinput)
+          this.personB.WEP_PIA = Number(this.personBsecondaryPIAinput)
         }
         else {//in all other cases in which person is eligible for noncovered pension, primaryPIAinput is their WEP PIA
-          this.personB.WEP_PIA = this.personBprimaryPIAinput
-          this.personB.nonWEP_PIA = this.personBsecondaryPIAinput
+          this.personB.WEP_PIA = Number(this.personBprimaryPIAinput)
+          this.personB.nonWEP_PIA = Number(this.personBsecondaryPIAinput)
         }
       }
     this.benefitService.checkWhichPIAtoUse(this.personA, this.today)
