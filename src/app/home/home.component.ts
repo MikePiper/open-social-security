@@ -697,53 +697,53 @@ export class HomeComponent implements OnInit {
             this.scenario.maritalStatus = params['marital']
           }
           if (params['discount']){
-            this.scenario.discountRate = params['discount']
+            this.scenario.discountRate = Number(params['discount'])
           }
           if (params['cutAssumption']){
             this.scenario.benefitCutAssumption = params['cutAssumption'] == "true" ? true : false
           }
           if (params['cutYear']){
-            this.scenario.benefitCutYear = params['cutYear']
+            this.scenario.benefitCutYear = Number(params['cutYear'])
           }
           if (params['cutPercent']){
-            this.scenario.benefitCutPercentage = params['cutPercent']
+            this.scenario.benefitCutPercentage = Number(params['cutPercent'])
           }
       //personA inputs
           if (params['aGender']){
             this.personAgender = params['aGender']
           }
           if (params['aDOBm']){
-            this.personAinputMonth = params['aDOBm']
+            this.personAinputMonth = Number(params['aDOBm'])
           }
           if (params['aDOBd']){
-            this.personAinputDay = params['aDOBd']
+            this.personAinputDay = Number(params['aDOBd'])
           }
           if (params['aDOBy']){
-            this.personAinputYear = params['aDOBy']
+            this.personAinputYear = Number(params['aDOBy'])
           }
           if (params['aDisability']){
             this.personA.isOnDisability = params['aDisability'] == "true" ? true : false
           }
           if (params['aPIA']){
-            this.personAprimaryPIAinput = params['aPIA']
+            this.personAprimaryPIAinput = Number(params['aPIA'])
           }
           if (params['aFixedRBm']){
-            this.personAfixedRetirementBenefitMonth = params['aFixedRBm']
+            this.personAfixedRetirementBenefitMonth = Number(params['aFixedRBm'])
           }
           if (params['aFixedRBy']){
-            this.personAfixedRetirementBenefitYear = params['aFixedRBy']
+            this.personAfixedRetirementBenefitYear = Number(params['aFixedRBy'])
           }
           if (params['aWorking']){
             this.personAworking = params['aWorking'] == "true" ? true : false
           }
           if (params['aQuitm']){
-            this.personAquitWorkMonth = params['aQuitm']
+            this.personAquitWorkMonth = Number(params['aQuitm'])
           }
           if (params['aQuity']){
-            this.personAquitWorkYear = params['aQuity']
+            this.personAquitWorkYear = Number(params['aQuity'])
           }
           if (params['aEarnings']){
-            this.personA.monthlyEarnings = params['aEarnings']
+            this.personA.monthlyEarnings = Number(params['aEarnings'])
           }
           if (params['aFiled']){
             this.personA.hasFiled = params['aFiled'] == "true" ? true : false
@@ -752,22 +752,22 @@ export class HomeComponent implements OnInit {
             this.personA.eligibleForNonCoveredPension = params['aEligiblePension'] == "true" ? true : false
           }
           if (params['aPensionm']){
-            this.personAnonCoveredPensionMonth = params['aPensionm']
+            this.personAnonCoveredPensionMonth = Number(params['aPensionm'])
           }
           if (params['aPensiony']){
-            this.personAnonCoveredPensionYear = params['aPensiony']
+            this.personAnonCoveredPensionYear = Number(params['aPensiony'])
           }
           if (params['aGovPension']){
-            this.personA.governmentPension = params['aGovPension']
+            this.personA.governmentPension = Number(params['aGovPension'])
           }
           if (params['aPIA2']){
-            this.personAsecondaryPIAinput = params['aPIA2']
+            this.personAsecondaryPIAinput = Number(params['aPIA2'])
           }
           if (params['aMortality']){
             this.personAmortalityInput = params['aMortality']
           }
           if (params['aDeathAge']){
-            this.personAassumedDeathAge = params['aDeathAge']
+            this.personAassumedDeathAge = Number(params['aDeathAge'])
           }
 
       //personB inputs
@@ -775,37 +775,37 @@ export class HomeComponent implements OnInit {
             this.personBgender = params['bGender']
           }
           if (params['bDOBm']){
-            this.personBinputMonth = params['bDOBm']
+            this.personBinputMonth = Number(params['bDOBm'])
           }
           if (params['bDOBd']){
-            this.personBinputDay = params['bDOBd']
+            this.personBinputDay = Number(params['bDOBd'])
           }
           if (params['bDOBy']){
-            this.personBinputYear = params['bDOBy']
+            this.personBinputYear = Number(params['bDOBy'])
           }
           if (params['bDisability']){
             this.personB.isOnDisability = params['bDisability'] == "true" ? true : false
           }
           if (params['bPIA']){
-            this.personBprimaryPIAinput = params['bPIA']
+            this.personBprimaryPIAinput = Number(params['bPIA'])
           }
           if (params['bFixedRBm']){
-            this.personBfixedRetirementBenefitMonth = params['bFixedRBm']
+            this.personBfixedRetirementBenefitMonth = Number(params['bFixedRBm'])
           }
           if (params['bFixedRBy']){
-            this.personBfixedRetirementBenefitYear = params['bFixedRBy']
+            this.personBfixedRetirementBenefitYear = Number(params['bFixedRBy'])
           }
           if (params['bWorking']){
             this.personBworking = params['bWorking'] == "true" ? true : false
           }
           if (params['bQuitm']){
-            this.personBquitWorkMonth = params['bQuitm']
+            this.personBquitWorkMonth = Number(params['bQuitm'])
           }
           if (params['bQuity']){
-            this.personBquitWorkYear = params['bQuity']
+            this.personBquitWorkYear = Number(params['bQuity'])
           }
           if (params['bEarnings']){
-            this.personB.monthlyEarnings = params['bEarnings']
+            this.personB.monthlyEarnings = Number(params['bEarnings'])
           }
           if (params['bFiled']){
             this.personB.hasFiled = params['bFiled'] == "true" ? true : false
@@ -814,22 +814,22 @@ export class HomeComponent implements OnInit {
             this.personB.eligibleForNonCoveredPension = params['bEligiblePension'] == "true" ? true : false
           }
           if (params['bPensionm']){
-            this.personBnonCoveredPensionMonth = params['bPensionm']
+            this.personBnonCoveredPensionMonth = Number(params['bPensionm'])
           }
           if (params['bPensiony']){
-            this.personBnonCoveredPensionYear = params['bPensiony']
+            this.personBnonCoveredPensionYear = Number(params['bPensiony'])
           }
           if (params['bGovPension']){
-            this.personB.governmentPension = params['bGovPension']
+            this.personB.governmentPension = Number(params['bGovPension'])
           }
           if (params['bPIA2']){
-            this.personBsecondaryPIAinput = params['bPIA2']
+            this.personBsecondaryPIAinput = Number(params['bPIA2'])
           }
           if (params['bMortality']){
             this.personBmortalityInput = params['bMortality']
           }
           if (params['bDeathAge']){
-            this.personBassumedDeathAge = params['bDeathAge']
+            this.personBassumedDeathAge = Number(params['bDeathAge'])
           }
 
       //Not sure how to handle per-child inputs, since they're coming through in a separate component
