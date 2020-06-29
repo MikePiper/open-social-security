@@ -688,10 +688,12 @@ export class PresentValueService {
     //after loop is finished, set person objects' benefit dates to the saved dates, for sake of running PV calc again for outputTable
       personA.retirementBenefitDate = new MonthYearDate(savedStrategy.personARetirementDate)
       personA.spousalBenefitDate = new MonthYearDate(savedStrategy.personASpousalDate)
+      personA.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personAchildInCareSpousalDate)
       personA.beginSuspensionDate = new MonthYearDate(savedStrategy.personABeginSuspensionDate)
       personA.endSuspensionDate = new MonthYearDate(savedStrategy.personAEndSuspensionDate)
       personB.retirementBenefitDate = new MonthYearDate(savedStrategy.personBRetirementDate)
       personB.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
+      personB.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personBchildInCareSpousalDate)
       personB.beginSuspensionDate = new MonthYearDate(savedStrategy.personBBeginSuspensionDate)
       personB.endSuspensionDate = new MonthYearDate(savedStrategy.personBEndSuspensionDate)
       savedStrategy = this.calculateCouplePV(personA, personB, scenario, true)//running the calc again on savedStrategy, just to generate the outputTable
@@ -814,17 +816,21 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       if (flexibleSpouse.id == "A"){
         flexibleSpouse.retirementBenefitDate = new MonthYearDate(savedStrategy.personARetirementDate)
         flexibleSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personASpousalDate)
+        flexibleSpouse.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personAchildInCareSpousalDate)
         flexibleSpouse.beginSuspensionDate = new MonthYearDate(savedStrategy.personABeginSuspensionDate)
         flexibleSpouse.endSuspensionDate = new MonthYearDate(savedStrategy.personAEndSuspensionDate)
         fixedSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
+        fixedSpouse.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personBchildInCareSpousalDate)
         savedStrategy = this.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario, true)//running the calc again on savedStrategy, just to generate the outputTable
       }
       else {//flexible spouse is personB
         flexibleSpouse.retirementBenefitDate = new MonthYearDate(savedStrategy.personBRetirementDate)
         flexibleSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
+        flexibleSpouse.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personBchildInCareSpousalDate)
         flexibleSpouse.beginSuspensionDate = new MonthYearDate(savedStrategy.personBBeginSuspensionDate)
         flexibleSpouse.endSuspensionDate = new MonthYearDate(savedStrategy.personBEndSuspensionDate)
         fixedSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personASpousalDate)
+        fixedSpouse.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personAchildInCareSpousalDate)
         savedStrategy = this.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, true)//running the calc again on savedStrategy, just to generate the outputTable
       }
   

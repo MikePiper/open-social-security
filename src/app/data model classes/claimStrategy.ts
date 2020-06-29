@@ -17,11 +17,13 @@ export class ClaimStrategy {
 
     personARetirementDate: MonthYearDate;
     personASpousalDate: MonthYearDate;
+    personAchildInCareSpousalDate: MonthYearDate;
     personABeginSuspensionDate: MonthYearDate;
     personAEndSuspensionDate: MonthYearDate;
     
     personBRetirementDate: MonthYearDate;
     personBSpousalDate: MonthYearDate;
+    personBchildInCareSpousalDate: MonthYearDate;
     personBBeginSuspensionDate: MonthYearDate;
     personBEndSuspensionDate: MonthYearDate;
 
@@ -35,12 +37,14 @@ export class ClaimStrategy {
     constructor(personA: Person, personB?: Person) {
         this.personARetirementDate = new MonthYearDate(personA.retirementBenefitDate);
         this.personASpousalDate = new MonthYearDate(personA.spousalBenefitDate);
+        this.personAchildInCareSpousalDate = new MonthYearDate(personA.childInCareSpousalBenefitDate)
         this.personABeginSuspensionDate = new MonthYearDate(personA.beginSuspensionDate);
         this.personAEndSuspensionDate = new MonthYearDate(personA.endSuspensionDate);
     
         if (personB) {
             this.personBRetirementDate = new MonthYearDate(personB.retirementBenefitDate);
             this.personBSpousalDate = new MonthYearDate(personB.spousalBenefitDate);
+            this.personBchildInCareSpousalDate  = new MonthYearDate(personB.childInCareSpousalBenefitDate)
             this.personBBeginSuspensionDate = new MonthYearDate(personB.beginSuspensionDate);
             this.personBEndSuspensionDate = new MonthYearDate(personB.endSuspensionDate);
         }

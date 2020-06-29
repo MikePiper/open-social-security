@@ -866,7 +866,6 @@ describe('tests calculateCouplePV', () => {
           expect(claimStrategy.outputTable[10][1]).toEqual("$14,880")//personA annual retirement benefit after WEP kicks in: 124% of WEP PIA = 1.24 * 1000 * 12 = 14880
           expect(claimStrategy.outputTable[12][0]).toEqual("If your spouse outlives you")
           expect(claimStrategy.outputTable[12][6]).toEqual("$9,456")
-          console.log(claimStrategy.outputTable)
           //deceased filed at 70 with FRA of 67. Benefit would have been 1488, given nonWEP PIA of 1200.
           //Minus survivor's own 700 retirement benefit, gives 788 survivor benefit. 788 x 12 = 9456
         })
