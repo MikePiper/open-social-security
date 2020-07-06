@@ -256,7 +256,9 @@ export class HomeComponent implements OnInit {
         this.differenceInPV = this.customClaimStrategy.PV - this.asComparedToPV
         this.differenceInPV_asPercent = (this.differenceInPV / this.asComparedToPV) * 100
         //Update the range component view
+        if (this.rangeComponent){
           this.rangeComponent.updateRangeComponentBasedOnDropDownInputs()
+        }
       }
   }
 
