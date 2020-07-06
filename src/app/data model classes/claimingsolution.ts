@@ -10,104 +10,163 @@ import {MonthYearDate} from "./monthyearDate"
     ageYears: number
     ageMonths: number
     message: string //build one of messages below
+    shortMessage: string // for display when hovering over graph of options
 
-    constructor(maritalStatus: string, typeOfBenefit:string, person:Person, date:MonthYearDate, ageYears:number, ageMonths:number){
-        this.maritalStatus = maritalStatus
-        this.benefitType = typeOfBenefit
-        this.date = date
-        this.ageYears = ageYears
-        this.ageMonths = ageMonths
-        if (person.id == "A") {
-          if (this.benefitType == "retirement"){
-            this.message = "You file for your retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "retroactiveRetirement"){
-            this.message = "You file for your retirement benefit to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "spousal") {
-            this.message = "You file for your spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "retroactiveSpousal") {
-            this.message = "You file for your spousal benefit to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "childInCareSpousal") {
-            this.message = "You file for child-in-care spousal benefits to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "childInCareSpousalSuspension") {
-            this.message = "Your child-in-care spousal benefit is automatically suspended when your youngest child reaches age 16 (" + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "), at your age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "automaticSpousalUnsuspension") {
-            this.message = "Your spousal benefit begins again automatically at your full retirement age (" + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ")."
-          }
-          if (this.benefitType == "suspendToday") {
-            this.message = "You suspend your retirement benefit today."
-          }
-          if (this.benefitType == "suspendAtFRA") {
-            this.message = "You suspend your retirement benefit at your full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + ")."
-          }
-          if (this.benefitType == "suspendAtSomeOtherDate") {
-            this.message = "You suspend your retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "unsuspend") {
-            this.message = "You unsuspend your retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "disabilityConversion"){
-            this.message = "At your full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + "), your disability benefit will automatically convert to a retirement benefit of the same amount."
-          }
-          if (this.benefitType == "child"){
-            this.message = "Your child(ren) file(s) for child benefits on your work record " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
-          }
-          if (this.benefitType == "retroactiveChild"){
-            this.message = "Your child(ren) file(s) for child benefits on your work record to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
-          }
-        }
-        if (person.id == "B") {
-          if (this.benefitType == "retirement"){
-            this.message = "Your spouse files for his/her retirement benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "retroactiveRetirement"){
-            this.message = "Your spouse files for his/her retirement benefit to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "spousal") {
-            this.message = "Your spouse files for his/her spousal benefit to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "retroactiveSpousal") {
-            this.message = "Your spouse files for his/her spousal benefit to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "childInCareSpousal") {
-            this.message = "Your spouse files for child-in-care spousal benefits to begin " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "childInCareSpousalSuspension") {
-            this.message = "Your spouse's child-in-care spousal benefit is automatically suspended when your youngest child reaches age 16 (" + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "), when your spouse is age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "automaticSpousalUnsuspension") {
-            this.message = "Your spouse's spousal benefit begins again automatically at his/her full retirement age (" + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ")."
-          }
-          if (this.benefitType == "suspendToday") {
-            this.message = "Your spouse suspends his/her retirement benefit today."
-          }
-          if (this.benefitType == "suspendAtFRA") {
-            this.message = "Your spouse suspends his/her retirement benefit at full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + ")."
-          }
-          if (this.benefitType == "suspendAtSomeOtherDate") {
-            this.message = "Your spouse suspends his/her retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "unsuspend") {
-            this.message = "Your spouse unsuspends his/her retirement benefit " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + ", at age " + this.ageYears + " and " + this.ageMonths + " months."
-          }
-          if (this.benefitType == "disabilityConversion"){
-            this.message = "At your spouse's full retirement age (" + (person.FRA.getMonth()+1) + "/" + person.FRA.getFullYear() + "), his/her disability benefit will automatically convert to a retirement benefit of the same amount."
-          }
-          if (this.benefitType == "child"){
-            this.message = "Your child(ren) file(s) for child benefits on your spouse's work record " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
-          }
-          if (this.benefitType == "retroactiveChild"){
-            this.message = "Your child(ren) file(s) for child benefits on your spouse's work record to begin (retroactively) as of " + (this.date.getMonth()+1) + "/" + this.date.getFullYear() + "."
-          }
-        }
-        if (this.benefitType == "doNothing"){
+  constructor(maritalStatus: string, typeOfBenefit: string, person: Person, 
+    date: MonthYearDate, ageYears: number, ageMonths: number) {
+    this.maritalStatus = maritalStatus
+    this.benefitType = typeOfBenefit
+    this.date = date
+    this.ageYears = ageYears
+    this.ageMonths = ageMonths
+    let dateString: string = this.date.toString();
+    let ageString: string
+    if (this.ageYears > 0) { // age will be output, so create that string
+      ageString = ", at age " + this.ageYears + " and " + this.ageMonths + " months."
+    }
+    // create the short message
+    if (person.id == "A") {
+      this.shortMessage = "You"
+    } else {
+      this.shortMessage = "Spouse" 
+    }
+    switch (this.benefitType) {
+      case "retirement":
+      case "retroactiveRetirement":
+        this.shortMessage += " (begin retirement) " + dateString
+        break;
+      case "spousal":
+      case "retroactiveSpousal":
+        this.shortMessage += " (begin spousal) " + dateString
+        break;
+      case "childInCareSpousal":
+        this.shortMessage += " (begin child-in-care spousal) " + dateString
+        break;
+      case "childInCareSpousalSuspension":
+        this.shortMessage += " (suspend child-in-care spousal) " + dateString
+        break;
+      case "automaticSpousalUnsuspension":
+        this.shortMessage += " (unsuspend spousal at FRA) " + dateString
+        break;
+      case "suspendToday":
+        this.shortMessage += " (suspend retirement today)"
+        break;
+      case "suspendAtFRA":
+        this.shortMessage += " (suspend retirement at FRA) " + dateString
+        break;
+      case "suspendAtSomeOtherDate":
+        this.shortMessage += " (suspend retirement) " + dateString
+        break;
+      case "unsuspend":
+        this.shortMessage +=" (unsuspend retirement) " + dateString
+        break;
+      case "disabilityConversion":
+        this.shortMessage +=" (disability benefit converts to retirement) " + dateString
+        break;
+      case "child":
+      case "retroactiveChild":
+        this.shortMessage = " (child(ren) file(s) for child benefits)" + dateString
+        break;
+      case "doNothing":
+        this.shortMessage = "Do nothing"
+    }
+    // create the long message 
+    if (person.id == "A") {
+      switch (this.benefitType) {
+        case "retirement":
+          this.message = "You file for your retirement benefit to begin " + dateString + ageString
+          break;
+        case "retroactiveRetirement":
+          this.message = "You file for your retirement benefit to begin (retroactively) as of " + dateString + ageString
+          break;
+        case "spousal":
+          this.message = "You file for your spousal benefit to begin " + dateString + ageString
+          break;
+        case "retroactiveSpousal":
+          this.message = "You file for your spousal benefit to begin (retroactively) as of " + dateString + ageString
+          break;
+        case "childInCareSpousal":
+          this.message = "You file for child-in-care spousal benefits to begin " + dateString + ageString
+          break;
+        case "childInCareSpousalSuspension":
+          this.message = "Your child-in-care spousal benefit is automatically suspended when your youngest child reaches age 16 (" + dateString + "), at your age " + this.ageYears + " and " + this.ageMonths + " months."
+          break;
+        case "automaticSpousalUnsuspension":
+          this.message = "Your spousal benefit begins again automatically at your full retirement age (" + dateString + ")."
+          break;
+        case "suspendToday":
+          this.message = "You suspend your retirement benefit today."
+          break;
+        case "suspendAtFRA":
+          // NOTE: previous version specified person's FRA date, but solution.service.ts provides FRA date as the input date, so no need for special case
+          this.message = "You suspend your retirement benefit at your full retirement age (" + dateString + ")."
+          break;
+        case "suspendAtSomeOtherDate":
+          this.message = "You suspend your retirement benefit " + dateString + ageString
+          break;
+        case "unsuspend":
+          this.message = "You unsuspend your retirement benefit " + dateString + ageString
+          break;
+        case "disabilityConversion":
+          // NOTE: previous version specified person's FRA date, but solution.service.ts provides FRA date as the input date, so no need for special case
+          this.message = "At your full retirement age (" + dateString + "), your disability benefit will automatically convert to a retirement benefit of the same amount."
+          break;
+        case "child":
+          this.message = "Your child(ren) file(s) for child benefits on your work record " + dateString + "."
+          break;
+        case "retroactiveChild":
+          this.message = "Your child(ren) file(s) for child benefits on your work record to begin (retroactively) as of " + dateString + "."
+          break;
+        case "doNothing": // doNothing always produced for personA in solutionset.service.ts
           this.message = "Nobody in the household files for any additional benefits or voluntarily suspends their benefit at any time."
-        }
+      }
+    }
+    else { // this is personB
+      switch (this.benefitType) {
+        case "retirement":
+          this.message = "Your spouse files for his/her retirement benefit to begin " + dateString + ageString
+          break;
+        case "retroactiveRetirement":
+          this.message = "Your spouse files for his/her retirement benefit to begin (retroactively) as of " + dateString + ageString
+          break;
+        case "spousal":
+          this.message = "Your spouse files for his/her spousal benefit to begin " + dateString + ageString
+          break;
+        case "retroactiveSpousal":
+          this.message = "Your spouse files for his/her spousal benefit to begin (retroactively) as of " + dateString + ageString
+          break;
+        case "childInCareSpousal":
+          this.message = "Your spouse files for child-in-care spousal benefits to begin " + dateString + ageString
+          break;
+        case "childInCareSpousalSuspension":
+          this.message = "Your spouse's child-in-care spousal benefit is automatically suspended when your youngest child reaches age 16 (" + dateString + "), when your spouse is age " + this.ageYears + " and " + this.ageMonths + " months."
+          break;
+        case "automaticSpousalUnsuspension":
+          this.message = "Your spouse's spousal benefit begins again automatically at his/her full retirement age (" + dateString + ")."
+          break;
+        case "suspendToday":
+          this.message = "Your spouse suspends his/her retirement benefit today."
+          break;
+        case "suspendAtFRA":
+          this.message = "Your spouse suspends his/her retirement benefit at full retirement age (" + dateString + ")."
+          break;
+        case "suspendAtSomeOtherDate":
+          this.message = "Your spouse suspends his/her retirement benefit " + dateString + ageString
+          break;
+        case "unsuspend":
+          this.message = "Your spouse unsuspends his/her retirement benefit " + dateString + ageString
+          break;
+        case "disabilityConversion":
+          this.message = "At your spouse's full retirement age (" + dateString + "), his/her disability benefit will automatically convert to a retirement benefit of the same amount."
+          break;
+        case "child":
+          this.message = "Your child(ren) file(s) for child benefits on your spouse's work record " + dateString + "."
+          break;
+        case "retroactiveChild":
+          this.message = "Your child(ren) file(s) for child benefits on your spouse's work record to begin (retroactively) as of " + dateString + "."
+          break;
+      }
     }
   }
+}
 

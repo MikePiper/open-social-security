@@ -646,8 +646,8 @@ update(e: MouseEvent) {
       this.previousPointerRow = row;
       this.previousPointerColumn = column;
 
-      // this version gives almost the same filing information as shown for the selected cell,
-      // in a condensed format
+      // this version gives a condensed form of the claiming strategy 
+      // which would be listed for the cell, if it were selected
       this.pointerPercentString = this.range.getPvPercentString(this.currentCondition, row, column) + "% of maximum";
       if (this.showCut) {
           let expectedPvPercentNoCut: string = this.range.getPvPercentString(NO_CUT, row, column);
@@ -655,17 +655,9 @@ update(e: MouseEvent) {
       } 
       let pointerSolutionSet: SolutionSet = this.getSolutionSet(row, column);
       let title: string = this.pointerPercentString + "\n";
-      let solutionMessage: string;
       let solutionCount: number = pointerSolutionSet.solutionsArray.length;
       for (let i: number = 0; i < solutionCount; i++) {
-        solutionMessage = (pointerSolutionSet.solutionsArray[i].message).split(',')[0] // delete age portion (after comma)
-        .replace("file for your retirement benefit to begin", "(retirement)")
-        .replace("files for his/her retirement benefit to begin", "(retirement)")
-        .replace("file for your spousal benefit to begin", "(spousal)")
-        .replace("files for his/her spousal benefit to begin", "(spousal)")
-        .replace("Your spouse", "Spouse")
-        .replace(" (retroactively) as of", "");
-        title = title.concat(solutionMessage, "\n");
+        title = title.concat(pointerSolutionSet.solutionsArray[i].shortMessage, "\n");
       }
       this.canvas.title = title;
     } else {
