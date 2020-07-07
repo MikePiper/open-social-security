@@ -85,8 +85,11 @@ export class MonthYearDate {
         return newDate;
     }
 
-    yearMonthString(): string { // month at end for easier sorting, e,g, 2015/09 or 2015/10
-        return this.year + '/' + ("0" + (this.month + 1)).slice(-2)
+    yearMonthString(): string { // two-digit month at end for easier sorting, e,g, 2015/09 or 2015/10
+        if (this.month < 9) {
+            return this.year + '/' + "0" + (this.month + 1)
+        }
+        else return this.year + '/' + this.month + 1
     }
 
     toString(): string { // e.g. 9/2015 or 10/2015
