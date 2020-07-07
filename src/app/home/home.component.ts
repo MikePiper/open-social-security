@@ -256,7 +256,9 @@ export class HomeComponent implements OnInit {
         this.differenceInPV = this.customClaimStrategy.PV - this.asComparedToPV
         this.differenceInPV_asPercent = (this.differenceInPV / this.asComparedToPV) * 100
         //Update the range component view
+        if (this.rangeComponent){
           this.rangeComponent.updateRangeComponentBasedOnDropDownInputs()
+        }
       }
   }
 
@@ -447,19 +449,7 @@ export class HomeComponent implements OnInit {
           ( (this.personA.hasFiled === true || this.personA.isOnDisability === true) && (this.personB.hasFiled === true || this.personB.isOnDisability === true) ) //both have already started retirement or disability and therefore have already started spousal so there will be no spousal input
         )
           {
-            //If married, personA spousal date is later of retirement dates
-            if (this.scenario.maritalStatus == "married") {
-              if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
-                this.personA.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
-              }
-              else {
-                this.personA.spousalBenefitDate = new MonthYearDate(this.personB.retirementBenefitDate)
-              }
-            }
-            //If divorced, personA spousal date is personA retirementdate
-            else if (this.scenario.maritalStatus == "divorced"){
-              this.personA.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
-            }
+            this.presentvalueService.adjustSpousalBenefitDate(this.personA, this.personB, this.scenario)
           }
         else {//i.e., if there are inputs
           this.personA.spousalBenefitDate = new MonthYearDate(this.customPersonAspousalBenefitYear, this.customPersonAspousalBenefitMonth-1)
@@ -476,13 +466,7 @@ export class HomeComponent implements OnInit {
         this.scenario.maritalStatus == "divorced"
         )
         {
-          //personB spousal date is later of retirement dates
-          if (this.personA.retirementBenefitDate > this.personB.retirementBenefitDate) {
-            this.personB.spousalBenefitDate = new MonthYearDate(this.personA.retirementBenefitDate)
-          }
-          else {
-            this.personB.spousalBenefitDate = new MonthYearDate(this.personB.retirementBenefitDate)
-          }
+          this.presentvalueService.adjustSpousalBenefitDate(this.personB, this.personA, this.scenario)
         }
       else {//i.e., if there are inputs
         this.personB.spousalBenefitDate = new MonthYearDate(this.customPersonBspousalBenefitYear, this.customPersonBspousalBenefitMonth-1)
