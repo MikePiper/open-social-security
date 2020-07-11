@@ -65,7 +65,11 @@ import {MonthYearDate} from "./monthyearDate"
         break;
       case "child":
       case "retroactiveChild":
-        this.shortMessage = " (child(ren) file(s) for child benefits)" + dateString
+        if (person.id == "A") {
+          this.shortMessage = "Child benefits on your record " + dateString
+        } else {
+          this.shortMessage = "Child benefits on spouse's record " + dateString 
+        }
         break;
       case "doNothing":
         this.shortMessage = "Do nothing"
