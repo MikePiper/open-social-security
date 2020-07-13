@@ -1922,7 +1922,8 @@ describe('tests calculateCouplePV', () => {
   })
 
   it('should tell a divorced user with lower PIA, two children already entitled on ex-spouse record, and an assumed age at death of 75 to file at 62 and 1 month for retirement and child-in-care spousal benefits', () => {
-    service.today = new MonthYearDate(2020, 5)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
+    service.today = new MonthYearDate(2020, 5)//June 2020 (date when creating this test, so that it doesn't fail in the future as "today" changes)
+    benefitService.today = new MonthYearDate(2020, 5)//Same idea, but for benefitService's "today" value as well
     scenario.maritalStatus = "divorced"
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed", 75) 
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2016", 0)
@@ -1944,6 +1945,7 @@ describe('tests calculateCouplePV', () => {
     child2.SSbirthDate = new MonthYearDate(2016, 10) //child 2 born November 2016
     scenario.setChildrenArray([child1,child2], service.today)
     let results = service.maximizeCouplePViterateOnePerson(scenario, personA, personB)
+    console.log(results.solutionsArray)
     expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2019, 11))
     expect(results.solutionsArray[1].date).toEqual(new MonthYearDate(2022, 9))
     expect(results.solutionsArray[2].date).toEqual(new MonthYearDate(2022, 9))
