@@ -131,7 +131,7 @@ export class HomeComponent implements OnInit {
   defaultDiscountRateSource: string
   defaultDiscountRateSourceIfError: string = "ERROR"
   // these allow updating of table without changing home.component.html
-  defaultMortalityTableID: string = "SSA2016"
+  defaultMortalityTableID: string = "SSA2017"
   defaultMortalityTableName: string = "2016 Social Security Period Life Table"
 
   urlDiscountRate: number
