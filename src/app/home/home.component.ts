@@ -29,42 +29,38 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     //Get inputs from URL parameters, if applicable
     this.getInputsFromURLparameters()
-    //If discount rate(s) set via URL parameter, we will stick with that instead of TIPS yield
-    if (this.defaultDiscountRate || this.scenario.discountRate) {
-      if (!this.scenario.discountRate) {
-        this.defaultDiscountRate = this.scenario.discountRate;
-      } else if (!this.scenario.discountRate) {
-        this.scenario.discountRate = this.defaultDiscountRate;
-      }
-      this.urlDiscountRate = this.scenario.discountRate;
-      this.defaultDiscountRateSource = "URL";
-      console.log("ngOnInit() got data from URL");
-      return // we have the parameters we need
-    } else {
-      //Get TIPS yield for discount rate
-      this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")
-        .subscribe( 
-          // this 'subscribe' appears to be on a different thread than the main program, so
-          // data => and error => do not proceed to end of ngOnInit()
-          data => { // we got the TIPS discount rate from www.quandl.com
-            this.defaultDiscountRate = data.dataset.data[0][1];
-            this.scenario.discountRate = this.defaultDiscountRate;
-            this.defaultDiscountRateSource = "TIPS";
-            console.log("'get<FREDresponse>' got TIPS rate from internet");
-          },
-          error => { 
-            // If there is no internet, we get here after going to end of ngOnInit()
-            // If there is internet, we may get here if there was an error in the 'subscribe' process
-            // so we'll set the error parameters
-            this.defaultDiscountRate = this.defaultDiscountRateIfError;
-            this.scenario.discountRate = this.defaultDiscountRate;
-            this.defaultDiscountRateSource = this.defaultDiscountRateSourceIfError;
-            console.log("ngOnInit() got ERROR, using defaults");
+
+    //Get TIPS yield for discount rate
+    this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")
+      .subscribe( 
+        // this 'subscribe' appears to be on a different thread than the main program, so
+        // data => and error => do not proceed to end of ngOnInit()
+        data => { // we got the TIPS discount rate from www.quandl.com
+          this.tipsDiscountRate = data.dataset.data[0][1];
+          this.scenario.discountRate = this.tipsDiscountRate;
+          this.defaultDiscountRateSource = "TIPS";
+          console.log("'get<FREDresponse>' got TIPS rate from internet");
+        },
+        error => { 
+          // If there is no internet, we get here after going to end of ngOnInit()
+          // If there is internet, we may get here if there was an error in the 'subscribe' process
+          // so we'll set the error parameters
+          this.scenario.discountRate = this.defaultDiscountRateIfError;
+          this.defaultDiscountRateSource = "ERROR"
+          console.log("ngOnInit() got ERROR, using defaults");
+        },
+        //The subscribe method of Observable accepts 3 optional functions as parameters: what to do with data that comes back, what to do with error if one occurs, what to do on completion
+        //If discount rate was set via URL parameter, we want use that instead of TIPS yield. We have to put this here (onComplete) to make sure it happens AFTER observable
+        () =>{
+          if (this.urlDiscountRate){
+            this.scenario.discountRate = this.urlDiscountRate
+            this.defaultDiscountRateSource = "URL";
+            console.log("ngOnInit() got discount rate from URL");
           }
-        ) 
-    }
-    // we get here after starting the above 'subscribe'
-    console.log("discount rate not set, end of ngOnInit()")
+        }
+      )
+
+
   }
 
 
@@ -126,15 +122,14 @@ export class HomeComponent implements OnInit {
     2060, 2061, 2062, 2063, 2065, 2065, 2066, 2067, 2069, 2070 ]
 
   // defaults
-  defaultDiscountRate: number
+  urlDiscountRate: number
+  tipsDiscountRate: number
   defaultDiscountRateIfError: number = 1
   defaultDiscountRateSource: string
-  defaultDiscountRateSourceIfError: string = "ERROR"
   // these allow updating of table without changing home.component.html
   defaultMortalityTableID: string = "SSA2017"
-  defaultMortalityTableName: string = "2016 Social Security Period Life Table"
+  defaultMortalityTableName: string = "2017 Social Security Period Life Table"
 
-  urlDiscountRate: number
 
 //Inputs from form
   personAprimaryPIAinput: number = 1000
@@ -744,18 +739,12 @@ export class HomeComponent implements OnInit {
       if (params['cutShow']){
         this.cutShow = params['cutShow'] == "true" ? true : false
       }
-      if (params['defDiscount']){
-        this.defaultDiscountRate = params['defDiscount']
-      }
-      if (params['defDiscSource']){
-        this.defaultDiscountRateSource = params['defDiscSource']
-      }
           //Scenario inputs
           if (params['marital']){
             this.scenario.maritalStatus = params['marital']
           }
           if (params['discount']){
-            this.scenario.discountRate = Number(params['discount'])
+            this.urlDiscountRate = Number(params['discount'])
           }
           if (params['cutAssumption']){
             this.scenario.benefitCutAssumption = params['cutAssumption'] == "true" ? true : false

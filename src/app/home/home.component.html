@@ -7,7 +7,7 @@
         <span *ngIf="additionalInput === false"> to select situation(s) that may apply to you (and/or your spouse, if filing jointly).</span>
         <span *ngIf="additionalInput === true"> to hide the selection list.</span>
       </p>
-      <span *ngIf="additionalInput === true">
+      <span *ngIf="additionalInput === true" id="additionalInputOptions">
 
         <div>
           <input type="checkbox" [(ngModel)]="disabilityShow" id="disability" name="disability" value="false">
@@ -43,10 +43,6 @@
         <div>
           <input type="checkbox" [(ngModel)]="discountShow" id="discountRate" name="discountRate" value="false">
           <label for="discountRate">&nbsp;&nbsp;Discount Rate</label> other than the default
-          ({{this.defaultDiscountRate}}%) 
-          <!-- <span *ngIf="this.scenario.discountRate != this.defaultDiscountRate">
-            or the previously-selected rate ({{this.scenario.discountRate}}%)
-          </span> -->
         </div>
 
         <div>
@@ -527,27 +523,28 @@
 
 
       <!--Begin "Other Inputs" such as discount rate and benefit cut assumptions -->
-      <div *ngIf="(this.discountShow === true || this.scenario.discountRate != this.defaultDiscountRate)
+      <div *ngIf="(this.discountShow === true || this.urlDiscountRate || (this.scenario.discountRate != this.tipsDiscountRate) )
       || (this.cutShow === true || scenario.benefitCutAssumption === true)">
         <h1>Other Inputs</h1>
         
-        <div *ngIf="this.discountShow === true || this.scenario.discountRate != this.defaultDiscountRate">
+        <div *ngIf="this.discountShow === true || this.urlDiscountRate || (this.scenario.discountRate != this.tipsDiscountRate)">
           <label>Real discount rate</label>
           <input type="text" [(ngModel)]="scenario.discountRate" name="scenario.discountRate" class="smallTextInput" required>%
           <p class="inputexplanation">
-            A "discount rate" is necessary to reflect the fact that (if the discount rate is greater than zero) a dollar today is worth more than a dollar in the future, because a dollar today can be invested and expected to grow faster than inflation.
-            The default is the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>, when it is available. 
+            A "discount rate" is necessary to reflect the fact that the sooner a dollar is received, the sooner it can be invested. 
             <span *ngIf="this.defaultDiscountRateSource == 'TIPS'">
-              It is currently {{this.defaultDiscountRate}}%.
+            The default discount rate is the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>. 
             </span>
             <span *ngIf="this.defaultDiscountRateSource == 'ERROR'">
-              But that was not available, so we are using {{this.defaultDiscountRate}}%, our system default.
+              The default discount rate is normally the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>. 
+              But that was not available (due to a failure to get data from the data source), so we are using a default of {{this.defaultDiscountRateIfError}}% instead.
             </span>
             <span *ngIf="this.defaultDiscountRateSource == 'URL'">
-              But this calculator was loaded with a URL that included 
-              {{this.defaultDiscountRate}}% as the default discount rate and 
-              {{this.urlDiscountRate}}% as the selected discount rate.</span>
-            See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a discussion of why the yield on 20-year TIPS is chosen as the default.
+              The calculator usually uses the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>, 
+              (which is currently {{this.tipsDiscountRate}}%) as the default discount rate. 
+              But the page was loaded with a URL that included a discount rate of {{this.urlDiscountRate}}%.
+            </span>
+            See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a discussion of why the yield on 20-year TIPS is used as the default.
         </p>
         </div>
       
@@ -814,8 +811,6 @@
 &&childrenShow={{childrenShow}}
 &&discountShow={{discountShow}}
 &&cutShow={{cutShow}}
-&&defDiscount={{defaultDiscountRate}}
-&&defDiscSource={{defaultDiscountRateSource}}
 &&marital={{scenario.maritalStatus}}
 &&discount={{scenario.discountRate}}
 &&cutAssumption={{scenario.benefitCutAssumption}}
