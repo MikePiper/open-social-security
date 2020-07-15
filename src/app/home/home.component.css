@@ -19,6 +19,9 @@
     border-bottom: 1px dotted black; /* Dots under the hoverable text */
 }
 
+#additionalInputOptions label {
+    margin-right: 0px;
+}
 
 .inputexplanation {
 margin-left:0px;
