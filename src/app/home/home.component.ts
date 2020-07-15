@@ -33,8 +33,6 @@ export class HomeComponent implements OnInit {
     //Get TIPS yield for discount rate
     this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")
       .subscribe( 
-        // this 'subscribe' appears to be on a different thread than the main program, so
-        // data => and error => do not proceed to end of ngOnInit()
         data => { // we got the TIPS discount rate from www.quandl.com
           this.tipsDiscountRate = data.dataset.data[0][1];
           this.scenario.discountRate = this.tipsDiscountRate;
