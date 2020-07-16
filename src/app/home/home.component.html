@@ -42,7 +42,9 @@
 
         <div>
           <input type="checkbox" [(ngModel)]="discountShow" id="discountRate" name="discountRate" value="false">
-          <label for="discountRate">&nbsp;&nbsp;Discount Rate</label> other than the default
+          <label for="discountRate">&nbsp;&nbsp;Discount Rate</label> other than the default 
+          <span *ngIf="urlDiscountRate">(currently {{this.urlDiscountRate}}%)</span>
+          <span *ngIf="!urlDiscountRate">(currently {{this.tipsDiscountRate}}%)</span>
         </div>
 
         <div>
@@ -533,7 +535,8 @@
           <p class="inputexplanation">
             A "discount rate" is necessary to reflect the fact that the sooner a dollar is received, the sooner it can be invested. 
             <span *ngIf="this.defaultDiscountRateSource == 'TIPS'">
-            The default discount rate is the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>. 
+            The default discount rate is the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>,
+            (which is currently {{this.tipsDiscountRate}}%).
             </span>
             <span *ngIf="this.defaultDiscountRateSource == 'ERROR'">
               The default discount rate is normally the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>. 
