@@ -63,8 +63,10 @@ export class PresentValueService {
 
     let cutThisYear:boolean = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
     
-    //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
-    while (person.age < 115) {
+    // //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
+    // while (person.age < 115) {
+    //Calculate PV via monthly loop until they hit maxAge (by which point "remaining lives" is zero)
+    while (person.age < person.maxAge) {
       //Do we have to recalculate any benefits? (e.g., due to reaching FRA and ARF happening, or due to suspension ending) (Never have to recalculate a child's benefit amount.)
         this.benefitService.monthlyCheckForBenefitRecalculationsSingle(person, calcYear)
       
@@ -126,7 +128,7 @@ export class PresentValueService {
             }
 
           //Apply probability alive to annual benefit amounts
-          let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(scenario, person, person.age)
+          let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(person, person.age)
           calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * probabilityPersonAlive + calcYear.annualBenefitSinglePersonDeceased * (1 - probabilityPersonAlive)
 
           //Discount that probability-weighted annual benefit amount back to this year
@@ -257,7 +259,7 @@ export class PresentValueService {
       }
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
-    while (personA.age < 115 || personB.age < 115){
+    while (personA.age < personA.maxAge || personB.age < personB.maxAge){
 
       //Use savedCalculationYear sums if parents over 70, children over 18 or disabled, and assumed benfit cut year (if applicable) has been reached
       if (savedCalculationYear){
@@ -354,8 +356,8 @@ export class PresentValueService {
               }
 
             //Calculate each person's probability of being alive at end of age in question. (Have to use age-1 here because we want their age as of beginning of year.)
-              let probabilityAalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personA, personA.age-1, personB)
-              let probabilityBalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personB, personB.age-1, personA)
+              let probabilityAalive:number = this.mortalityService.calculateProbabilityAlive(personA, personA.age-1)
+              let probabilityBalive:number = this.mortalityService.calculateProbabilityAlive(personB, personB.age-1)
 
             //Apply probability alive to annual benefit amounts
               let annualPV:number =

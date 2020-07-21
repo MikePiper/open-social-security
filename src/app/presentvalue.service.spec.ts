@@ -55,7 +55,8 @@ describe('test calculateSinglePersonPV', () => {
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
-        person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mortalityService.determineMortalityTable(person, "male", "SSA", 0)
+        // person.maxAge = mortalityService.determineMaxAge(person.mortalityTable)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
           .toBeCloseTo(142644, 0)
@@ -65,7 +66,8 @@ describe('test calculateSinglePersonPV', () => {
         service.today = new MonthYearDate(2018, 9)
         person.SSbirthDate = new MonthYearDate(1952, 3, 1) //Person born April 1952
         person.PIA = 1000
-        person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mortalityService.determineMortalityTable(person, "male", "SSA", 0)
+        // person.maxAge = mortalityService.determineMaxAge(person.mortalityTable)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person.retirementBenefitDate = new MonthYearDate(person.FRA) //filing at FRA, which is retroactive (note that this line has to come after mockGetPrimaryFormInputs, which sets the person's FRA)
         scenario.discountRate = 1 //1% discount rate
@@ -82,7 +84,8 @@ describe('test calculateSinglePersonPV', () => {
         person.quitWorkDate = new MonthYearDate (2026, 3, 1) //quitting work after filing date but before FRA, earnings test IS relevant
         person.monthlyEarnings = 4500 //Just picking something here...
         scenario.discountRate = 1 //1% discount rate
-        person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+        mortalityService.determineMortalityTable(person, "female", "NS1", 0) //Using female nonsmoker1 mortality table
+        // person.maxAge = mortalityService.determineMaxAge(person.mortalityTable)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
           .toBeCloseTo(194237, 0)
@@ -91,7 +94,7 @@ describe('test calculateSinglePersonPV', () => {
       it('should return appropriate PV for a single person who files at FRA but suspends immediately until 70', () => { 
         service.today = new MonthYearDate(2019, 7)
         scenario.maritalStatus = "single"
-        person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mortalityService.determineMortalityTable(person, "male", "SSA", 0)
         person.SSbirthDate = new MonthYearDate(1970, 8, 1) //Spouse A born in Sept 1970
         person.PIA = 1000
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
@@ -113,7 +116,7 @@ describe('test calculateSinglePersonPV', () => {
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
-        person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mortalityService.determineMortalityTable(person, "male", "SSA", 0)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
@@ -132,7 +135,7 @@ describe('test calculateSinglePersonPV', () => {
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
-        person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mortalityService.determineMortalityTable(person, "male", "SSA", 0)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
@@ -153,7 +156,7 @@ describe('test calculateSinglePersonPV', () => {
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
-        person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mortalityService.determineMortalityTable(person, "male", "SSA", 0)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
@@ -177,7 +180,7 @@ describe('test calculateSinglePersonPV', () => {
         person.quitWorkDate = new MonthYearDate (2028, 3, 1) //Working until beyond FRA. Earnings test is relevant.
         person.monthlyEarnings = 3000
         scenario.discountRate = 1 //1% discount rate
-        person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mortalityService.determineMortalityTable(person, "male", "SSA", 0)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
@@ -187,7 +190,7 @@ describe('test calculateSinglePersonPV', () => {
       //Integration testing -- not actually testing the calculated PV itself
       it('should show zero retirement benefit in table when a single person files before FRA and has high enough earnings', () => {
         service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
-        person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mortalityService.determineMortalityTable(person, "male", "SSA", 0)
         person.SSbirthDate = new MonthYearDate(1956, 6)//Born July 1956
         person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
         person.quitWorkDate = new MonthYearDate (2028, 0, 1) //quitting work after FRA
@@ -204,7 +207,7 @@ describe('test calculateSinglePersonPV', () => {
       it('should show appropriate retirement benefit in table when a single person files before FRA and has earnings to cause some but not complete withholding', () => {
         service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
-        person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mortalityService.determineMortalityTable(person, "male", "SSA", 0)
         person.SSbirthDate = new MonthYearDate(1956, 5)//Born June 1956
         person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
         person.quitWorkDate = new MonthYearDate (2028, 0, 1) //quitting work after FRA
@@ -222,7 +225,7 @@ describe('test calculateSinglePersonPV', () => {
       it('should show appropriate adjustedRetirementBenefitDate, when a single person files before FRA and has earnings to cause some but not complete withholding', () => {
         service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
-        person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+        mortalityService.determineMortalityTable(person, "male", "SSA", 0)
         person.SSbirthDate = new MonthYearDate(1956, 5)//Born June 1956
         person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA of October 2022  (66 and 4 months given 1956 DoB)
         person.quitWorkDate = new MonthYearDate (2028, 0, 1) //quitting work after FRA
@@ -265,7 +268,7 @@ describe('test maximizeSinglePersonPV', () => {
     person.SSbirthDate = new MonthYearDate(1960, 3, 1)
     person.PIA = 1000
     scenario.discountRate = 9 //9% discount rate
-    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    mortalityService.determineMortalityTable(person, "male", "SSA", 0)
     mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
       .toEqual(new MonthYearDate(2022, 4, 1))
@@ -279,7 +282,7 @@ describe('test maximizeSinglePersonPV', () => {
     person.PIA = 1000
     scenario.maritalStatus = "single"
     scenario.discountRate = 9 //9% discount rate
-    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    mortalityService.determineMortalityTable(person, "male", "SSA", 0)
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
       .toEqual(new MonthYearDate(2018, 8))
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].benefitType)
@@ -290,7 +293,7 @@ describe('test maximizeSinglePersonPV', () => {
     service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
     scenario.maritalStatus = "single"
     person.hasFiled = true
-    person.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
+    mortalityService.determineMortalityTable(person, "female", "NS1", 0)
     person.actualBirthDate = new Date(1953, 3, 15) //Person born April 16 1953
     person.SSbirthDate = new MonthYearDate(1953, 3, 1)
     mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
@@ -316,7 +319,7 @@ describe('test maximizeSinglePersonPV', () => {
     child.SSbirthDate = new MonthYearDate(1990, 7)
     child.isOnDisability = true
     scenario.discountRate = 1 //1% discount rate
-    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    mortalityService.determineMortalityTable(person, "male", "SSA", 0)
     mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
       .toEqual(new MonthYearDate(2022, 4, 1))
@@ -336,7 +339,7 @@ describe('test maximizeSinglePersonPV', () => {
     scenario.maritalStatus = "single"
     scenario.children = [child]
     scenario.discountRate = 1 //1% discount rate
-    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    mortalityService.determineMortalityTable(person, "male", "SSA", 0)
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].benefitType)
       .toEqual("doNothing")
   })
@@ -354,7 +357,7 @@ describe('test maximizeSinglePersonPV', () => {
     scenario.maritalStatus = "single"
     scenario.children = [child]
     scenario.discountRate = 1 //1% discount rate
-    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    mortalityService.determineMortalityTable(person, "male", "SSA", 0)
     let today:MonthYearDate = new MonthYearDate()
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].benefitType)
       .toEqual("child")
@@ -394,8 +397,8 @@ describe('tests calculateCouplePV', () => {
     it('should return appropriate PV for married couple, basic inputs', () => {
       service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+      mortalityService.determineMortalityTable(personA, "male", "NS2", 0) //Using male nonsmoker2 mortality table
+      mortalityService.determineMortalityTable(personB, "female", "NS1", 0) //Using female nonsmoker1 mortality table
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964
       personB.SSbirthDate = new MonthYearDate(1963, 6, 1) //Spouse B born in July 1963
       mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
@@ -414,8 +417,8 @@ describe('tests calculateCouplePV', () => {
     it('should return appropriate PV for married couple, basic inputs, no spousal benefits, one filing early one late', () => {
       service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+      mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+      mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1960, 3, 1) //Spouse A born in April 1960
       personB.SSbirthDate = new MonthYearDate(1960, 3, 1) //Spouse B born in April 1960
       mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
@@ -439,8 +442,8 @@ describe('tests calculateCouplePV', () => {
     it('should return appropriate PV for married couple, still working', () => {
       service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+      mortalityService.determineMortalityTable(personA, "male", "NS2", 0) //Using male nonsmoker2 mortality table
+      mortalityService.determineMortalityTable(personB, "female", "NS1", 0) //Using female nonsmoker1 mortality table
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964
       personB.SSbirthDate = new MonthYearDate(1963, 6, 1) //Spouse B born in July 1963
       mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
@@ -464,8 +467,8 @@ describe('tests calculateCouplePV', () => {
       service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+      mortalityService.determineMortalityTable(personA, "male", "NS2", 0) //Using male nonsmoker2 mortality table
+      mortalityService.determineMortalityTable(personB, "female", "NS1", 0) //Using female nonsmoker1 mortality table
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964
       personB.SSbirthDate = new MonthYearDate(1963, 6, 1) //Spouse B born in July 1963
       mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
@@ -488,8 +491,8 @@ describe('tests calculateCouplePV', () => {
     it ('should return appropriate PV for married couple, including GPO', () => {
       service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+      mortalityService.determineMortalityTable(personA, "male", "NS2", 0) //Using male nonsmoker2 mortality table
+      mortalityService.determineMortalityTable(personB, "female", "NS1", 0) //Using female nonsmoker1 mortality table
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964
       personB.SSbirthDate = new MonthYearDate(1963, 6, 1) //Spouse B born in July 1963
       mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
@@ -512,8 +515,8 @@ describe('tests calculateCouplePV', () => {
     it ('should return appropriate PV for basic divorce scenario', () => {
       service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "divorced"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+      mortalityService.determineMortalityTable(personA, "male", "NS2", 0) //Using male nonsmoker2 mortality table
+      mortalityService.determineMortalityTable(personB, "female", "NS1", 0) //Using female nonsmoker1 mortality table
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964
       personB.SSbirthDate = new MonthYearDate(1955, 3, 1) //Spouse B born in April 1955
       mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
@@ -536,8 +539,8 @@ describe('tests calculateCouplePV', () => {
     it('should return appropriate PV for married couple (where spousal benefits are zero), both file at FRA but suspend immediately until 70', () => {
       service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+      mortalityService.determineMortalityTable(personB, "male", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1970, 8, 1) //Spouse A born in Sept 1970
       personB.SSbirthDate = new MonthYearDate(1970, 8, 1) //Spouse B born in Sept 1970
       mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
@@ -563,8 +566,8 @@ describe('tests calculateCouplePV', () => {
     it('should return appropriate PV for married couple (where spousal benefits are relevant), both file at FRA and suspend immediately until 70', () => {
       service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+      mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+      mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1970, 0, 1) //Spouse A born in Jan 1970
       personB.SSbirthDate = new MonthYearDate(1970, 0, 1) //Spouse B born in Jan 1970
       mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
@@ -590,8 +593,8 @@ describe('tests calculateCouplePV', () => {
     it('should return appropriate PV for married couple (where spousal benefits are relevant). PersonB is disabled prior to 62. He suspends FRA to 70. Person A files at 70 for retirement and spousal.', () => { 
       service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+      mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+      mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1970, 0, 1) //Spouse A born in Jan 1970
       personB.SSbirthDate = new MonthYearDate(1970, 0, 1) //Spouse B born in Jan 1970
       mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
@@ -614,8 +617,8 @@ describe('tests calculateCouplePV', () => {
     it('should return appropriate PV for married couple, personB recently started retirement benefit, suspends 3 months from now until 70. personA filed two years ago.', () => { 
       service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+      mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+      mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1951, 8) //Sept 1951
       personB.SSbirthDate = new MonthYearDate(1952, 2)  //March 1952
       mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
@@ -638,8 +641,8 @@ describe('tests calculateCouplePV', () => {
     it('should return appropriate PV for married couple, both currently age 63, filed already, not suspending, spousal benefit relevant.', () => { 
       service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+      mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+      mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
       personA.SSbirthDate = new MonthYearDate(1955, 10) //Nov 1955
       personB.SSbirthDate = new MonthYearDate(1955, 10)  //Nov 1955
       mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
@@ -661,8 +664,8 @@ describe('tests calculateCouplePV', () => {
       it('should calculate personB spousal benefit as zero when own PIA is too high', () => {
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
         personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
         personA.SSbirthDate = new MonthYearDate(1963, 2)
@@ -687,8 +690,8 @@ describe('tests calculateCouplePV', () => {
       it('should calculate spousal benefit appropriately prior to FRA', () => {
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
         personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
         personA.SSbirthDate = new MonthYearDate(1963, 2)
@@ -712,8 +715,8 @@ describe('tests calculateCouplePV', () => {
       it('should calculate spousal benefit appropriately prior to FRA, when reduced by GPO', () => {
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
         personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
         personA.SSbirthDate = new MonthYearDate(1963, 2)
@@ -739,8 +742,8 @@ describe('tests calculateCouplePV', () => {
       it('should calculate spousal benefit appropriately prior to FRA, when reduced to zero by GPO', () => {
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
         personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
         personA.SSbirthDate = new MonthYearDate(1963, 2)
@@ -765,8 +768,8 @@ describe('tests calculateCouplePV', () => {
       it('should calculate spousal benefit appropriately after FRA', () => {
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
         personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
         personA.SSbirthDate = new MonthYearDate(1963, 2)
@@ -791,8 +794,8 @@ describe('tests calculateCouplePV', () => {
       it('should calculate personB survivor benefit appropriately, when claimed after FRA with own smaller retirement benefit. Deceased personA filed at age 70', () => {
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
         personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
         personA.SSbirthDate = new MonthYearDate(1963, 2)
@@ -815,8 +818,8 @@ describe('tests calculateCouplePV', () => {
       it('should calculate personB survivor benefit appropriately as zero with own larger retirement benefit. Deceased personA filed at age 70', () => {
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
         personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
         personA.SSbirthDate = new MonthYearDate(1963, 2)
@@ -840,8 +843,8 @@ describe('tests calculateCouplePV', () => {
         it('should calculate personA retirement benefit appropriately before and after WEP and personB survivor benefit appropriately after FRA -- using personA.nonWEP_PIA', () => {
           scenario.maritalStatus = "married"
           scenario.discountRate = 1
-          personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-          personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+          mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+          mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
           personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
           personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
           personA.SSbirthDate = new MonthYearDate(1963, 2)
@@ -873,8 +876,8 @@ describe('tests calculateCouplePV', () => {
         it('should calculate WEP-affected survivor benefit appropriately as zero with own larger retirement benefit. Deceased filed at age 70', () => {
           scenario.maritalStatus = "married"
           scenario.discountRate = 1
-          personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-          personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+          mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+          mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
           personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
           personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
           personA.SSbirthDate = new MonthYearDate(1963, 2)
@@ -917,8 +920,8 @@ describe('tests calculateCouplePV', () => {
         personB.retirementBenefitDate = new MonthYearDate(2018, 9, 1) //Applying for retirement benefit October 2018 (48 months prior to FRA -> monthly benefit is 75% of PIA)
         personB.spousalBenefitDate = new MonthYearDate(2019, 9, 1) //later of two retirement benefit dates
         scenario.maritalStatus = "married"
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
         /*calc by hand for 2019...
         personA's retirement benefit is $1440 (80% of PIA)
@@ -937,8 +940,8 @@ describe('tests calculateCouplePV', () => {
         service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.PIA = 2300
         personB.PIA = 600
         personA.actualBirthDate = new Date (1974, 9, 13) //October 1974
@@ -971,8 +974,8 @@ describe('tests calculateCouplePV', () => {
         earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.PIA = 800
         personB.PIA = 2000
         personA.actualBirthDate = new Date (1980, 2, 5) //March 1980
@@ -1008,8 +1011,8 @@ describe('tests calculateCouplePV', () => {
         earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.PIA = 800
         personB.PIA = 2000
         personA.actualBirthDate = new Date (1982, 2, 5) //March 1982
@@ -1047,8 +1050,8 @@ describe('tests calculateCouplePV', () => {
         let child1:Person = new Person("1")
         child1.SSbirthDate = new MonthYearDate(2009, 2) //March 2009
         scenario.setChildrenArray([child1], service.today)
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.PIA = 1500
         personB.PIA = 600
         personA.actualBirthDate = new Date (1960, 2, 5) //March 1960
@@ -1100,8 +1103,8 @@ describe('tests calculateCouplePV', () => {
         let child1:Person = new Person("1")
         child1.SSbirthDate = new MonthYearDate(2009, 2) //March 2009
         scenario.setChildrenArray([child1], service.today)
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+        mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+        mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
         personA.PIA = 1500
         personB.PIA = 600
         personA.actualBirthDate = new Date (1960, 2, 5) //March 1960
@@ -1163,8 +1166,8 @@ describe('tests calculateCouplePV', () => {
           child2.SSbirthDate = new MonthYearDate(2009, 0) //Jan 2009
           child3.SSbirthDate = new MonthYearDate(2011, 0) //Jan 2011
           scenario.setChildrenArray([child1, child2, child3], service.today)
-          personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-          personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+          mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+          mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
           personA.PIA = 1500
           personB.PIA = 600
           personA.actualBirthDate = new Date (1960, 2, 5) //March 1960
@@ -1232,8 +1235,8 @@ describe('tests calculateCouplePV', () => {
           let child1:Person = new Person("1")
           child1.SSbirthDate = new MonthYearDate(2010, 2) //March 2010
           scenario.setChildrenArray([child1], service.today)
-          personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-          personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+          mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+          mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
           personA.PIA = 1500
           personB.PIA = 600
           personA.actualBirthDate = new Date (1960, 2, 5) //March 1960
@@ -1285,8 +1288,8 @@ describe('tests calculateCouplePV', () => {
           let child1:Person = new Person("1")
           child1.SSbirthDate = new MonthYearDate(2010, 2) //March 2010
           scenario.setChildrenArray([child1], service.today)
-          personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-          personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+          mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+          mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
           personA.PIA = 1500
           personB.PIA = 600
           personA.actualBirthDate = new Date (1960, 2, 5) //March 1960
@@ -1350,8 +1353,8 @@ describe('tests calculateCouplePV', () => {
           child2.SSbirthDate = new MonthYearDate(2000, 2) //March 2000
           child2.isOnDisability = true
           scenario.setChildrenArray([child1, child2], service.today)
-          personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-          personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+          mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+          mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
           personA.PIA = 1500
           personB.PIA = 600
           personA.actualBirthDate = new Date (1960, 2, 5) //March 1960
@@ -1434,8 +1437,8 @@ describe('tests calculateCouplePV', () => {
     it ('should tell a high-PIA spouse to wait until 70, with low discount rate and long lifespans', () => {
       service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
+      mortalityService.determineMortalityTable(personA, "male", "NS2", 0) //Using male nonsmoker2 mortality table
+      mortalityService.determineMortalityTable(personB, "female", "NS1", 0) //Using female nonsmoker1 mortality table
       personA.actualBirthDate = new Date(1964, 8, 15) //Spouse A born in Sept 1964
       personA.SSbirthDate = new MonthYearDate(1964, 8, 1)
       personB.actualBirthDate = new Date(1964, 9, 11) //Spouse B born in October 1964
@@ -1456,8 +1459,8 @@ describe('tests calculateCouplePV', () => {
     it ('should tell a high-PIA spouse to file a restricted app when possible', () => {
       service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0) 
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) 
+      mortalityService.determineMortalityTable(personA, "male", "SSA", 0) 
+      mortalityService.determineMortalityTable(personB, "female", "SSA", 0) 
       personA.actualBirthDate = new Date(1953, 8, 15) //Spouse A born in Sept 1953
       personA.SSbirthDate = new MonthYearDate(1953, 8, 1)
       personB.actualBirthDate = new Date(1953, 9, 11) //Spouse B born in October 1953
@@ -1481,8 +1484,8 @@ describe('tests calculateCouplePV', () => {
       service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       personB.hasFiled = true
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
+      mortalityService.determineMortalityTable(personA, "female", "NS1", 0)
+      mortalityService.determineMortalityTable(personB, "female", "NS1", 0)
       personA.actualBirthDate = new Date(1955, 9, 15) //personA born in October 1955
       personA.SSbirthDate = new MonthYearDate(1955, 9, 1)
       personB.actualBirthDate = new Date(1954, 9, 11) //personB born in October 1954
@@ -1504,8 +1507,8 @@ describe('tests calculateCouplePV', () => {
       service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       personB.hasFiled = true
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+      mortalityService.determineMortalityTable(personB, "male", "SSA", 0)
       personA.actualBirthDate = new Date(1960, 9, 15) //personA born in October 1960
       personA.SSbirthDate = new MonthYearDate(1960, 9, 1)
       personB.actualBirthDate = new Date(1954, 9, 11) //personB born in October 1954
@@ -1528,8 +1531,8 @@ describe('tests calculateCouplePV', () => {
       service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       personA.hasFiled = true
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+      mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+      mortalityService.determineMortalityTable(personB, "male", "SSA", 0)
       personA.actualBirthDate = new Date(1954, 9, 11) //personA born in October 1954
       personA.SSbirthDate = new MonthYearDate(1954, 9, 1)
       personB.actualBirthDate = new Date(1960, 9, 15) //personB born in October 1960
@@ -1551,8 +1554,8 @@ describe('tests calculateCouplePV', () => {
       service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       personA.hasFiled = true
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SM2", 0)
+      mortalityService.determineMortalityTable(personA, "male", "SM2", 0)
+      mortalityService.determineMortalityTable(personB, "female", "SM2", 0)
       personA.actualBirthDate = new Date(1954, 2, 11) //personA born in March 1954
       personA.SSbirthDate = new MonthYearDate(1954, 2, 1)
       personB.actualBirthDate = new Date(1954, 2, 15) //personB born in March 1954
@@ -1574,8 +1577,8 @@ describe('tests calculateCouplePV', () => {
     it('should tell personA to file at 68, if they have higher PIA, personB has normal life expectancy, and they are using A-dies-at-68 assumption', () => {
       service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed", 68)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+      mortalityService.determineMortalityTable(personA, "male", "fixed", 68)
+      mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
       personA.actualBirthDate = new Date(1960, 2, 11) //personA born in March 1960
       personA.SSbirthDate = new MonthYearDate(1960, 2, 1)
       personB.actualBirthDate = new Date(1960, 2, 15) //personB born in March 1960
@@ -1596,8 +1599,8 @@ describe('tests calculateCouplePV', () => {
     it('should tell personA to suspend from FRA to 70, if personA is disabled, personA has higher PIA, both have normal life expectancies', () => {
       service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+      mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+      mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
       personA.actualBirthDate = new Date(1960, 2, 11) //personA born in March 1960
       personA.SSbirthDate = new MonthYearDate(1960, 2, 1)
       personB.actualBirthDate = new Date(1960, 2, 15) //personB born in March 1960
@@ -1623,8 +1626,8 @@ describe('tests calculateCouplePV', () => {
     it('should tell personB to file for spousal benefits ASAP (even though personA is younger than 62 at the time), if personA is disabled, personA has much higher PIA, one has a short life expectancy, and high-ish discount rate. Should also tell personA to suspend at FRA', () => {
       service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0) //originally SM2
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) //originally SSA
+      mortalityService.determineMortalityTable(personA, "male", "SM2", 0) //originally SM2
+      mortalityService.determineMortalityTable(personB, "female", "SSA", 0) //originally SSA
       personA.actualBirthDate = new Date(1964, 3, 11) //personA born in April 1964
       personA.SSbirthDate = new MonthYearDate(1964, 3, 1)
       personB.actualBirthDate = new Date(1960, 3, 15) //personB born in April 1960
@@ -1652,8 +1655,8 @@ describe('tests calculateCouplePV', () => {
     it('should tell a low-PIA spouse to file a retroactive application and high-PIA spouse to file retroactive restricted application if already past FRA with short life expectancies and high discount rate', () => {
       service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
       scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0) 
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SM2", 0) 
+      mortalityService.determineMortalityTable(personA, "male", "SM2", 0) 
+      mortalityService.determineMortalityTable(personB, "female", "SM2", 0) 
       personA.actualBirthDate = new Date(1952, 8, 15) //Spouse A born in Sept 1952
       personA.SSbirthDate = new MonthYearDate(1952, 8)
       personB.actualBirthDate = new Date(1952, 9, 11) //Spouse B born in October 1952
@@ -1682,8 +1685,8 @@ describe('tests calculateCouplePV', () => {
       let child1:Person = new Person("1")
       child1.SSbirthDate = new MonthYearDate(2017, 3) //April 2017
       scenario.setChildrenArray([child1], service.today)
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0) 
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) 
+      mortalityService.determineMortalityTable(personA, "male", "SSA", 0) 
+      mortalityService.determineMortalityTable(personB, "female", "SSA", 0) 
       personA.actualBirthDate = new Date(1960, 3, 15) //Spouse A born in April 1960
       personA.SSbirthDate = new MonthYearDate(1960, 3)
       personB.actualBirthDate = new Date(1970, 3, 11) //Spouse B born in April 1970
@@ -1735,8 +1738,8 @@ describe('tests calculateCouplePV', () => {
   it ('should tell a divorced user with significantly lower PIA to file ASAP', () => {
     service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     scenario.maritalStatus = "divorced"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+    mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
     personA.actualBirthDate = new Date(1964, 9, 15) //Spouse A born in October 1964
     personA.SSbirthDate = new MonthYearDate(1964, 9, 1)
     personB.actualBirthDate = new Date(1960, 9, 11) //Spouse B born in October 1960
@@ -1758,8 +1761,8 @@ describe('tests calculateCouplePV', () => {
   it ('should tell a divorced user with higher PIA and an ex who filed early (so essentially a single person) to file at 70 given long life expectancy and low discount rate', () => {
     service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     scenario.maritalStatus = "divorced"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    mortalityService.determineMortalityTable(personA, "female", "NS1", 0)
+    mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
     personA.actualBirthDate = new Date(1955, 9, 15) //Spouse A born in October 1955
     personA.SSbirthDate = new MonthYearDate(1955, 9, 1)
     personB.actualBirthDate = new Date(1954, 9, 11) //Spouse B born in October 1954
@@ -1781,8 +1784,8 @@ describe('tests calculateCouplePV', () => {
     service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     personA.hasFiled = true
     scenario.maritalStatus = "married"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS1", 0)
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
+    mortalityService.determineMortalityTable(personA, "male", "NS1", 0)
+    mortalityService.determineMortalityTable(personB, "female", "NS1", 0)
     personA.actualBirthDate = new Date(1948, 3, 11) //personA born April 1948
     personA.SSbirthDate = new MonthYearDate(1948, 3, 1)
     personB.actualBirthDate = new Date(1960, 9, 15) //personB born October 1960
@@ -1804,8 +1807,8 @@ describe('tests calculateCouplePV', () => {
     service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     personB.hasFiled = true
     scenario.maritalStatus = "married"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    mortalityService.determineMortalityTable(personA, "male", "SSA", 0)
+    mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
     personA.actualBirthDate = new Date(1960, 9, 15) //personA born October 1960
     personA.SSbirthDate = new MonthYearDate(1960, 9, 1)
     personB.actualBirthDate = new Date(1948, 3, 11) //personB born April 1948
@@ -1828,8 +1831,8 @@ describe('tests calculateCouplePV', () => {
     personA.hasFiled = true
     personB.hasFiled = true
     scenario.maritalStatus = "married"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS1", 0)
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
+    mortalityService.determineMortalityTable(personA, "male", "NS1", 0)
+    mortalityService.determineMortalityTable(personB, "female", "NS1", 0)
     personA.actualBirthDate = new Date(1948, 3, 11) //personA born April 1948
     personA.SSbirthDate = new MonthYearDate(1948, 3, 1)
     personB.actualBirthDate = new Date(1952, 3, 15) //personB born April 1952
@@ -1853,8 +1856,8 @@ describe('tests calculateCouplePV', () => {
     personA.hasFiled = true
     personB.hasFiled = true
     scenario.maritalStatus = "married"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0)
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SM2", 0)
+    mortalityService.determineMortalityTable(personA, "male", "SM2", 0)
+    mortalityService.determineMortalityTable(personB, "female", "SM2", 0)
     personA.actualBirthDate = new Date(1947, 2, 11) //personA born in March 1947
     personA.SSbirthDate = new MonthYearDate(1947, 2, 1)
     personB.actualBirthDate = new Date(1954, 2, 15) //personB born in March 1954
@@ -1877,8 +1880,8 @@ describe('tests calculateCouplePV', () => {
     service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     personA.hasFiled = true
     scenario.maritalStatus = "divorced"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    mortalityService.determineMortalityTable(personA, "female", "NS1", 0)
+    mortalityService.determineMortalityTable(personB, "female", "SSA", 0)
     personA.actualBirthDate = new Date(1954, 2, 11) //personA born in March 1954
     personA.SSbirthDate = new MonthYearDate(1954, 2, 1)
     personB.actualBirthDate = new Date(1954, 2, 15) //personB born in March 1954
@@ -1903,8 +1906,8 @@ describe('tests calculateCouplePV', () => {
   it('should suggest retroactive application for low-PIA spouse when possible, given highish discount rate and short life expectancies', () => {
     service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     scenario.maritalStatus = "married"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0) 
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SM2", 0) 
+    mortalityService.determineMortalityTable(personA, "male", "SM2", 0) 
+    mortalityService.determineMortalityTable(personB, "female", "SM2", 0) 
     personA.actualBirthDate = new Date(1948, 8, 15) //Spouse A born in Sept 1948 (already age 70)
     personA.SSbirthDate = new MonthYearDate(1948, 8)
     personB.actualBirthDate = new Date(1952, 9, 11) //Spouse B born in October 1952
@@ -1925,8 +1928,8 @@ describe('tests calculateCouplePV', () => {
     service.today = new MonthYearDate(2020, 5)//June 2020 (date when creating this test, so that it doesn't fail in the future as "today" changes)
     benefitService.today = new MonthYearDate(2020, 5)//Same idea, but for benefitService's "today" value as well
     scenario.maritalStatus = "divorced"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed", 75) 
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2016", 0)
+    mortalityService.determineMortalityTable(personA, "male", "fixed", 75) 
+    mortalityService.determineMortalityTable(personB, "female", "SSA2016", 0)
     personA.actualBirthDate = new Date(1960, 8, 15) //Spouse A born in Sept 1960
     personA.SSbirthDate = new MonthYearDate(1960, 8)
     personB.actualBirthDate = new Date(1957, 3, 11) //Spouse B born in April 1957

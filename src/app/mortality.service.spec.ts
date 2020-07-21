@@ -18,14 +18,16 @@ describe('MortalityService', () => {
 
   //check that determineMortalityTable() gets the right table -- check via an indexed value
   it('should get the correct mortality table', inject([MortalityService], (service: MortalityService) => {
-    let table = service.determineMortalityTable("female", "SSA", 0)
-    expect(table[7])
+    let person:Person = new Person("A")
+    service.determineMortalityTable(person, "female", "SSA", 0)
+    expect(person.mortalityTable[7])
         .toEqual(99353)
   }))
 
   it('should get the correct mortality table', inject([MortalityService], (service: MortalityService) => {
-    let table = service.determineMortalityTable("male", "NS2", 0)
-    expect(table[50])
+    let person:Person = new Person("A")
+    service.determineMortalityTable(person, "male", "NS2", 0)
+    expect(person.mortalityTable[50])
         .toEqual(98691)
   }))
 
@@ -37,17 +39,26 @@ describe('MortalityService', () => {
     expect(table[84]).toEqual(0)
   }))
 
+  it('should correctly determine ageMax and probabilities for age >= ageMax', inject([MortalityService], (service: MortalityService) => {
+    let table1 = [9, 8, 7, 6, 0, 0, 0]
+    let table2 = [6, 5, 4, 3, 2]
+    expect(service.determineMaxAge(table1)).toEqual(4)
+    expect(service.determineMaxAge(table2)).toEqual(5)
+    expect(table2[5]).toEqual(0) // zeroes should be appended to table that doesn't have any. 
+    expect(table2[6]).toEqual(0)
+  }))
+
 
   //check that calculateProbabilityAlive() does math appropriately
   it('should accurately calculate probability alive', inject([MortalityService], (service: MortalityService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
-    scenario.maritalStatus = "single"
+    // let scenario:CalculationScenario = new CalculationScenario()
+    // scenario.maritalStatus = "single"
     let person:Person = new Person("A")
     person.initialAgeRounded = 62
-    person.mortalityTable = service.determineMortalityTable("female", "SSA", 0)
+    service.determineMortalityTable(person, "female", "SSA", 0)
     person.baseMortalityFactor = service.calculateBaseMortalityFactor(person)
     let age = 80
-    expect(service.calculateProbabilityAlive(scenario, person, age))
+    expect(service.calculateProbabilityAlive(person, age))
         .toBeCloseTo(0.6791, 4) //Lives at 62 is 90,017. Lives at 81 (i.e., end of age 80) is 61,131. 61131/90017 = 0.6791
   }))
 

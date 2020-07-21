@@ -379,10 +379,12 @@ export class HomeComponent implements OnInit {
     if (this.personBfixedRetirementBenefitMonth && this.personBfixedRetirementBenefitYear){
       this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1)
     }
-    this.personA.mortalityTable = this.mortalityService.determineMortalityTable(this.personAgender, this.personAmortalityInput, this.personAassumedDeathAge)
-    this.personB.mortalityTable = this.mortalityService.determineMortalityTable(this.personBgender, this.personBmortalityInput, this.personBassumedDeathAge)
+    this.mortalityService.determineMortalityTable(this.personA, this.personAgender, this.personAmortalityInput, this.personAassumedDeathAge)
+    this.mortalityService.determineMortalityTable(this.personB, this.personBgender, this.personBmortalityInput, this.personBassumedDeathAge)
     this.personA.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(this.personA)
     this.personB.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(this.personB)
+    // this.personA.maxAge = this.mortalityService.determineMaxAge(this.personA.mortalityTable)
+    // this.personB.maxAge = this.mortalityService.determineMaxAge(this.personB.mortalityTable)
 
     //Clear children array and only push as many children objects as applicable
     if (this.scenario.numberOfChildren > 0){
