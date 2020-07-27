@@ -1948,7 +1948,7 @@ describe('tests calculateCouplePV', () => {
     child2.SSbirthDate = new MonthYearDate(2016, 10) //child 2 born November 2016
     scenario.setChildrenArray([child1,child2], service.today)
     let results = service.maximizeCouplePViterateOnePerson(scenario, personA, personB)
-    console.log(results.solutionsArray)
+    // console.log(results.solutionsArray)
     expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2019, 11))
     expect(results.solutionsArray[1].date).toEqual(new MonthYearDate(2022, 9))
     expect(results.solutionsArray[2].date).toEqual(new MonthYearDate(2022, 9))

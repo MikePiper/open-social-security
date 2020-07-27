@@ -511,7 +511,8 @@ export class PresentValueService {
     //Generate solution set (for sake of output) from saved values
     let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(scenario, person, savedStrategy)
 
-    console.log(solutionSet)
+    // commented out to reduce output while testing    
+    // console.log(solutionSet)
 
     scenario.range.initFracsAndColors();
 
@@ -703,7 +704,8 @@ export class PresentValueService {
       //Generate solution set (for sake of output) from saved values
       solutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, personA, personB, savedStrategy)
       
-      console.log(solutionSet);
+      // commented out to reduce output while testing
+      // console.log(solutionSet);
 
       scenario.range.initFracsAndColors();
 
@@ -844,7 +846,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         var solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, fixedSpouse, flexibleSpouse, savedStrategy)
       }
 
-      console.log(solutionSet)
+      // commented out to reduce output while testing      
+      // console.log(solutionSet)
 
       scenario.range.initFracsAndColors();
 
