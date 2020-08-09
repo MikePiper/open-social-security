@@ -128,7 +128,9 @@ export class PresentValueService {
             }
 
           //Apply probability alive to annual benefit amounts
-          let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(person, person.age)
+          // Calculate person's probability of being alive at end of age in question. 
+          // (Have to use age-1 here because we want person's age as of beginning of year, as we do for couple)
+          let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(person, person.age - 1)
           calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * probabilityPersonAlive + calcYear.annualBenefitSinglePersonDeceased * (1 - probabilityPersonAlive)
 
           //Discount that probability-weighted annual benefit amount back to this year

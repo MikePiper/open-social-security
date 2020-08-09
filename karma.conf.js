@@ -1,6 +1,10 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
+// to use Chromium browser in Ubuntu 18.04, in the VSCode terminal,
+// (before calling ng test)
+// export CHROME_BIN='/snap/bin/chromium'
+
 module.exports = function (config) {
   config.set({
     basePath: '',
