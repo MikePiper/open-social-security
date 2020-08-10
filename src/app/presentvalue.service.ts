@@ -105,10 +105,11 @@ export class PresentValueService {
             this.addMonthlyPaymentAmountsToApplicableSumsSingle(scenario, calcYear, person, false, printOutputTable)
 
 
-      //After month is over increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
+        //Increase everybody's age by 1/12
         for (let child of scenario.children){
           child.age = child.age + 1/12
         }
+        person.age = person.age + 1/12
 
         //if it's December...
         if (calcYear.date.getMonth() == 11){
@@ -126,7 +127,8 @@ export class PresentValueService {
             }
 
           //Apply probability alive to annual benefit amounts
-          let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(scenario, person, person.age)
+              //Calculate probability of being alive at end of age in question. (Have to use age-1 here because we want their age as of beginning of year.)
+          let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(scenario, person, person.age-1)
           calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * probabilityPersonAlive + calcYear.annualBenefitSinglePersonDeceased * (1 - probabilityPersonAlive)
 
           //Discount that probability-weighted annual benefit amount back to this year
@@ -143,9 +145,6 @@ export class PresentValueService {
           } else {
             claimStrategy.pvNoCut += calcYear.annualPV;
           }
-
-          //increment person's age by 1 year
-          person.age = person.age + 1
 
           //increment month by 1 and create new CalculationYear object because it's now January
           // (we started these calculations with month === 11)

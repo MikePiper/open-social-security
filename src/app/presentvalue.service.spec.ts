@@ -181,7 +181,7 @@ describe('test calculateSinglePersonPV', () => {
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(360989, 0)
+        .toBeCloseTo(357059, 0)
       })
   
       //Integration testing -- not actually testing the calculated PV itself
