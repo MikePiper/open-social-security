@@ -311,7 +311,8 @@ export class BenefitService {
   }
 
   
-  calculateMonthlyPaymentsSingle(scenario:CalculationScenario, calcYear:CalculationYear, person:Person, personAliveBoolean:boolean){
+  calculateMonthlyPaymentsSingle(scenario:CalculationScenario, calcYear:CalculationYear, person:Person, personAliveBoolean:boolean, 
+    disabledChildDeceased: boolean = false){
     //Reset monthlyPayment fields
     person.monthlyRetirementPayment = 0
     for (let child of scenario.children){
@@ -347,8 +348,10 @@ export class BenefitService {
           person.monthlyRetirementPayment = person.retirementBenefit
           for (let child of scenario.children){
             if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
-              if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
-                child.monthlyChildPayment = person.PIA * 0.5
+              if (!child.isOnDisability || (disabledChildDeceased === false)) {
+                if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
+                  child.monthlyChildPayment = person.PIA * 0.5
+                }
               }
             }
           }
@@ -358,11 +361,14 @@ export class BenefitService {
     else {//if we're assuming person is deceased
       for (let child of scenario.children){
         if (child.age < 17.99 || child.isOnDisability === true){//Use 17.99 as the cutoff because sometimes when child is actually 18 javascript value will be 17.9999999
-          if (person.eligibleForNonCoveredPension === false){
-            child.monthlyChildPayment = person.PIA * 0.75
-          }
-          else {
-            child.monthlyChildPayment = person.nonWEP_PIA * 0.75
+          // TODO: need to check childBenefitDate??
+          if (!child.isOnDisability || (disabledChildDeceased === false)) {
+            if (person.eligibleForNonCoveredPension === false){
+              child.monthlyChildPayment = person.PIA * 0.75
+            }
+            else {
+              child.monthlyChildPayment = person.nonWEP_PIA * 0.75
+            }
           }
         }
       }

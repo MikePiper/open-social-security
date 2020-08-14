@@ -21,7 +21,7 @@ function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdaySe
   benefitService.checkWhichPIAtoUse(person, today)//checks whether person is *entitled* to gov pension (by checking eligible and pension beginning date) and sets PIA accordingly based on one of two PIA inputs
 }
 
-describe('test calculateSinglePersonPV', () => {
+fdescribe('test calculateSinglePersonPV', () => {
   let service:PresentValueService
   let birthdayService:BirthdayService
   let benefitService:BenefitService

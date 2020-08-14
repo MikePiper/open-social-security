@@ -123,10 +123,11 @@ export class FamilyMaximumService {
     return PIA
   }
 
-  applyFamilyMaximumSingle(scenario:CalculationScenario, amountLeftForRestOfFamiliy:number){
+  applyFamilyMaximumSingle(scenario:CalculationScenario, amountLeftForRestOfFamiliy:number, 
+    disabledChildDeceased: boolean = false){
       let numberOfAxilliaries:number = 0
       for (let child of scenario.children){
-        if (child.isOnDisability === true || child.age < 17.99){
+        if ((child.isOnDisability === true && (disabledChildDeceased === false)) || child.age < 17.99){
           numberOfAxilliaries = numberOfAxilliaries + 1
         }
       }

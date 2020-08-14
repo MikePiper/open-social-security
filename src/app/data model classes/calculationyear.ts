@@ -48,8 +48,10 @@ export class CalculationYear {
     personBoverWithholding: number = 0//These amounts no longer used in monthly PV calc
 
     //Sums for calculating PV (lumps everybody's total benefit amount into one sum, per mortality scenario)
-    annualBenefitSinglePersonAlive: number = 0
-    annualBenefitSinglePersonDeceased: number = 0
+    annualBenefitSinglePersonAlive: number = 0  // for case where disabledChild (if any) is alive
+    annualBenefitSinglePersonDeceased: number = 0 // for case where disabledChild (if any) is alive
+    annualBenefitSinglePersonAliveDisabledChildDeceased: number = 0
+    annualBenefitSinglePersonDeceasedDisabledChildDeceased: number = 0
     annualBenefitBothAlive: number = 0
     annualBenefitBothDeceased: number = 0
     annualBenefitOnlyPersonAalive: number = 0
@@ -64,8 +66,10 @@ export class CalculationYear {
     tablePersonBannualSpousalBenefit: number = 0
     tablePersonBannualSurvivorBenefit: number = 0
         //Note that these mirror the PV-related sums above, because we need a different sum for each case
-        tableTotalAnnualChildBenefitsSingleParentAlive: number = 0
-        tableTotalAnnualChildBenefitsSingleParentDeceased: number = 0
+        tableTotalAnnualChildBenefitsSingleParentAlive: number = 0  // for case where disabledChild (if any) is alive
+        tableTotalAnnualChildBenefitsSingleParentDeceased: number = 0  // for case where disabledChild (if any) is alive
+        tableTotalAnnualChildBenefitsSingleParentAliveDisabledChildDeceased: number = 0
+        tableTotalAnnualChildBenefitsSingleParentDeceasedDisabledChildDeceased: number = 0
         tableTotalAnnualChildBenefitsBothParentsAlive: number = 0
         tableTotalAnnualChildBenefitsBothParentsDeceased: number = 0
         tableTotalAnnualChildBenefitsOnlyPersonAalive: number = 0

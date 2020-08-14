@@ -11,6 +11,7 @@ export class CalculationScenario {
     children:Person[] = []
     youngestChildTurns16date:MonthYearDate
     disabledChild:boolean = false
+    disabledChildPerson: Person = undefined
     benefitCutAssumption: boolean = false
         benefitCutYear: number = 2034
         benefitCutPercentage: number = 23
@@ -54,8 +55,10 @@ export class CalculationScenario {
             //set disabledChild boolean
             this.disabledChild = false
             for (let child of childrenArray){
+                // TODO: make sure no more than one disabled child in the scenario (during entry of properties of children) 
                 if (child.isOnDisability === true){
                     this.disabledChild = true
+                    this.disabledChildPerson = child
                 }
             }
     }

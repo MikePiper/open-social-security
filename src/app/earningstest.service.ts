@@ -62,7 +62,8 @@ export class EarningsTestService {
     return graceYear
   }
 
-  applyEarningsTestSingle(scenario:CalculationScenario, person:Person, calcYear:CalculationYear){
+  applyEarningsTestSingle(scenario:CalculationScenario, person:Person, calcYear:CalculationYear,
+    disabledChildDeceased: boolean = false){
     //If it's the beginning of a year, calculate earnings test withholding and determine if this is a grace year
     if (calcYear.date.getMonth() == 0){
       calcYear.annualWithholdingDuetoSinglePersonEarnings = this.calculateWithholding(calcYear.date, person)
@@ -77,7 +78,9 @@ export class EarningsTestService {
           //count how much is available for withholding
           let availableForWithholding:number = person.monthlyRetirementPayment
           for (let child of scenario.children){
+            if (child.isOnDisability && (disabledChildDeceased === false)) {
             availableForWithholding = availableForWithholding + child.monthlyChildPayment
+            }
           }
           //Set everybody's monthlyPayment to zero to reflect benefits being withheld this month
           person.monthlyRetirementPayment = 0
