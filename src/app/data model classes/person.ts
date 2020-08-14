@@ -46,9 +46,10 @@ export class Person {
         suspendingBenefits:boolean = false //Is true if they will be suspending benefits at all during a particular PV calc.
     spousalBenefitDate: MonthYearDate //if there is a child in care, this represents the date on which normal (non-child-in-care spousal benefits) would begin
     childInCareSpousalBenefitDate: MonthYearDate
-    adjustedRetirementBenefitDate: MonthYearDate
-    adjustedSpousalBenefitDate: MonthYearDate
-
+    adjustedRetirementBenefitDate: MonthYearDate //adjusted as in "after ARF" from earnings test
+    adjustedSpousalBenefitDate: MonthYearDate //adjusted as in "after ARF" from earnings test
+    survivorBenefitDate: MonthYearDate //used in cases in which person using calculator is already widow(er). Vary this date and retirementBenefitDate in maximize function
+ 
     childBenefitDate:MonthYearDate
 
     //benefit amount fields. benefit amount just gets overwritten when recalculated
