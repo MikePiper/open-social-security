@@ -183,15 +183,20 @@ export class PresentValueService {
             let probabilityDisabledChildAlive: number = 
               this.mortalityService.calculateProbabilityAlive(scenario.disabledChildPerson, scenario.disabledChildPerson.age - 1);
             let probabilityDisabledChildDeceased: number = 1 - probabilityDisabledChildAlive;
-              calcYear.annualPV =  
-              probabilityPersonAlive * 
-              ( (calcYear.annualBenefitSinglePersonAlive * probabilityDisabledChildAlive) +
-                (calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased * probabilityDisabledChildDeceased))
-                 + 
-              probabilityPersonDeceased * 
-              ( (calcYear.annualBenefitSinglePersonDeceased * probabilityDisabledChildAlive) +
-              (calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased * probabilityDisabledChildDeceased))
-            }
+            calcYear.annualPV =  
+            probabilityPersonAlive * 
+            ( (calcYear.annualBenefitSinglePersonAlive * probabilityDisabledChildAlive) +
+              (calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased * probabilityDisabledChildDeceased))
+                + 
+            probabilityPersonDeceased * 
+            ( (calcYear.annualBenefitSinglePersonDeceased * probabilityDisabledChildAlive) +
+            (calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased * probabilityDisabledChildDeceased))
+          }
+          console.log(calcYear.date.year, 
+            calcYear.annualBenefitSinglePersonAlive, 
+            calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased,
+            calcYear.annualBenefitSinglePersonDeceased,
+            calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased)
           //Discount that probability-weighted annual benefit amount back to this year
           calcYear.annualPV = this.discountToPresentValue(scenario.discountRate, calcYear.annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
 
@@ -505,7 +510,7 @@ export class PresentValueService {
 
     if (scenario.disabledChildPerson) {
       // TODO: allow user to select appropriate mortality table when entering child data
-      scenario.disabledChildPerson.mortalityTable = this.mortalityService.male2017SSAtable;
+      this.mortalityService.determineMortalityTable(scenario.disabledChildPerson, "male", "SSA", 0);
       scenario.disabledChildPerson.maxAge = 112;
     }
 

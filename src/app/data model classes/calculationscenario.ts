@@ -11,7 +11,7 @@ export class CalculationScenario {
     children:Person[] = []
     youngestChildTurns16date:MonthYearDate
     disabledChild:boolean = false
-    disabledChildPerson: Person = undefined
+    disabledChildPerson: Person = undefined // this awkward name avoids bulk revisions to all 'disabledChild' references
     benefitCutAssumption: boolean = false
         benefitCutYear: number = 2034
         benefitCutPercentage: number = 23

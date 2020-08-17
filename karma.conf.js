@@ -32,7 +32,8 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['Chrome'],
+    // browsers: ['Chrome'],
+    browsers: ['Firefox'],
     singleRun: false, // with the original karma.conf.js, was doing multiple runs in random order, but the tests kept restarting on my computer (when "disconnected"?)
     // singleRun: true, // so I added these two lines
     // random: false, // still doesn't run all tests

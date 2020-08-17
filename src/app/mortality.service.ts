@@ -37,7 +37,7 @@ export class MortalityService {
     determineMortalityTable (person: Person, gender:string, mortalityInput:string, assumedDeathAge:number) {
       let mortalityTable: number[] = []
       let maxAge: number = 0
-    // changed the logic to be faster; whichever test passes, the rest of the 'else if' tests are skipped
+    // changed the logic to be faster; when a test passes, the rest of the 'else if' tests are skipped
     if (gender == "male") {
       if (mortalityInput == "SSA2017") {mortalityTable = this.male2017SSAtable; maxAge = 112}
       else if (mortalityInput == "NS1") {mortalityTable = this.maleNS1; maxAge = 115}
