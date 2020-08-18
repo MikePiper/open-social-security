@@ -7,11 +7,22 @@
     <span id="contentarea">
       <nav id="page-sub-header" class="navbar navbar-default">
           <div class="container">
-            <ul class="nav navbar-nav navbar-right">
+            <ul id="main-navigation" class="nav navbar-nav navbar-right">
               <li><a routerLink="/">HOME</a></li>
               <li><a routerLink="/about">ABOUT</a></li>
-              <li><a href="https://articles.opensocialsecurity.com/">ARTICLES</a></li>
               <li><a routerLink="/contact">CONTACT</a></li>
+              <li class="btn-group" dropdown>
+                <a href="https://articles.opensocialsecurity.com/">ARTICLES</a>
+                <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="caret"></span>
+                  <span class="sr-only">Toggle Dropdown</span>
+                </button>
+                <ul *dropdownMenu class="dropdown-menu">
+                  <li role="menuitem"><a class="dropdown-item" href="https://articles.opensocialsecurity.com/calculate-retirement-benefit/">How to Calculate a Social Security Retirement Benefit</a></li>
+                  <li role="menuitem"><a class="dropdown-item" href="https://articles.opensocialsecurity.com/spousal-benefit-calculation/">How Are Social Security Spousal Benefits Calculated?</a></li>
+                  <li role="menuitem"><a class="dropdown-item" href="https://articles.opensocialsecurity.com/survivor-benefit-calculation/">How Are Social Security Survivor Benefits Calculated?</a></li>
+                </ul>
+              </li>
             </ul>
             <a id="jumbolink" routerLink="/">
               <div class="jumbotron text-center">
@@ -24,7 +35,9 @@
       <div class="container">
         <router-outlet></router-outlet>
       </div>
+
     </span>
+
 
   <!-- Footer -->
 

@@ -61,25 +61,60 @@ label {
     background-color: #267bc5;
     z-index: 999999;
     border: 0;
-    font-size: 80% !important;
+    font-size: 80%;
     font-family: Roboto, sans-serif;
-    line-height: 1.42857143 !important;
+    line-height: 1.42857143;
     border-radius: 0;
     padding-bottom:0;
 }
 
-.navbar li a, .navbar .navbar-brand {
-    color: #fff !important;
+#main-navigation li a {
+    color: #fff;
     letter-spacing: 4px;
-}
-.navbar-nav li a{
     padding-top:0;
     padding-bottom:0;
     line-height: 4rem;
 }
-.navbar-nav li a:hover, .navbar-nav li.active a {
-    color: #267bc5 !important;
-    background-color: #fff !important;
+
+#main-navigation li a:hover, #main-navigation li.active a {
+    color: #267bc5;
+    background-color: #fff;
+}
+
+#main-navigation .btn-primary{
+    border:0;
+    letter-spacing: 4px;
+    padding-top:0;
+    padding-bottom:0;
+    line-height: 4rem;
+    background-color: #267bc5;
+}
+
+#main-navigation .btn-primary:hover{
+    color: #267bc5;
+    background-color: #fff;
+}
+
+#main-navigation .dropdown-menu li a{
+    color:#267bc5;
+    background-color:#fff
+}
+
+#main-navigation .dropdown-menu li a:hover {
+    color: #fff;
+    background-color: #267bc5;
+}
+
+/* This is for the "ARTICLES" link in navigation */
+.nav>.btn-group>a{
+    display:inline-block;
+    padding-right:0;
+}
+
+/* This is for the caret on the "ARTICLES" link in navigation */
+.btn-group>.btn{
+    float:none;
+    padding-left:5px;
 }
 
 .footer {

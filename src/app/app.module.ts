@@ -21,6 +21,7 @@ import { ContactComponent } from './staticpages/contact/contact.component';
 import { LegalComponent } from './staticpages/legal/legal.component';
 import { ScullyLibModule } from '@scullyio/ng-lib';
 import { RangeComponent } from './range/range.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -31,7 +32,7 @@ import { RangeComponent } from './range/range.component';
     AboutComponent,
     ContactComponent,
     LegalComponent,
-    RangeComponent,
+    RangeComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'serverApp' }),
@@ -42,6 +43,7 @@ import { RangeComponent } from './range/range.component';
     SharedModule,
     AppRoutingModule,
     ScullyLibModule,
+    BrowserAnimationsModule
   ],
   exports: [],
   providers: [BenefitService, BirthdayService, PresentValueService, EarningsTestService, MortalityService, SolutionSetService],
