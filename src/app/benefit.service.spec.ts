@@ -115,7 +115,64 @@ describe('BenefitService', () => {
             .toEqual(personB.retirementBenefitDate)
       }))
 
-    //Previously wrote several tests in "child has not filed" scenarios to find earliest retroactive date. They all passed, but eventually deleted them because they fail every time today's month changes.
+      it('should return correct childBenefitDate (date of death) in survivor scenario if child has filed', inject([BenefitService], (service: BenefitService) => {
+        service.today = new MonthYearDate(2020, 7)//Aug 2020
+        let scenario:CalculationScenario = new CalculationScenario
+        scenario.maritalStatus = "survivor"
+        let personA:Person = new Person("A")
+        let personB:Person = new Person("B")
+        let child:Person = new Person("1")
+        child.SSbirthDate = new MonthYearDate(2016, 7) //child born August 2016
+        personA.retirementBenefitDate = new MonthYearDate(2026, 5)//Some date in future -- personA hasn't yet filed
+        personB.retirementBenefitDate = new MonthYearDate(2026, 8)//Some date in future -- personB hasn't yet filed
+        personB.dateOfDeath = new MonthYearDate(2019, 7)//personB died one year ago
+        child.hasFiled = true
+        expect(service.determineChildBenefitDate(scenario, child, personA, personB))
+            .toEqual(new MonthYearDate(2019, 7))
+      }))
 
-  
+      it('should return correct childBenefitDate (6 months ago) in survivor scenario if child has not filed', inject([BenefitService], (service: BenefitService) => {
+        service.today = new MonthYearDate(2020, 7)//Aug 2020
+        let scenario:CalculationScenario = new CalculationScenario
+        scenario.maritalStatus = "survivor"
+        let personA:Person = new Person("A")
+        let personB:Person = new Person("B")
+        let child:Person = new Person("1")
+        child.SSbirthDate = new MonthYearDate(2016, 7) //child born August 2016
+        personA.retirementBenefitDate = new MonthYearDate(2026, 5)//Some date in future -- personA hasn't yet filed
+        personB.retirementBenefitDate = new MonthYearDate(2026, 8)//Some date in future -- personB hasn't yet filed
+        personB.dateOfDeath = new MonthYearDate(2019, 7)//personB died one year ago
+        expect(service.determineChildBenefitDate(scenario, child, personA, personB))
+            .toEqual(new MonthYearDate(2020, 1))
+      }))
+
+      it('should return correct childBenefitDate (date of death) in survivor scenario if child has not filed', inject([BenefitService], (service: BenefitService) => {
+        service.today = new MonthYearDate(2020, 7)//Aug 2020
+        let scenario:CalculationScenario = new CalculationScenario
+        scenario.maritalStatus = "survivor"
+        let personA:Person = new Person("A")
+        let personB:Person = new Person("B")
+        let child:Person = new Person("1")
+        child.SSbirthDate = new MonthYearDate(2016, 7) //child born August 2016
+        personA.retirementBenefitDate = new MonthYearDate(2026, 5)//Some date in future -- personA hasn't yet filed
+        personB.retirementBenefitDate = new MonthYearDate(2026, 8)//Some date in future -- personB hasn't yet filed
+        personB.dateOfDeath = new MonthYearDate(2020, 5)//personB died two months ago
+        expect(service.determineChildBenefitDate(scenario, child, personA, personB))
+            .toEqual(new MonthYearDate(2020, 5))
+      }))
+
+      it('should return correct childBenefitDate (personA.retirementBenefitDate). Survivor scenario. Child has not filed. personA.retirementBenefitDate is earliest retroactive date.', inject([BenefitService], (service: BenefitService) => {
+        service.today = new MonthYearDate(2020, 7)//Aug 2020
+        let scenario:CalculationScenario = new CalculationScenario
+        scenario.maritalStatus = "survivor"
+        let personA:Person = new Person("A")
+        let personB:Person = new Person("B")
+        let child:Person = new Person("1")
+        child.SSbirthDate = new MonthYearDate(2016, 7) //child born August 2016
+        personA.retirementBenefitDate = new MonthYearDate(2020, 3)//personA filed 4 months ago
+        personB.retirementBenefitDate = new MonthYearDate(2026, 8)//Some date in future -- personB hasn't yet filed
+        personB.dateOfDeath = new MonthYearDate(2020, 5)//personB died two months ago
+        expect(service.determineChildBenefitDate(scenario, child, personA, personB))
+            .toEqual(new MonthYearDate(2020, 3))
+      }))
 })
