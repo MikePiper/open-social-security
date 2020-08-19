@@ -1987,3 +1987,90 @@ describe('test discountToPresentValue', () => {
     expect(PV).toBeCloseTo(1000, 1)
   })
 })
+
+describe('test whenShouldPVcalculationStart()', () => {
+  let service:PresentValueService
+  let birthdayService:BirthdayService
+  let scenario:CalculationScenario
+  let personA:Person
+  let personB:Person
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
+    })
+    service = TestBed.get(PresentValueService)
+    birthdayService = TestBed.get(BirthdayService)
+    scenario = new CalculationScenario()
+    personA = new Person("A")
+    personB = new Person("B")
+  })
+
+  it('should correctly determine to start PV calc on Jan 1 of last year in survivor scenario with kids and deceased spouse died last year', () => {
+    let startDate:MonthYearDate
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    scenario.maritalStatus = "survivor"
+    scenario.numberOfChildren = 2
+    let child1:Person = new Person("1")
+    let child2:Person = new Person("2")
+    child1.SSbirthDate = new MonthYearDate(2015, 7) //child 1 born August 2015
+    child2.SSbirthDate = new MonthYearDate(2016, 10) //child 2 born November 2016
+    scenario.setChildrenArray([child1,child2], service.today)
+    personB.dateOfDeath = new MonthYearDate(2019, 11)//died Dec 2019
+    startDate = service.whenShouldPVcalculationStart(scenario, personA, personB)
+    expect(startDate).toEqual(new MonthYearDate(2019, 0))
+  })
+
+  it('should correctly determine to start PV calc on Jan 1 of this year in survivor scenario with kids and deceased spouse died earlier this year', () => {
+    let startDate:MonthYearDate
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    scenario.maritalStatus = "survivor"
+    scenario.numberOfChildren = 2
+    let child1:Person = new Person("1")
+    let child2:Person = new Person("2")
+    child1.SSbirthDate = new MonthYearDate(2015, 7) //child 1 born August 2015
+    child2.SSbirthDate = new MonthYearDate(2016, 10) //child 2 born November 2016
+    scenario.setChildrenArray([child1,child2], service.today)
+    personB.dateOfDeath = new MonthYearDate(2020, 2)//died March 2020
+    personA.survivorBenefitDate = new MonthYearDate(2021, 2) //Planning to file for survivor benefits March of 2021 
+    personA.retirementBenefitDate = new MonthYearDate(2023, 2) //Planning to file for retirement benefits March 2023 (These filing dates make no sense as good choices, but that doesn't matter here.)
+    startDate = service.whenShouldPVcalculationStart(scenario, personA, personB)
+    expect(startDate).toEqual(new MonthYearDate(2020, 0))
+  })
+
+  it('should correctly determine to start PV calc on Jan 1 of last year in survivor scenario with personA already having reached FRA', () => {
+    let startDate:MonthYearDate
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    personA.SSbirthDate = new MonthYearDate(1953, 11)//Dec 1953
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    scenario.maritalStatus = "survivor"
+    personB.dateOfDeath = new MonthYearDate(2019, 11)//died Dec 2019
+    startDate = service.whenShouldPVcalculationStart(scenario, personA, personB)
+    expect(startDate).toEqual(new MonthYearDate(2019, 0))
+  })
+
+  it('should correctly determine to start PV calc on Jan 1 of earlier of retirementBenefitYear or survivorBenefitYear in survivor scenario with no kids and person younger than FRA', () => {
+    let startDate:MonthYearDate
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    personA.SSbirthDate = new MonthYearDate(1958, 5)//June 1958. So they're 62 and 2 months old right now.
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    scenario.maritalStatus = "survivor"
+    personB.dateOfDeath = new MonthYearDate(2019, 11)//died Dec 2019
+    personA.retirementBenefitDate = new MonthYearDate(2022, 5) //planning to file for survivor benefits at age 64
+    personA.survivorBenefitDate = new MonthYearDate(2028, 5) //planning to file for retirement benefits at age 70
+    startDate = service.whenShouldPVcalculationStart(scenario, personA, personB)
+    expect(startDate).toEqual(new MonthYearDate(2022, 0))
+  })
+
+  it('should correctly determine to start PV calc on Jan 1 of earlier of retirementBenefitYear or survivorBenefitYear in survivor scenario with no kids and person younger than FRA', () => {
+    let startDate:MonthYearDate
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    personA.SSbirthDate = new MonthYearDate(1958, 5)//June 1958. So they're 62 and 2 months old right now.
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    scenario.maritalStatus = "survivor"
+    personB.dateOfDeath = new MonthYearDate(2019, 11)//died Dec 2019
+    personA.retirementBenefitDate = new MonthYearDate(2026, 5) //planning to file for survivor benefits at age 68
+    personA.survivorBenefitDate = new MonthYearDate(2021, 7) //planning to file for retirement benefits at age 63 and 2 months
+    startDate = service.whenShouldPVcalculationStart(scenario, personA, personB)
+    expect(startDate).toEqual(new MonthYearDate(2021, 0))
+  })
+})

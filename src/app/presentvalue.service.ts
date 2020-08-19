@@ -13,6 +13,7 @@ import {MonthYearDate} from "./data model classes/monthyearDate"
 import {FamilyMaximumService} from './familymaximum.service'
 import {BirthdayService} from './birthday.service'
 import { ClaimStrategy } from './data model classes/claimStrategy'
+import { start } from 'repl'
 
 
 @Injectable()
@@ -187,10 +188,12 @@ export class PresentValueService {
     personA.adjustedSpousalBenefitDate = new MonthYearDate(personA.spousalBenefitDate)
     personB.adjustedRetirementBenefitDate = new MonthYearDate(personB.retirementBenefitDate)
     personB.adjustedSpousalBenefitDate = new MonthYearDate(personB.spousalBenefitDate)
+    if (personA.survivorBenefitDate) {personA.adjustedSurvivorBenefitDate = new MonthYearDate(personA.survivorBenefitDate)}
     personA.DRCsViaSuspension = 0
     personB.DRCsViaSuspension = 0
     personA.retirementARFcreditingMonths = 0
     personA.spousalARFcreditingMonths = 0
+    personA.survivorARFcreditingMonths = 0
     personB.retirementARFcreditingMonths = 0
     personB.spousalARFcreditingMonths = 0
     personA.entitledToRetirement = false
@@ -212,16 +215,17 @@ export class PresentValueService {
 
     //calculate combined family maximum (We need to know "simultaneous entitlement year" so we can't do this in HomeComponent or maximize function. But can do it anywhere at beginning of PV calc.)
         //simultaneousentitlementyear is later of two retirementBenefitDates (simplification: ignoring the possibility of it being a child's DoB, which could happen if child is born AFTER both retirementBenefitDates)
-          if (personA.retirementBenefitDate < personB.retirementBenefitDate){
-            this.familyMaximumService.calculateCombinedFamilyMaximum(personA, personB, personB.retirementBenefitDate.getFullYear())
+        //Alternatively, if personA is already widow(er), then children already entitled on personB, so it's just personA's retirementBenefitDate
+          if (personA.retirementBenefitDate > personB.retirementBenefitDate || scenario.maritalStatus == "survivor"){
+            this.familyMaximumService.calculateCombinedFamilyMaximum(personA, personB, personA.retirementBenefitDate.getFullYear())
           }
           else {
-            this.familyMaximumService.calculateCombinedFamilyMaximum(personA, personB, personA.retirementBenefitDate.getFullYear())
+            this.familyMaximumService.calculateCombinedFamilyMaximum(personA, personB, personB.retirementBenefitDate.getFullYear())
           }
       
     //Determine whether either person will be getting child-in-care spousal benefits
-        if (scenario.children.length > 0){
-          personA.childInCareSpousal = false
+        if (scenario.children.length > 0 && (scenario.maritalStatus == "married" || scenario.maritalStatus == "divorced")){//there are children, and not a scenario where personA is already widow(er)
+          personA.childInCareSpousal = false //reset to false, then check if it should be true
           personB.childInCareSpousal = false
           if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, personB.retirementBenefitDate) === true){
             //If there is no disabled child, and spousalBenefitDate is after FRA and after youngestchildturns16date, then automatic conversion (to regular spousal from child-in-care spousal) must not have occurred, which means they weren't on child-in-care spousal
@@ -1246,7 +1250,32 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
           startDate = new MonthYearDate(this.today.getFullYear(), 0) //Jan 1 of this year
         }
       }
-    }  
+    }
+
+    else if (scenario.maritalStatus == "survivor"){
+      //If possibility for retroactive application into last year, Jan 1 of last year
+      if (//possible retroactive cases:
+        (childWhoHasntFiled === true && personB.dateOfDeath.getFullYear() < this.today.getFullYear())//Child can file retroactive into last year (or at least, they might be able to if we're within first 6 months of this year)
+        || (this.today >= personA.FRA) //personA can file retroactively because they have reached FRA
+        || (personA.isOnDisability === true && personA.initialAge >= 60) //personA can file retroactive survivor because they're 60 and disabled (such that "no retroactive before FRA" rule doesn't apply)
+      ){
+        startDate = new MonthYearDate(this.today.getFullYear()-1, 0)//Jan 1 of last year
+      }
+      else { //(i.e., no possibility for retroactive application into last year) 
+        //Jan1 of retirementBenefitDate year or Jan1 of survivorBenefitDate year if earlier
+        if (personA.retirementBenefitDate < personA.survivorBenefitDate){
+          startDate = new MonthYearDate(personA.retirementBenefitDate.getFullYear(), 0)
+        }
+        else {
+          startDate = new MonthYearDate(personA.survivorBenefitDate.getFullYear(), 0)
+        }
+        //...but no later than Jan1 of this year if there's a child who hasn't filed, in which case start Jan 1 of this year. (This is the scenario in which there's a child who hasn't filed, and personB died this year.)
+        if (childWhoHasntFiled === true && startDate > new MonthYearDate(this.today.getFullYear(), 0)){
+          startDate = new MonthYearDate(this.today.getFullYear(), 0)//Jan 1 of this year
+        }
+      } 
+    }
+
     return startDate
   }
 
