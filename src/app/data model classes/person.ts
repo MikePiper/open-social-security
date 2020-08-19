@@ -45,12 +45,14 @@ export class Person {
         endSuspensionDate: MonthYearDate = new MonthYearDate(1900, 0, 1) //this is a variable that will be iterated. Benefit is NOT suspended for this month
         suspendingBenefits:boolean = false //Is true if they will be suspending benefits at all during a particular PV calc.
     spousalBenefitDate: MonthYearDate //if there is a child in care, this represents the date on which normal (non-child-in-care spousal benefits) would begin
+    survivorBenefitDate: MonthYearDate //Only used in cases in which person using calculator is already widow(er). We vary this date and retirementBenefitDate in maximize function.
     childInCareSpousalBenefitDate: MonthYearDate
     adjustedRetirementBenefitDate: MonthYearDate //adjusted as in "after ARF" from earnings test
     adjustedSpousalBenefitDate: MonthYearDate //adjusted as in "after ARF" from earnings test
-    survivorBenefitDate: MonthYearDate //used in cases in which person using calculator is already widow(er). Vary this date and retirementBenefitDate in maximize function
- 
+    adjustedSurvivorBenefitDate: MonthYearDate //adjusted as in "after ARF" from earnings test (again, only used in cases in which person using calculator is already widow/widower)
     childBenefitDate:MonthYearDate
+
+    dateOfDeath:MonthYearDate//only used for situations in which person using calculator is already a widow(er) and we know a specific age at death for personB
 
     //benefit amount fields. benefit amount just gets overwritten when recalculated
     retirementBenefit:number = 0
@@ -62,6 +64,7 @@ export class Person {
         originalBenefit:number = 0 //"original benefit" in the sense as used in family max application. (That is, this is a number that can change from one month to the next.)
     retirementARFcreditingMonths:number = 0 //for earnings test
     spousalARFcreditingMonths:number = 0 //for earnings test and for months with child-in-care: (See POMS RS 00615.482)
+    survivorARFcreditingMonths:number = 0 //only used in cases in which person is already widow/widower when using calculator
 
     constructor(id:string){
         this.id = id
