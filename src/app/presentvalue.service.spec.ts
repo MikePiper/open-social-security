@@ -15,6 +15,7 @@ import { ClaimStrategy } from './data model classes/claimStrategy'
 function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdayService:BirthdayService, benefitService:BenefitService, mortalityService:MortalityService){
   person.FRA = birthdayService.findFRA(person.SSbirthDate)
   person.survivorFRA = birthdayService.findSurvivorFRA(person.SSbirthDate)
+  person.survivorBenefitDate = new MonthYearDate(person.survivorFRA)
   person.initialAge =  birthdayService.findAgeOnDate(person, today)
   person.initialAgeRounded = Math.round(person.initialAge)
   person.baseMortalityFactor = mortalityService.calculateBaseMortalityFactor(person)

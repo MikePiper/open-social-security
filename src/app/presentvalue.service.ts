@@ -167,7 +167,8 @@ export class PresentValueService {
 
   calculateCouplePV(personA:Person, personB:Person, scenario:CalculationScenario, printOutputTable:boolean) : ClaimStrategy{
     //Create ClaimStrategy object for saving PVs
-    let claimStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
+      let claimStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
+
     //reset values for new PV calc
       claimStrategy.PV = 0
       claimStrategy.pvNoCut = 0
@@ -188,7 +189,7 @@ export class PresentValueService {
     personA.adjustedSpousalBenefitDate = new MonthYearDate(personA.spousalBenefitDate)
     personB.adjustedRetirementBenefitDate = new MonthYearDate(personB.retirementBenefitDate)
     personB.adjustedSpousalBenefitDate = new MonthYearDate(personB.spousalBenefitDate)
-    if (personA.survivorBenefitDate) {personA.adjustedSurvivorBenefitDate = new MonthYearDate(personA.survivorBenefitDate)}
+    personA.adjustedSurvivorBenefitDate = new MonthYearDate(personA.survivorBenefitDate)//No need to reset this field for personB, because we're assuming that personB is never filing for survivor benefits early anyway.
     personA.DRCsViaSuspension = 0
     personB.DRCsViaSuspension = 0
     personA.retirementARFcreditingMonths = 0
@@ -292,12 +293,14 @@ export class PresentValueService {
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, false)
             //Adjust each person's monthlyPayment as necessary for family max
               this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, true, personB, false)
+            //Adjust survivor benefit for age (i.e., for early entitlement of still-living person, if applicable)
+              personA = this.benefitService.adjustSurvivorBenefitsForAge(personA)
+            //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
+              this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personA, personB)
             //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
               this.benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
             //Redo family max application
               this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, false)
-            //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
-              this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personA, personB)
             //Adjust spousal/survivor monthlyPayment fields for GPO
               this.benefitService.adjustSpousalAndSurvivorBenefitsForGPO(personA, personB)
             //Adjust as necessary for earnings test (and tally months withheld)
@@ -309,12 +312,14 @@ export class PresentValueService {
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, true)
             //Adjust each person's monthlyPayment as necessary for family max
               this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, false, personB, true)
+            //Adjust survivor benefit for age (i.e., for early entitlement of still-living person, if applicable)
+              personB = this.benefitService.adjustSurvivorBenefitsForAge(personB)
+            //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
+              this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
             //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
               this.benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
             //Redo family max application
               this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, false, personB, true)
-            //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
-              this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
             //Adjust spousal/survivor monthlyPayment fields for GPO
               this.benefitService.adjustSpousalAndSurvivorBenefitsForGPO(personA, personB)
             //Adjust as necessary for earnings test (and tally months withheld)
@@ -585,8 +590,12 @@ export class PresentValueService {
     }
 
     //Set initial spousalBenefitDates based on initial retirementBenefitDates
-    personA = this.adjustSpousalBenefitDate(personA, personB, scenario)
-    personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
+        personA = this.adjustSpousalBenefitDate(personA, personB, scenario)
+        personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
+
+    //Set survivorBenefitDate fields to survivorFRA. (We're just assuming here that nobody files for survivor benefits early.)
+          personA.survivorBenefitDate = new MonthYearDate(personA.survivorFRA)
+          personB.survivorBenefitDate = new MonthYearDate(personB.survivorFRA)
 
     //Initialize savedStrategy, with zero PV, using personA's and personB's current dates
       let savedStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)

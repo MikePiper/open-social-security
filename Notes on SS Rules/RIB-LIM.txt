@@ -1,0 +1,41 @@
+202(e)(2)(D) is RIB-LIM provision for widows. 202(f)(2)(D) for widowers.
+
+202(k) is simultaneous entitlement to benefits
+202(k)(5) is GPO
+202(q) is reduction for age
+203(a) is family maximum
+203(b) is earnings test
+215(g) is rounding of benefits to dollar
+
+
+WE KNOW:
+*RIB-LIM reduction happens before reduction due to own entitlement (see SS Act 202(k)(3)(A))
+*RIB-LIM happens after reduction for age and family max (see POMS RS 00615.320)
+*Reduction for family max happens before reduction for age (see CFR 404.410)
+*reduction for age happens before reduction for own entitlement (see CFR 404.407)
+    ^^^ Note that this is different in widow(er) scenario than for spousal scenario. See "method b" vs "method c" here: https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615020
+*reduction for family max happens before reduction for earnings test (see earnings test notes)
+*reduction for age happens before earnings test (see RS 02501.095)
+*reduction for own entitlement happens before earnings test (see RS 02501.095)
+*GPO happens after 202(q) and any reductions in 202 prior to 202(k)(5) -- so after reduction for age and RIB-LIM (see 202(k)(5))
+*GPO happens after own entitlement (see CFR 404-408a)
+
+
+
+Example possible solutions for order of widow(er) benefit calculation:
+
+family max
+age (has to be after family max)
+RIB-LIM (has to be after family max and age)
+own entitlement (has to be after RIB-LIM, family max, age)
+earnings test (has to be after family max, age, own entitlement)
+GPO (has to be after RIB-LIM, age, and own entitlement)
+
+
+family max
+age
+RIB-LIM
+own entitlement
+GPO
+earnings test
+
