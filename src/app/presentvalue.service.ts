@@ -193,10 +193,11 @@ export class PresentValueService {
             (calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased * probabilityDisabledChildDeceased))
           }
           console.log(calcYear.date.year, 
-            calcYear.annualBenefitSinglePersonAlive, 
-            calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased,
-            calcYear.annualBenefitSinglePersonDeceased,
-            calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased)
+            Math.round(calcYear.annualBenefitSinglePersonAlive), 
+            Math.round(calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased),
+            Math.round(calcYear.annualBenefitSinglePersonDeceased),
+            Math.round(calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased)
+            )
           //Discount that probability-weighted annual benefit amount back to this year
           calcYear.annualPV = this.discountToPresentValue(scenario.discountRate, calcYear.annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
 

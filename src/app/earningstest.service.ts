@@ -78,7 +78,7 @@ export class EarningsTestService {
           //count how much is available for withholding
           let availableForWithholding:number = person.monthlyRetirementPayment
           for (let child of scenario.children){
-            if (child.isOnDisability && (disabledChildDeceased === false)) {
+            if (!child.isOnDisability || (disabledChildDeceased === false)) {
             availableForWithholding = availableForWithholding + child.monthlyChildPayment
             }
           }
