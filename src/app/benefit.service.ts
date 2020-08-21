@@ -129,6 +129,21 @@ export class BenefitService {
     }
   }
 
+  adjustSurvivorBenefitsForAge(livingPerson:Person):Person{
+    if (livingPerson.survivorBenefitDate < livingPerson.survivorFRA){
+      //Find how many months prior to survivorFRA
+        let monthsEarly:number
+        monthsEarly = livingPerson.survivorFRA.getMonth() - livingPerson.survivorBenefitDate.getMonth() + 12 * (livingPerson.survivorFRA.getFullYear() - livingPerson.survivorBenefitDate.getFullYear())
+      //Find how many months between age 60 and survivorFRA
+        let monthsBetween60andSurvivorFRA:number
+        monthsBetween60andSurvivorFRA = livingPerson.survivorFRA.getMonth() - livingPerson.SSbirthDate.getMonth() + 12 * (livingPerson.survivorFRA.getFullYear() - (livingPerson.SSbirthDate.getFullYear()+60))
+      //Apply reduction
+        let reductionPercentage:number = monthsEarly / monthsBetween60andSurvivorFRA * 0.285
+        livingPerson.monthlySurvivorPayment = livingPerson.monthlySurvivorPayment * (1 - reductionPercentage)
+    }
+    return livingPerson
+  }
+
   adjustSurvivorBenefitsForRIB_LIM(livingPerson:Person, deceasedPerson:Person){
     //Determine whether RIB-LIM limit is 82.5% of deceased's PIA or amount deceased was receiving
       let RIB_LIMlimit:number = 0
@@ -148,13 +163,9 @@ export class BenefitService {
           RIB_LIMlimit = 0.825 * deceasedPerson.nonWEP_PIA
         }
       }
-    //Limit sum of survivor's monthlySurvivorPayment and monthlyRetirementPayment to RIB-LIM limit
-      if (livingPerson.monthlySurvivorPayment + livingPerson.monthlyRetirementPayment > RIB_LIMlimit){
-        livingPerson.monthlySurvivorPayment = RIB_LIMlimit - livingPerson.monthlyRetirementPayment
-      }
-    //But don't let monthlySurvivorPayment be below zero
-      if (livingPerson.monthlySurvivorPayment < 0) {
-        livingPerson.monthlySurvivorPayment = 0
+    //Limit survivor's monthlySurvivorPayment to RIB-LIM limit
+      if (livingPerson.monthlySurvivorPayment > RIB_LIMlimit){
+        livingPerson.monthlySurvivorPayment = RIB_LIMlimit
       }
   }
 
@@ -653,10 +664,10 @@ export class BenefitService {
     this.checkIfWEPbeginsThisMonthAndRecalcAsNecessary(personA, calcYear.date)
     this.checkIfWEPbeginsThisMonthAndRecalcAsNecessary(personB, calcYear.date)
     //Calculate retirementBenefit field if it hasn't been done yet
-    if (personA.retirementBenefit == 0) {
+    if (personA.retirementBenefit == 0 && personA.PIA > 0) {
       personA.retirementBenefit = this.calculateRetirementBenefit(personA, personA.retirementBenefitDate)
     }
-    if (personB.retirementBenefit == 0) {
+    if (personB.retirementBenefit == 0 && personB.PIA > 0) {
       personB.retirementBenefit = this.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
     }
 
@@ -673,6 +684,12 @@ export class BenefitService {
         this.familyMaximumService.calculateFamilyMaximum(personA, calcYear.date)
       }
     }
+    //Same idea, for personA's survivorFRA (i.e., recalculate survivor benefit to account for ARF, if they filed for survivor benefit early)
+    if (calcYear.date.valueOf() == personA.survivorFRA.valueOf()){
+      if (personA.survivorBenefitDate < personA.survivorFRA){
+        personA.adjustedSurvivorBenefitDate.setMonth(personA.survivorBenefitDate.getMonth()+personA.survivorARFcreditingMonths)
+      }
+    }
     //At personB's FRA...
     if (calcYear.date.valueOf() == personB.FRA.valueOf()){
       //Recalculate person's own retirement benefit using adjusted date at FRA. Also set adjustedSpousalBenefitDate field.
@@ -684,6 +701,13 @@ export class BenefitService {
       //If personB is disabled, recalculate family maximum using normal retirement family maximum rules rather than disability ("DMAX") rules. (See https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615742)
       if (personB.isOnDisability === true){
         this.familyMaximumService.calculateFamilyMaximum(personB, calcYear.date)
+      }
+    }
+    //Same idea, for personB's survivorFRA (i.e., recalculate survivor benefit to account for ARF, if they filed for survivor benefit early).
+        //This should never actually get triggered given the application's current assumption that in "both alive" scenario neither person files for survivor benefits before survivorFRA. Including it anyway though in case that changes in future for some reason.
+    if (calcYear.date.valueOf() == personB.survivorFRA.valueOf()){
+      if (personB.survivorBenefitDate < personB.survivorFRA){
+        personB.adjustedSurvivorBenefitDate.setMonth(personB.survivorBenefitDate.getMonth()+personB.survivorARFcreditingMonths)
       }
     }
 
