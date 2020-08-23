@@ -58,6 +58,7 @@ export class CalculationYear {
 
     //person-by-person sums for table output (Assumes any parents are alive -- aside from survivor benefit amounts)
     tablePersonAannualRetirementBenefit: number = 0
+        tablePersonAannualRetirementBenefitOnlyAalive:number = 0//this is used instead of the above field, in cases in which personA is already a survivor when using calculator
     tablePersonAannualSpousalBenefit: number = 0
     tablePersonAannualSurvivorBenefit: number = 0
     tablePersonBannualRetirementBenefit: number = 0

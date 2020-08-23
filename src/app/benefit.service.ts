@@ -87,7 +87,6 @@ export class BenefitService {
         survivorOriginalBenefit = deceasedPerson.nonWEP_PIA
       }
     }
-
     return survivorOriginalBenefit
   }
 
@@ -129,18 +128,33 @@ export class BenefitService {
     }
   }
 
-  adjustSurvivorBenefitsForAge(livingPerson:Person):Person{
-    if (livingPerson.survivorBenefitDate < livingPerson.survivorFRA){
-      //Find how many months prior to survivorFRA
-        let monthsEarly:number
-        monthsEarly = livingPerson.survivorFRA.getMonth() - livingPerson.survivorBenefitDate.getMonth() + 12 * (livingPerson.survivorFRA.getFullYear() - livingPerson.survivorBenefitDate.getFullYear())
-      //Find how many months between age 60 and survivorFRA
-        let monthsBetween60andSurvivorFRA:number
-        monthsBetween60andSurvivorFRA = livingPerson.survivorFRA.getMonth() - livingPerson.SSbirthDate.getMonth() + 12 * (livingPerson.survivorFRA.getFullYear() - (livingPerson.SSbirthDate.getFullYear()+60))
-      //Apply reduction
-        let reductionPercentage:number = monthsEarly / monthsBetween60andSurvivorFRA * 0.285
-        livingPerson.monthlySurvivorPayment = livingPerson.monthlySurvivorPayment * (1 - reductionPercentage)
-    }
+  adjustSurvivorBenefitsForAge(scenario:CalculationScenario, livingPerson:Person):Person{
+    //per CFR 404.410: survivor benefits not reduced for month in which there is a child in care (under 16 or disabled) who is entitled to child benefits on worker's record.
+    //per RS 00615.310: If survivor is disabled, can claim survivor benefits as early as 50 instead of 60. And if so, for sake of calculation, they are "deemed" to be age 60 on the date they file.
+    let monthsEarly:number
+    let dateForCountingEarlyEntitlement:MonthYearDate = new MonthYearDate(livingPerson.survivorBenefitDate)
+  
+    //if ARF has happened, use adjusted date
+      if (livingPerson.adjustedSurvivorBenefitDate > livingPerson.survivorBenefitDate){
+        dateForCountingEarlyEntitlement = new MonthYearDate(livingPerson.adjustedSurvivorBenefitDate)
+      }
+
+    //Check if there is *currently* a child under 16 or disabled
+      let childUnder16orDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabled(scenario)
+
+    //Reduce spousal benefits for age if there is no child who is disabled and/or *currently* under 16.
+      if (childUnder16orDisabled === false){
+        if (dateForCountingEarlyEntitlement < livingPerson.survivorFRA){
+          //Find how many months prior to survivorFRA
+            monthsEarly = livingPerson.survivorFRA.getMonth() - dateForCountingEarlyEntitlement.getMonth() + 12 * (livingPerson.survivorFRA.getFullYear() - dateForCountingEarlyEntitlement.getFullYear())
+          //Find how many months between age 60 and survivorFRA
+            let monthsBetween60andSurvivorFRA:number
+            monthsBetween60andSurvivorFRA = livingPerson.survivorFRA.getMonth() - livingPerson.SSbirthDate.getMonth() + 12 * (livingPerson.survivorFRA.getFullYear() - (livingPerson.SSbirthDate.getFullYear()+60))
+          //Apply reduction
+            let reductionPercentage:number = monthsEarly / monthsBetween60andSurvivorFRA * 0.285
+            livingPerson.monthlySurvivorPayment = livingPerson.monthlySurvivorPayment * (1 - reductionPercentage)
+        }
+      }
     return livingPerson
   }
 
@@ -539,7 +553,7 @@ export class BenefitService {
               if (personA.entitledToRetirement === true){
                 personA.monthlyRetirementPayment = personA.retirementBenefit
               }
-              if (calcYear.date >= personA.survivorFRA || (scenario.maritalStatus == "survivor" && calcYear.date >= personA.survivorBenefitDate)){
+              if (calcYear.date >= personA.survivorBenefitDate){
                 personA.monthlySurvivorPayment = this.calculateSurvivorOriginalBenefit(personB)
               }
               for (let child of scenario.children){

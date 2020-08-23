@@ -808,6 +808,8 @@ describe('tests calculateCouplePV', () => {
         personB.retirementBenefitDate = new MonthYearDate(2025, 7) //August 2025 (age 62, 5 years before FRA)
         personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
         personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
+        personA.survivorBenefitDate = new MonthYearDate(personA.survivorFRA)
+        personB.survivorBenefitDate = new MonthYearDate(personB.survivorFRA)
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
         expect(claimStrategy.outputTable[11][0]).toEqual("If your spouse outlives you")
         expect(claimStrategy.outputTable[11][6]).toEqual("$6,480") //deceased filed at 70 with FRA of 67. Benefit would have been 1240. Minus survivor's own 700 retirement benefit, gives 540 survivor benefit. 12 x 540 = 6480
@@ -860,6 +862,8 @@ describe('tests calculateCouplePV', () => {
           personB.retirementBenefitDate = new MonthYearDate(2025, 7) //Files at 62 (5 years before FRA), so retirement benefit = 700
           personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
           personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
+          personA.survivorBenefitDate = new MonthYearDate(personA.survivorFRA)
+          personB.survivorBenefitDate = new MonthYearDate(personB.survivorFRA)
           let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
           expect(claimStrategy.outputTable[9][0]).toEqual(2034)
           expect(claimStrategy.outputTable[9][1]).toEqual("$17,856")//personA annual retirement benefit before WEP kicks in: 124% of non WEP PIA = 1.24 * 1200 * 12 = 17856
@@ -1960,6 +1964,11 @@ describe('tests calculateCouplePV', () => {
     expect(claimStrategy.outputTable[0][2]).toEqual("$1,650")//personA child-in-care spousal, times 3 months. 2300PIA/2 - 600 = $550 per month. Not reduced for early entitlement because there's a child in care.
     expect(claimStrategy.outputTable[0][4]).toEqual("$22,417")//total children benefit in 2022 is 9 months of $1,724.08 (i.e,. amount left on personB's family max),
       //plus 3 months of $2,300 (i.e., full 50% of personB PIA for each child, now that combined family max has kicked in)
+    //personA.familyMax (62 in 2022) should be 150% of 600 = 900
+    //personB.familyMax (62 in 2019) should be 150% * 1,184 + 272% * (1,708-1184) + 134% * (2,228 -1708) + 175% * (2300 -2228) = 4024.08
+    //combined family max should be 4924.08, limited to $5707.60
+    //in 2022 Jan-Sept
+      //4024.08 - 2300 = 1724.08 left for the two children (personA doesn't count toward limit because they're an ex-spouse)
   })
 
 })
