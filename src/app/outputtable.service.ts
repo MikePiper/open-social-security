@@ -24,7 +24,7 @@ export class OutputTableService {
           }
       //Add row to table
         //need year-by year row if...
-        if (person.age <= 70 || //person is younger than 70
+        if (person.age <= 71 || //person is younger than 70
           (childUnder19 === true) || //or there is a child who is not disabled and they are younger than 19
           (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) || //or user has chosen an assumed benefit cut and that year has not yet arrived
           (person.eligibleForNonCoveredPension === true && person.entitledToNonCoveredPension === false) ){ //or person is eligible for noncovered pension but it hasn't yet begun
