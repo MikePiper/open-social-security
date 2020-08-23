@@ -163,7 +163,7 @@ describe('test calculateSinglePersonPV', () => {
           .toBeCloseTo(320110, 0)
       })
   
-      it('should return appropriate PV for single person, adult mortal disabled child, no earnings test applicable, no future benefit cut assumption', () => {
+      fit('should return appropriate PV for single person, young non-disabled child, earnings test applicable, no future benefit cut assumption', () => {
         service.today = new MonthYearDate(2018, 11) // Test as if written in 2018. Hardcode in the year, otherwise it will fail every new year.
         earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "single"
@@ -171,15 +171,14 @@ describe('test calculateSinglePersonPV', () => {
         let child1:Person = new Person("1")
         scenario.children = [child1]
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
-        child1.SSbirthDate = new MonthYearDate(2000, 3, 1) //child1 born April 2000
-        child1.isOnDisability = true
-        scenario.disabledChild = true
-        scenario.disabledChildPerson = child1
-        scenario.disabledChildPerson.initialAgeRounded = 19
+        child1.SSbirthDate = new MonthYearDate(2010, 3, 1) //child1 born April 2010
+        console.log("young non-disabled child")
+        // child1.isOnDisability = true
+        // scenario.disabledChild = true
+        // scenario.disabledChildPerson = child1
+        // scenario.disabledChildPerson.initialAgeRounded = 19
         // mortalityService.determineMortalityTable(scenario.disabledChildPerson, "male", "SSA", 0);
-        // assume child doesn't die until age 100
-        mortalityService.determineMortalityTable(scenario.disabledChildPerson, "male", "fixed", 100);
-        scenario.disabledChildPerson.baseMortalityFactor = mortalityService.calculateBaseMortalityFactor(child1);
+        // scenario.disabledChildPerson.baseMortalityFactor = mortalityService.calculateBaseMortalityFactor(child1);
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2023, 3, 1) //filing at age 63
         person.quitWorkDate = new MonthYearDate (2023, 2, 1) // Working until month before retirement. Earnings test is not relevant.
@@ -203,6 +202,7 @@ describe('test calculateSinglePersonPV', () => {
         scenario.children = [child1]
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
         child1.SSbirthDate = new MonthYearDate(2000, 3, 1) //child1 born April 2000
+        console.log("adult disabled child")
         child1.isOnDisability = true
         scenario.disabledChild = true
         scenario.disabledChildPerson = child1
