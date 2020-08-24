@@ -605,20 +605,8 @@ export class PresentValueService {
     personB = this.familyMaximumService.calculateFamilyMaximum(personB, this.today)
 
     // get limits for storage of PV for range of claim options
-    let earliestStartA: MonthYearDate = personA.spousalBenefitDate;
-    if (earliestStartA > personA.retirementBenefitDate) {
-      earliestStartA = personA.retirementBenefitDate;
-    }
-    if (personA.endSuspensionDate > earliestStartA) {
-      earliestStartA = personA.endSuspensionDate;
-    }
-    let earliestStartB: MonthYearDate = personB.spousalBenefitDate;
-    if (earliestStartB > personB.retirementBenefitDate) {
-      earliestStartB = personB.retirementBenefitDate;
-    }
-    if (personB.endSuspensionDate > earliestStartB) {
-      earliestStartB = personB.endSuspensionDate;
-    }
+    let earliestStartA: MonthYearDate = new MonthYearDate(this.findEarliestDateForPersonToStoreInRange(personA))
+    let earliestStartB: MonthYearDate = new MonthYearDate(this.findEarliestDateForPersonToStoreInRange(personB))
 
     //Create new range object for storage of data
     scenario.range = new Range(earliestStartA, spouseAendTestDate, earliestStartB, spouseBendTestDate);
@@ -687,12 +675,12 @@ export class PresentValueService {
     //after loop is finished, set person objects' benefit dates to the saved dates, for sake of running PV calc again for outputTable
       personA.retirementBenefitDate = new MonthYearDate(savedStrategy.personARetirementDate)
       personA.spousalBenefitDate = new MonthYearDate(savedStrategy.personASpousalDate)
-      personA.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personAchildInCareSpousalDate)
+      if (savedStrategy.personAchildInCareSpousalDate) {personA.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personAchildInCareSpousalDate)}
       personA.beginSuspensionDate = new MonthYearDate(savedStrategy.personABeginSuspensionDate)
       personA.endSuspensionDate = new MonthYearDate(savedStrategy.personAEndSuspensionDate)
       personB.retirementBenefitDate = new MonthYearDate(savedStrategy.personBRetirementDate)
       personB.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
-      personB.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personBchildInCareSpousalDate)
+      if (savedStrategy.personBchildInCareSpousalDate) {personB.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personBchildInCareSpousalDate)}
       personB.beginSuspensionDate = new MonthYearDate(savedStrategy.personBBeginSuspensionDate)
       personB.endSuspensionDate = new MonthYearDate(savedStrategy.personBEndSuspensionDate)
       savedStrategy = this.calculateCouplePV(personA, personB, scenario, true)//running the calc again on savedStrategy, just to generate the outputTable
@@ -1264,5 +1252,22 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       presentValue = futureValue / Math.pow((1 + discountRate),(cashflowYear - thisYear))
     }
     return presentValue
+  }
+
+  findEarliestDateForPersonToStoreInRange(person:Person):MonthYearDate{
+    let earliestDate:MonthYearDate
+    if (person.spousalBenefitDate){
+      earliestDate = new MonthYearDate(person.spousalBenefitDate)
+    }
+    if (person.childInCareSpousalBenefitDate){
+      earliestDate = new MonthYearDate(person.childInCareSpousalBenefitDate)
+    }
+    if (earliestDate > person.retirementBenefitDate && person.PIA > 0) {
+      earliestDate = new MonthYearDate(person.retirementBenefitDate)
+    }
+    if (person.endSuspensionDate > earliestDate) {
+      earliestDate = new MonthYearDate(person.endSuspensionDate)
+    }
+    return earliestDate
   }
 }

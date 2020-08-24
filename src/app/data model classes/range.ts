@@ -203,23 +203,24 @@ export class Range {
             } else {
                 row = this.getRowAtDate(claimStrategy.indexDateB());
             }
+            if (col >= 0 && row >= 0){//Check that row and col are not negative.
+                //They'd be negative in cases in which the PV calc is running a calculation that shouldn't be included in the output range (e.g., personB is age 62, but they have no PIA of their own and can't file for spousal until age 64)
+                //store the pv and corresponding ClaimStrategy
+                this.pvArrays[condition][row][col] = pv;
+                this.claimStrategiesArrays[condition][row][col] = claimStrategy;
 
-            //store the pv and corresponding ClaimStrategy
-            this.pvArrays[condition][row][col] = pv;
-            this.claimStrategiesArrays[condition][row][col] = claimStrategy;
-
-            //Store information about maximum or minimum PV (and corresponding row/column) if it's a new max or minimum
-            if (pv > this.pvMaxArray[condition]) {
-                this.pvMaxArray[condition] = pv;
-                this.pvMaxRowArray[condition] = row;
-                this.pvMaxColArray[condition] = col;
+                //Store information about maximum or minimum PV (and corresponding row/column) if it's a new max or minimum
+                if (pv > this.pvMaxArray[condition]) {
+                    this.pvMaxArray[condition] = pv;
+                    this.pvMaxRowArray[condition] = row;
+                    this.pvMaxColArray[condition] = col;
+                }
+                if (pv < this.pvMinArray[condition]) {
+                    this.pvMinArray[condition] = pv;
+                    this.pvMinRowArray[condition] = row;
+                    this.pvMinColArray[condition] = col;
+                }
             }
-            if (pv < this.pvMinArray[condition]) {
-                this.pvMinArray[condition] = pv;
-                this.pvMinRowArray[condition] = row;
-                this.pvMinColArray[condition] = col;
-            }
-
         }
     }
 
