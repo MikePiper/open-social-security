@@ -197,38 +197,54 @@ export class EarningsTestService {
         }
         else if (personAaliveBoolean === true && personBaliveBoolean === false){
           if (calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive > 0){//If more withholding is necessary...
-            if (calcYear.date >= personA.retirementBenefitDate  //And they've started retirement benefit...
-            && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate) //And it isn't a nonservice month in grace year...
-            && calcYear.date < personA.FRA){//And they are younger than FRA...
-              //withhold A's excess earnings from A's retirement benefit and any child benefits
-              availableForWithholding = personA.monthlyRetirementPayment
-              personA.monthlyRetirementPayment = 0
-              //Don't need to add to tally of months withheld, because we're doing that in the "both alive" calculation, and we don't want to double count.
-              for (let child of scenario.children){
-                if ((child.age < 17.99 || child.isOnDisability === true) && calcYear.date >= child.childBenefitDate ){//if child is entitled to a child's benefit
-                  availableForWithholding = availableForWithholding + child.monthlyChildPayment
-                  child.monthlyChildPayment = 0
+            if (calcYear.date < personA.FRA //If personA is younger than FRA...
+              && !(calcYear.personAgraceYear === true && calcYear.date >= personA.quitWorkDate)){//And it isn't a nonservice month in grace year...
+                if (calcYear.date >= personA.retirementBenefitDate){ //And personA has started retirement benefit...
+                  //withhold A's excess earnings from A's retirement benefit and any child benefits
+                  availableForWithholding = personA.monthlyRetirementPayment
+                  personA.monthlyRetirementPayment = 0
+                  //Don't need to add to tally of months of retirement benefit withheld, because we're doing that in the "both alive" calculation, and we don't want to double count.
+                  for (let child of scenario.children){
+                    if ((child.age < 17.99 || child.isOnDisability === true) && calcYear.date >= child.childBenefitDate ){//if child is entitled to a child's benefit
+                      availableForWithholding = availableForWithholding + child.monthlyChildPayment
+                      child.monthlyChildPayment = 0
+                    }
+                  }
                 }
-              }
+                if (calcYear.date >= personA.survivorBenefitDate){//if personA has started survivor benefit
+                    //withhold A's excess earnings from A's survivor benefit
+                    availableForWithholding = availableForWithholding + personA.monthlySurvivorPayment
+                    personA.monthlySurvivorPayment = 0
+                    //Add to tally of months of survivor benefit withheld
+                    if (childUnder16orDisabled === false) {personA.survivorARFcreditingMonths = personA.survivorARFcreditingMonths + 1}
+                }
               calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive = calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive - availableForWithholding
             }
           }
         }
         else if (personAaliveBoolean === false && personBaliveBoolean === true){
           if (calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive > 0){//If more withholding is necessary...
-            if (calcYear.date >= personB.retirementBenefitDate  //And they've started retirement benefit...
-            && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate) //And it isn't a nonservice month in grace year...
-            && calcYear.date < personB.FRA){//And they are younger than FRA...
-              //withhold B's excess earnings from B's retirement benefit and any child benefits
-              availableForWithholding = personB.monthlyRetirementPayment
-              personB.monthlyRetirementPayment = 0
-              //Don't need to add to tally of months withheld, because we're doing that in the "both alive" calculation, and we don't want to double count.
-              for (let child of scenario.children){
-                if ((child.age < 17.99 || child.isOnDisability === true) && calcYear.date >= child.childBenefitDate ){//if child is entitled to a child's benefit
-                  availableForWithholding = availableForWithholding + child.monthlyChildPayment
-                  child.monthlyChildPayment = 0
+            if (calcYear.date < personB.FRA //If personB is younger than FRA...
+              && !(calcYear.personBgraceYear === true && calcYear.date >= personB.quitWorkDate)){//And it isn't a nonservice month in grace year...
+                if (calcYear.date >= personB.retirementBenefitDate){ //And personB has started retirement benefit...
+                  //withhold B's excess earnings from B's retirement benefit and any child benefits
+                  availableForWithholding = personB.monthlyRetirementPayment
+                  personB.monthlyRetirementPayment = 0
+                  //Don't need to add to tally of months of retirement benefit withheld, because we're doing that in the "both alive" calculation, and we don't want to double count.
+                  for (let child of scenario.children){
+                    if ((child.age < 17.99 || child.isOnDisability === true) && calcYear.date >= child.childBenefitDate ){//if child is entitled to a child's benefit
+                      availableForWithholding = availableForWithholding + child.monthlyChildPayment
+                      child.monthlyChildPayment = 0
+                    }
+                  }
                 }
-              }
+                if (calcYear.date >= personB.survivorBenefitDate){//if personB has started survivor benefit
+                    //withhold B's excess earnings from B's survivor benefit
+                    availableForWithholding = availableForWithholding + personB.monthlySurvivorPayment
+                    personB.monthlySurvivorPayment = 0
+                    //Add to tally of months of survivor benefit withheld
+                    if (childUnder16orDisabled === false) {personB.survivorARFcreditingMonths = personB.survivorARFcreditingMonths + 1}
+                }
               calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive = calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive - availableForWithholding
             }
           }

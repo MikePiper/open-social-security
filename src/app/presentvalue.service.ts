@@ -387,24 +387,24 @@ export class PresentValueService {
             //Discount that probability-weighted annual benefit amount back to this year
               annualPV = this.discountToPresentValue(scenario.discountRate, annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
 
-                // if (printOutputTable === true){
-                //   console.log(calcYear.date.getFullYear())
-                //   console.log("discounted annualPV: " + annualPV)
-                //   console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
-                //   console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
-                //   console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
-                //   console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
-                //   console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
-                //   console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
-                //   console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
-                //   console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
-                //   console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
-                //   console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
-                //   console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
-                //   console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
-                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
-                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
-                // }
+                if (printOutputTable === true){
+                  console.log(calcYear.date.getFullYear())
+                  console.log("discounted annualPV: " + annualPV)
+                  console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
+                  console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
+                  console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
+                  console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
+                  console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
+                  console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
+                  console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
+                  console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
+                  console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
+                  console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
+                  console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
+                  console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
+                  console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
+                  console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
+                }
 
             //Add discounted benefit to ongoing sum
               claimStrategy.PV = claimStrategy.PV + annualPV

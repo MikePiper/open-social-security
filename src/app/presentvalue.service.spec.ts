@@ -1097,7 +1097,7 @@ describe('tests calculateCouplePV', () => {
       })
 
       //Same test as above, but with personB working through 2026. So basically should get ARF months up through 12/2026, but make sure there are no double-counted ARF months.
-      it('Should calculate spousal benefits appropriately in ARF scenario with child in care and earnings test', () => {
+      fit('Should calculate spousal benefits appropriately in ARF scenario with child in care and earnings test', () => {
         service.today = new MonthYearDate(2018, 11)
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
@@ -1115,11 +1115,13 @@ describe('tests calculateCouplePV', () => {
         personB.SSbirthDate = new MonthYearDate(1960, 2)
         personB.quitWorkDate = new MonthYearDate(2027, 0) //quitWorkDate January 2027, so it's the first month without work
         personB.monthlyEarnings = 10000
-        personA.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63
-        personB.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63
+        personA.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63 (48 months early, retirement benefit = $1,125)
+        personB.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63 (48 months early, retirement benefit = $450)
         personA.spousalBenefitDate = new MonthYearDate(2025, 2) //This date doesn't matter, given PIAs. But same reasoning as field for personB
         personB.spousalBenefitDate = new MonthYearDate(2025, 2)
         //^^Spousal benefit begins March 2023 when personA starts retirement. But it's child in care spousal benefit until child turns 16 in March 2025. Here we are having them file Form SSA-25 immediately at that date.
+        personA.survivorBenefitDate = new MonthYearDate(personA.survivorFRA)//doesn't file for survivor benefits prior to survivor FRA
+        personB.survivorBenefitDate = new MonthYearDate(personB.survivorFRA)//doesn't file for survivor benefits prior to survivor FRA
         mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
         mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
         personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
@@ -1131,29 +1133,30 @@ describe('tests calculateCouplePV', () => {
           //personB.familyMaximum = 900
           //1500 + 750 + 750 (original benefits on personA's record) < combined family max, so family max isn't an issue here.
           //personA spousal benefit = 0
-          //personB retirement benefit = 450 (75% of PIA due to 48 months early)
           //personB spousal benefit = 150 (1500/2 - 600) <- not reduced for age during time that child1 is under age 16
           //in March 2025 child1 turns 16. So now personB's spousal benefit will be reduced for age if they file form SSA-25 immediately, which we they are doing, given spousalBenefitDate above.
             //personB's new spousal benefit: $125 (Age 65 and 0 months. 24 months early = 83.33% full spousal benefit)
-          //table begins in 2023
-          //each row: year, personAretirement, personAspousal, personAsurvivor, personBretirement, personBspousal, personBsurvivor, total child benefit, total
           //personB annual earnings: 120k -> (120000 - 17040)/2 = $51,480 withholding necessary in years prior to FRA (from personB's record)
-          //Available to withhold per month: $150 spousal for personB and $750 child benefit = $900
+          //Available to withhold per month: $450 retirement for personB, $150 spousal for personB, and $750 child benefit = $1,350
             //^^Going with POMS RS 02501.140 here, even though it contradicts SSAct and CFR. (That is, we're making child benefit withholdable on personB's record, even though it's coming on personA's record.)
-          expect(claimStrategy.outputTable[0][5]).toEqual("$0") //2023 personB spousal benefit fully withheld due to earnings test
-          expect(claimStrategy.outputTable[1][5]).toEqual("$0") //2024 personB spousal benefit fully withheld due to earnings test
+          //$51,480 necessary withholding / 1350 available per month = 39 months per year need to be withheld. (So whole year is withheld for 2023, 2024, 2025, 2026)
+          console.log(claimStrategy.outputTable)
+          expect(claimStrategy.outputTable[0]).toEqual([2023, "$11,250", "$0", "$0", "$0", "$0", "$0", "$0", "$11,250"])//10 months of retirement for personA, everything else withheld
+          expect(claimStrategy.outputTable[1]).toEqual([2024, "$13,500", "$0", "$0", "$0", "$0", "$0", "$0", "$13,500"])//12 months of retirement for personA, everything else withheld
           //March 2025 child turns 16 and personB files SSA-25. So now spousal benefit would be normal spousal benefit (reduced to $125 due to being 24 months early). But it's withheld due to earnings. So we start counting spousal ARF credits
-          expect(claimStrategy.outputTable[2][5]).toEqual("$0") //2025 personB spousal benefit fully withheld due to earnings test (10 months spousal ARF credits)
-          expect(claimStrategy.outputTable[3][5]).toEqual("$0") //2026 personB spousal benefit fully withheld due to earnings test (12 months spousal ARF credits)
-          expect(claimStrategy.outputTable[4][5]).toEqual("$1,729") //In 2027, no earnings so no withholding. Gets $125 benefit for 2 months, then ARF happens in March. Was 24 months early, but has 22 spousal ARF credits.
+          expect(claimStrategy.outputTable[2]).toEqual([2025, "$13,500", "$0", "$0", "$0", "$0", "$0", "$0", "$13,500"])//12 months of retirement for personA, everything else withheld (10 ARF credits)
+          expect(claimStrategy.outputTable[3]).toEqual([2026, "$13,500", "$0", "$0", "$0", "$0", "$0", "$0", "$13,500"])//12 months of retirement for personA, everything else withheld (12 ARF credits)
+          //In 2027, no earnings so no withholding.
+          //personB filed for retirement 48 months early, but was withheld for 46 of those months. ARF happens in March, so now benefit is only 2 months early (98.88888% = $593.33)
+          //$450 x 2 + $593.33 x 10 = $6,833
+          //Gets $125 spousal benefit for 2 months, then ARF happens in March. Was 24 months early, but has 22 spousal ARF credits.
           //2 months early spousal reduction factor = 98.611111%. (1500/2 - 600) * 0.986111 = $147.91
           //$125 x 2 + $147.91 x 10 = $1729.17
-          expect(claimStrategy.outputTable[0][7]).toEqual("$0") //2023 child would get 10 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(claimStrategy.outputTable[1][7]).toEqual("$0") //2024 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(claimStrategy.outputTable[2][7]).toEqual("$0") //2025 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(claimStrategy.outputTable[3][7]).toEqual("$0") //2026 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(claimStrategy.outputTable[4][7]).toEqual("$1,500") //2027 child gets 2 months of child benefits on personA, then turns 18. (personB has no earnings so no withholding.)
+          //Child gets 2 months of child benefits on personA, then turns 18.
+          expect(claimStrategy.outputTable[4]).toEqual([2027, "$13,500", "$0", "$0", "$6,833", "$1,729", "$0", "$1,500", "$23,563"])
       })
+
+
 
         it('Should calculate retirement/spousal/child benefits appropriately for everybody in combined family max scenario', () => {
           service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
