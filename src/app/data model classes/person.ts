@@ -28,6 +28,7 @@ export class Person {
     hasHadGraceYear:boolean = false
 
     hasFiled:boolean = false
+    hasFiledAsSurvivor:boolean = false //used in survivor scenarios (i.e., when personA using calculator is already a widow/widower)
     isOnDisability: boolean = false //true only if disabled and expecting to be on disability until FRA
 
     familyMaximum: number

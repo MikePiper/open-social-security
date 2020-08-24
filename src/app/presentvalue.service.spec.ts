@@ -1097,7 +1097,7 @@ describe('tests calculateCouplePV', () => {
       })
 
       //Same test as above, but with personB working through 2026. So basically should get ARF months up through 12/2026, but make sure there are no double-counted ARF months.
-      fit('Should calculate spousal benefits appropriately in ARF scenario with child in care and earnings test', () => {
+      it('Should calculate spousal benefits appropriately in ARF scenario with child in care and earnings test', () => {
         service.today = new MonthYearDate(2018, 11)
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
@@ -1127,7 +1127,7 @@ describe('tests calculateCouplePV', () => {
         personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
         personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-        expect(claimStrategy.PV).toBeCloseTo(367887, 0)
+        expect(claimStrategy.PV).toBeCloseTo(367748, 0)
         //manual calculation:
           //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
           //personB.familyMaximum = 900
@@ -1140,7 +1140,6 @@ describe('tests calculateCouplePV', () => {
           //Available to withhold per month: $450 retirement for personB, $150 spousal for personB, and $750 child benefit = $1,350
             //^^Going with POMS RS 02501.140 here, even though it contradicts SSAct and CFR. (That is, we're making child benefit withholdable on personB's record, even though it's coming on personA's record.)
           //$51,480 necessary withholding / 1350 available per month = 39 months per year need to be withheld. (So whole year is withheld for 2023, 2024, 2025, 2026)
-          console.log(claimStrategy.outputTable)
           expect(claimStrategy.outputTable[0]).toEqual([2023, "$11,250", "$0", "$0", "$0", "$0", "$0", "$0", "$11,250"])//10 months of retirement for personA, everything else withheld
           expect(claimStrategy.outputTable[1]).toEqual([2024, "$13,500", "$0", "$0", "$0", "$0", "$0", "$0", "$13,500"])//12 months of retirement for personA, everything else withheld
           //March 2025 child turns 16 and personB files SSA-25. So now spousal benefit would be normal spousal benefit (reduced to $125 due to being 24 months early). But it's withheld due to earnings. So we start counting spousal ARF credits
@@ -1953,7 +1952,6 @@ describe('tests calculateCouplePV', () => {
     child2.SSbirthDate = new MonthYearDate(2016, 10) //child 2 born November 2016
     scenario.setChildrenArray([child1,child2], service.today)
     let results = service.maximizeCouplePViterateOnePerson(scenario, personA, personB)
-    console.log(results.solutionsArray)
     expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2019, 11))
     expect(results.solutionsArray[1].date).toEqual(new MonthYearDate(2022, 9))
     expect(results.solutionsArray[2].date).toEqual(new MonthYearDate(2022, 9))

@@ -602,7 +602,7 @@ export class BenefitService {
               if (personB.entitledToRetirement === true){
                 personB.monthlyRetirementPayment = personB.retirementBenefit
               }
-              if (calcYear.date >= personB.survivorFRA){
+              if (calcYear.date >= personB.survivorBenefitDate){
                 personB.monthlySurvivorPayment = this.calculateSurvivorOriginalBenefit(personA)
               }
               for (let child of scenario.children){

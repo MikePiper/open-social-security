@@ -387,24 +387,24 @@ export class PresentValueService {
             //Discount that probability-weighted annual benefit amount back to this year
               annualPV = this.discountToPresentValue(scenario.discountRate, annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
 
-                if (printOutputTable === true){
-                  console.log(calcYear.date.getFullYear())
-                  console.log("discounted annualPV: " + annualPV)
-                  console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
-                  console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
-                  console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
-                  console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
-                  console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
-                  console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
-                  console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
-                  console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
-                  console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
-                  console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
-                  console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
-                  console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
-                  console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
-                  console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
-                }
+                // if (printOutputTable === true){
+                //   console.log(calcYear.date.getFullYear())
+                //   console.log("discounted annualPV: " + annualPV)
+                //   console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
+                //   console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
+                //   console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
+                //   console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
+                //   console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
+                //   console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
+                //   console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
+                //   console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
+                //   console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
+                //   console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
+                //   console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
+                //   console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
+                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
+                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
+                // }
 
             //Add discounted benefit to ongoing sum
               claimStrategy.PV = claimStrategy.PV + annualPV
@@ -1053,7 +1053,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         }
       //if personA alive and personB deceased, add monthlyPayment fields to annualBenefitOnlyPersonAalive
         if (personAaliveBoolean === true && personBaliveBoolean === false){
-          if (calcYear.isInPast === false){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
+          if (calcYear.isInPast === false || (scenario.maritalStatus == "survivor" && personA.hasFiledAsSurvivor === false)){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive survivor application (i.e,. not because of a prior filing)
             calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive + personA.monthlyRetirementPayment + personA.monthlySurvivorPayment
             for (let child of scenario.children){
               calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive + child.monthlyChildPayment
@@ -1062,7 +1062,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         }
       //if personA deceased and personB alive, add monthlyPayment fields to annualBenefitOnlyPersonBalive
         if (personAaliveBoolean === false && personBaliveBoolean === true){
-          if (calcYear.isInPast === false){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
+          if (calcYear.isInPast === false || (scenario.maritalStatus == "survivor" && personB.hasFiledAsSurvivor === false)){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive survivor application
+                  //(i.e,. not because of a prior filing). But this will never actually happen with way calculator is currently designed. (PersonA is the person who is already a survivor.)
             if (scenario.maritalStatus == "married"){//only want to include personB's monthlyPayment fields in PV if married rather than divorced
               calcYear.annualBenefitOnlyPersonBalive = calcYear.annualBenefitOnlyPersonBalive + personB.monthlyRetirementPayment + personB.monthlySurvivorPayment
             }
@@ -1073,7 +1074,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         }
       //if personA deceased and personB deceased, add monthlyPayment fields to annualBenefitBothDeceased
         if (personAaliveBoolean === false && personBaliveBoolean === false){
-          if (calcYear.isInPast === false){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with retroactive survivor benefit application)
+          if (calcYear.isInPast === false){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with scenario where both parents are deceased and child is filing retroactive survivor application)
             for (let child of scenario.children){
               calcYear.annualBenefitBothDeceased = calcYear.annualBenefitBothDeceased + child.monthlyChildPayment
             }
