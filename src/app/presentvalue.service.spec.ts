@@ -191,7 +191,7 @@ describe('test calculateSinglePersonPV', () => {
           .toBeCloseTo(353247, 0)
       })
   
-      fit('should return appropriate PV for single person, adult immortal disabled child, earnings test applicable, future benefit cut assumption', () => {
+      it('should return appropriate PV for single person, adult immortal disabled child, earnings test applicable, future benefit cut assumption', () => {
         service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "single"
@@ -202,6 +202,39 @@ describe('test calculateSinglePersonPV', () => {
         scenario.children = [child1]
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
         child1.SSbirthDate = new MonthYearDate(2000, 3, 1) //child1 born April 2000
+        console.log("adult disabled child, earnings test applicable")
+        child1.isOnDisability = true
+        scenario.disabledChild = true
+        scenario.disabledChildPerson = child1
+        scenario.disabledChildPerson.initialAgeRounded = 19
+        // assume child doesn't die until age 200 (practically immortal)
+        mortalityService.determineMortalityTable(scenario.disabledChildPerson, "male", "fixed", 200);
+        scenario.disabledChildPerson.baseMortalityFactor = mortalityService.calculateBaseMortalityFactor(child1);
+        person.PIA = 1000
+        person.retirementBenefitDate = new MonthYearDate(2023, 3, 1) //filing at age 63
+        person.quitWorkDate = new MonthYearDate (2028, 3, 1) //Working until beyond FRA. Earnings test is relevant.
+        person.monthlyEarnings = 3000
+        scenario.discountRate = 1 //1% discount rate
+        mortalityService.determineMortalityTable(person, "male", "SSA", 0)
+        mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+        person = familyMaximumService.calculateFamilyMaximum(person, service.today)
+        expect(service.calculateSinglePersonPV(person, scenario, false).PV)
+          .toBeCloseTo(353247, 0)
+      })
+  
+      it('should return appropriate PV for single person, adult immortal disabled child and young non-disabled child, earnings test applicable, future benefit cut assumption', () => {
+        service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+        earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
+        scenario.maritalStatus = "single"
+        scenario.benefitCutAssumption = true
+        scenario.benefitCutYear = 2034
+        scenario.benefitCutPercentage = 23
+        let child1:Person = new Person("1")
+        let child2:Person = new Person("2")
+        scenario.children = [child1, child2]
+        person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
+        child1.SSbirthDate = new MonthYearDate(1990, 3, 1) //child1 born April 1990
+        child2.SSbirthDate = new MonthYearDate(2010, 3, 1) //child1 born April 2010
         console.log("adult disabled child, earnings test applicable")
         child1.isOnDisability = true
         scenario.disabledChild = true
