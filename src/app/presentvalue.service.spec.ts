@@ -163,7 +163,7 @@ describe('test calculateSinglePersonPV', () => {
           .toBeCloseTo(320110, 0)
       })
   
-      fit('should return appropriate PV for single person, young non-disabled child, earnings test applicable, no future benefit cut assumption', () => {
+      it('should return appropriate PV for single person, young non-disabled child, earnings test applicable, no future benefit cut assumption', () => {
         service.today = new MonthYearDate(2018, 11) // Test as if written in 2018. Hardcode in the year, otherwise it will fail every new year.
         earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "single"
@@ -172,7 +172,7 @@ describe('test calculateSinglePersonPV', () => {
         scenario.children = [child1]
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
         child1.SSbirthDate = new MonthYearDate(2010, 3, 1) //child1 born April 2010
-        console.log("young non-disabled child")
+        console.log("young non-disabled child, earnings test applicable")
         // child1.isOnDisability = true
         // scenario.disabledChild = true
         // scenario.disabledChildPerson = child1
@@ -202,7 +202,7 @@ describe('test calculateSinglePersonPV', () => {
         scenario.children = [child1]
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
         child1.SSbirthDate = new MonthYearDate(2000, 3, 1) //child1 born April 2000
-        console.log("adult disabled child")
+        console.log("adult disabled child, earnings test applicable")
         child1.isOnDisability = true
         scenario.disabledChild = true
         scenario.disabledChildPerson = child1

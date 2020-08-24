@@ -63,10 +63,8 @@ export class PresentValueService {
 
     let cutThisYear:boolean = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
     
-    // //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
-    // while (person.age < 115) {
-    //Calculate PV via monthly loop until they hit maxAge (by which point "remaining lives" is zero)
-    while (person.age < person.maxAge) {
+    //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
+    while (person.age < 115) {
       //Do we have to recalculate any benefits? (e.g., due to reaching FRA and ARF happening, or due to suspension ending) (Never have to recalculate a child's benefit amount.)
         this.benefitService.monthlyCheckForBenefitRecalculationsSingle(person, calcYear)
       
@@ -151,11 +149,11 @@ export class PresentValueService {
         }
 
 
-      //After month is over increase age of each child by 1/12 (have to do it here because we care about their age by months for eligibility, whereas parent we can just increment by years)
+        //Increase everybody's age by 1/12
         for (let child of scenario.children){
           child.age = child.age + 1/12
         }
-
+        person.age = person.age + 1/12
         //if it's December...
         if (calcYear.date.getMonth() == 11){
           //Add back any overwithholding from earnings test
@@ -172,8 +170,7 @@ export class PresentValueService {
             }
 
           //Apply probability alive to annual benefit amounts
-          // Calculate person's probability of being alive at end of age in question. 
-          // (Have to use age-1 here because we want person's age as of beginning of year, as we do for couple)
+              //Calculate probability of being alive at end of age in question. (Have to use age-1 here because we want their age as of beginning of year.)
           let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(person, person.age - 1)
           let probabilityPersonDeceased:number = 1 - probabilityPersonAlive
           if (scenario.disabledChild === false) {
@@ -212,9 +209,6 @@ export class PresentValueService {
           } else {
             claimStrategy.pvNoCut += calcYear.annualPV;
           }
-
-          //increment person's age by 1 year
-          person.age = person.age + 1
 
           //increment month by 1 and create new CalculationYear object because it's now January
           // (we started these calculations with month === 11)
@@ -326,7 +320,7 @@ export class PresentValueService {
       }
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
-    while (personA.age < personA.maxAge || personB.age < personB.maxAge){
+    while (personA.age < 115 || personB.age < 115){
 
       //Use savedCalculationYear sums if parents over 70, children over 18 or disabled, and assumed benfit cut year (if applicable) has been reached
       if (savedCalculationYear){
@@ -512,7 +506,6 @@ export class PresentValueService {
     if (scenario.disabledChildPerson) {
       // TODO: allow user to select appropriate mortality table when entering child data
       this.mortalityService.determineMortalityTable(scenario.disabledChildPerson, "male", "SSA", 0);
-      scenario.disabledChildPerson.maxAge = 112;
     }
 
     //If user is currently over age 62 when filling out form, set retirementBenefitDate to today's month/year instead of their age 62 month/year, so that calc starts today instead of 62.
@@ -531,7 +524,7 @@ export class PresentValueService {
       }
     }
 
-    scenario.disabledChildPerson
+    // scenario.disabledChildPerson
     //If user has already filed or is on disability, initialize begin/end suspension dates as their FRA (but no earlier than this month), and set person's retirementBenefitDate using fixedRetirementBenefitDate field 
     if (person.isOnDisability === true || person.hasFiled === true) {
       if (this.today > person.FRA){
@@ -1128,6 +1121,14 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         }
       }
     }
+    console.log(
+      personAliveBoolean, 
+      disabledChildDeceased, 
+      Math.round(calcYear.annualBenefitSinglePersonAlive),
+      Math.round(calcYear.annualBenefitSinglePersonDeceased),
+      Math.round(calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased),
+      Math.round(calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased)
+    )
   }
 
 
