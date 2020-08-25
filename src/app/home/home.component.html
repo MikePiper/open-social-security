@@ -617,7 +617,7 @@
         [scenario]="scenario" [recommendedSolutionSet]="solutionSet" [personA]="personA" [personB]="personB"></app-range>
 
       <!--PersonA Custom Date Inputs -->
-      <div class="form-inline" *ngIf="personA.hasFiled === false && personA.isOnDisability === false">
+      <div class="form-inline" *ngIf="personA.hasFiled === false && personA.isOnDisability === false && personA.PIA > 0">
         <label>Your month/year to claim retirement benefit:</label>
         <select class="form-control" [(ngModel)]="customPersonAretirementBenefitMonth" name="customPersonAretirementBenefitMonth" id="customPersonAretirementBenefitMonth" required>
           <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
@@ -684,7 +684,7 @@
         <!--End PersonA Custom Date Inputs -->
 
         <!--PersonB Custom Date Inputs -->
-        <div *ngIf="scenario.maritalStatus == 'married' && personB.hasFiled === false && personB.isOnDisability === false" class="form-inline">
+        <div *ngIf="scenario.maritalStatus == 'married' && personB.hasFiled === false && personB.isOnDisability === false && personB.PIA > 0" class="form-inline">
           <label>Your spouse's month/year to claim retirement benefit:</label>
           <select class="form-control" [(ngModel)]="customPersonBretirementBenefitMonth" name="customPersonBretirementBenefitMonth" id="customPersonBretirementBenefitMonth" required>
             <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>

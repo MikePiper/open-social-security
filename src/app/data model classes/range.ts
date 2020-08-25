@@ -60,8 +60,8 @@ export class Range {
     // NO_CUT and CUT are the same here, so users don't need to learn two sets of colors
     // these colors are from https://jfly.uni-koeln.de/color/, 
     // intended to avoid confusion by colorblind individuals
-    [this.maxColor, '#009e73', '#56b4e9', '#e69f00', '#cc79a7'],
-    [this.maxColor, '#009e73', '#56b4e9', '#e69f00', '#cc79a7']
+    [this.maxColor, '#009e73', '#56b4e9', '#e69f00', '#cc79a7', "#fff"],
+    [this.maxColor, '#009e73', '#56b4e9', '#e69f00', '#cc79a7', "#fff"]
     ]
 /*  
     alternative color schemes
@@ -203,6 +203,7 @@ export class Range {
             } else {
                 row = this.getRowAtDate(claimStrategy.indexDateB());
             }
+
             if (col >= 0 && row >= 0){//Check that row and col are not negative.
                 //They'd be negative in cases in which the PV calc is running a calculation that shouldn't be included in the output range (e.g., personB is age 62, but they have no PIA of their own and can't file for spousal until age 64)
                 //store the pv and corresponding ClaimStrategy
@@ -273,18 +274,22 @@ export class Range {
                 for (let col = 0; col < this.columns; col++) {
                     pvFraction = pvArray[row][col] / pvMax;
 
-                    // determine which segment of the range for this pvFraction
-                    for (let i = 0; i < this.fractionBreak.length; i++) {
-                        if (pvFraction > this.fractionBreak[i]) {
-                            colorNumber = i + 1;
-                            if (i == 0) {
-                                this.topCount[condition]++;
+                    if (this.claimStrategiesArrays[condition][row][col]){
+                        // determine which segment of the range for this pvFraction
+                        for (let i = 0; i < this.fractionBreak.length; i++) {
+                            if (pvFraction > this.fractionBreak[i]) {
+                                colorNumber = i + 1;
+                                if (i == 0) {
+                                    this.topCount[condition]++;
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
+                    else {//i.e., if there's no claimStrategy there, because the cell doesn't correspond to a valid ClaimStrategy
+                        colorNumber = 5 //set color to grey
+                    }
                     colorArray[row][col] = this.colorByNumber[condition][colorNumber];
-
                 }
             }
             // set color at the pvMax row/col for the current condition to maxColor

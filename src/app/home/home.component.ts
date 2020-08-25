@@ -668,35 +668,38 @@ export class HomeComponent implements OnInit {
     //When a cell is clicked in the Range component, selectCell() is called there. That emits a ClaimStrategy object to this component.
     //We use that ClaimStrategy object to set all the custom date inputs.
     //Then we call the customDates() function to calculate the PV and provide all the output related to that custom ClaimStrategy
-    this.customPersonAretirementBenefitMonth = claimStrategy.personARetirementDate.getMonth()+1
-    this.customPersonAretirementBenefitYear = claimStrategy.personARetirementDate.getFullYear()
-    this.customPersonAspousalBenefitMonth = claimStrategy.personASpousalDate.getMonth()+1
-    this.customPersonAspousalBenefitYear = claimStrategy.personASpousalDate.getFullYear()
-
-    this.customPersonAbeginSuspensionMonth = claimStrategy.personABeginSuspensionDate.getMonth()+1
-    this.customPersonAbeginSuspensionYear = claimStrategy.personABeginSuspensionDate.getFullYear()
-    this.customPersonAendSuspensionMonth = claimStrategy.personAEndSuspensionDate.getMonth()+1
-    this.customPersonAendSuspensionYear = claimStrategy.personAEndSuspensionDate.getFullYear()
-
-    if (this.scenario.maritalStatus == "married" || this.scenario.maritalStatus == "divorced"){
-      this.customPersonBretirementBenefitMonth = claimStrategy.personBRetirementDate.getMonth()+1
-      this.customPersonBretirementBenefitYear = claimStrategy.personBRetirementDate.getFullYear()
-      this.customPersonBspousalBenefitMonth = claimStrategy.personBSpousalDate.getMonth()+1
-      this.customPersonBspousalBenefitYear = claimStrategy.personBSpousalDate.getFullYear()
+    if (claimStrategy){//Only do all of this if an actual claimStrategy came back via the click. If it wasn't a valid claimStrategy, do nothing?
+      this.customPersonAretirementBenefitMonth = claimStrategy.personARetirementDate.getMonth()+1
+      this.customPersonAretirementBenefitYear = claimStrategy.personARetirementDate.getFullYear()
+      this.customPersonAspousalBenefitMonth = claimStrategy.personASpousalDate.getMonth()+1
+      this.customPersonAspousalBenefitYear = claimStrategy.personASpousalDate.getFullYear()
   
-      this.customPersonBbeginSuspensionMonth = claimStrategy.personBBeginSuspensionDate.getMonth()+1
-      this.customPersonBbeginSuspensionYear = claimStrategy.personBBeginSuspensionDate.getFullYear()
-      this.customPersonBendSuspensionMonth = claimStrategy.personBEndSuspensionDate.getMonth()+1
-      this.customPersonBendSuspensionYear = claimStrategy.personBEndSuspensionDate.getFullYear()
+      this.customPersonAbeginSuspensionMonth = claimStrategy.personABeginSuspensionDate.getMonth()+1
+      this.customPersonAbeginSuspensionYear = claimStrategy.personABeginSuspensionDate.getFullYear()
+      this.customPersonAendSuspensionMonth = claimStrategy.personAEndSuspensionDate.getMonth()+1
+      this.customPersonAendSuspensionYear = claimStrategy.personAEndSuspensionDate.getFullYear()
+  
+      if (this.scenario.maritalStatus == "married" || this.scenario.maritalStatus == "divorced"){
+        this.customPersonBretirementBenefitMonth = claimStrategy.personBRetirementDate.getMonth()+1
+        this.customPersonBretirementBenefitYear = claimStrategy.personBRetirementDate.getFullYear()
+        this.customPersonBspousalBenefitMonth = claimStrategy.personBSpousalDate.getMonth()+1
+        this.customPersonBspousalBenefitYear = claimStrategy.personBSpousalDate.getFullYear()
+    
+        this.customPersonBbeginSuspensionMonth = claimStrategy.personBBeginSuspensionDate.getMonth()+1
+        this.customPersonBbeginSuspensionYear = claimStrategy.personBBeginSuspensionDate.getFullYear()
+        this.customPersonBendSuspensionMonth = claimStrategy.personBEndSuspensionDate.getMonth()+1
+        this.customPersonBendSuspensionYear = claimStrategy.personBEndSuspensionDate.getFullYear()
+      }
+  
+      //reset "decline" inputs
+        this.personA.declineSpousal = false
+        this.personA.declineSuspension = false
+        this.personB.declineSpousal = false
+        this.personB.declineSuspension = false
+  
+      this.customDates()
     }
 
-    //reset "decline" inputs
-      this.personA.declineSpousal = false
-      this.personA.declineSuspension = false
-      this.personB.declineSpousal = false
-      this.personB.declineSuspension = false
-
-    this.customDates()
   }
 
   alternativeStrategyPVcalcViaRangeBenefitCutBooleanSwitch(showCut:boolean){

@@ -139,7 +139,7 @@ export class InputValidationService {
     }
     if (person.isOnDisability === false && retirementBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for retirement benefits before the first month in which they are 62 for the entire month."}
     let latestDate: MonthYearDate = new MonthYearDate (person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth(), 1)
-    if (retirementBenefitDate > latestDate) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
+    if (retirementBenefitDate > latestDate && person.PIA > 0) {error = "Please enter an earlier date. You do not want to wait beyond age 70."}
 
     //If retirement benefit input date is in the past, make sure it's for a legitimate reason
     if (retirementBenefitDate < this.today){

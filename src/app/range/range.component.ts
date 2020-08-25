@@ -498,7 +498,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
     let solutionSet: SolutionSet;
 
     let selectedClaimStrategy: ClaimStrategy = this.range.claimStrategiesArrays[this.currentCondition][row][col];
-
+    if (selectedClaimStrategy){
     //have to set retirementBenefitDate, spousal date, begin/endSuspensionDates on person objects if going to use functions from solutionset.service to generate solution sets
       //Note that here we're pulling those dates from a ClaimStrategy object, which saved them from the person object(s) during the maximize PV function.
       //And now we're setting those fields on the person objects back to those saved dates, so we can use solutionset.service's functions
@@ -532,7 +532,11 @@ export class RangeComponent implements OnInit, AfterViewInit {
       else if (this.scenario.maritalStatus == "divorced"){
           solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
       }
-    return solutionSet;
+      return solutionSet
+    }
+    else {
+      return null
+    }
   }
 
   showSelectedOption(row: number, col: number) {
@@ -595,7 +599,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.showSelectedOption(this.selectedRow, this.selectedColumn);
       //Emit the newly selected ClaimStrategy to parent component
       let claimStrategyToEmit: ClaimStrategy = this.range.claimStrategiesArrays[this.currentCondition][selectRow][selectColumn];
-      console.log(claimStrategyToEmit)
       this.newClaimStrategySelected.emit(claimStrategyToEmit)
     }
   }
@@ -653,14 +656,21 @@ update(e: MouseEvent) {
           let expectedPvPercentNoCut: string = this.range.getPvPercentString(NO_CUT, row, column);
         this.pointerPercentString += " (" + expectedPvPercentNoCut + "% if no cut)";
       } 
-      let pointerSolutionSet: SolutionSet = this.getSolutionSet(row, column);
       let title: string = this.pointerPercentString + "\n";
-      let solutionCount: number = pointerSolutionSet.solutionsArray.length;
-      for (let i: number = 0; i < solutionCount; i++) {
-        title = title.concat(pointerSolutionSet.solutionsArray[i].shortMessage, "\n");
+      let pointerSolutionSet: SolutionSet = this.getSolutionSet(row, column);
+      if (pointerSolutionSet){
+        let solutionCount: number = pointerSolutionSet.solutionsArray.length;
+        for (let i: number = 0; i < solutionCount; i++) {
+          title = title.concat(pointerSolutionSet.solutionsArray[i].shortMessage, "\n");
+        }
+        this.canvas.title = title;
       }
-      this.canvas.title = title;
-    } else {
+      else {//i.e. ,there's no SolutionSet, because the cell selected doesn't correspond to an actual option
+            //(e.g., because personB has PIA=0, so we're indexing based on their spousal date, and that spousal date is before personA's retirementBenefitDate)
+            this.canvas.title = "This cell does not correspond to a valid combination of filing dates.";
+      }
+    }
+    else {
       this.canvas.title = ""; // blank tooltip when outside of graph
     }
   }

@@ -496,7 +496,7 @@ export class PresentValueService {
           savedStrategy.PV = currentTest.PV
       }
       //Increment claiming date (or suspension date)
-      person = this.incrementRetirementORendSuspensionDate(person, scenario)
+      person = this.incrementRetirementORendSuspensionDate(person)
     }
 
     //after loop is finished, set Person's retirementBenefitDate and suspension dates to the saved dates, for sake of running PV calc again for outputTable
@@ -508,7 +508,7 @@ export class PresentValueService {
     //Generate solution set (for sake of output) from saved values
     let solutionSet:SolutionSet = this.solutionSetService.generateSingleSolutionSet(scenario, person, savedStrategy)
 
-    console.log(solutionSet)
+    // console.log(solutionSet)
 
     scenario.range.initFracsAndColors();
 
@@ -556,6 +556,7 @@ export class PresentValueService {
       }
     }
 
+
     //If either person has already filed or is on disability, initialize that person's begin&end suspension date as their FRA (but no earlier than this month), and set that person's retirementBenefitDate using fixedRetirementBenefitDate field 
     if (personA.isOnDisability === true || personA.hasFiled === true) {
       if (this.today > personA.FRA){
@@ -588,17 +589,9 @@ export class PresentValueService {
       let savedStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
       savedStrategy.PV = 0
 
-    //Set endingTestDate for each spouse equal to the month they turn 70. Or if using fixed-death-age-assumption younger than 70, set to assumed month of death
-    let spouseAendTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth())
-    let spouseBendTestDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+70, personB.SSbirthDate.getMonth())
-    if (personA.mortalityTable[70] == 0) {
-      let deceasedByAge:number = personA.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69. But we want last possible filing date suggested to be 68, so we subtract 1 in following line.
-      spouseAendTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+deceasedByAge-1, personA.SSbirthDate.getMonth())
-    }
-    if (personB.mortalityTable[70] == 0) {
-      let deceasedByAge:number = personB.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69
-      spouseBendTestDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+deceasedByAge-1, personB.SSbirthDate.getMonth())
-    }
+    //Set endingTestDate for each spouse equal to the month they turn 70. (Or if they have PIA=0, set to point at which their spousal would be maximized -- ie they have reached FRA and other person is 70)
+    let spouseAendTestDate = new MonthYearDate(this.findLastDateForPersonToStoreInRange(personA, personB))
+    let spouseBendTestDate = new MonthYearDate(this.findLastDateForPersonToStoreInRange(personB, personA))
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
     personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)
@@ -661,7 +654,7 @@ export class PresentValueService {
               }
 
           //Find next possible claiming combination for spouseB
-            personB = this.incrementRetirementORendSuspensionDate(personB, scenario)
+            personB = this.incrementRetirementORendSuspensionDate(personB)
             personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
 
           //After personB's retirement/spousal dates have been incremented, adjust personA's spousal date as necessary
@@ -669,7 +662,7 @@ export class PresentValueService {
 
         }
         //Increment personA's retirementBenefitDate
-          personA = this.incrementRetirementORendSuspensionDate(personA, scenario)
+          personA = this.incrementRetirementORendSuspensionDate(personA)
         
       }
     //after loop is finished, set person objects' benefit dates to the saved dates, for sake of running PV calc again for outputTable
@@ -688,7 +681,7 @@ export class PresentValueService {
       //Generate solution set (for sake of output) from saved values
       solutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, personA, personB, savedStrategy)
       
-      console.log(solutionSet);
+      // console.log(solutionSet);
 
       scenario.range.initFracsAndColors();
 
@@ -753,12 +746,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     }
     savedStrategy.PV = 0
 
-    //Set endTestDate equal to the month flexibleSpouse turns 70. Or, if flexible spouse chose a fixed-death-age assumption younger than age 70, set ending test date to that fixed death age.
-    let endTestDate = new MonthYearDate(flexibleSpouse.SSbirthDate.getFullYear()+70, flexibleSpouse.SSbirthDate.getMonth())
-    if (flexibleSpouse.mortalityTable[70] == 0) {
-      let deceasedByAge:number = flexibleSpouse.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69. But we want last possible filing date suggested to be 68, so we subtract 1 in following line.
-      endTestDate = new MonthYearDate(flexibleSpouse.SSbirthDate.getFullYear()+deceasedByAge-1, flexibleSpouse.SSbirthDate.getMonth())
-    }
+    //Set endTestDate equal to the month flexibleSpouse turns 70. (Or if they have PIA=0, set to point at which their spousal would be maximized -- ie they have reached FRA and other person is 70)
+    let endTestDate = new MonthYearDate(this.findLastDateForPersonToStoreInRange(flexibleSpouse, fixedSpouse))
 
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
       flexibleSpouse = this.familyMaximumService.calculateFamilyMaximum(flexibleSpouse, this.today)
@@ -793,7 +782,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         }
       
       //Increment flexibleSpouse's dates (and fixedSpouse's spousal date, which is usually just set to be same as flexible spouse's retirement date)
-        flexibleSpouse = this.incrementRetirementORendSuspensionDate(flexibleSpouse, scenario)
+        flexibleSpouse = this.incrementRetirementORendSuspensionDate(flexibleSpouse)
         flexibleSpouse = this.adjustSpousalBenefitDate(flexibleSpouse, fixedSpouse, scenario)
         fixedSpouse = this.adjustSpousalBenefitDate(fixedSpouse, flexibleSpouse, scenario)
 
@@ -829,7 +818,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         var solutionSet:SolutionSet = this.solutionSetService.generateCoupleSolutionSet(scenario, fixedSpouse, flexibleSpouse, savedStrategy)
       }
 
-      console.log(solutionSet)
+      // console.log(solutionSet)
 
       scenario.range.initFracsAndColors();
 
@@ -959,7 +948,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     return person
   }
 
-  incrementRetirementORendSuspensionDate(person:Person, scenario:CalculationScenario) : Person {
+  incrementRetirementORendSuspensionDate(person:Person) : Person {
     if (person.isOnDisability === true) {
       person.endSuspensionDate.setMonth(person.endSuspensionDate.getMonth()+1)
     }
@@ -968,7 +957,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     }
     else {//i.e., person hasn't filed and isn't disabled
     person.retirementBenefitDate.setMonth(person.retirementBenefitDate.getMonth()+1)
-  }
+    }
     return person
   }
 
@@ -1269,5 +1258,32 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       earliestDate = new MonthYearDate(person.endSuspensionDate)
     }
     return earliestDate
+  }
+
+  findLastDateForPersonToStoreInRange(person:Person, otherPerson:Person):MonthYearDate{
+    let lastDate:MonthYearDate
+    let personAge70Date:MonthYearDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth())
+    let otherPersonAge70Date:MonthYearDate = new MonthYearDate(otherPerson.SSbirthDate.getFullYear()+70, otherPerson.SSbirthDate.getMonth())
+
+    if (person.PIA == 0){//person has no PIA, so we're looking at spousal dates, so latest date is point at which they have reached FRA and otherPerson has reached age 70
+      if (person.FRA > otherPersonAge70Date){
+        lastDate = new MonthYearDate(person.FRA)
+      }
+      else {
+        lastDate = new MonthYearDate(otherPersonAge70Date)
+      }
+    }
+    else {//person has their own PIA, so it's their age 70 date
+      lastDate = new MonthYearDate(personAge70Date)
+    }
+    //If using fixed-death-age-assumption younger than 70, don't let lastDate be later than assumed month of death
+    if (person.mortalityTable[70] == 0) {
+      let deceasedByAge:number = person.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69. But we want last possible filing date suggested to be 68, so we subtract 1 in following line.
+      let noLaterThanThisDate = new MonthYearDate(person.SSbirthDate.getFullYear()+deceasedByAge-1, person.SSbirthDate.getMonth())
+      if (lastDate > noLaterThanThisDate){
+        lastDate = new MonthYearDate(noLaterThanThisDate)
+      }
+    }
+    return lastDate
   }
 }
