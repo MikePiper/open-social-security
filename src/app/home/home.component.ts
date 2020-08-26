@@ -514,6 +514,11 @@ export class HomeComponent implements OnInit {
     }
     //Call resetHiddenInputs() <-- necessary because right now that is the function that's bound to custom date form's (change) event. And we'll need that event to be bound to this function instead.
     this.resetHiddenInputs()
+    console.log("-----")
+    console.log("personA.retirementBenefitDate: " + this.personA.retirementBenefitDate.toString())
+    console.log("personA.spousalBenefitDate: " + this.personA.spousalBenefitDate.toString())
+    console.log("personB.retirementBenefitDate: " + this.personB.retirementBenefitDate.toString())
+    console.log("personB.spousalBenefitDate: " + this.personB.spousalBenefitDate.toString())
   }
 
 
@@ -530,6 +535,22 @@ export class HomeComponent implements OnInit {
 
 
   resetHiddenInputs(){
+    //If a person has no PIA, retirementBenefitDate input will be hidden, so set it to satisfy deemed filing rule using their selected spousal benefit date.
+      if (this.personA.PIA == 0){
+        this.personA.retirementBenefitDate = new MonthYearDate(this.personA.spousalBenefitDate)
+        // //But don't let retirementBenefitDate be later than 70, or inputvalidation.service will give error.
+        // if (this.personA.retirementBenefitDate > new MonthYearDate(this.personA.SSbirthDate.getFullYear()+70, this.personA.SSbirthDate.getMonth()) ){
+        //   this.personA.retirementBenefitDate = new MonthYearDate(this.personA.SSbirthDate.getFullYear()+70, this.personA.SSbirthDate.getMonth())
+        // }
+      }
+      if (this.personB.PIA == 0){
+        this.personB.retirementBenefitDate = new MonthYearDate(this.personB.spousalBenefitDate)
+        // //But don't let retirementBenefitDate be later than 70, or inputvalidation.service will give error.
+        // if (this.personB.retirementBenefitDate > new MonthYearDate(this.personB.SSbirthDate.getFullYear()+70, this.personB.SSbirthDate.getMonth()) ){
+        //   this.personB.retirementBenefitDate = new MonthYearDate(this.personB.SSbirthDate.getFullYear()+70, this.personB.SSbirthDate.getMonth())
+        // }
+      }
+
     //Reset "personB has filed" to false if divorced. (Otherwise can have bug if they selected married, yes personB has filed, then switch to divorced because the "has personB filed" input disappears and calc won't run.)
       if (this.scenario.maritalStatus == "divorced" && this.personB.initialAge < 70) {
         this.personB.hasFiled = false

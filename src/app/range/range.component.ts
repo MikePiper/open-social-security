@@ -727,23 +727,29 @@ update(e: MouseEvent) {
     if (person.id == "A"){earliestDateInRange = new MonthYearDate(this.range.firstDateA)}
     if (person.id == "B"){earliestDateInRange = new MonthYearDate(this.range.firstDateB)}
 
-    if (person.hasFiled === false && person.isOnDisability === false){//If person has not filed and is not on disability
-      //We look at person's retirementBenefitDate
-      index = person.retirementBenefitDate.valueOf() - earliestDateInRange.valueOf()
+    //if person has PIA=0, we look at spousalBenefitDate
+    if (person.PIA == 0){
+      index = person.spousalBenefitDate.valueOf() - earliestDateInRange.valueOf()
     }
-    else {//i.e., person has filed or is on disability but is younger than 70 
-      //We look at person's begin/end suspension dates and declineSuspension field
-      if (person.declineSuspension === true){
-        index = 0 //essentially "starting" benefit as soon as possible (since not stopping it at all)
+    else {//i.e., person will have a retirement benefit of their own
+      if (person.hasFiled === false && person.isOnDisability === false){//If person has not filed and is not on disability
+        //We look at person's retirementBenefitDate
+        index = person.retirementBenefitDate.valueOf() - earliestDateInRange.valueOf()
       }
-      else {//i.e, they are planning to suspend
-        let laterOfFRAorToday:MonthYearDate = new MonthYearDate()
-        laterOfFRAorToday = person.FRA > today? person.FRA : today
-        if (person.beginSuspensionDate.valueOf() == laterOfFRAorToday.valueOf()){//they are suspending at later of FRA or today (which is what is necessary in order for there to be a corresponding selection in Range)
-            index = person.endSuspensionDate.valueOf() - earliestDateInRange.valueOf()
+      else {//i.e., person has filed or is on disability but is younger than 70 
+        //We look at person's begin/end suspension dates and declineSuspension field
+        if (person.declineSuspension === true){
+          index = 0 //essentially "starting" benefit as soon as possible (since not stopping it at all)
         }
-        else {//i.e., they're suspending, but starting later than "later of FRA or today"
-          //just going to return -999, since no corresponding selection in Range
+        else {//i.e, they are planning to suspend
+          let laterOfFRAorToday:MonthYearDate = new MonthYearDate()
+          laterOfFRAorToday = person.FRA > today? person.FRA : today
+          if (person.beginSuspensionDate.valueOf() == laterOfFRAorToday.valueOf()){//they are suspending at later of FRA or today (which is what is necessary in order for there to be a corresponding selection in Range)
+              index = person.endSuspensionDate.valueOf() - earliestDateInRange.valueOf()
+          }
+          else {//i.e., they're suspending, but starting later than "later of FRA or today"
+            //just going to return -999, since no corresponding selection in Range
+          }
         }
       }
     }
@@ -770,7 +776,9 @@ update(e: MouseEvent) {
       this.presentValueService.adjustSpousalBenefitDate(cloneOfPersonA, this.personB, this.scenario)
       this.presentValueService.adjustSpousalBenefitDate(cloneOfPersonB, this.personA, this.scenario)
       //Check whether the fields on those cloned persons are equal to the fields on the actual persons
-      if (this.scenario.maritalStatus == "single" ||
+      if (this.scenario.maritalStatus == "single" || //if single we aren't concerned about spousal benefit dates
+          this.personA.PIA == 0 || //if one person has a zero PIA, then we obviously aren't concerned with other person's spousal benefit date. And if the person themself has a zero PIA, the only thing their axis on the chart represents is their spousal benefit date, so we ARE allowing it to fluctuate here (i.e., not requiring it to match output of adjustSpousalBenefitDate())
+          this.personB.PIA == 0 ||
           (cloneOfPersonA.spousalBenefitDate.valueOf() == this.personA.spousalBenefitDate.valueOf()
           && cloneOfPersonB.spousalBenefitDate.valueOf() == this.personB.spousalBenefitDate.valueOf()
           //And also make sure that neither person is declining spousal in a situation in which they could file a restricted application

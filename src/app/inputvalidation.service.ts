@@ -204,8 +204,10 @@ export class InputValidationService {
           else {
             secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
           }
-          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false && person.childInCareSpousal === false) {
-          error = "Per new deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date."
+          if (person.PIA > 0 && otherPerson.PIA > 0 ){//if they have a zero PIA, there's no deemed filing to worry about. Similarly, if the other person has a zero PIA, we don't really care what this person has for a spousalBenefitDate.
+            if (spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false && person.childInCareSpousal === false) {
+              error = "Per new deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date."
+            }
           }
         }
       //Divorced version: own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's age62 date
@@ -222,8 +224,10 @@ export class InputValidationService {
           else {//ie., if own retirementBenefitDate comes after other person is 62, or if otherPerson is disabled
             secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
           }
-          if ( spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false && person.childInCareSpousal === false) {
-          error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month."
+          if (person.PIA > 0 && otherPerson.PIA > 0){//if they have a zero PIA, there's no deemed filing to worry about. Similarly, if the other person has a zero PIA, we don't really care what this person has for a spousalBenefitDate.
+            if (spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false && person.childInCareSpousal === false) {
+              error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month."
+            }
           }
         }
     }
