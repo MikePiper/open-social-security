@@ -161,18 +161,8 @@ export class SolutionSetService {
 
 
         //personA survivor stuff
-        if (scenario.maritalStatus == "survivor"){
-          var personAsavedSurvivorAge: number = this.birthdayService.findAgeOnDate(personA, personA.survivorBenefitDate)
-          var personAsavedSurvivorAgeYears: number = Math.floor(personAsavedSurvivorAge)
-          var personAsavedSurvivorAgeMonths: number = Math.round((personAsavedSurvivorAge%1)*12)
-          //Create survivor solution object
-          if (personA.survivorBenefitDate < this.today){
-            personAsurvivorSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveSurvivor", personA, personA.survivorBenefitDate, personAsavedSurvivorAgeYears, personAsavedSurvivorAgeMonths)
-          }
-          else {
-            personAsurvivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", personA, personA.survivorBenefitDate, personAsavedSurvivorAgeYears, personAsavedSurvivorAgeMonths)
-          }
-        }
+          personAsurvivorSolution = this.generateSurvivorClaimingSolution(personA, personB, scenario)
+          if (personAsurvivorSolution) {solutionSet.solutionsArray.push(personAsurvivorSolution)}
 
         //personA disability stuff
           if (personA.isOnDisability === true) {
@@ -249,19 +239,6 @@ export class SolutionSetService {
                   }
                 }
               }
-
-            //personA survivor solution
-                if (scenario.maritalStatus=="survivor"){
-                  //TODO: When do we NOT want a survivor benefit solution?
-                  if (personA.survivorBenefitDate >= personA.retirementBenefitDate //if survivorBenefitDate is at least as late as retirementBenefitDate
-                      //TODO: and personA's survivor benefit (in month of entitlement to it) is > 0 after all of the adjustments 
-                    ){
-                      //do nothing
-                  }
-                  else {
-                    solutionSet.solutionsArray.push(personAsurvivorSolution)
-                  }
-                }
 
 
         //Child Benefit Solution
@@ -463,5 +440,21 @@ export class SolutionSetService {
     else {return undefined}
   }
 
-
+  generateSurvivorClaimingSolution(livingPerson:Person, deceasedPerson:Person, scenario:CalculationScenario):ClaimingSolution{
+    let survivorSolution:ClaimingSolution
+    if (scenario.maritalStatus == "survivor"){
+      let survivorFilingAge: number = this.birthdayService.findAgeOnDate(livingPerson, livingPerson.survivorBenefitDate)
+      let personAsavedSurvivorAgeYears: number = Math.floor(survivorFilingAge)
+      let personAsavedSurvivorAgeMonths: number = Math.round((survivorFilingAge%1)*12)
+      //Create survivor solution object
+      if (livingPerson.survivorBenefitDate < this.today){
+        survivorSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveSurvivor", livingPerson, livingPerson.survivorBenefitDate, personAsavedSurvivorAgeYears, personAsavedSurvivorAgeMonths)
+      }
+      else {
+        survivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", livingPerson, livingPerson.survivorBenefitDate, personAsavedSurvivorAgeYears, personAsavedSurvivorAgeMonths)
+      }
+    }
+    if (survivorSolution && livingPerson.survivorBenefitInMonthOfEntitlement > 0){return survivorSolution}
+    else {return undefined}
+  }
 }

@@ -1090,6 +1090,14 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
           }
         }
       }
+
+      //if printOutputTable is true, and this is survivor scenario, and right now we're doing calc for personAalive=true and personBalive=false, and this is personA's survivorBenefitDate... 
+      //...then pass along monthlySurvivorPayment for the sake of generating the solution set (need to know if benefit > 0)
+      if (printOutputTable === true && scenario.maritalStatus=="survivor" && personAaliveBoolean === true && personBaliveBoolean === false){
+        if (calcYear.date.valueOf() == personA.survivorBenefitDate.valueOf()){
+          personA.survivorBenefitInMonthOfEntitlement = personA.monthlySurvivorPayment
+        }
+      }
   }
 
   readyForSavedCalculationYearForFasterLoop(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personB:Person):boolean{

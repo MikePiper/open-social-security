@@ -52,7 +52,7 @@ export class ClaimStrategy {
         }
     }
 
-    indexDateA(): MonthYearDate { // date at which person A's own retirment benefits begin (or re-start) 
+    indexDateA(): MonthYearDate { // date at which person A's own retirement benefits begin (or re-start) 
         if (this.personAEndSuspensionDate > minimumEndSuspensionDate) {
             return this.personAEndSuspensionDate;
         } else {
@@ -60,7 +60,7 @@ export class ClaimStrategy {
         }
     }
 
-    indexDateB(): MonthYearDate { // date at which person B's own retirment benefits begin (or re-start)
+    indexDateB(): MonthYearDate { // date at which person B's own retirement benefits begin (or re-start)
         if (this.personBRetirementDate) {
             if (this.personBEndSuspensionDate > minimumEndSuspensionDate) {
                 return this.personBEndSuspensionDate;

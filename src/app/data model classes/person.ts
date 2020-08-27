@@ -57,6 +57,7 @@ export class Person {
 
     //benefit amount fields. benefit amount just gets overwritten when recalculated
     retirementBenefit:number = 0
+    survivorBenefitInMonthOfEntitlement:number = 0
     nonWEPretirementBenefit:number //This is what their retirement benefit WOULD have been without WEP. This is only used for determining survivor benefits on their work record.
     monthlyRetirementPayment:number = 0
     monthlySpousalPayment:number = 0
