@@ -2,6 +2,10 @@ import {Injectable} from '@angular/core'
 import {Person} from './data model classes/person'
 import { CalculationScenario } from './data model classes/calculationscenario';
 
+
+//This is defined here as a limited group of explicit options so that if something is ever input as a typo elsewhere (eg "SS2016") it will throw an error
+export type mortalityTableOption = "fixed" | "NS1" | "NS2" | "SSA" | "SSA2016" | "SSA2017" | "SM1" | "SM2"
+
 @Injectable({
   providedIn: 'root'
 })
@@ -28,7 +32,7 @@ export class MortalityService {
   }
 
 
-  determineMortalityTable (gender:string, mortalityInput:string, assumedDeathAge:number) {
+  determineMortalityTable (gender:string, mortalityInput:mortalityTableOption, assumedDeathAge:number) {
     let mortalityTable: number[] = []
     if (gender == "male") {
       if (mortalityInput == "NS1") {mortalityTable = this.maleNS1}
