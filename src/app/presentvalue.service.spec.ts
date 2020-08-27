@@ -2247,3 +2247,53 @@ describe('test functions that find earliest/latest dates', () => {
     expect(expectedDate).toEqual(new MonthYearDate(2019, 7))//12 months retroactive since that's no earlier than age 50 and otherPerson died 14 months ago
   })
 })
+
+
+describe('Tests for maximizeSurvivorPV', () => {
+  let service:PresentValueService
+  let benefitService:BenefitService
+  let mortalityService:MortalityService
+  let birthdayService:BirthdayService
+  let scenario:CalculationScenario
+  let personA:Person
+  let personB:Person
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
+    })
+    service = TestBed.get(PresentValueService)
+    benefitService = TestBed.get(BenefitService)
+    mortalityService = TestBed.get(MortalityService)
+    birthdayService = TestBed.get(BirthdayService)
+    scenario = new CalculationScenario()
+    personA = new Person("A")
+    personB = new Person("B")
+  })
+
+  fit ('should tell a widower, age 63, who is not working, to file immediately for survivor benefit (and 70 for retirement) if she has the higher PIA', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+    scenario.maritalStatus = "survivor"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personA.actualBirthDate = new Date(1957, 7) //born Aug 1957
+    personA.SSbirthDate = new MonthYearDate(1957, 7, 15)
+    personB.actualBirthDate = new Date(1960, 9, 11) //deceased spouse born in October 1960
+    personB.SSbirthDate = new MonthYearDate(1960, 9, 10)
+    personB.dateOfDeath = new MonthYearDate(2020, 4)//personB died May 2020 (not quite age 60)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    personB.retirementBenefitDate = new MonthYearDate (personB.FRA) //personB died before having filed, so their retirementBenefitDate is their FRA
+    personA.PIA = 1900
+    personB.PIA = 1100
+    // personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
+    // personB.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
+    scenario.discountRate = 1
+    let results = service.maximizeSurvivorPV(personA, personB, scenario)
+    expect(results.solutionsArray[0].date)
+    .toEqual(new MonthYearDate(2020, 7))
+    expect(results.solutionsArray[1].date)
+    .toEqual(new MonthYearDate(2027, 7))
+  })
+
+})
