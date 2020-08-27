@@ -1,7 +1,7 @@
 import {Component, OnInit, ViewChild, AfterViewInit} from '@angular/core'
 import {BirthdayService} from '../birthday.service'
 import {PresentValueService} from '../presentvalue.service'
-import {MortalityService} from '../mortality.service'
+import {MortalityService, mortalityTableOption} from '../mortality.service'
 import {Person} from '../data model classes/person'
 import {SolutionSet} from '../data model classes/solutionset'
 import {FREDresponse} from '../data model classes/fredresponse'
@@ -125,7 +125,7 @@ export class HomeComponent implements OnInit {
   defaultDiscountRateIfError: number = 1
   defaultDiscountRateSource: string
   // these allow updating of table without changing home.component.html
-  defaultMortalityTableID: string = "SSA2017"
+  defaultMortalityTableID: mortalityTableOption = "SSA2017"
   defaultMortalityTableName: string = "2017 Social Security Period Life Table"
 
 
@@ -141,7 +141,7 @@ export class HomeComponent implements OnInit {
   personAnonCoveredPensionYear:number = 2020
   personAgender: string = "male"
   personAassumedDeathAge: number = 100 // what many people might hope
-  personAmortalityInput: string = this.defaultMortalityTableID
+  personAmortalityInput: mortalityTableOption = this.defaultMortalityTableID
   personBprimaryPIAinput: number = 1000
   personBsecondaryPIAinput: number = 1000
   personBinputMonth: number = 4
@@ -152,7 +152,7 @@ export class HomeComponent implements OnInit {
   personBnonCoveredPensionMonth:number = 1
   personBnonCoveredPensionYear:number = 2020
   personBgender: string = "female"
-  personBmortalityInput: string = this.defaultMortalityTableID
+  personBmortalityInput: mortalityTableOption = this.defaultMortalityTableID
   personBassumedDeathAge: number = 100 // what many people might hope
 
   // items for possible additional input
