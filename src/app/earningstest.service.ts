@@ -252,27 +252,39 @@ export class EarningsTestService {
   }
 
 
-  addBackOverwithholding(calcYear:CalculationYear, scenario:CalculationScenario){
+  addBackOverwithholding(calcYear:CalculationYear, scenario:CalculationScenario, personA:Person){
     if (scenario.maritalStatus == "single"){
       if (calcYear.annualWithholdingDuetoSinglePersonEarnings < 0) {//If annualWithholding is negative due to overwithholding...
         calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive - calcYear.annualWithholdingDuetoSinglePersonEarnings//add back for PV-related sum
         calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit - calcYear.annualWithholdingDuetoSinglePersonEarnings//add back for table-related sum
       }
     }
-    else {
-      if (calcYear.annualWithholdingDueToPersonAearningsBothAlive < 0){
+    else if (scenario.maritalStatus == "married" || scenario.maritalStatus == "divorced") {
+      if (calcYear.annualWithholdingDueToPersonAearningsBothAlive < 0){//If annualWithholding is negative due to overwithholding...
         calcYear.annualBenefitBothAlive = calcYear.annualBenefitBothAlive - calcYear.annualWithholdingDueToPersonAearningsBothAlive //add back for PV-related sum
         calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit - calcYear.annualWithholdingDueToPersonAearningsBothAlive //add back for table-related sum
       }
-      if (calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive < 0){
+      if (calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive < 0){//If annualWithholding is negative due to overwithholding...
         calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive - calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive //add back for PV-related sum
       }
-      if (calcYear.annualWithholdingDueToPersonBearningsBothAlive < 0){
+      if (calcYear.annualWithholdingDueToPersonBearningsBothAlive < 0){//If annualWithholding is negative due to overwithholding...
         calcYear.annualBenefitBothAlive = calcYear.annualBenefitBothAlive - calcYear.annualWithholdingDueToPersonBearningsBothAlive //add back for PV-related sum
         calcYear.tablePersonBannualRetirementBenefit = calcYear.tablePersonBannualRetirementBenefit - calcYear.annualWithholdingDueToPersonBearningsBothAlive //add back for table-related sum
       }
-      if (calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive < 0){
+      if (calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive < 0){//If annualWithholding is negative due to overwithholding...
         calcYear.annualBenefitOnlyPersonBalive = calcYear.annualBenefitOnlyPersonBalive - calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive //add back for PV-related sum
+      }
+    }
+    else if (scenario.maritalStatus == "survivor"){
+      if (calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive < 0){//If annualWithholding is negative due to overwithholding...
+        calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive - calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive //add back for PV-related sum
+        //add back to appropriate table-related sum based on which benefit they have filed for
+        if (calcYear.date >= personA.retirementBenefitDate){
+          calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit - calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive //add back for table-related sum
+        }
+        else if (calcYear.date >= personA.survivorBenefitDate){
+          calcYear.tablePersonAannualSurvivorBenefit = calcYear.tablePersonAannualSurvivorBenefit - calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive //add back for table-related sum
+        }
       }
     }
   }
