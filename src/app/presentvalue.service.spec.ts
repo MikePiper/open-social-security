@@ -2271,29 +2271,211 @@ describe('Tests for maximizeSurvivorPV', () => {
     personB = new Person("B")
   })
 
-  fit ('should tell a widower, age 63, who is not working, to file immediately for survivor benefit (and 70 for retirement) if she has the higher PIA', () => {
+  it ('should tell a widower, age 63, not working, not disabled, to file immediately for survivor benefit (and 70 for retirement) if she has the higher PIA', () => {
     service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
     scenario.maritalStatus = "survivor"
     personA.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
     personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-    personA.actualBirthDate = new Date(1957, 7) //born Aug 1957
-    personA.SSbirthDate = new MonthYearDate(1957, 7, 15)
+    personA.actualBirthDate = new Date(1957, 7, 15) //born Aug 1957
+    personA.SSbirthDate = new MonthYearDate(1957, 7)
     personB.actualBirthDate = new Date(1960, 9, 11) //deceased spouse born in October 1960
-    personB.SSbirthDate = new MonthYearDate(1960, 9, 10)
+    personB.SSbirthDate = new MonthYearDate(1960, 9)
     personB.dateOfDeath = new MonthYearDate(2020, 4)//personB died May 2020 (not quite age 60)
     mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
     mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
-    personB.retirementBenefitDate = new MonthYearDate (personB.FRA) //personB died before having filed, so their retirementBenefitDate is their FRA
+    personB.hasFiled = false //personB died before having filed and before reaching their FRA, so their retirementBenefitDate is their FRA
     personA.PIA = 1900
     personB.PIA = 1100
-    // personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
-    // personB.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
     scenario.discountRate = 1
     let results = service.maximizeSurvivorPV(personA, personB, scenario)
     expect(results.solutionsArray[0].date)
     .toEqual(new MonthYearDate(2020, 7))
     expect(results.solutionsArray[1].date)
     .toEqual(new MonthYearDate(2027, 7))
+    //survivorBenefit = 1100, reduced for early entitlement to survivor benefit. 1957 DoB so survivorFRA = 66and2months = October 2023
+    //So there are 74 possible early months. Entitled for 38 of them (5 + 12 + 12 + 9). Reduction = 38/74 * 0.285 = 14.63514%. 1100 * (1 - 0.1463514) = $939.01/month
+    //5 months in 2020 = $4,695.07
+    expect(results.claimStrategy.outputTable[0])
+    .toEqual([2020, "$0", "$4,695", "$4,695"])
+    //7 months of survivor = $6,573.07.
+    //retirement FRA = 66and6months = Feb 2024. Waiting 42 months past FRA = 128% of PIA as retirement benefit = $2,432. 5 months of that is $12,160
+    expect(results.claimStrategy.outputTable[7])
+    .toEqual([2027, "$12,160", "$6,573", "$18,733"])
+    expect(results.claimStrategy.PV)
+    .toBeCloseTo(437974, 0)
   })
 
+  it ('should tell a widower, age 68, to file retroactive back to date of death for survivor benefit (and 70 for retirement) if she has the higher PIA', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+    scenario.maritalStatus = "survivor"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personA.actualBirthDate = new Date(1952, 7, 5) //born Aug 1952
+    personA.SSbirthDate = new MonthYearDate(1952, 7)
+    personB.actualBirthDate = new Date(1955, 9, 11) //deceased spouse born in October 1955
+    personB.SSbirthDate = new MonthYearDate(1955, 9)
+    personB.dateOfDeath = new MonthYearDate(2020, 4)//personB died May 2020 (not quite age 65)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    personB.hasFiled = true
+    personB.fixedRetirementBenefitDate = new MonthYearDate (2017, 11) //personB had filed at age 62 and 2 months. (With 1955 DoB, FRA is 66 and 2 months, so that's 48 months early.)
+    personA.PIA = 1900
+    personB.PIA = 1100
+    scenario.discountRate = 1
+    let results = service.maximizeSurvivorPV(personA, personB, scenario)
+    expect(results.solutionsArray[0].date)
+    .toEqual(new MonthYearDate(2020, 4))//retroactivity limited to date of death
+    expect(results.solutionsArray[1].date)
+    .toEqual(new MonthYearDate(2022, 7))
+    //survivor originalBenefit = 1100. No reduction for survivor early entitlement given filing after survivor FRA. RIB LIM is applicable though because deceased filed early. So limited to 82.5% of 1100 = $907.50
+    //Filing retroactively to May 2020, so 8 months in 2020 = 8 x 907.50 = $7,260
+    expect(results.claimStrategy.outputTable[0])
+    .toEqual([2020, "$0", "$7,260", "$7,260"])
+    //7 months of survivor = $6,352.50.
+    //retirement FRA = 66and0months = Aug 2018. Waiting 48 months past FRA = 132% of PIA as retirement benefit = $2,508. 5 months of that is $12,540
+    expect(results.claimStrategy.outputTable[2])
+    .toEqual([2022, "$12,540", "$6,353", "$18,893"])
+    expect(results.claimStrategy.PV)
+    .toBeCloseTo(439400, 0)
+  })
+
+  it ('should tell a widower, age 63, still working, not disabled, to file in Jan of quitWorkYear for survivor benefit (and 70 for retirement) given earnings and PIAs', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+    scenario.maritalStatus = "survivor"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personA.actualBirthDate = new Date(1957, 7, 15) //born Aug 1957
+    personA.SSbirthDate = new MonthYearDate(1957, 7)
+    personB.actualBirthDate = new Date(1960, 9, 11) //deceased spouse born in October 1960
+    personB.SSbirthDate = new MonthYearDate(1960, 9)
+    personB.dateOfDeath = new MonthYearDate(2020, 4)//personB died May 2020 (not quite age 60)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    personB.hasFiled = false //personB died before having filed and before reaching their FRA, so their retirementBenefitDate is their FRA
+    personA.PIA = 1900
+    personB.PIA = 1100
+    personA.quitWorkDate = new MonthYearDate(2021, 1) //Feb 2021
+    personA.monthlyEarnings = 9000
+    scenario.discountRate = 1
+    let results = service.maximizeSurvivorPV(personA, personB, scenario)
+    //Current earnings test threshold is $18,240 for years prior to FRA. So 2020 would be completely withheld if they filed, but they can file in Jan 2021 and get full benefit.
+    expect(results.solutionsArray[0].date)
+    .toEqual(new MonthYearDate(2021, 0))
+    expect(results.solutionsArray[1].date)
+    .toEqual(new MonthYearDate(2027, 7))
+    //survivorBenefit = 1100, reduced for early entitlement to survivor benefit. 1957 DoB so survivorFRA = 66and2months = October 2023
+    //So there are 74 possible early months. Entitled for 33 of them (12 + 12 + 9). Reduction = 33/74 * 0.285 = 12.7095%. 1100 * (1 - 0.127095) = $960.20/month
+    //12 months in 2021 = $11,522
+    expect(results.claimStrategy.outputTable[0])
+    .toEqual([2021, "$0", "$11,522", "$11,522"])
+    //7 months of survivor = $6,721.37
+    //retirement FRA = 66and6months = Feb 2024. Waiting 42 months past FRA = 128% of PIA as retirement benefit = $2,432. 5 months of that is $12,160
+    expect(results.claimStrategy.outputTable[6])
+    .toEqual([2027, "$12,160", "$6,721", "$18,881"])
+    expect(results.claimStrategy.PV)
+    .toBeCloseTo(434841, 0)
+  })
+
+  it ('should tell a widower, age 63, still working, not disabled, to file on quitWorkMonth for survivor benefit (and 70 for retirement) given super high current earnings', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+    scenario.maritalStatus = "survivor"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personA.actualBirthDate = new Date(1957, 7, 15) //born Aug 1957
+    personA.SSbirthDate = new MonthYearDate(1957, 7)
+    personB.actualBirthDate = new Date(1960, 9, 11) //deceased spouse born in October 1960
+    personB.SSbirthDate = new MonthYearDate(1960, 9)
+    personB.dateOfDeath = new MonthYearDate(2020, 4)//personB died May 2020 (not quite age 60)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    personB.hasFiled = false //personB died before having filed and before reaching their FRA, so their retirementBenefitDate is their FRA
+    personA.PIA = 1900
+    personB.PIA = 1100
+    personA.quitWorkDate = new MonthYearDate(2021, 3) //April 2021
+    personA.monthlyEarnings = 20000
+    scenario.discountRate = 1
+    let results = service.maximizeSurvivorPV(personA, personB, scenario)
+    //Current earnings test threshold is $18,240 for years prior to FRA. So 2020 or 2021 would be completely withheld, except grace year rule allows for benefits from April 2021 onward
+    expect(results.solutionsArray[0].date)
+    .toEqual(new MonthYearDate(2021, 3))
+    expect(results.solutionsArray[1].date)
+    .toEqual(new MonthYearDate(2027, 7))
+    //survivorBenefit = 1100, reduced for early entitlement to survivor benefit. 1957 DoB so survivorFRA = 66and2months = October 2023
+    //So there are 74 possible early months. Entitled for 30 of them (9 + 12 + 9). Reduction = 30/74 * 0.285 = 11.55405%. 1100 * (1 - 0.1155405) = $972.91/month
+    //9 months in 2021 = $8,756
+    expect(results.claimStrategy.outputTable[0])
+    .toEqual([2021, "$0", "$8,756", "$8,756"])
+    //7 months of survivor = $6,810.37
+    //retirement FRA = 66and6months = Feb 2024. Waiting 42 months past FRA = 128% of PIA as retirement benefit = $2,432. 5 months of that is $12,160
+    expect(results.claimStrategy.outputTable[6])
+    .toEqual([2027, "$12,160", "$6,810", "$18,970"])
+    expect(results.claimStrategy.PV)
+    .toBeCloseTo(432913, 0)
+  })
+
+  //same as first survivor test, except person is told to file for retirementASAP and survivor at survivorFRA
+  it ('should tell a widower, age 63, not working, not disabled, to file immediately for retirement benefit (and survivorFRA for survivor) if she has the lower PIA', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+    scenario.maritalStatus = "survivor"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personA.actualBirthDate = new Date(1957, 7, 15) //born Aug 1957
+    personA.SSbirthDate = new MonthYearDate(1957, 7)
+    personB.actualBirthDate = new Date(1960, 9, 11) //deceased spouse born in October 1960
+    personB.SSbirthDate = new MonthYearDate(1960, 9)
+    personB.dateOfDeath = new MonthYearDate(2020, 4)//personB died May 2020 (not quite age 60)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    personB.hasFiled = false //personB died before having filed and before reaching their FRA, so their retirementBenefitDate is their FRA
+    personA.PIA = 500
+    personB.PIA = 1900
+    scenario.discountRate = 0
+    let results = service.maximizeSurvivorPV(personA, personB, scenario)
+    expect(results.solutionsArray[0].date)
+    .toEqual(new MonthYearDate(2020, 7))
+    expect(results.solutionsArray[1].date)
+    .toEqual(new MonthYearDate(2023, 9))//1957 DoB so survivorFRA = 66and2months = October 2023
+    //retirement FRA = 66and6months = Feb 2024. Filing Aug 2020 which is 42 months early. Gets 77.5% of PIA = 387.50/month
+    //5 months in 2020 = 1937.50
+    expect(results.claimStrategy.outputTable[0])
+    .toEqual([2020, "$1,938", "$0", "$1,938"])
+    //survivor original benefit = 1900, not reduced for early entitlement at all. No RIB-LIM either. Reduced for own entitlement. 1900 - 387.50 = $1,512.50/month
+    //3 months survivor in 2023 = $4,537.50
+    //12 months retirement in 2020 = 4650
+    expect(results.claimStrategy.outputTable[3])
+    .toEqual([2023, "$4,650", "$4,538", "$9,188"])
+    expect(results.claimStrategy.PV)
+    .toBeCloseTo(499457, 0)
+  })
+
+
+    // it ('should tell a widower, age 53, disabled, to file retroactive 12 months for survivor benefit (and at 60 non-reduced survivor will convert to reduced survivor? and at FRA disability will convert to retirement?)', () => {
+  //   service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+  //   scenario.maritalStatus = "survivor"
+  //   personA.isOnDisability = true
+  //   personA.fixedRetirementBenefitDate = new MonthYearDate(2018, 0)//On disability since Jan 2018
+  //   personA.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+  //   personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+  //   personA.actualBirthDate = new Date(1967, 7, 5) //born Aug 1967
+  //   personA.SSbirthDate = new MonthYearDate(1967, 7)
+  //   personB.actualBirthDate = new Date(1955, 9, 11) //deceased spouse born in October 1955
+  //   personB.SSbirthDate = new MonthYearDate(1955, 9)
+  //   personB.dateOfDeath = new MonthYearDate(2018, 4)//personB died May 2018 (age 62 and 9 months)
+  //   mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+  //   mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+  //   personB.hasFiled = true
+  //   personB.fixedRetirementBenefitDate = new MonthYearDate (2017, 11) //personB had filed at age 62 and 2 months. (With 1955 DoB, FRA is 66 and 2 months, so that's 48 months early.)
+  //   personA.PIA = 1000
+  //   personB.PIA = 1000
+  //   scenario.discountRate = 1
+  //   let results = service.maximizeSurvivorPV(personA, personB, scenario)
+  //   expect(results.solutionsArray[0].date)
+  //   .toEqual(new MonthYearDate(2019, 7))//retroactive 12 months because personA is disabled
+  //   expect(results.solutionsArray[1].date)
+  //   .toEqual(new MonthYearDate(2037, 7))
+  //   expect(results.claimStrategy.outputTable[0])
+  //   .toEqual([2020, "$retirement/disability", "$survivor", "$total"])
+  //   expect(results.claimStrategy.outputTable[2])
+  //   .toEqual([2022, "$retirement/disability", "$survivor", "$total"])
+  // })
 })
