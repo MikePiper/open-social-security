@@ -41,6 +41,7 @@ describe('SolutionSetService', () => {
     let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "single"
     person.SSbirthDate = new MonthYearDate(1960, 3, 1) //April 1, 1960
+    person.initialAge = 60
     person.FRA = new MonthYearDate(2027, 3, 1) //FRA April 1, 2027
     person.PIA = 2000
     let claimStrategy:ClaimStrategy = new ClaimStrategy(person)

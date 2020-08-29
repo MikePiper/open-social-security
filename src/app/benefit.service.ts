@@ -87,7 +87,6 @@ export class BenefitService {
         survivorOriginalBenefit = deceasedPerson.nonWEP_PIA
       }
     }
-
     return survivorOriginalBenefit
   }
 
@@ -129,6 +128,36 @@ export class BenefitService {
     }
   }
 
+  adjustSurvivorBenefitsForAge(scenario:CalculationScenario, livingPerson:Person):Person{
+    //per CFR 404.410: survivor benefits not reduced for month in which there is a child in care (under 16 or disabled) who is entitled to child benefits on worker's record.
+    //per RS 00615.310: If survivor is disabled, can claim survivor benefits as early as 50 instead of 60. And if so, for sake of calculation, they are "deemed" to be age 60 on the date they file.
+    let monthsEarly:number
+    let dateForCountingEarlyEntitlement:MonthYearDate = new MonthYearDate(livingPerson.survivorBenefitDate)
+  
+    //if ARF has happened, use adjusted date
+      if (livingPerson.adjustedSurvivorBenefitDate > livingPerson.survivorBenefitDate){
+        dateForCountingEarlyEntitlement = new MonthYearDate(livingPerson.adjustedSurvivorBenefitDate)
+      }
+
+    //Check if there is *currently* a child under 16 or disabled
+      let childUnder16orDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabled(scenario)
+
+    //Reduce spousal benefits for age if there is no child who is disabled and/or *currently* under 16.
+      if (childUnder16orDisabled === false){
+        if (dateForCountingEarlyEntitlement < livingPerson.survivorFRA){
+          //Find how many months prior to survivorFRA
+            monthsEarly = livingPerson.survivorFRA.getMonth() - dateForCountingEarlyEntitlement.getMonth() + 12 * (livingPerson.survivorFRA.getFullYear() - dateForCountingEarlyEntitlement.getFullYear())
+          //Find how many months between age 60 and survivorFRA
+            let monthsBetween60andSurvivorFRA:number
+            monthsBetween60andSurvivorFRA = livingPerson.survivorFRA.getMonth() - livingPerson.SSbirthDate.getMonth() + 12 * (livingPerson.survivorFRA.getFullYear() - (livingPerson.SSbirthDate.getFullYear()+60))
+          //Apply reduction
+            let reductionPercentage:number = monthsEarly / monthsBetween60andSurvivorFRA * 0.285
+            livingPerson.monthlySurvivorPayment = livingPerson.monthlySurvivorPayment * (1 - reductionPercentage)
+        }
+      }
+    return livingPerson
+  }
+
   adjustSurvivorBenefitsForRIB_LIM(livingPerson:Person, deceasedPerson:Person){
     //Determine whether RIB-LIM limit is 82.5% of deceased's PIA or amount deceased was receiving
       let RIB_LIMlimit:number = 0
@@ -148,13 +177,9 @@ export class BenefitService {
           RIB_LIMlimit = 0.825 * deceasedPerson.nonWEP_PIA
         }
       }
-    //Limit sum of survivor's monthlySurvivorPayment and monthlyRetirementPayment to RIB-LIM limit
-      if (livingPerson.monthlySurvivorPayment + livingPerson.monthlyRetirementPayment > RIB_LIMlimit){
-        livingPerson.monthlySurvivorPayment = RIB_LIMlimit - livingPerson.monthlyRetirementPayment
-      }
-    //But don't let monthlySurvivorPayment be below zero
-      if (livingPerson.monthlySurvivorPayment < 0) {
-        livingPerson.monthlySurvivorPayment = 0
+    //Limit survivor's monthlySurvivorPayment to RIB-LIM limit
+      if (livingPerson.monthlySurvivorPayment > RIB_LIMlimit){
+        livingPerson.monthlySurvivorPayment = RIB_LIMlimit
       }
   }
 
@@ -204,6 +229,11 @@ export class BenefitService {
 
   determineChildBenefitDate(scenario:CalculationScenario, child:Person, personA:Person, personB?:Person):MonthYearDate{
     let childBenefitDate:MonthYearDate
+    let sixMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6)
+    let twelveMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth()-12)
+
     if (scenario.maritalStatus == "single"){
       if (child.hasFiled === true){
         //assume child filed as early as possible (parent retirementBenefitDate)
@@ -212,12 +242,10 @@ export class BenefitService {
       else {//If child hasn't filed, find earliest retroactive childBenefitDate
         //If parent is not disabled, it's 6 months before today
         if (personA.isOnDisability === false){
-          childBenefitDate = new MonthYearDate(this.today)
-          childBenefitDate.setMonth(childBenefitDate.getMonth()-6)
+          childBenefitDate = new MonthYearDate(sixMonthsAgo)
         }
         else {//If parent is disabled, it's 12 months before today
-        childBenefitDate = new MonthYearDate(this.today)
-        childBenefitDate.setMonth(childBenefitDate.getMonth()-12)
+        childBenefitDate = new MonthYearDate(twelveMonthsAgo)
         }
         //But no earlier than parent's retirementBenefitDate
         if (childBenefitDate < personA.retirementBenefitDate){
@@ -225,44 +253,48 @@ export class BenefitService {
         }
       }
     }
-    else {//i.e., it's a married or divorced scenario
+    else { //married, divorced, or survivor scenario
       if (child.hasFiled === true){
-        //assume they filed as early as possible (first retirementBenefitDate)
+        //assume they filed as early as possible -- earliest of personA.retirementBenefitDate, personB.retirementBenefitDate, or (in survivor scenario) personB.dateOfDeath
         childBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
         if (personB.retirementBenefitDate < childBenefitDate){
           childBenefitDate = new MonthYearDate(personB.retirementBenefitDate)
+        }
+        if (scenario.maritalStatus == "survivor" && personB.dateOfDeath < childBenefitDate){
+          childBenefitDate = new MonthYearDate(personB.dateOfDeath)
         }
       }
       else {//If child hasn't filed, find earliest retroactive childBenefitDate based on each parent
         //find earliest date based on parentA
           if (personA.isOnDisability === false){//if personA is not disabled, it's 6 months ago. But no earlier than personA's retirementBenefitDate
-            var earliestChildBenefitDateFromPersonA:MonthYearDate = new MonthYearDate(this.today)
-            earliestChildBenefitDateFromPersonA.setMonth(earliestChildBenefitDateFromPersonA.getMonth()-6)
+            var earliestChildBenefitDateFromPersonA:MonthYearDate = new MonthYearDate(sixMonthsAgo)
             if (earliestChildBenefitDateFromPersonA < personA.retirementBenefitDate){
               earliestChildBenefitDateFromPersonA = new MonthYearDate(personA.retirementBenefitDate)
             }
           }
           else {//if personA is disabled, it's 12 months ago. But no earlier than personA's fixedRetirementBenefitDate (i.e., their disability date)
-            var earliestChildBenefitDateFromPersonA:MonthYearDate = new MonthYearDate(this.today)
-            earliestChildBenefitDateFromPersonA.setMonth(earliestChildBenefitDateFromPersonA.getMonth()-12)
+            var earliestChildBenefitDateFromPersonA:MonthYearDate = new MonthYearDate(twelveMonthsAgo)
             if (earliestChildBenefitDateFromPersonA < personA.fixedRetirementBenefitDate){
               earliestChildBenefitDateFromPersonA = new MonthYearDate(personA.fixedRetirementBenefitDate)
             }
           }
         //find earliest date based on parentB
           if (personB.isOnDisability === false){//if personB is not disabled, it's 6 months ago. But no earlier than personB's retirementBenefitDate
-            var earliestChildBenefitDateFromPersonB:MonthYearDate = new MonthYearDate(this.today)
-            earliestChildBenefitDateFromPersonB.setMonth(earliestChildBenefitDateFromPersonB.getMonth()-6)
+            var earliestChildBenefitDateFromPersonB:MonthYearDate = new MonthYearDate(sixMonthsAgo)
             if (earliestChildBenefitDateFromPersonB < personB.retirementBenefitDate){
               earliestChildBenefitDateFromPersonB = new MonthYearDate(personB.retirementBenefitDate)
             }
           }
           else {//if personB is disabled, it's 12 months ago. But no earlier than personB's fixedRetirementBenefitDate (i.e., their disability date)
-            var earliestChildBenefitDateFromPersonB:MonthYearDate = new MonthYearDate(this.today)
-            earliestChildBenefitDateFromPersonB.setMonth(earliestChildBenefitDateFromPersonB.getMonth()-12)
+            var earliestChildBenefitDateFromPersonB:MonthYearDate = new MonthYearDate(twelveMonthsAgo)
             if (earliestChildBenefitDateFromPersonB < personB.fixedRetirementBenefitDate){
               earliestChildBenefitDateFromPersonB = new MonthYearDate(personB.fixedRetirementBenefitDate)
             }
+          }
+          if (scenario.maritalStatus == "survivor"){//If it's a survivor scenario, find later of dateOfDeath or 6 months ago. If that's prior to current earliestChildBenefitDateFromPersonB, use this new date instead
+            let earliestChildSurvivorBenefitDate:MonthYearDate
+            earliestChildSurvivorBenefitDate = personB.dateOfDeath > sixMonthsAgo ? new MonthYearDate(personB.dateOfDeath) : new MonthYearDate(sixMonthsAgo)
+            if (earliestChildSurvivorBenefitDate < earliestChildBenefitDateFromPersonB){earliestChildBenefitDateFromPersonB = new MonthYearDate(earliestChildSurvivorBenefitDate)}
           }
         //childBenefitDate is earlier of those two dates
           if (earliestChildBenefitDateFromPersonA < earliestChildBenefitDateFromPersonB){
@@ -369,9 +401,11 @@ export class BenefitService {
     }
   }
 
+
+
   //Calculates "original benefit" amounts (i.e., amounts that go into family max math -- so spousal/survivor benefits not yet reduced for family max, own entitlement, age, or GPO)
   calculateMonthlyPaymentsCouple(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB:Person, personBaliveBoolean:boolean){
-    //Note that we're making no distinction in this function for whether it's a married or divorced scenario.
+    //Note that we're making no distinction in this function for whether it's a married, divorced, or widow/widower scenario.
 
     //Set all benefits to zero to begin
       personA.monthlyRetirementPayment = 0
@@ -519,7 +553,7 @@ export class BenefitService {
               if (personA.entitledToRetirement === true){
                 personA.monthlyRetirementPayment = personA.retirementBenefit
               }
-              if (calcYear.date >= personA.survivorFRA){
+              if (calcYear.date >= personA.survivorBenefitDate){
                 personA.monthlySurvivorPayment = this.calculateSurvivorOriginalBenefit(personB)
               }
               for (let child of scenario.children){
@@ -568,7 +602,7 @@ export class BenefitService {
               if (personB.entitledToRetirement === true){
                 personB.monthlyRetirementPayment = personB.retirementBenefit
               }
-              if (calcYear.date >= personB.survivorFRA){
+              if (calcYear.date >= personB.survivorBenefitDate){
                 personB.monthlySurvivorPayment = this.calculateSurvivorOriginalBenefit(personA)
               }
               for (let child of scenario.children){
@@ -644,10 +678,10 @@ export class BenefitService {
     this.checkIfWEPbeginsThisMonthAndRecalcAsNecessary(personA, calcYear.date)
     this.checkIfWEPbeginsThisMonthAndRecalcAsNecessary(personB, calcYear.date)
     //Calculate retirementBenefit field if it hasn't been done yet
-    if (personA.retirementBenefit == 0) {
+    if (personA.retirementBenefit == 0 && personA.PIA > 0) {
       personA.retirementBenefit = this.calculateRetirementBenefit(personA, personA.retirementBenefitDate)
     }
-    if (personB.retirementBenefit == 0) {
+    if (personB.retirementBenefit == 0 && personB.PIA > 0) {
       personB.retirementBenefit = this.calculateRetirementBenefit(personB, personB.retirementBenefitDate)
     }
 
@@ -664,6 +698,12 @@ export class BenefitService {
         this.familyMaximumService.calculateFamilyMaximum(personA, calcYear.date)
       }
     }
+    //Same idea, for personA's survivorFRA (i.e., recalculate survivor benefit to account for ARF, if they filed for survivor benefit early)
+    if (calcYear.date.valueOf() == personA.survivorFRA.valueOf()){
+      if (personA.survivorBenefitDate < personA.survivorFRA){
+        personA.adjustedSurvivorBenefitDate.setMonth(personA.survivorBenefitDate.getMonth()+personA.survivorARFcreditingMonths)
+      }
+    }
     //At personB's FRA...
     if (calcYear.date.valueOf() == personB.FRA.valueOf()){
       //Recalculate person's own retirement benefit using adjusted date at FRA. Also set adjustedSpousalBenefitDate field.
@@ -675,6 +715,13 @@ export class BenefitService {
       //If personB is disabled, recalculate family maximum using normal retirement family maximum rules rather than disability ("DMAX") rules. (See https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615742)
       if (personB.isOnDisability === true){
         this.familyMaximumService.calculateFamilyMaximum(personB, calcYear.date)
+      }
+    }
+    //Same idea, for personB's survivorFRA (i.e., recalculate survivor benefit to account for ARF, if they filed for survivor benefit early).
+        //This should never actually get triggered given the application's current assumption that in "both alive" scenario neither person files for survivor benefits before survivorFRA. Including it anyway though in case that changes in future for some reason.
+    if (calcYear.date.valueOf() == personB.survivorFRA.valueOf()){
+      if (personB.survivorBenefitDate < personB.survivorFRA){
+        personB.adjustedSurvivorBenefitDate.setMonth(personB.survivorBenefitDate.getMonth()+personB.survivorARFcreditingMonths)
       }
     }
 

@@ -15,6 +15,7 @@ import { ClaimStrategy } from './data model classes/claimStrategy'
 function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdayService:BirthdayService, benefitService:BenefitService, mortalityService:MortalityService){
   person.FRA = birthdayService.findFRA(person.SSbirthDate)
   person.survivorFRA = birthdayService.findSurvivorFRA(person.SSbirthDate)
+  person.survivorBenefitDate = new MonthYearDate(person.survivorFRA)
   person.initialAge =  birthdayService.findAgeOnDate(person, today)
   person.initialAgeRounded = Math.round(person.initialAge)
   person.baseMortalityFactor = mortalityService.calculateBaseMortalityFactor(person)
@@ -273,6 +274,8 @@ describe('test maximizeSinglePersonPV', () => {
 
   it('should tell a single person slightly past FRA to file retroactively at FRA with very high discount rate', () => {
     service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
+    service.sixMonthsAgo = new MonthYearDate(2018, 4)
+    service.twelveMonthsAgo = new MonthYearDate(2017, 10)
     person.actualBirthDate = new Date(1952, 8, 15)
     person.SSbirthDate = new MonthYearDate(1952, 8) //SSBirthdate Sept 1952
     person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA age 66 -> Sept 2018
@@ -280,6 +283,7 @@ describe('test maximizeSinglePersonPV', () => {
     scenario.maritalStatus = "single"
     scenario.discountRate = 9 //9% discount rate
     person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
       .toEqual(new MonthYearDate(2018, 8))
     expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].benefitType)
@@ -807,6 +811,8 @@ describe('tests calculateCouplePV', () => {
         personB.retirementBenefitDate = new MonthYearDate(2025, 7) //August 2025 (age 62, 5 years before FRA)
         personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
         personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
+        personA.survivorBenefitDate = new MonthYearDate(personA.survivorFRA)
+        personB.survivorBenefitDate = new MonthYearDate(personB.survivorFRA)
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
         expect(claimStrategy.outputTable[11][0]).toEqual("If your spouse outlives you")
         expect(claimStrategy.outputTable[11][6]).toEqual("$6,480") //deceased filed at 70 with FRA of 67. Benefit would have been 1240. Minus survivor's own 700 retirement benefit, gives 540 survivor benefit. 12 x 540 = 6480
@@ -859,6 +865,8 @@ describe('tests calculateCouplePV', () => {
           personB.retirementBenefitDate = new MonthYearDate(2025, 7) //Files at 62 (5 years before FRA), so retirement benefit = 700
           personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
           personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
+          personA.survivorBenefitDate = new MonthYearDate(personA.survivorFRA)
+          personB.survivorBenefitDate = new MonthYearDate(personB.survivorFRA)
           let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
           expect(claimStrategy.outputTable[9][0]).toEqual(2034)
           expect(claimStrategy.outputTable[9][1]).toEqual("$17,856")//personA annual retirement benefit before WEP kicks in: 124% of non WEP PIA = 1.24 * 1200 * 12 = 17856
@@ -1110,45 +1118,47 @@ describe('tests calculateCouplePV', () => {
         personB.SSbirthDate = new MonthYearDate(1960, 2)
         personB.quitWorkDate = new MonthYearDate(2027, 0) //quitWorkDate January 2027, so it's the first month without work
         personB.monthlyEarnings = 10000
-        personA.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63
-        personB.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63
+        personA.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63 (48 months early, retirement benefit = $1,125)
+        personB.retirementBenefitDate = new MonthYearDate(2023, 2) //files at 63 (48 months early, retirement benefit = $450)
         personA.spousalBenefitDate = new MonthYearDate(2025, 2) //This date doesn't matter, given PIAs. But same reasoning as field for personB
         personB.spousalBenefitDate = new MonthYearDate(2025, 2)
         //^^Spousal benefit begins March 2023 when personA starts retirement. But it's child in care spousal benefit until child turns 16 in March 2025. Here we are having them file Form SSA-25 immediately at that date.
+        personA.survivorBenefitDate = new MonthYearDate(personA.survivorFRA)//doesn't file for survivor benefits prior to survivor FRA
+        personB.survivorBenefitDate = new MonthYearDate(personB.survivorFRA)//doesn't file for survivor benefits prior to survivor FRA
         mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
         mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
         personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
         personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-        expect(claimStrategy.PV).toBeCloseTo(367887, 0)
+        expect(claimStrategy.PV).toBeCloseTo(367748, 0)
         //manual calculation:
           //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
           //personB.familyMaximum = 900
           //1500 + 750 + 750 (original benefits on personA's record) < combined family max, so family max isn't an issue here.
           //personA spousal benefit = 0
-          //personB retirement benefit = 450 (75% of PIA due to 48 months early)
           //personB spousal benefit = 150 (1500/2 - 600) <- not reduced for age during time that child1 is under age 16
           //in March 2025 child1 turns 16. So now personB's spousal benefit will be reduced for age if they file form SSA-25 immediately, which we they are doing, given spousalBenefitDate above.
             //personB's new spousal benefit: $125 (Age 65 and 0 months. 24 months early = 83.33% full spousal benefit)
-          //table begins in 2023
-          //each row: year, personAretirement, personAspousal, personAsurvivor, personBretirement, personBspousal, personBsurvivor, total child benefit, total
           //personB annual earnings: 120k -> (120000 - 17040)/2 = $51,480 withholding necessary in years prior to FRA (from personB's record)
-          //Available to withhold per month: $150 spousal for personB and $750 child benefit = $900
+          //Available to withhold per month: $450 retirement for personB, $150 spousal for personB, and $750 child benefit = $1,350
             //^^Going with POMS RS 02501.140 here, even though it contradicts SSAct and CFR. (That is, we're making child benefit withholdable on personB's record, even though it's coming on personA's record.)
-          expect(claimStrategy.outputTable[0][5]).toEqual("$0") //2023 personB spousal benefit fully withheld due to earnings test
-          expect(claimStrategy.outputTable[1][5]).toEqual("$0") //2024 personB spousal benefit fully withheld due to earnings test
+          //$51,480 necessary withholding / 1350 available per month = 39 months per year need to be withheld. (So whole year is withheld for 2023, 2024, 2025, 2026)
+          expect(claimStrategy.outputTable[0]).toEqual([2023, "$11,250", "$0", "$0", "$0", "$0", "$0", "$0", "$11,250"])//10 months of retirement for personA, everything else withheld
+          expect(claimStrategy.outputTable[1]).toEqual([2024, "$13,500", "$0", "$0", "$0", "$0", "$0", "$0", "$13,500"])//12 months of retirement for personA, everything else withheld
           //March 2025 child turns 16 and personB files SSA-25. So now spousal benefit would be normal spousal benefit (reduced to $125 due to being 24 months early). But it's withheld due to earnings. So we start counting spousal ARF credits
-          expect(claimStrategy.outputTable[2][5]).toEqual("$0") //2025 personB spousal benefit fully withheld due to earnings test (10 months spousal ARF credits)
-          expect(claimStrategy.outputTable[3][5]).toEqual("$0") //2026 personB spousal benefit fully withheld due to earnings test (12 months spousal ARF credits)
-          expect(claimStrategy.outputTable[4][5]).toEqual("$1,729") //In 2027, no earnings so no withholding. Gets $125 benefit for 2 months, then ARF happens in March. Was 24 months early, but has 22 spousal ARF credits.
+          expect(claimStrategy.outputTable[2]).toEqual([2025, "$13,500", "$0", "$0", "$0", "$0", "$0", "$0", "$13,500"])//12 months of retirement for personA, everything else withheld (10 ARF credits)
+          expect(claimStrategy.outputTable[3]).toEqual([2026, "$13,500", "$0", "$0", "$0", "$0", "$0", "$0", "$13,500"])//12 months of retirement for personA, everything else withheld (12 ARF credits)
+          //In 2027, no earnings so no withholding.
+          //personB filed for retirement 48 months early, but was withheld for 46 of those months. ARF happens in March, so now benefit is only 2 months early (98.88888% = $593.33)
+          //$450 x 2 + $593.33 x 10 = $6,833
+          //Gets $125 spousal benefit for 2 months, then ARF happens in March. Was 24 months early, but has 22 spousal ARF credits.
           //2 months early spousal reduction factor = 98.611111%. (1500/2 - 600) * 0.986111 = $147.91
           //$125 x 2 + $147.91 x 10 = $1729.17
-          expect(claimStrategy.outputTable[0][7]).toEqual("$0") //2023 child would get 10 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(claimStrategy.outputTable[1][7]).toEqual("$0") //2024 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(claimStrategy.outputTable[2][7]).toEqual("$0") //2025 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(claimStrategy.outputTable[3][7]).toEqual("$0") //2026 child would get 12 months of child benefits on personA, but it's withheld due to personB earnings
-          expect(claimStrategy.outputTable[4][7]).toEqual("$1,500") //2027 child gets 2 months of child benefits on personA, then turns 18. (personB has no earnings so no withholding.)
+          //Child gets 2 months of child benefits on personA, then turns 18.
+          expect(claimStrategy.outputTable[4]).toEqual([2027, "$13,500", "$0", "$0", "$6,833", "$1,729", "$0", "$1,500", "$23,563"])
       })
+
+
 
         it('Should calculate retirement/spousal/child benefits appropriately for everybody in combined family max scenario', () => {
           service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
@@ -1455,6 +1465,8 @@ describe('tests calculateCouplePV', () => {
   
     it ('should tell a high-PIA spouse to file a restricted app when possible', () => {
       service.today = new MonthYearDate(2018, 11) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
+      service.sixMonthsAgo = new MonthYearDate(2018, 5)
+      service.twelveMonthsAgo = new MonthYearDate(2017, 5)
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0) 
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) 
@@ -1495,7 +1507,8 @@ describe('tests calculateCouplePV', () => {
       personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
       personB.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
       scenario.discountRate = 0
-      expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[2].date)
+      let results = service.maximizeCouplePViterateBothPeople(personA, personB, scenario)
+      expect(results.solutionsArray[2].date)
       .toEqual(new MonthYearDate(2025, 9, 1))
       //We're looking at item [0] in the array. This array should have 3 items in it: suspend for personB, unsuspend for personB, retirement date for personA
     })
@@ -1651,6 +1664,8 @@ describe('tests calculateCouplePV', () => {
 
     it('should tell a low-PIA spouse to file a retroactive application and high-PIA spouse to file retroactive restricted application if already past FRA with short life expectancies and high discount rate', () => {
       service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
+      service.sixMonthsAgo = new MonthYearDate(2018, 4)
+      service.twelveMonthsAgo = new MonthYearDate(2017, 10)
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0) 
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SM2", 0) 
@@ -1900,8 +1915,10 @@ describe('tests calculateCouplePV', () => {
     //Should be 2 solution objects: begin suspension and end suspension date for personA. No spousal benefits for them. And it is divorce scenario, so no solution objects for personB.
   })
 
-  it('should suggest retroactive application for low-PIA spouse when possible, given highish discount rate and short life expectancies', () => {
+  it('should suggest retroactive application for low-PIA spouse when possible, given high discount rate and short life expectancies', () => {
     service.today = new MonthYearDate(2018, 10)//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
+    service.sixMonthsAgo = new MonthYearDate(2018, 4)
+    service.twelveMonthsAgo = new MonthYearDate(2017, 10)
     scenario.maritalStatus = "married"
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0) 
     personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SM2", 0) 
@@ -1916,6 +1933,7 @@ describe('tests calculateCouplePV', () => {
     scenario.discountRate = 8
     personA.fixedRetirementBenefitDate = new MonthYearDate(2018, 2) //filed March 2018, at 69 and 6 months
     let results = service.maximizeCouplePViterateOnePerson(scenario, personB, personA)
+    console.log(results)
     expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2018, 9)) //retroactive back to personB's FRA
     //This array should have 1 item in it, personB's retirement date. No spousal for either person.
 
@@ -1958,6 +1976,11 @@ describe('tests calculateCouplePV', () => {
     expect(claimStrategy.outputTable[0][2]).toEqual("$1,650")//personA child-in-care spousal, times 3 months. 2300PIA/2 - 600 = $550 per month. Not reduced for early entitlement because there's a child in care.
     expect(claimStrategy.outputTable[0][4]).toEqual("$22,417")//total children benefit in 2022 is 9 months of $1,724.08 (i.e,. amount left on personB's family max),
       //plus 3 months of $2,300 (i.e., full 50% of personB PIA for each child, now that combined family max has kicked in)
+    //personA.familyMax (62 in 2022) should be 150% of 600 = 900
+    //personB.familyMax (62 in 2019) should be 150% * 1,184 + 272% * (1,708-1184) + 134% * (2,228 -1708) + 175% * (2300 -2228) = 4024.08
+    //combined family max should be 4924.08, limited to $5707.60
+    //in 2022 Jan-Sept
+      //4024.08 - 2300 = 1724.08 left for the two children (personA doesn't count toward limit because they're an ex-spouse)
   })
 
 })
@@ -1985,4 +2008,474 @@ describe('test discountToPresentValue', () => {
     let PV:number = service.discountToPresentValue(3, 1000, 2019, 2019) 
     expect(PV).toBeCloseTo(1000, 1)
   })
+})
+
+describe('test whenShouldPVcalculationStart()', () => {
+  let service:PresentValueService
+  let birthdayService:BirthdayService
+  let scenario:CalculationScenario
+  let personA:Person
+  let personB:Person
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
+    })
+    service = TestBed.get(PresentValueService)
+    birthdayService = TestBed.get(BirthdayService)
+    scenario = new CalculationScenario()
+    personA = new Person("A")
+    personB = new Person("B")
+  })
+
+  it('should correctly determine to start PV calc on Jan 1 of last year in survivor scenario with kids and deceased spouse died last year', () => {
+    let startDate:MonthYearDate
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    scenario.maritalStatus = "survivor"
+    scenario.numberOfChildren = 2
+    let child1:Person = new Person("1")
+    let child2:Person = new Person("2")
+    child1.SSbirthDate = new MonthYearDate(2015, 7) //child 1 born August 2015
+    child2.SSbirthDate = new MonthYearDate(2016, 10) //child 2 born November 2016
+    scenario.setChildrenArray([child1,child2], service.today)
+    personB.dateOfDeath = new MonthYearDate(2019, 11)//died Dec 2019
+    startDate = service.whenShouldPVcalculationStart(scenario, personA, personB)
+    expect(startDate).toEqual(new MonthYearDate(2019, 0))
+  })
+
+  it('should correctly determine to start PV calc on Jan 1 of this year in survivor scenario with kids and deceased spouse died earlier this year', () => {
+    let startDate:MonthYearDate
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    scenario.maritalStatus = "survivor"
+    scenario.numberOfChildren = 2
+    let child1:Person = new Person("1")
+    let child2:Person = new Person("2")
+    child1.SSbirthDate = new MonthYearDate(2015, 7) //child 1 born August 2015
+    child2.SSbirthDate = new MonthYearDate(2016, 10) //child 2 born November 2016
+    scenario.setChildrenArray([child1,child2], service.today)
+    personB.dateOfDeath = new MonthYearDate(2020, 2)//died March 2020
+    personA.survivorBenefitDate = new MonthYearDate(2021, 2) //Planning to file for survivor benefits March of 2021 
+    personA.retirementBenefitDate = new MonthYearDate(2023, 2) //Planning to file for retirement benefits March 2023 (These filing dates make no sense as good choices, but that doesn't matter here.)
+    startDate = service.whenShouldPVcalculationStart(scenario, personA, personB)
+    expect(startDate).toEqual(new MonthYearDate(2020, 0))
+  })
+
+  it('should correctly determine to start PV calc on Jan 1 of last year in survivor scenario with personA already having reached FRA', () => {
+    let startDate:MonthYearDate
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    personA.SSbirthDate = new MonthYearDate(1953, 11)//Dec 1953
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    scenario.maritalStatus = "survivor"
+    personB.dateOfDeath = new MonthYearDate(2019, 11)//died Dec 2019
+    startDate = service.whenShouldPVcalculationStart(scenario, personA, personB)
+    expect(startDate).toEqual(new MonthYearDate(2019, 0))
+  })
+
+  it('should correctly determine to start PV calc on Jan 1 of earlier of retirementBenefitYear or survivorBenefitYear in survivor scenario with no kids and person younger than FRA', () => {
+    let startDate:MonthYearDate
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    personA.SSbirthDate = new MonthYearDate(1958, 5)//June 1958. So they're 62 and 2 months old right now.
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    scenario.maritalStatus = "survivor"
+    personB.dateOfDeath = new MonthYearDate(2019, 11)//died Dec 2019
+    personA.retirementBenefitDate = new MonthYearDate(2022, 5) //planning to file for survivor benefits at age 64
+    personA.survivorBenefitDate = new MonthYearDate(2028, 5) //planning to file for retirement benefits at age 70
+    startDate = service.whenShouldPVcalculationStart(scenario, personA, personB)
+    expect(startDate).toEqual(new MonthYearDate(2022, 0))
+  })
+
+  it('should correctly determine to start PV calc on Jan 1 of earlier of retirementBenefitYear or survivorBenefitYear in survivor scenario with no kids and person younger than FRA', () => {
+    let startDate:MonthYearDate
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    personA.SSbirthDate = new MonthYearDate(1958, 5)//June 1958. So they're 62 and 2 months old right now.
+    personA.FRA = birthdayService.findFRA(personA.SSbirthDate)
+    scenario.maritalStatus = "survivor"
+    personB.dateOfDeath = new MonthYearDate(2019, 11)//died Dec 2019
+    personA.retirementBenefitDate = new MonthYearDate(2026, 5) //planning to file for survivor benefits at age 68
+    personA.survivorBenefitDate = new MonthYearDate(2021, 7) //planning to file for retirement benefits at age 63 and 2 months
+    startDate = service.whenShouldPVcalculationStart(scenario, personA, personB)
+    expect(startDate).toEqual(new MonthYearDate(2021, 0))
+  })
+})
+
+describe('test functions that find earliest/latest dates', () => {
+  let service:PresentValueService
+  let birthdayService:BirthdayService
+  let benefitService:BenefitService
+  let mortalityService:MortalityService
+  let scenario:CalculationScenario
+  let person:Person
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
+    })
+    service = TestBed.get(PresentValueService)
+    birthdayService = TestBed.get(BirthdayService)
+    benefitService = TestBed.get(BenefitService)
+    mortalityService = TestBed.get(MortalityService)
+    scenario = new CalculationScenario()
+    person = new Person("A")
+  })
+
+  it('should correctly determine earliest retirementBenefitDate when person is younger than 62 and born on the second of the month', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    service.sixMonthsAgo = new MonthYearDate(2020, 1)//Feb 2020
+    service.twelveMonthsAgo = new MonthYearDate(2019, 7)//Aug 2019
+    person.SSbirthDate = new MonthYearDate(1960, 7)
+    person.actualBirthDate = new Date(1960, 7, 1)
+    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA2017", 0) 
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+    let expectedDate:MonthYearDate = service.findEarliestPossibleRetirementBenefitDate(person)
+    expect(expectedDate).toEqual(new MonthYearDate(2022, 7))
+  })
+
+  it('should correctly determine earliest retirementBenefitDate when person is younger than 62 and born on the third of the month', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    service.sixMonthsAgo = new MonthYearDate(2020, 1)//Feb 2020
+    service.twelveMonthsAgo = new MonthYearDate(2019, 7)//Aug 2019
+    person.SSbirthDate = new MonthYearDate(1960, 7)
+    person.actualBirthDate = new Date(1960, 7, 2)
+    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA2017", 0) 
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+    let expectedDate:MonthYearDate = service.findEarliestPossibleRetirementBenefitDate(person)
+    expect(expectedDate).toEqual(new MonthYearDate(2022, 8))
+  })
+
+  it('should correctly determine earliest retirementBenefitDate when person is currently age 63 and 2 months', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    service.sixMonthsAgo = new MonthYearDate(2020, 1)//Feb 2020
+    service.twelveMonthsAgo = new MonthYearDate(2019, 7)//Aug 2019
+    person.SSbirthDate = new MonthYearDate(1957, 5)
+    person.actualBirthDate = new Date(1957, 5, 3)
+    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA2017", 0) 
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+    let expectedDate:MonthYearDate = service.findEarliestPossibleRetirementBenefitDate(person)
+    expect(expectedDate).toEqual(new MonthYearDate(service.today))
+  })
+
+  it('should correctly determine earliest retirementBenefitDate when person is currently 3 months past FRA', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    service.sixMonthsAgo = new MonthYearDate(2020, 1)//Feb 2020
+    service.twelveMonthsAgo = new MonthYearDate(2019, 7)//Aug 2019
+    person.SSbirthDate = new MonthYearDate(1954, 4)//Born May 1954. FRA is 66 = May 2020
+    person.actualBirthDate = new Date(1954, 4, 8)
+    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA2017", 0) 
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+    let expectedDate:MonthYearDate = service.findEarliestPossibleRetirementBenefitDate(person)
+    expect(expectedDate).toEqual(new MonthYearDate(2020, 4))//May 2020 (person's FRA)
+  })
+
+  it('should correctly determine latest retirementBenefitDate when person has normal inputs', () => {
+    person.SSbirthDate = new MonthYearDate(1960, 7)
+    person.actualBirthDate = new Date(1960, 7, 1)
+    person.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA2017", 0) 
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+    let expectedDate:MonthYearDate = service.findLatestRetirementBenefitDate(person)
+    expect(expectedDate).toEqual(new MonthYearDate(2030, 7))
+  })
+
+  it('should correctly determine latest retirementBenefitDate when person assumes they die at age 69', () => {
+    person.SSbirthDate = new MonthYearDate(1960, 7)
+    person.actualBirthDate = new Date(1960, 7, 1)
+    person.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed" , 69) 
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+    let expectedDate:MonthYearDate = service.findLatestRetirementBenefitDate(person)
+    expect(expectedDate).toEqual(new MonthYearDate(2029, 7))
+  })
+
+  it('should correctly determine earliest survivorBenefitDate when survivor is not disabled, is over 60 but younger than FRA, and deceased person died 4 months ago', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    service.sixMonthsAgo = new MonthYearDate(2020, 1)//Feb 2020
+    service.twelveMonthsAgo = new MonthYearDate(2019, 7)//Aug 2019
+    person.SSbirthDate = new MonthYearDate(1957, 7)//Age 63 and 0 months right now
+    person.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2017", 0) 
+    let personB:Person = new Person("B")
+    personB.SSbirthDate = new MonthYearDate(1960, 7)
+    personB.dateOfDeath = new MonthYearDate(2020, 3)// 4 months ago
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2017", 0) 
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    let expectedDate:MonthYearDate = service.findEarliestSurvivorBenefitDate(person, personB)
+    expect(expectedDate).toEqual(new MonthYearDate(2020, 7))//today, because person is not disabled and has not reached survivor FRA (no retroactive option)
+  })
+
+  it('should correctly determine earliest survivorBenefitDate when survivor is not disabled, is age 68, and deceased person died 4 months ago', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    service.sixMonthsAgo = new MonthYearDate(2020, 1)//Feb 2020
+    service.twelveMonthsAgo = new MonthYearDate(2019, 7)//Aug 2019
+    person.SSbirthDate = new MonthYearDate(1952, 7)//Age 68 and 0 months right now
+    person.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2017", 0) 
+    let personB:Person = new Person("B")
+    personB.SSbirthDate = new MonthYearDate(1960, 7)
+    personB.dateOfDeath = new MonthYearDate(2020, 3)// 4 months ago
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2017", 0) 
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    let expectedDate:MonthYearDate = service.findEarliestSurvivorBenefitDate(person, personB)
+    expect(expectedDate).toEqual(new MonthYearDate(2020, 3))//4 months ago -- dateOfDeath is earliest retroactive date here
+  })
+
+  it('should correctly determine earliest survivorBenefitDate when survivor is not disabled, is 2 months past survivorFRA, and deceased person died 4 months ago', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    service.sixMonthsAgo = new MonthYearDate(2020, 1)//Feb 2020
+    service.twelveMonthsAgo = new MonthYearDate(2019, 7)//Aug 2019
+    person.SSbirthDate = new MonthYearDate(1954, 5)//born June 1954, survivorFRA = 66 = June 2020 = 2 months ago
+    person.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2017", 0) 
+    let personB:Person = new Person("B")
+    personB.SSbirthDate = new MonthYearDate(1960, 7)
+    personB.dateOfDeath = new MonthYearDate(2020, 3)// 4 months ago
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2017", 0) 
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    let expectedDate:MonthYearDate = service.findEarliestSurvivorBenefitDate(person, personB)
+    expect(expectedDate).toEqual(new MonthYearDate(2020, 5))//2 months ago -- person's survivorFRA
+  })
+
+  it('should correctly determine earliest survivorBenefitDate when survivor is disabled, is age 54, and deceased person died 14 months ago', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020
+    service.sixMonthsAgo = new MonthYearDate(2020, 1)//Feb 2020
+    service.twelveMonthsAgo = new MonthYearDate(2019, 7)//Aug 2019
+    person.isOnDisability = true
+    person.SSbirthDate = new MonthYearDate(1966, 7)//born Aug 1966, so age 54 and 0 months right now
+    person.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2017", 0) 
+    let personB:Person = new Person("B")
+    personB.SSbirthDate = new MonthYearDate(1960, 7)
+    personB.dateOfDeath = new MonthYearDate(2019, 5)// 14 months ago
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2017", 0) 
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    let expectedDate:MonthYearDate = service.findEarliestSurvivorBenefitDate(person, personB)
+    expect(expectedDate).toEqual(new MonthYearDate(2019, 7))//12 months retroactive since that's no earlier than age 50 and otherPerson died 14 months ago
+  })
+})
+
+
+describe('Tests for maximizeSurvivorPV', () => {
+  let service:PresentValueService
+  let benefitService:BenefitService
+  let mortalityService:MortalityService
+  let birthdayService:BirthdayService
+  let scenario:CalculationScenario
+  let personA:Person
+  let personB:Person
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [PresentValueService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
+    })
+    service = TestBed.get(PresentValueService)
+    benefitService = TestBed.get(BenefitService)
+    mortalityService = TestBed.get(MortalityService)
+    birthdayService = TestBed.get(BirthdayService)
+    scenario = new CalculationScenario()
+    personA = new Person("A")
+    personB = new Person("B")
+  })
+
+  it ('should tell a widower, age 63, not working, not disabled, to file immediately for survivor benefit (and 70 for retirement) if she has the higher PIA', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+    scenario.maritalStatus = "survivor"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personA.actualBirthDate = new Date(1957, 7, 15) //born Aug 1957
+    personA.SSbirthDate = new MonthYearDate(1957, 7)
+    personB.actualBirthDate = new Date(1960, 9, 11) //deceased spouse born in October 1960
+    personB.SSbirthDate = new MonthYearDate(1960, 9)
+    personB.dateOfDeath = new MonthYearDate(2020, 4)//personB died May 2020 (not quite age 60)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    personB.hasFiled = false //personB died before having filed and before reaching their FRA, so their retirementBenefitDate is their FRA
+    personA.PIA = 1900
+    personB.PIA = 1100
+    scenario.discountRate = 1
+    let results = service.maximizeSurvivorPV(personA, personB, scenario)
+    expect(results.solutionsArray[0].date)
+    .toEqual(new MonthYearDate(2020, 7))
+    expect(results.solutionsArray[1].date)
+    .toEqual(new MonthYearDate(2027, 7))
+    //survivorBenefit = 1100, reduced for early entitlement to survivor benefit. 1957 DoB so survivorFRA = 66and2months = October 2023
+    //So there are 74 possible early months. Entitled for 38 of them (5 + 12 + 12 + 9). Reduction = 38/74 * 0.285 = 14.63514%. 1100 * (1 - 0.1463514) = $939.01/month
+    //5 months in 2020 = $4,695.07
+    expect(results.claimStrategy.outputTable[0])
+    .toEqual([2020, "$0", "$4,695", "$4,695"])
+    //7 months of survivor = $6,573.07.
+    //retirement FRA = 66and6months = Feb 2024. Waiting 42 months past FRA = 128% of PIA as retirement benefit = $2,432. 5 months of that is $12,160
+    expect(results.claimStrategy.outputTable[7])
+    .toEqual([2027, "$12,160", "$6,573", "$18,733"])
+    expect(results.claimStrategy.PV)
+    .toBeCloseTo(437974, 0)
+  })
+
+  it ('should tell a widower, age 68, to file retroactive back to date of death for survivor benefit (and 70 for retirement) if she has the higher PIA', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+    scenario.maritalStatus = "survivor"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personA.actualBirthDate = new Date(1952, 7, 5) //born Aug 1952
+    personA.SSbirthDate = new MonthYearDate(1952, 7)
+    personB.actualBirthDate = new Date(1955, 9, 11) //deceased spouse born in October 1955
+    personB.SSbirthDate = new MonthYearDate(1955, 9)
+    personB.dateOfDeath = new MonthYearDate(2020, 4)//personB died May 2020 (not quite age 65)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    personB.hasFiled = true
+    personB.fixedRetirementBenefitDate = new MonthYearDate (2017, 11) //personB had filed at age 62 and 2 months. (With 1955 DoB, FRA is 66 and 2 months, so that's 48 months early.)
+    personA.PIA = 1900
+    personB.PIA = 1100
+    scenario.discountRate = 1
+    let results = service.maximizeSurvivorPV(personA, personB, scenario)
+    expect(results.solutionsArray[0].date)
+    .toEqual(new MonthYearDate(2020, 4))//retroactivity limited to date of death
+    expect(results.solutionsArray[1].date)
+    .toEqual(new MonthYearDate(2022, 7))
+    //survivor originalBenefit = 1100. No reduction for survivor early entitlement given filing after survivor FRA. RIB LIM is applicable though because deceased filed early. So limited to 82.5% of 1100 = $907.50
+    //Filing retroactively to May 2020, so 8 months in 2020 = 8 x 907.50 = $7,260
+    expect(results.claimStrategy.outputTable[0])
+    .toEqual([2020, "$0", "$7,260", "$7,260"])
+    //7 months of survivor = $6,352.50.
+    //retirement FRA = 66and0months = Aug 2018. Waiting 48 months past FRA = 132% of PIA as retirement benefit = $2,508. 5 months of that is $12,540
+    expect(results.claimStrategy.outputTable[2])
+    .toEqual([2022, "$12,540", "$6,353", "$18,893"])
+    expect(results.claimStrategy.PV)
+    .toBeCloseTo(439400, 0)
+  })
+
+  it ('should tell a widower, age 63, still working, not disabled, to file in Jan of quitWorkYear for survivor benefit (and 70 for retirement) given earnings and PIAs', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+    scenario.maritalStatus = "survivor"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personA.actualBirthDate = new Date(1957, 7, 15) //born Aug 1957
+    personA.SSbirthDate = new MonthYearDate(1957, 7)
+    personB.actualBirthDate = new Date(1960, 9, 11) //deceased spouse born in October 1960
+    personB.SSbirthDate = new MonthYearDate(1960, 9)
+    personB.dateOfDeath = new MonthYearDate(2020, 4)//personB died May 2020 (not quite age 60)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    personB.hasFiled = false //personB died before having filed and before reaching their FRA, so their retirementBenefitDate is their FRA
+    personA.PIA = 1900
+    personB.PIA = 1100
+    personA.quitWorkDate = new MonthYearDate(2021, 1) //Feb 2021
+    personA.monthlyEarnings = 9000
+    scenario.discountRate = 1
+    let results = service.maximizeSurvivorPV(personA, personB, scenario)
+    //Current earnings test threshold is $18,240 for years prior to FRA. So 2020 would be completely withheld if they filed, but they can file in Jan 2021 and get full benefit.
+    expect(results.solutionsArray[0].date)
+    .toEqual(new MonthYearDate(2021, 0))
+    expect(results.solutionsArray[1].date)
+    .toEqual(new MonthYearDate(2027, 7))
+    //survivorBenefit = 1100, reduced for early entitlement to survivor benefit. 1957 DoB so survivorFRA = 66and2months = October 2023
+    //So there are 74 possible early months. Entitled for 33 of them (12 + 12 + 9). Reduction = 33/74 * 0.285 = 12.7095%. 1100 * (1 - 0.127095) = $960.20/month
+    //12 months in 2021 = $11,522
+    expect(results.claimStrategy.outputTable[0])
+    .toEqual([2021, "$0", "$11,522", "$11,522"])
+    //7 months of survivor = $6,721.37
+    //retirement FRA = 66and6months = Feb 2024. Waiting 42 months past FRA = 128% of PIA as retirement benefit = $2,432. 5 months of that is $12,160
+    expect(results.claimStrategy.outputTable[6])
+    .toEqual([2027, "$12,160", "$6,721", "$18,881"])
+    expect(results.claimStrategy.PV)
+    .toBeCloseTo(434841, 0)
+  })
+
+  it ('should tell a widower, age 63, still working, not disabled, to file on quitWorkMonth for survivor benefit (and 70 for retirement) given super high current earnings', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+    scenario.maritalStatus = "survivor"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personA.actualBirthDate = new Date(1957, 7, 15) //born Aug 1957
+    personA.SSbirthDate = new MonthYearDate(1957, 7)
+    personB.actualBirthDate = new Date(1960, 9, 11) //deceased spouse born in October 1960
+    personB.SSbirthDate = new MonthYearDate(1960, 9)
+    personB.dateOfDeath = new MonthYearDate(2020, 4)//personB died May 2020 (not quite age 60)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    personB.hasFiled = false //personB died before having filed and before reaching their FRA, so their retirementBenefitDate is their FRA
+    personA.PIA = 1900
+    personB.PIA = 1100
+    personA.quitWorkDate = new MonthYearDate(2021, 3) //April 2021
+    personA.monthlyEarnings = 20000
+    scenario.discountRate = 1
+    let results = service.maximizeSurvivorPV(personA, personB, scenario)
+    //Current earnings test threshold is $18,240 for years prior to FRA. So 2020 or 2021 would be completely withheld, except grace year rule allows for benefits from April 2021 onward
+    expect(results.solutionsArray[0].date)
+    .toEqual(new MonthYearDate(2021, 3))
+    expect(results.solutionsArray[1].date)
+    .toEqual(new MonthYearDate(2027, 7))
+    //survivorBenefit = 1100, reduced for early entitlement to survivor benefit. 1957 DoB so survivorFRA = 66and2months = October 2023
+    //So there are 74 possible early months. Entitled for 30 of them (9 + 12 + 9). Reduction = 30/74 * 0.285 = 11.55405%. 1100 * (1 - 0.1155405) = $972.91/month
+    //9 months in 2021 = $8,756
+    expect(results.claimStrategy.outputTable[0])
+    .toEqual([2021, "$0", "$8,756", "$8,756"])
+    //7 months of survivor = $6,810.37
+    //retirement FRA = 66and6months = Feb 2024. Waiting 42 months past FRA = 128% of PIA as retirement benefit = $2,432. 5 months of that is $12,160
+    expect(results.claimStrategy.outputTable[6])
+    .toEqual([2027, "$12,160", "$6,810", "$18,970"])
+    expect(results.claimStrategy.PV)
+    .toBeCloseTo(432913, 0)
+  })
+
+  //same as first survivor test, except person is told to file for retirementASAP and survivor at survivorFRA
+  it ('should tell a widower, age 63, not working, not disabled, to file immediately for retirement benefit (and survivorFRA for survivor) if she has the lower PIA', () => {
+    service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+    scenario.maritalStatus = "survivor"
+    personA.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+    personA.actualBirthDate = new Date(1957, 7, 15) //born Aug 1957
+    personA.SSbirthDate = new MonthYearDate(1957, 7)
+    personB.actualBirthDate = new Date(1960, 9, 11) //deceased spouse born in October 1960
+    personB.SSbirthDate = new MonthYearDate(1960, 9)
+    personB.dateOfDeath = new MonthYearDate(2020, 4)//personB died May 2020 (not quite age 60)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+    personB.hasFiled = false //personB died before having filed and before reaching their FRA, so their retirementBenefitDate is their FRA
+    personA.PIA = 500
+    personB.PIA = 1900
+    scenario.discountRate = 0
+    let results = service.maximizeSurvivorPV(personA, personB, scenario)
+    expect(results.solutionsArray[0].date)
+    .toEqual(new MonthYearDate(2020, 7))
+    expect(results.solutionsArray[1].date)
+    .toEqual(new MonthYearDate(2023, 9))//1957 DoB so survivorFRA = 66and2months = October 2023
+    //retirement FRA = 66and6months = Feb 2024. Filing Aug 2020 which is 42 months early. Gets 77.5% of PIA = 387.50/month
+    //5 months in 2020 = 1937.50
+    expect(results.claimStrategy.outputTable[0])
+    .toEqual([2020, "$1,938", "$0", "$1,938"])
+    //survivor original benefit = 1900, not reduced for early entitlement at all. No RIB-LIM either. Reduced for own entitlement. 1900 - 387.50 = $1,512.50/month
+    //3 months survivor in 2023 = $4,537.50
+    //12 months retirement in 2020 = 4650
+    expect(results.claimStrategy.outputTable[3])
+    .toEqual([2023, "$4,650", "$4,538", "$9,188"])
+    expect(results.claimStrategy.PV)
+    .toBeCloseTo(499457, 0)
+  })
+
+
+    // it ('should tell a widower, age 53, disabled, to file retroactive 12 months for survivor benefit (and at 60 non-reduced survivor will convert to reduced survivor? and at FRA disability will convert to retirement?)', () => {
+  //   service.today = new MonthYearDate(2020, 7)//Aug 2020 when creating this test
+  //   scenario.maritalStatus = "survivor"
+  //   personA.isOnDisability = true
+  //   personA.fixedRetirementBenefitDate = new MonthYearDate(2018, 0)//On disability since Jan 2018
+  //   personA.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+  //   personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+  //   personA.actualBirthDate = new Date(1967, 7, 5) //born Aug 1967
+  //   personA.SSbirthDate = new MonthYearDate(1967, 7)
+  //   personB.actualBirthDate = new Date(1955, 9, 11) //deceased spouse born in October 1955
+  //   personB.SSbirthDate = new MonthYearDate(1955, 9)
+  //   personB.dateOfDeath = new MonthYearDate(2018, 4)//personB died May 2018 (age 62 and 9 months)
+  //   mockGetPrimaryFormInputs(personA, service.today, birthdayService, benefitService, mortalityService)
+  //   mockGetPrimaryFormInputs(personB, service.today, birthdayService, benefitService, mortalityService)
+  //   personB.hasFiled = true
+  //   personB.fixedRetirementBenefitDate = new MonthYearDate (2017, 11) //personB had filed at age 62 and 2 months. (With 1955 DoB, FRA is 66 and 2 months, so that's 48 months early.)
+  //   personA.PIA = 1000
+  //   personB.PIA = 1000
+  //   scenario.discountRate = 1
+  //   let results = service.maximizeSurvivorPV(personA, personB, scenario)
+  //   expect(results.solutionsArray[0].date)
+  //   .toEqual(new MonthYearDate(2019, 7))//retroactive 12 months because personA is disabled
+  //   expect(results.solutionsArray[1].date)
+  //   .toEqual(new MonthYearDate(2037, 7))
+  //   expect(results.claimStrategy.outputTable[0])
+  //   .toEqual([2020, "$retirement/disability", "$survivor", "$total"])
+  //   expect(results.claimStrategy.outputTable[2])
+  //   .toEqual([2022, "$retirement/disability", "$survivor", "$total"])
+  // })
 })

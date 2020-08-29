@@ -158,30 +158,42 @@ export class FamilyMaximumService {
           || (entitledChild === true && personA.entitledToRetirement === true && personB.entitledToRetirement === false)){ //or if there is a child entitled on personA but not on personB...
           familyMaximum = personA.familyMaximum
         }
-        if(personA.entitledToRetirement === true && personB.entitledToRetirement === true && entitledChild === true){//if there is a child entitled on both personA and personB
-          if (personA.retirementBenefitDate >= personB.retirementBenefitDate){//personA's retirementBenefitDate is second (and is therefore date of simultaneous entitlement)
-            if (personA.retirementBenefitDate.getFullYear() < this.today.getFullYear()){//use family max bend points as of personA's retirementBenefitDate if it was in a year before this year
-              familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, personA.retirementBenefitDate.getFullYear())
+        if(entitledChild === true && (personA.entitledToRetirement === true || personAaliveBoolean === false) && (personB.entitledToRetirement === true || personBaliveBoolean === false) ){//if there is a child entitled on both personA and personB
+          //find simultaneous entitlement date
+            let simultaneousEntitlementDate:MonthYearDate
+            if (scenario.maritalStatus == "married" || scenario.maritalStatus == "divorced"){//i.e., not a survivor scenario
+              if (personA.retirementBenefitDate >= personB.retirementBenefitDate){//personA's retirementBenefitDate is second (and is therefore date of simultaneous entitlement)
+                simultaneousEntitlementDate = new MonthYearDate(personA.retirementBenefitDate)
+              }
+              else {//i.e., personB's retirementBenefitDate is second
+                simultaneousEntitlementDate = new MonthYearDate(personB.retirementBenefitDate)
+              }
+            }
+            else {//i.e., it's a survivor scenario (personB already deceased when calculator is being used)
+              //Check if personB had already filed before he/she died. If so, compare filing date to personA.retirementBenefitDate. If not, compare personB.dateofDeath to personA.retirementBenefitDate
+              if (personB.hasFiled === true){
+                if (personA.retirementBenefitDate >= personB.retirementBenefitDate){simultaneousEntitlementDate = new MonthYearDate(personA.retirementBenefitDate)}
+                else {simultaneousEntitlementDate = new MonthYearDate(personB.retirementBenefitDate)}
+              }
+              else {
+                if (personA.retirementBenefitDate >= personB.dateOfDeath){simultaneousEntitlementDate = new MonthYearDate(personA.retirementBenefitDate)}
+                else {simultaneousEntitlementDate = new MonthYearDate(personB.dateOfDeath)}
+              }
+            }
+          //Use that simultaneous entitlement date to find appropriate family max
+            if (simultaneousEntitlementDate.getFullYear() < this.today.getFullYear()){//use family max bend points as of simultaneousEntitlementDate if it was in a year before this year
+              familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, simultaneousEntitlementDate.getFullYear())
             }
             else {//use family max bend points as of this year if simultaneous entitlement date is this year or in future (since we don't know bend points for future years)
               familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, this.today.getFullYear())
             }
           }
-          else {//i.e., personB's retirementBenefitDate is second (and is therefore date of simultaneous entitlement)
-            if (personB.retirementBenefitDate.getFullYear() < this.today.getFullYear()){//use family max bend points as of personB's retirementBenefitDate if it was in a year before this year
-              familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, personB.retirementBenefitDate.getFullYear())
-            }
-            else {//use family max bend points as of this year if simultaneous entitlement date is this year or in future (since we don't know bend points for future years)
-              familyMaximum = this.calculateCombinedFamilyMaximum(personA, personB, this.today.getFullYear())
-            }
-          }
-        }
-
+        
       //Sum aux benefit amounts ("original benefits" first time through)
         for (let child of scenario.children){
           sumOfAuxBenefits = sumOfAuxBenefits + child.monthlyChildPayment
         }
-        if (scenario.maritalStatus == "married"){//Don't include spousal or survivor benefits if it's divorce scenario
+        if (scenario.maritalStatus == "married" || scenario.maritalStatus == "survivor"){//Don't include spousal or survivor benefits if it's divorce scenario
           sumOfAuxBenefits = sumOfAuxBenefits + personA.monthlySpousalPayment + personB.monthlySpousalPayment + personA.monthlySurvivorPayment + personB.monthlySurvivorPayment
           //Can add both personA's and personB's spousal amounts here, because monthlySpousalPayment will be zero if person not eligible. And will be zero if either person is deceased.
           //personA.monthlySurvivorPayment will be zero in cases where personB is alive (and vice versa)
@@ -213,8 +225,8 @@ export class FamilyMaximumService {
             for (let child of scenario.children){
               child.monthlyChildPayment = child.monthlyChildPayment * percentageAvailable
             }
-          //multiply spouse/survivor benefits in a married scenario
-            if (scenario.maritalStatus == "married"){
+          //multiply spouse/survivor benefits in a married or survivor scenario. (In other words, don't do it in divorce scenario, because ex-spouses don't have spousal/survivor benefits reduced by family max.)
+            if (scenario.maritalStatus == "married" || scenario.maritalStatus == "survivor"){
               personA.monthlySpousalPayment = personA.monthlySpousalPayment * percentageAvailable
               personB.monthlySpousalPayment = personB.monthlySpousalPayment * percentageAvailable
               personA.monthlySurvivorPayment = personA.monthlySurvivorPayment * percentageAvailable
@@ -222,14 +234,22 @@ export class FamilyMaximumService {
             }
         }
         else if (sumOfAuxBenefits < familyMaxForAuxBeneficiaries && familyMaxRunNumber == 2){
-          //find percentage that we can pay
-          let percentageAvailable:number = familyMaxForAuxBeneficiaries / sumOfAuxBenefits
-          //multiply each child's child benefit by that percentage, but don't let benefit exceed "original benefit"
+          //Determine how much is now available for the children, now that spousal/survivor benefits have been reduced for own entitlement
+          let amountAvailableForChildren:number
+          if (scenario.maritalStatus == "divorced"){
+            amountAvailableForChildren = familyMaxForAuxBeneficiaries
+          }
+          else {//i.e., it's married or survivor scenario, so we need to back various spousal/survivor amounts out from familyMaxForAuxBeneficiaries in order to see what's available for kids
+            amountAvailableForChildren = familyMaxForAuxBeneficiaries - personA.monthlySpousalPayment - personB.monthlySpousalPayment - personA.monthlySurvivorPayment - personB.monthlySurvivorPayment
+          }
+          //Give each entitled child their share of that amount, but don't let benefit exceed "original benefit"
+            let numberOfEntitledChildren:number = 0 //can't just use scenario.children.length because that would include children who eventually age out of child benefit eligibility
             for (let child of scenario.children){
-              child.monthlyChildPayment = child.monthlyChildPayment * percentageAvailable
-              if (child.monthlyChildPayment > child.originalBenefit) {
-                child.monthlyChildPayment = child.originalBenefit
-              }
+              if (child.age < 17.99 || child.isOnDisability === true){numberOfEntitledChildren = numberOfEntitledChildren + 1}
+            }
+            for (let child of scenario.children){
+              if (child.age < 17.99 || child.isOnDisability === true){child.monthlyChildPayment = amountAvailableForChildren / numberOfEntitledChildren}
+              if (child.monthlyChildPayment > child.originalBenefit) {child.monthlyChildPayment = child.originalBenefit}
             }
         }
     }

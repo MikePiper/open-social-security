@@ -2,11 +2,14 @@ import { Person } from "./person";
 import { MonthYearDate } from "./monthyearDate";
 import { Range } from "./range";
 
+//This is defined here as 4 explicit options so that if something is ever input as a typo elsewhere (eg "sngle") it will throw an error
+type maritalStatusOption = "single" | "married" | "divorced" | "survivor"
+
 export class CalculationScenario {
 //This is just variables/fields that don't fit under Person object or under CalculationYear object (i.e., things that don't get reset each year, but which don't belong to a Person object)
 
     discountRate: number
-    maritalStatus: string = "single"
+    maritalStatus:maritalStatusOption = "single"
     numberOfChildren:number = 0
     children:Person[] = []
     youngestChildTurns16date:MonthYearDate

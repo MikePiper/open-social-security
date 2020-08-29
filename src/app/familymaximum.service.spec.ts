@@ -202,7 +202,7 @@ describe('FamilyMaximumService', () => {
       service.applyFamilyMaximumCouple(1, scenario, calcYear, personA, true, personB, true)
       //Combined family max is $2100. That's $1100 for personB and 2 children, or $366.67 each.
       benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
-      //personB's spousal benefit now adjusted downward by great of PIA ($400) or retirementBenefit ($315). So it's reduced to zero.
+      //personB's spousal benefit now adjusted downward by greater of PIA ($400) or retirementBenefit ($315). So it's reduced to zero.
       service.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, true)
       //Now we have $1100 available between child1 and child2. So they should each be able to get their full $500 child benefit.
       benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
@@ -310,4 +310,72 @@ describe('FamilyMaximumService', () => {
     // Under the new rule, when we disregard B's entitlement, C1 is increased to $200.00 even without a CFM.
     // However combining the maximums allows B's rate to increase to $40 just as it did under the old rule. The CFM applies because the family receives more with the CFM.
 
+
+    it('should find correct year of simultaneous entitlement (and then apply combined family max correctly) in survivor scenario', () => {
+      service.today = new MonthYearDate(2020, 7)//Aug 2020
+      let scenario:CalculationScenario = new CalculationScenario()
+      let calcYear:CalculationYear = new CalculationYear(new MonthYearDate(2018,10))
+      scenario.maritalStatus = "survivor"
+      let personA:Person = new Person("A")
+      let personB:Person = new Person("B")
+      let child1:Person = new Person("1")
+      let child2:Person = new Person("2")
+      let child3:Person = new Person("3")
+      scenario.children = [child1, child2, child3]
+      personA.SSbirthDate = new MonthYearDate(1955, 9) //born Oct 1955
+      personB.SSbirthDate = new MonthYearDate(1955, 9) //born Oct 1955
+      personA.FRA = birthdayService.findFRA(personA.SSbirthDate)//66 and 2 months = Dec 2021
+      personB.FRA = birthdayService.findFRA(personB.SSbirthDate)
+      personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)//66 and 0 months = Oct 2021
+      personA.PIA = 500
+      personB.PIA = 3000
+      child1.age = 10
+      child2.age = 10
+      child3.age = 10
+      child1.monthlyChildPayment = personB.PIA * 0.75
+      child2.monthlyChildPayment = personB.PIA * 0.75
+      child3.monthlyChildPayment = personB.PIA * 0.75
+      child1.originalBenefit = personB.PIA * 0.75
+      child2.originalBenefit = personB.PIA * 0.75
+      child3.originalBenefit = personB.PIA * 0.75
+      personA.retirementBenefitDate = new MonthYearDate(2018, 8)//filed Sept 2018 (3 years and 3 months early = 39 months early = 21.25% reduction)
+      personB.dateOfDeath = new MonthYearDate(2020, 3)//Died April 2020
+      personA.survivorBenefitDate = new MonthYearDate(personB.dateOfDeath)//filed for survivor benefits immediately (18 months early out of possible 72)
+      personB.retirementBenefitDate = new MonthYearDate(personB.FRA)//hadn't yet filed and died before FRA, so retirementBenefitDate = FRA
+      personA.entitledToRetirement = true //have to set this value here because applyFamilyMaximumCouple() uses it, and it would normally get set in benefit.service.calculateMonthlyPaymentsCouple()
+      personB.entitledToRetirement = false //ditto
+      personA.spousalBenefitDate = new MonthYearDate(personB.FRA)//this doesn't really matter
+      personB.spousalBenefitDate = new MonthYearDate(personB.FRA)//this doesn't really matter
+      personA.retirementBenefit = benefitService.calculateRetirementBenefit(personA, personA.retirementBenefitDate) //21.25% reduction = $393.75
+      personA.monthlyRetirementPayment = personA.retirementBenefit //21.25% reduction = $393.75
+      personB.monthlyRetirementPayment = 0
+      personA.monthlySpousalPayment = 0
+      personB.monthlySpousalPayment = 0
+      personA.monthlySurvivorPayment = benefitService.calculateSurvivorOriginalBenefit(personB)
+      personB.monthlySurvivorPayment = 0
+
+      personA = service.calculateFamilyMaximum(personA, service.today) //Turned 62 in 2017, so bend points are $1,131	$1,633 $2,130. Family max = (150% * 500) = $750
+      personB = service.calculateFamilyMaximum(personB, service.today) //Turned 62 in 2017, so bend points are $1,131	$1,633 $2,130. Family max = (150% * 1131) + (272% * 502) + (134% * 497) + (175% * 870) = $5,250.42
+      //simultaneous entitlement year is 2020. $5,707.60 is the 2020 limit for combined family max.
+      service.applyFamilyMaximumCouple(1, scenario, calcYear, personA, true, personB, false)
+      //Combined family max is $5707.60. Sum of original aux benefits is 3000 + (2250x3) = $9,750
+      //5707.60 / 9750 = 58.5395% available to pay
+      //So personA's survivor benefit is now at 3000 x 0.585395 = $1756.19
+      //And each child's benefit is now at 2250 x 0.585395 = $1317.14
+      benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
+      //personB's survivor benefit now adjusted downward by own retirementBenefit ($393.75). So it's reduced to $1,362.43
+      service.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, false)
+      //The $393.75 is divided among the three children ($131.25 each), so they now should be getting $1317.14 + 131.25 = $1448.39 (which doesn't exceed original benefit, so we're good) 
+      personA = benefitService.adjustSurvivorBenefitsForAge(scenario, personA)
+      //Not actually adjusted downward, because there's a child in care
+      //No need to RIB-LIM because personB hadn't filed early.
+      expect(scenario.children[0].monthlyChildPayment)
+        .toBeCloseTo(1448, 0)
+      expect(scenario.children[1].monthlyChildPayment)
+        .toBeCloseTo(1448, 0)
+      expect(scenario.children[2].monthlyChildPayment)
+        .toBeCloseTo(1448, 0)
+      expect(personA.monthlySurvivorPayment)
+        .toBeCloseTo(1362, 0)
+    })
 })

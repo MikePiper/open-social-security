@@ -1,18 +1,25 @@
 import { Person } from "./person"
 import {MonthYearDate} from "./monthyearDate"
 
+//This is defined here as explicit options so that if something is ever input as a typo elsewhere (eg "retirmnt") it will throw an error
+type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityConversion" | "suspendToday" | "suspendAtFRA" | "suspendAtSomeOtherDate" | "unsuspend" |
+"spousal" | "retroactiveSpousal" | "childInCareSpousal" | "childInCareSpousalSuspension" | "automaticSpousalUnsuspension" |
+"survivor" | "retroactiveSurvivor" |
+"child" | "retroactiveChild" |
+"doNothing"
+
   //This class represents the bulleted items in the recommended strategy output. (That is, one ClaimingSolution object for each item in the bulleted list.)
   //This is in contrast to "ClaimStrategy" which represents a collection of claiming dates, as well as the calculated PV and output table for that collection of dates.
   export class ClaimingSolution {
     maritalStatus: string
-    benefitType: string //retirementAlone, retirementReplacingSpousal, spousalAlone, spousalWithRetirement, survivor
+    benefitType: benefitTypeOption //retirementAlone, retirementReplacingSpousal, spousalAlone, spousalWithRetirement, survivor
     date: MonthYearDate
     ageYears: number
     ageMonths: number
     message: string //build one of messages below
     shortMessage: string // for display when hovering over graph of options
 
-  constructor(maritalStatus: string, typeOfBenefit: string, person: Person, 
+  constructor(maritalStatus: string, typeOfBenefit: benefitTypeOption, person: Person, 
     date: MonthYearDate, ageYears: number, ageMonths: number) {
     this.maritalStatus = maritalStatus
     this.benefitType = typeOfBenefit
@@ -48,6 +55,9 @@ import {MonthYearDate} from "./monthyearDate"
       case "automaticSpousalUnsuspension":
         this.shortMessage += " (unsuspend spousal at FRA) " + dateString
         break;
+      case "survivor":
+      case "retroactiveSurvivor":
+        this.shortMessage += " (survivor) " + dateString
       case "suspendToday":
         this.shortMessage += " (suspend retirement today)"
         break;
@@ -97,6 +107,12 @@ import {MonthYearDate} from "./monthyearDate"
           break;
         case "automaticSpousalUnsuspension":
           this.message = "Your spousal benefit begins again automatically at your full retirement age (" + dateString + ")."
+          break;
+        case "survivor":
+          this.message = "You file for your survivor benefit to begin " + dateString + ageString
+          break;
+        case "retroactiveSurvivor":
+          this.message = "You file for your survivor benefit to begin (retroactively) as of " + dateString + ageString
           break;
         case "suspendToday":
           this.message = "You suspend your retirement benefit today."
