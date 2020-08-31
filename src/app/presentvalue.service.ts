@@ -536,17 +536,17 @@ export class PresentValueService {
       let savedStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
       savedStrategy.PV = 0
 
-    //Set endingTestDate for each spouse equal to the month they turn 70. (Or if they have PIA=0, set to point at which their spousal would be maximized -- ie they have reached FRA and other person is 70) If using fixed-death-age-assumption younger than 70, don't let it be later than assumed month of death
-    let spouseAendTestDate = new MonthYearDate(this.findLastDateForPersonToStoreInRange(personA, personB))
-    let spouseBendTestDate = new MonthYearDate(this.findLastDateForPersonToStoreInRange(personB, personA))
-
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
       personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)
       personB = this.familyMaximumService.calculateFamilyMaximum(personB, this.today)
 
+    //Set endingTestDate for each spouse equal to the month they turn 70. (Or if they have PIA=0, set to point at which their spousal would be maximized -- ie they have reached FRA and other person is 70) If using fixed-death-age-assumption younger than 70, don't let it be later than assumed month of death
+      let spouseAendTestDate = new MonthYearDate(this.findLastDateForPersonToStoreInRange(personA, personB))
+      let spouseBendTestDate = new MonthYearDate(this.findLastDateForPersonToStoreInRange(personB, personA))
+
     // get limits for storage of PV for range of claim options
-    let earliestStartA: MonthYearDate = new MonthYearDate(this.findEarliestDateForPersonToStoreInRange(personA))
-    let earliestStartB: MonthYearDate = new MonthYearDate(this.findEarliestDateForPersonToStoreInRange(personB))
+      let earliestStartA: MonthYearDate = new MonthYearDate(this.findEarliestDateForPersonToStoreInRange(personA))
+      let earliestStartB: MonthYearDate = new MonthYearDate(this.findEarliestDateForPersonToStoreInRange(personB))
 
     //Create new range object for storage of data
     scenario.range = new Range(earliestStartA, spouseAendTestDate, earliestStartB, spouseBendTestDate);
@@ -641,7 +641,6 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       flexibleSpouse = this.adjustSpousalBenefitDate(flexibleSpouse, fixedSpouse, scenario)
       fixedSpouse = this.adjustSpousalBenefitDate(fixedSpouse, flexibleSpouse, scenario)
 
-      
     //Initialize savedStrategy, with zero PV, using each spouse's current dates
     let savedStrategy:ClaimStrategy
     if (flexibleSpouse.id == "A"){
@@ -652,12 +651,12 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     }
     savedStrategy.PV = 0
 
-    //Set endTestDate equal to the month flexibleSpouse turns 70. (Or if they have PIA=0, set to point at which their spousal would be maximized -- ie they have reached FRA and other person is 70) If using fixed-death-age-assumption younger than 70, don't let it be later than assumed month of death
-    let endTestDate = new MonthYearDate(this.findLastDateForPersonToStoreInRange(flexibleSpouse, fixedSpouse))
-
     //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
       flexibleSpouse = this.familyMaximumService.calculateFamilyMaximum(flexibleSpouse, this.today)
       fixedSpouse = this.familyMaximumService.calculateFamilyMaximum(fixedSpouse, this.today)
+
+    //Set endTestDate equal to the month flexibleSpouse turns 70. (Or if they have PIA=0, set to point at which their spousal would be maximized -- ie they have reached FRA and other person is 70) If using fixed-death-age-assumption younger than 70, don't let it be later than assumed month of death
+      let endTestDate = new MonthYearDate(this.findLastDateForPersonToStoreInRange(flexibleSpouse, fixedSpouse))
 
     //Create new range object for storage of data   
       scenario.range = new Range(flexibleSpouse.retirementBenefitDate, endTestDate);      
@@ -766,6 +765,10 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       let savedStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
       savedStrategy.PV = 0
 
+    //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
+      personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)
+      personB = this.familyMaximumService.calculateFamilyMaximum(personB, this.today)
+
     //Set endingTestDate for each type of benefit.
       //For retirement, the month personA turns 70.
       let retirementBenefitEndTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth())
@@ -775,21 +778,17 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         survivorBenefitEndTestDate = new MonthYearDate(personB.dateOfDeath)
       }
 
-    //Calculate family max -- this happens here rather than in calculatePV function because it only has to happen once (doesn't depend on parent filing date)
-    personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)
-    personB = this.familyMaximumService.calculateFamilyMaximum(personB, this.today)
-
     //Get limits for storage of PV for range of claim options
-    let earliestStartRetirement: MonthYearDate = new MonthYearDate(personA.retirementBenefitDate)
-    if (personA.endSuspensionDate > earliestStartRetirement) {
-      earliestStartRetirement = new MonthYearDate(personA.endSuspensionDate)
-    }
-    let earliestStartSurvivor: MonthYearDate = new MonthYearDate(personA.survivorBenefitDate)
+      let earliestStartRetirement: MonthYearDate = new MonthYearDate(personA.retirementBenefitDate)
+      if (personA.endSuspensionDate > earliestStartRetirement) {
+        earliestStartRetirement = new MonthYearDate(personA.endSuspensionDate)
+      }
+      let earliestStartSurvivor: MonthYearDate = new MonthYearDate(personA.survivorBenefitDate)
 
 
     //Create new range object for storage of data
-    scenario.range = new Range(earliestStartRetirement, retirementBenefitEndTestDate, earliestStartSurvivor, survivorBenefitEndTestDate)
-    let solutionSet: SolutionSet
+      scenario.range = new Range(earliestStartRetirement, retirementBenefitEndTestDate, earliestStartSurvivor, survivorBenefitEndTestDate)
+      let solutionSet: SolutionSet
 
     while (personA.retirementBenefitDate <= retirementBenefitEndTestDate && personA.endSuspensionDate <= retirementBenefitEndTestDate) {
         //Reset personA.survivorBenefitDate to earliest possible

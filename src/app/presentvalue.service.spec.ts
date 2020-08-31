@@ -1933,7 +1933,6 @@ describe('tests calculateCouplePV', () => {
     scenario.discountRate = 8
     personA.fixedRetirementBenefitDate = new MonthYearDate(2018, 2) //filed March 2018, at 69 and 6 months
     let results = service.maximizeCouplePViterateOnePerson(scenario, personB, personA)
-    console.log(results)
     expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2018, 9)) //retroactive back to personB's FRA
     //This array should have 1 item in it, personB's retirement date. No spousal for either person.
 
