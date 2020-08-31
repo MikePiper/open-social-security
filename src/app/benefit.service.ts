@@ -133,8 +133,12 @@ export class BenefitService {
     //per RS 00615.310: If survivor is disabled, can claim survivor benefits as early as 50 instead of 60. And if so, for sake of calculation, they are "deemed" to be age 60 on the date they file.
     let monthsEarly:number
     let dateForCountingEarlyEntitlement:MonthYearDate = new MonthYearDate(livingPerson.survivorBenefitDate)
-  
+    if (livingPerson.isOnDisability === true && livingPerson.initialAge < 60){
+      dateForCountingEarlyEntitlement = new MonthYearDate(livingPerson.SSbirthDate.getFullYear()+60, livingPerson.SSbirthDate.getMonth())
+    }
+
     //if ARF has happened, use adjusted date
+    //If person is receiving disabled widow(er) benefits (pre-60), adjustedSurvivorBenefitDate is [age-60 month + ARF crediting months] rather than [survivorBenefitDate + ARF months]
       if (livingPerson.adjustedSurvivorBenefitDate > livingPerson.survivorBenefitDate){
         dateForCountingEarlyEntitlement = new MonthYearDate(livingPerson.adjustedSurvivorBenefitDate)
       }
@@ -142,7 +146,7 @@ export class BenefitService {
     //Check if there is *currently* a child under 16 or disabled
       let childUnder16orDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabled(scenario)
 
-    //Reduce spousal benefits for age if there is no child who is disabled and/or *currently* under 16.
+    //Reduce survivor benefits for age if there is no child who is disabled and/or *currently* under 16.
       if (childUnder16orDisabled === false){
         if (dateForCountingEarlyEntitlement < livingPerson.survivorFRA){
           //Find how many months prior to survivorFRA
@@ -700,8 +704,15 @@ export class BenefitService {
     }
     //Same idea, for personA's survivorFRA (i.e., recalculate survivor benefit to account for ARF, if they filed for survivor benefit early)
     if (calcYear.date.valueOf() == personA.survivorFRA.valueOf()){
-      if (personA.survivorBenefitDate < personA.survivorFRA){
-        personA.adjustedSurvivorBenefitDate.setMonth(personA.survivorBenefitDate.getMonth()+personA.survivorARFcreditingMonths)
+      if (personA.survivorBenefitDate < personA.survivorFRA){//if personA filed early for survivor benefits
+        if (personA.isOnDisability === false || personA.survivorBenefitDate >= new MonthYearDate(personA.SSbirthDate.getFullYear()+60, personA.SSbirthDate.getMonth())){
+          personA.adjustedSurvivorBenefitDate.setMonth(personA.adjustedSurvivorBenefitDate.getMonth()+personA.survivorARFcreditingMonths)//add ARF crediting months to survivorBenefitDate to get adjustedSurvivorBenefitDate
+        }
+        else {//i.e., if personA is on disability AND filed for widow(er) benefit before reaching age 60 (i.e., disabled widow/widower benefits)
+          //Then since they were deemed to be age 60 for purpose of calculating early reduction, we have to add ARF months to age-60 date rather than to survivorBenefitDate
+          personA.adjustedSurvivorBenefitDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+60, personA.SSbirthDate.getMonth())
+          personA.adjustedSurvivorBenefitDate.setMonth(personA.adjustedSurvivorBenefitDate.getMonth()+personA.survivorARFcreditingMonths)
+        }
       }
     }
     //At personB's FRA...
@@ -719,11 +730,18 @@ export class BenefitService {
     }
     //Same idea, for personB's survivorFRA (i.e., recalculate survivor benefit to account for ARF, if they filed for survivor benefit early).
         //This should never actually get triggered given the application's current assumption that in "both alive" scenario neither person files for survivor benefits before survivorFRA. Including it anyway though in case that changes in future for some reason.
-    if (calcYear.date.valueOf() == personB.survivorFRA.valueOf()){
-      if (personB.survivorBenefitDate < personB.survivorFRA){
-        personB.adjustedSurvivorBenefitDate.setMonth(personB.survivorBenefitDate.getMonth()+personB.survivorARFcreditingMonths)
-      }
-    }
+        if (calcYear.date.valueOf() == personB.survivorFRA.valueOf()){
+          if (personB.survivorBenefitDate < personB.survivorFRA){//if personB filed early for survivor benefits
+            if (personB.isOnDisability === false || personB.survivorBenefitDate >= new MonthYearDate(personB.SSbirthDate.getFullYear()+60, personB.SSbirthDate.getMonth())){
+              personB.adjustedSurvivorBenefitDate.setMonth(personB.adjustedSurvivorBenefitDate.getMonth()+personB.survivorARFcreditingMonths)//add ARF crediting months to survivorBenefitDate to get adjustedSurvivorBenefitDate
+            }
+            else {//i.e., if personB is on disability AND filed for widow(er) benefit before reaching age 60 (i.e., disabled widow/widower benefits)
+              //Then since they were deemed to be age 60 for purpose of calculating early reduction, we have to add ARF months to age-60 date rather than to survivorBenefitDate
+              personB.adjustedSurvivorBenefitDate = new MonthYearDate(personB.SSbirthDate.getFullYear()+60, personB.SSbirthDate.getMonth())
+              personB.adjustedSurvivorBenefitDate.setMonth(personB.adjustedSurvivorBenefitDate.getMonth()+personB.survivorARFcreditingMonths)
+            }
+          }
+        }
 
     //Recalculate retirement benefit using DRCs at endSuspensionDate\
     if (calcYear.date.valueOf() == personA.endSuspensionDate.valueOf()){

@@ -199,7 +199,8 @@ export class CalculatePvService {
     personA.adjustedSpousalBenefitDate = new MonthYearDate(personA.spousalBenefitDate)
     personB.adjustedRetirementBenefitDate = new MonthYearDate(personB.retirementBenefitDate)
     personB.adjustedSpousalBenefitDate = new MonthYearDate(personB.spousalBenefitDate)
-    personA.adjustedSurvivorBenefitDate = new MonthYearDate(personA.survivorBenefitDate)//No need to reset this field for personB, because we're assuming that personB is never filing for survivor benefits early anyway.
+    personA.adjustedSurvivorBenefitDate = new MonthYearDate(personA.survivorBenefitDate)
+    personB.adjustedSurvivorBenefitDate = new MonthYearDate(personB.survivorBenefitDate)
     personA.DRCsViaSuspension = 0
     personB.DRCsViaSuspension = 0
     personA.retirementARFcreditingMonths = 0
@@ -730,7 +731,7 @@ export class CalculatePvService {
       if (//possible retroactive cases:
         (childWhoHasntFiled === true && personB.dateOfDeath.getFullYear() < this.today.getFullYear())//Child can file retroactive into last year (or at least, they might be able to if we're within first 6 months of this year)
         || (this.today >= personA.FRA) //personA can file retroactively because they have reached FRA
-        || (personA.isOnDisability === true && personA.initialAge >= 60) //personA can file retroactive survivor because they're 60 and disabled (such that "no retroactive before FRA" rule doesn't apply)
+        || (personA.isOnDisability === true && personA.initialAge >= 50) //personA can file retroactive survivor because they're disabled and at least age 50 (such that "no retroactive before FRA" rule doesn't apply)
       ){
         startDate = new MonthYearDate(this.today.getFullYear()-1, 0)//Jan 1 of last year
       }
@@ -748,7 +749,6 @@ export class CalculatePvService {
         }
       } 
     }
-
     return startDate
   }
 
