@@ -7,7 +7,7 @@ import { ClaimStrategy } from '../data model classes/claimStrategy'
 import { SolutionSet } from '../data model classes/solutionset'
 import { SolutionSetService } from '../solutionset.service'
 import { BirthdayService } from '../birthday.service'
-import { PresentValueService } from '../presentvalue.service'
+import { MaximizePVService } from '../maximize-pv.service'
 
 /*
 This code is contributed to the project by Brian Courts, copyright 2020, released under MIT license.
@@ -170,7 +170,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
     "computationComplete": false
   }
 
-  constructor(private changeDetectorRef: ChangeDetectorRef, private solutionSetService:SolutionSetService, private birthdayService:BirthdayService, private presentValueService:PresentValueService) {
+  constructor(private changeDetectorRef: ChangeDetectorRef, private solutionSetService:SolutionSetService, private birthdayService:BirthdayService, private maximizePvService:MaximizePVService) {
   }
 
   ngOnInit() {
@@ -773,8 +773,8 @@ update(e: MouseEvent) {
       let cloneOfPersonA:Person = Object.assign(new Person("A"), this.personA)
       let cloneOfPersonB:Person = Object.assign(new Person("B"), this.personB)
       //call presentvalueservice.adjustSpousalBenefitDate() on each person
-      this.presentValueService.adjustSpousalBenefitDate(cloneOfPersonA, this.personB, this.scenario)
-      this.presentValueService.adjustSpousalBenefitDate(cloneOfPersonB, this.personA, this.scenario)
+      this.maximizePvService.adjustSpousalBenefitDate(cloneOfPersonA, this.personB, this.scenario)
+      this.maximizePvService.adjustSpousalBenefitDate(cloneOfPersonB, this.personA, this.scenario)
       //Check whether the fields on those cloned persons are equal to the fields on the actual persons
       if (this.scenario.maritalStatus == "single" || //if single we aren't concerned about spousal benefit dates
           this.personA.PIA == 0 || //if one person has a zero PIA, then we obviously aren't concerned with other person's spousal benefit date. And if the person themself has a zero PIA, the only thing their axis on the chart represents is their spousal benefit date, so we ARE allowing it to fluctuate here (i.e., not requiring it to match output of adjustSpousalBenefitDate())

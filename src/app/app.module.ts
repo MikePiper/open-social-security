@@ -8,7 +8,7 @@ import { HomeComponent } from './home/home.component';
 import { BenefitService } from './benefit.service';
 import { AppRoutingModule } from './app-routing.module';
 import { BirthdayService } from './birthday.service';
-import { PresentValueService } from './presentvalue.service';
+import { CalculatePvService } from './calculate-PV.service';
 import { HttpClientModule } from '@angular/common/http';
 import { EarningsTestService } from './earningstest.service';
 import { MortalityService } from './mortality.service';
@@ -22,6 +22,7 @@ import { LegalComponent } from './staticpages/legal/legal.component';
 import { ScullyLibModule } from '@scullyio/ng-lib';
 import { RangeComponent } from './range/range.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MaximizePVService } from './maximize-pv.service';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     BrowserAnimationsModule
   ],
   exports: [],
-  providers: [BenefitService, BirthdayService, PresentValueService, EarningsTestService, MortalityService, SolutionSetService],
+  providers: [BenefitService, BirthdayService, CalculatePvService, MaximizePVService, EarningsTestService, MortalityService, SolutionSetService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

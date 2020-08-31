@@ -1,6 +1,6 @@
 import {Component, OnInit, ViewChild, AfterViewInit} from '@angular/core'
 import {BirthdayService} from '../birthday.service'
-import {PresentValueService} from '../presentvalue.service'
+import {CalculatePvService} from '../calculate-PV.service'
 import {MortalityService, mortalityTableOption} from '../mortality.service'
 import {Person} from '../data model classes/person'
 import {SolutionSet} from '../data model classes/solutionset'
@@ -14,6 +14,7 @@ import { BenefitService } from '../benefit.service'
 import { ClaimStrategy } from '../data model classes/claimStrategy'
 import { RangeComponent } from '../range/range.component'
 import { ActivatedRoute } from '@angular/router'
+import { MaximizePVService } from '../maximize-pv.service'
 
 
 @Component({
@@ -23,8 +24,8 @@ import { ActivatedRoute } from '@angular/router'
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private route: ActivatedRoute, private inputValidationService:InputValidationService, private birthdayService: BirthdayService, private presentvalueService: PresentValueService,
-    private mortalityService: MortalityService, private benefitService: BenefitService, private http: HttpClient) { }
+  constructor(private route: ActivatedRoute, private inputValidationService:InputValidationService, private birthdayService: BirthdayService, private mortalityService: MortalityService,
+    private calculatePvService: CalculatePvService, private maximizePvService:MaximizePVService, private benefitService: BenefitService, private http: HttpClient) { }
 
   ngOnInit() {
     //Get inputs from URL parameters, if applicable
@@ -235,21 +236,21 @@ export class HomeComponent implements OnInit {
         "computationComplete": false
       };
       if (this.scenario.maritalStatus == "single") {
-        this.solutionSet = this.presentvalueService.maximizeSinglePersonPV(this.personA, this.scenario)
+        this.solutionSet = this.maximizePvService.maximizeSinglePersonPV(this.personA, this.scenario)
       }
       else if (this.scenario.maritalStatus == "married"){
             if (this.personA.initialAge < 70 && this.personB.initialAge < 70) {//i.e., if both spouses are under 70 (and we therefore need to iterate ages for both)
-              this.solutionSet = this.presentvalueService.maximizeCouplePViterateBothPeople(this.personA, this.personB, this.scenario)
+              this.solutionSet = this.maximizePvService.maximizeCouplePViterateBothPeople(this.personA, this.personB, this.scenario)
             }
             else if (this.personA.initialAge >= 70){//if personA is over 70, we only need to iterate ages for B
-              this.solutionSet = this.presentvalueService.maximizeCouplePViterateOnePerson(this.scenario, this.personB, this.personA)
+              this.solutionSet = this.maximizePvService.maximizeCouplePViterateOnePerson(this.scenario, this.personB, this.personA)
             }
             else if (this.personB.initialAge >= 70){//if personB is over 70, we only need to iterate ages for A
-              this.solutionSet = this.presentvalueService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
+              this.solutionSet = this.maximizePvService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
             }
       }
       else if (this.scenario.maritalStatus == "divorced") {
-            this.solutionSet = this.presentvalueService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
+            this.solutionSet = this.maximizePvService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
       }
     }
     // computation is finished
@@ -284,13 +285,13 @@ export class HomeComponent implements OnInit {
     //Calc PV with input dates
       if (this.errorCollection.hasErrors === false){
         if (this.scenario.maritalStatus == "single") {
-          this.customClaimStrategy = this.presentvalueService.calculateSinglePersonPV(this.personA, customCalculationScenario, true)
+          this.customClaimStrategy = this.calculatePvService.calculateSinglePersonPV(this.personA, customCalculationScenario, true)
           }
         if(this.scenario.maritalStatus == "married") {
-          this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
+          this.customClaimStrategy = this.calculatePvService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
           }
         if(this.scenario.maritalStatus == "divorced") {
-          this.customClaimStrategy = this.presentvalueService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
+          this.customClaimStrategy = this.calculatePvService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
         }
         this.asComparedToPV = this.rangeComponentShowCutRadio == true ? this.solutionSet.claimStrategy.PV : this.solutionSet.claimStrategy.pvNoCut
         this.differenceInPV = this.customClaimStrategy.PV - this.asComparedToPV
@@ -466,7 +467,7 @@ export class HomeComponent implements OnInit {
         //if there is a disabled child or a child under 16 when otherPerson begins retirement benefit, don't let spousalBenefitDate be before own FRA.
           //In other words, we're assuming here that person doesn't file Form SSA-25. We're letting them claim child-in-care spousal benefits, then letting it stop when youngest child reaches 16 (if not yet FRA and no disabled child), then start again at FRA.
         if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(this.scenario, this.personB.retirementBenefitDate) === true){
-          this.presentvalueService.adjustSpousalBenefitDate(this.personA, this.personB, this.scenario)
+          this.maximizePvService.adjustSpousalBenefitDate(this.personA, this.personB, this.scenario)
           //Also, set childInCareSpousal field to true if applicable
           //If there is no disabled child, and spousalBenefitDate is after FRA and after youngestchildturns16date, then there must not have been an automatic conversion (to regular spousal from child-in-care spousal) which means they weren't on child-in-care spousal
           if (!(this.personA.spousalBenefitDate > this.personA.FRA && this.personA.spousalBenefitDate > this.scenario.youngestChildTurns16date && this.scenario.disabledChild === false)){
@@ -474,7 +475,7 @@ export class HomeComponent implements OnInit {
           }
         }
         if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(this.scenario, this.personA.retirementBenefitDate) === true){
-          this.presentvalueService.adjustSpousalBenefitDate(this.personB, this.personA, this.scenario)
+          this.maximizePvService.adjustSpousalBenefitDate(this.personB, this.personA, this.scenario)
           if (!(this.personB.spousalBenefitDate > this.personB.FRA && this.personB.spousalBenefitDate > this.scenario.youngestChildTurns16date && this.scenario.disabledChild === false)){
             this.personB.childInCareSpousal = true
           }
@@ -489,7 +490,7 @@ export class HomeComponent implements OnInit {
           ( (this.personA.hasFiled === true || this.personA.isOnDisability === true) && (this.personB.hasFiled === true || this.personB.isOnDisability === true) ) //both have already started retirement or disability and therefore have already started spousal so there will be no spousal input
         )
           {
-            this.presentvalueService.adjustSpousalBenefitDate(this.personA, this.personB, this.scenario)
+            this.maximizePvService.adjustSpousalBenefitDate(this.personA, this.personB, this.scenario)
           }
         else {//i.e., if there are inputs
           this.personA.spousalBenefitDate = new MonthYearDate(this.customPersonAspousalBenefitYear, this.customPersonAspousalBenefitMonth-1)
@@ -506,7 +507,7 @@ export class HomeComponent implements OnInit {
         this.scenario.maritalStatus == "divorced"
         )
         {
-          this.presentvalueService.adjustSpousalBenefitDate(this.personB, this.personA, this.scenario)
+          this.maximizePvService.adjustSpousalBenefitDate(this.personB, this.personA, this.scenario)
         }
       else {//i.e., if there are inputs
         this.personB.spousalBenefitDate = new MonthYearDate(this.customPersonBspousalBenefitYear, this.customPersonBspousalBenefitMonth-1)
