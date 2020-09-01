@@ -25,9 +25,14 @@ import { MaximizePVService } from '../maximize-pv.service'
 export class HomeComponent implements OnInit {
 
   constructor(private route: ActivatedRoute, private inputValidationService:InputValidationService, private birthdayService: BirthdayService, private mortalityService: MortalityService,
-    private calculatePvService: CalculatePvService, private maximizePvService:MaximizePVService, private benefitService: BenefitService, private http: HttpClient) { }
+    private calculatePvService: CalculatePvService, private maximizePvService:MaximizePVService, private benefitService: BenefitService, private http: HttpClient) { 
+
+    }
 
   ngOnInit() {
+    this.personA.gender = "male"
+    this.personB.gender = "female"
+
     //Get inputs from URL parameters, if applicable
     this.getInputsFromURLparameters()
 
@@ -65,9 +70,8 @@ export class HomeComponent implements OnInit {
 
   @ViewChild(RangeComponent)
   private rangeComponent:RangeComponent
-
-  personA:Person = new Person("A")
-  personB:Person = new Person("B")
+  personA = new Person("A")
+  personB = new Person("B")
   child1:Person = new Person("1")
   child2:Person = new Person("2")
   child3:Person = new Person("3")
@@ -140,7 +144,6 @@ export class HomeComponent implements OnInit {
   personAfixedRetirementBenefitYear: number
   personAnonCoveredPensionMonth:number = 1
   personAnonCoveredPensionYear:number = 2020
-  personAgender: string = "male"
   personAassumedDeathAge: number = 100 // what many people might hope
   personAmortalityInput: mortalityTableOption = this.defaultMortalityTableID
   personBprimaryPIAinput: number = 1000
@@ -152,7 +155,6 @@ export class HomeComponent implements OnInit {
   personBfixedRetirementBenefitYear: number
   personBnonCoveredPensionMonth:number = 1
   personBnonCoveredPensionYear:number = 2020
-  personBgender: string = "female"
   personBmortalityInput: mortalityTableOption = this.defaultMortalityTableID
   personBassumedDeathAge: number = 100 // what many people might hope
 
@@ -380,8 +382,8 @@ export class HomeComponent implements OnInit {
     if (this.personBfixedRetirementBenefitMonth && this.personBfixedRetirementBenefitYear){
       this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1)
     }
-    this.personA.mortalityTable = this.mortalityService.determineMortalityTable(this.personAgender, this.personAmortalityInput, this.personAassumedDeathAge)
-    this.personB.mortalityTable = this.mortalityService.determineMortalityTable(this.personBgender, this.personBmortalityInput, this.personBassumedDeathAge)
+    this.personA.mortalityTable = this.mortalityService.determineMortalityTable(this.personA.gender, this.personAmortalityInput, this.personAassumedDeathAge)
+    this.personB.mortalityTable = this.mortalityService.determineMortalityTable(this.personB.gender, this.personBmortalityInput, this.personBassumedDeathAge)
     this.personA.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(this.personA)
     this.personB.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(this.personB)
 
@@ -780,7 +782,7 @@ export class HomeComponent implements OnInit {
           }
       //personA inputs
           if (params['aGender']){
-            this.personAgender = params['aGender']
+            this.personA.gender = params['aGender']
           }
           if (params['aDOBm']){
             this.personAinputMonth = Number(params['aDOBm'])
@@ -842,7 +844,7 @@ export class HomeComponent implements OnInit {
 
       //personB inputs
           if (params['bGender']){
-            this.personBgender = params['bGender']
+            this.personB.gender = params['bGender']
           }
           if (params['bDOBm']){
             this.personBinputMonth = Number(params['bDOBm'])

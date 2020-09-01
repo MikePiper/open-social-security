@@ -80,8 +80,8 @@
 
       <div class="form-inline">
         <label>Gender</label>
-        <select [(ngModel)]="personAgender" name="personAgender" class="form-control">
-          <option value="male">Male</option>
+        <select [(ngModel)]="personA.gender" name="personA.gender" class="form-control">
+          <option value="male" selected>Male</option>
           <option value="female">Female</option>
         </select>
       </div>
@@ -330,7 +330,7 @@
         <h1 *ngIf="scenario.maritalStatus == 'divorced'">Your Ex-spouse's Information</h1>
         <div class="form-inline">
           <label>Gender</label>
-          <select [(ngModel)]="personBgender" name="personBgender" class="form-control">
+          <select [(ngModel)]="personB.gender" name="personB.gender" class="form-control">
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
@@ -819,7 +819,7 @@
 &&cutAssumption={{scenario.benefitCutAssumption}}
 &&cutYear={{scenario.benefitCutYear}}
 &&cutPercent={{scenario.benefitCutPercentage}}
-&&aGender={{personAgender}}
+&&aGender={{personA.gender}}
 &&aDOBm={{personAinputMonth}}
 &&aDOBd={{personAinputDay}}
 &&aDOBy={{personAinputYear}}
@@ -839,7 +839,7 @@
 &&aPIA2={{personAsecondaryPIAinput}}
 &&aMortality={{personAmortalityInput}}
 &&aDeathAge={{personAassumedDeathAge}}
-&&bGender={{personBgender}}
+&&bGender={{personB.gender}}
 &&bDOBm={{personBinputMonth}}
 &&bDOBd={{personBinputDay}}
 &&bDOBy={{personBinputYear}}

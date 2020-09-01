@@ -1,7 +1,11 @@
 import {MonthYearDate} from "./monthyearDate"
 
+//This is defined here as explicit options so that if something is ever input as a typo elsewhere (eg "fmale") it will throw an error
+type genderOption = "male" | "female"
+
 export class Person {
     id:string
+    gender:genderOption
     actualBirthDate: Date
     SSbirthDate: MonthYearDate
     FRA: MonthYearDate
