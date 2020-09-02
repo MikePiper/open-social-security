@@ -90,6 +90,12 @@ export class BenefitService {
     return survivorOriginalBenefit
   }
 
+  calculateMotherFatherOriginalBenefit(deceasedPerson:Person):number{
+    let originalBenefit:number
+    originalBenefit = 0.75 * deceasedPerson.PIA
+    return originalBenefit
+  }
+
   adjustSpousalBenefitsForAge(scenario:CalculationScenario, personA:Person, personB:Person){
   //Key point via CFR 404.410: spousal benefits not reduced for month in which there is a child in care (under 16 or disabled) who is entitled to child benefits on worker's record.
     let monthsOfPersonAearlySpousalEntitlement:number
@@ -187,48 +193,60 @@ export class BenefitService {
       }
   }
 
-  adjustSpousalAndSurvivorBenefitsForGPO(personA:Person, personB:Person){
+  adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA:Person, personB:Person){
     if (personA.entitledToNonCoveredPension === true){
       personA.monthlySpousalPayment = personA.monthlySpousalPayment - (2/3 * personA.governmentPension)
       personA.monthlySurvivorPayment = personA.monthlySurvivorPayment - (2/3 * personA.governmentPension)
+      personA.monthlyMotherFatherPayment = personA.monthlyMotherFatherPayment - (2/3 * personA.governmentPension)
     }
     if (personB.entitledToNonCoveredPension === true){
       personB.monthlySpousalPayment = personB.monthlySpousalPayment - (2/3 * personB.governmentPension)
       personB.monthlySurvivorPayment = personB.monthlySurvivorPayment - (2/3 * personB.governmentPension)
+      personB.monthlyMotherFatherPayment = personB.monthlyMotherFatherPayment - (2/3 * personB.governmentPension)
     }
     //Don't let benefits be negative.
     if (personA.monthlySpousalPayment < 0) {personA.monthlySpousalPayment = 0}
     if (personA.monthlySurvivorPayment < 0) {personA.monthlySurvivorPayment = 0}
+    if (personA.monthlyMotherFatherPayment < 0) {personA.monthlyMotherFatherPayment = 0}
     if (personB.monthlySpousalPayment < 0) {personB.monthlySpousalPayment = 0}
     if (personB.monthlySurvivorPayment < 0) {personB.monthlySurvivorPayment = 0}
+    if (personB.monthlyMotherFatherPayment < 0) {personB.monthlyMotherFatherPayment = 0}
   }
 
-  adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA:Person, personB:Person){
-    //Adjust personA's spousal and survivor benefits for own entitlement if he/she has a retirement payment
+  adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA:Person, personB:Person){
+    //If personA has a retirement payment
     if (personA.monthlyRetirementPayment > 0){
+      //Reduce personA's spousal benefit by greater of personA's PIA or retirement benefit
       if (personA.retirementBenefit > personA.PIA){
         personA.monthlySpousalPayment = personA.monthlySpousalPayment - personA.retirementBenefit
       }
       else {
         personA.monthlySpousalPayment = personA.monthlySpousalPayment - personA.PIA
       }
+      //Reduce personA's survivor or mother/father benefit by personA's retirement benefit
       personA.monthlySurvivorPayment = personA.monthlySurvivorPayment - personA.retirementBenefit
+      personA.monthlyMotherFatherPayment = personA.monthlyMotherFatherPayment - personA.retirementBenefit
     }
-    //Adjust personB's spousal and survivor benefits for own entitlement if he/she has a retirement payment
+    //If personB has a retirement payment
     if (personB.monthlyRetirementPayment > 0){
+      //Reduce personB's spousal benefit by greater of personB's PIA or retirement benefit
       if (personB.retirementBenefit > personB.PIA){
         personB.monthlySpousalPayment = personB.monthlySpousalPayment - personB.retirementBenefit
       }
       else {
         personB.monthlySpousalPayment = personB.monthlySpousalPayment - personB.PIA
       }
+      //Reduce personB's survivor or mother/father benefit by personB's retirement benefit
       personB.monthlySurvivorPayment = personB.monthlySurvivorPayment - personB.retirementBenefit
+      personB.monthlyMotherFatherPayment = personB.monthlyMotherFatherPayment - personB.retirementBenefit
     }
     //Don't let benefits be negative.
     if (personA.monthlySpousalPayment < 0) {personA.monthlySpousalPayment = 0}
     if (personA.monthlySurvivorPayment < 0) {personA.monthlySurvivorPayment = 0}
+    if (personA.monthlyMotherFatherPayment < 0){personA.monthlyMotherFatherPayment = 0}
     if (personB.monthlySpousalPayment < 0) {personB.monthlySpousalPayment = 0}
     if (personB.monthlySurvivorPayment < 0) {personB.monthlySurvivorPayment = 0}
+    if (personB.monthlyMotherFatherPayment < 0){personB.monthlyMotherFatherPayment = 0}
   }
 
   determineChildBenefitDate(scenario:CalculationScenario, child:Person, personA:Person, personB?:Person):MonthYearDate{
@@ -415,10 +433,15 @@ export class BenefitService {
       personA.monthlyRetirementPayment = 0
       personA.monthlySpousalPayment = 0
       personA.monthlySurvivorPayment = 0
+      personA.monthlyMotherFatherPayment = 0
       personB.monthlyRetirementPayment = 0
       personB.monthlySpousalPayment = 0
       personB.monthlySurvivorPayment = 0
+      personB.monthlyMotherFatherPayment = 0
       for (let child of scenario.children){child.monthlyChildPayment = 0}
+
+    //Check if there is a childUnder16orDisabled
+      let childUnder16orDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, calcYear.date)
 
     //Check whether a person's retirement benefit begins this month
       if (personA.entitledToRetirement === false){
@@ -553,12 +576,16 @@ export class BenefitService {
               }
           }
           else {//if personA is not suspended
-              //if entitled to benefits in question: personA gets retirement and survivor, children get benefit on personA or survivor benefit on personB
+              //if entitled to benefits in question: a) personA gets retirement, survivor, mother/father; b) children get benefit on personA or survivor benefit on personB
               if (personA.entitledToRetirement === true){
                 personA.monthlyRetirementPayment = personA.retirementBenefit
               }
               if (calcYear.date >= personA.survivorBenefitDate){
                 personA.monthlySurvivorPayment = this.calculateSurvivorOriginalBenefit(personB)
+              }
+              else if (childUnder16orDisabled === true && calcYear.date >= personA.motherFatherBenefitDate){
+                //^^personA is NOT entitled to survivor, there is a child under 16 or disabled, and personA has filed for mother/father
+                personA.monthlyMotherFatherPayment = this.calculateMotherFatherOriginalBenefit(personB)
               }
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
@@ -608,6 +635,10 @@ export class BenefitService {
               }
               if (calcYear.date >= personB.survivorBenefitDate){
                 personB.monthlySurvivorPayment = this.calculateSurvivorOriginalBenefit(personA)
+              }
+              else if (childUnder16orDisabled === true && calcYear.date >= personB.motherFatherBenefitDate){
+                //^^personB is NOT entitled to survivor, there is a child under 16 or disabled, and personB has filed for mother/father
+                personB.monthlyMotherFatherPayment = this.calculateMotherFatherOriginalBenefit(personA)
               }
               for (let child of scenario.children){
                 if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
@@ -743,7 +774,7 @@ export class BenefitService {
           }
         }
 
-    //Recalculate retirement benefit using DRCs at endSuspensionDate\
+    //Recalculate retirement benefit using DRCs at endSuspensionDate
     if (calcYear.date.valueOf() == personA.endSuspensionDate.valueOf()){
       personA.retirementBenefit = this.calculateRetirementBenefit(personA, personA.adjustedRetirementBenefitDate)
     }

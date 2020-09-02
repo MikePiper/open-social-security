@@ -1,4 +1,5 @@
 import {MonthYearDate} from "./monthyearDate"
+import { MonoTypeOperatorFunction } from 'rxjs'
 
 //This is defined here as explicit options so that if something is ever input as a typo elsewhere (eg "fmale") it will throw an error
 type genderOption = "male" | "female"
@@ -33,6 +34,7 @@ export class Person {
 
     hasFiled:boolean = false
     hasFiledAsSurvivor:boolean = false //used in survivor scenarios (i.e., when personA using calculator is already a widow/widower)
+    hasFiledAsMotherFather:boolean = false //Also only used in survivor scenarios
     isOnDisability: boolean = false //true only if disabled and expecting to be on disability until FRA
 
     familyMaximum: number
@@ -52,6 +54,7 @@ export class Person {
     spousalBenefitDate: MonthYearDate //if there is a child in care, this represents the date on which normal (non-child-in-care spousal benefits) would begin
     survivorBenefitDate: MonthYearDate //Only used in cases in which person using calculator is already widow(er). We vary this date and retirementBenefitDate in maximize function.
     childInCareSpousalBenefitDate: MonthYearDate
+    motherFatherBenefitDate:MonthYearDate
     adjustedRetirementBenefitDate: MonthYearDate //adjusted as in "after ARF" from earnings test
     adjustedSpousalBenefitDate: MonthYearDate //adjusted as in "after ARF" from earnings test
     adjustedSurvivorBenefitDate: MonthYearDate //adjusted as in "after ARF" from earnings test (again, only used in cases in which person using calculator is already widow/widower)
@@ -62,10 +65,12 @@ export class Person {
     //benefit amount fields. benefit amount just gets overwritten when recalculated
     retirementBenefit:number = 0
     survivorBenefitInMonthOfEntitlement:number = 0
+    motherFatherBenefitInMonthOfEntitlement:number = 0
     nonWEPretirementBenefit:number //This is what their retirement benefit WOULD have been without WEP. This is only used for determining survivor benefits on their work record.
     monthlyRetirementPayment:number = 0
     monthlySpousalPayment:number = 0
     monthlySurvivorPayment:number = 0
+    monthlyMotherFatherPayment:number = 0
     monthlyChildPayment:number = 0
         originalBenefit:number = 0 //"original benefit" in the sense as used in family max application. (That is, this is a number that can change from one month to the next.)
     retirementARFcreditingMonths:number = 0 //for earnings test

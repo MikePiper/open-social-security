@@ -1112,6 +1112,6 @@ describe('Tests for maximizeSurvivorPV', () => {
     expect(results.claimStrategy.outputTable[15])
     .toEqual([2034, "$12,000", "$9,450", "$21,450"])//At FRA. None of benefit amounts actually change. Just 12 months of disabillity (converting to retirement at same amount) and 12 months of survivor
     expect(results.claimStrategy.PV)
-    .toBeCloseTo(574710, 0)
+    .toBeCloseTo(555696, 0)
   })
 })

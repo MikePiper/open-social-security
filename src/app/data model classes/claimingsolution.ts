@@ -5,7 +5,7 @@ import {MonthYearDate} from "./monthyearDate"
 type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityConversion" | "suspendToday" | "suspendAtFRA" | "suspendAtSomeOtherDate" | "unsuspend" |
 "spousal" | "retroactiveSpousal" | "childInCareSpousal" | "childInCareSpousalSuspension" | "automaticSpousalUnsuspension" |
 "survivor" | "retroactiveSurvivor" |
-"child" | "retroactiveChild" |
+"child" | "retroactiveChild" | "motherFather" |
 "doNothing"
 
   //This class represents the bulleted items in the recommended strategy output. (That is, one ClaimingSolution object for each item in the bulleted list.)
@@ -81,6 +81,14 @@ type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityCon
           this.shortMessage = "Child benefits on spouse's record " + dateString 
         }
         break;
+      case "motherFather":
+        if (person.gender == "male"){
+          this.shortMessage += "(father benefits) " + dateString
+        }
+        else if (person.gender == "female"){
+          this.shortMessage += "(mother benefits) " + dateString
+        }
+        break
       case "doNothing":
         this.shortMessage = "Do nothing"
     }
@@ -136,6 +144,14 @@ type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityCon
           break;
         case "retroactiveChild":
           this.message = "Your child(ren) file(s) for child benefits on your work record to begin (retroactively) as of " + dateString + "."
+          break;
+        case "motherFather":
+          if (person.gender == "male"){
+            this.message = "You file for father benefits to begin as of " + dateString + "."
+          }
+          else if (person.gender == "female"){
+            this.message = "You file for mother benefits to begin as of " + dateString + "."
+          }
           break;
         case "doNothing": // doNothing always produced for personA in solutionset.service.ts
           this.message = "Nobody in the household files for any additional benefits or voluntarily suspends their benefit at any time."

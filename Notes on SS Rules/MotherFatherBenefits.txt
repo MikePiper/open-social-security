@@ -1,0 +1,15 @@
+Eligibility:
+    *ChildUnder16orDisabled
+    *Not entitled to widow(er) benefits
+    *Not entitled to retirement benefit that is as large as mother/father original benefit
+    *File for them (or you were entitled to spousal benefits in month before the month in which the spouse died)
+
+Calculation:
+    *Original benefit is 75% of deceased spouse PIA
+    *Reduced by earnings test? (Yes per RS 00208.025 )
+    *Reduced by GPO? (Yes, per CFR 404.408a or RS 00208.025)
+    *Reduced by family max? (Yes per RS 00208.015.B2. NOTE: REDUCED EVEN IF DIVORCED -- unlike divorced spouse or divorce widow(er) benefits)
+    *Reduced for own entitlement? (Yes, reduced by retirement benefit amount specfically rather than PIA -- like widow(er) benefits. See RS 00208.015)
+    *NOT reduced for age (and widow/widower benefit cannot be reduced for age below mother/father benefit amount if there is "child in care")
+
+Per 404.621, retroactivity up to 6 months allowed (but no earlier than date of death). Doesn't matter if mother/father is disabled or not. Doesn't matter if FRA or not.

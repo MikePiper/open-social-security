@@ -218,6 +218,12 @@ export class EarningsTestService {
                     //Add to tally of months of survivor benefit withheld
                     if (childUnder16orDisabled === false) {personA.survivorARFcreditingMonths = personA.survivorARFcreditingMonths + 1}
                 }
+                if (childUnder16orDisabled === true && calcYear.date >= personA.motherFatherBenefitDate){//if personA would be receiving a mother/father benefit
+                  //withhold A's excess earnings from A's mother/father benefit
+                  availableForWithholding = availableForWithholding + personA.monthlyMotherFatherPayment
+                  personA.monthlyMotherFatherPayment = 0
+                  //No need to tally ARF months for mother/father benefit, because that benefit isn't reduced for age. So it won't get an ARF at FRA.
+                }
               calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive = calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive - availableForWithholding
             }
           }
@@ -244,6 +250,12 @@ export class EarningsTestService {
                     personB.monthlySurvivorPayment = 0
                     //Add to tally of months of survivor benefit withheld
                     if (childUnder16orDisabled === false) {personB.survivorARFcreditingMonths = personB.survivorARFcreditingMonths + 1}
+                }
+                if (childUnder16orDisabled === true && calcYear.date >= personB.motherFatherBenefitDate){//if personB would be receiving a mother/father benefit
+                  //withhold B's excess earnings from B's mother/father benefit
+                  availableForWithholding = availableForWithholding + personB.monthlyMotherFatherPayment
+                  personB.monthlyMotherFatherPayment = 0
+                  //No need to tally ARF months for mother/father benefit, because that benefit isn't reduced for age. So it won't get an ARF at FRA.
                 }
               calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive = calcYear.annuannualWithholdingDueToPersonBearningsOnlyBalive - availableForWithholding
             }
@@ -284,6 +296,9 @@ export class EarningsTestService {
         }
         else if (calcYear.date >= personA.survivorBenefitDate){
           calcYear.tablePersonAannualSurvivorBenefit = calcYear.tablePersonAannualSurvivorBenefit - calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive //add back for table-related sum
+        }
+        else if (calcYear.date >= personA.motherFatherBenefitDate){
+          calcYear.tablePersonAannualMotherFatherBenefit = calcYear.tablePersonAannualMotherFatherBenefit - calcYear.annuannualWithholdingDueToPersonAearningsOnlyAalive //add back for table-related sum
         }
       }
     }

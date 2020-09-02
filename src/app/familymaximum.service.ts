@@ -193,6 +193,7 @@ export class FamilyMaximumService {
         for (let child of scenario.children){
           sumOfAuxBenefits = sumOfAuxBenefits + child.monthlyChildPayment
         }
+        sumOfAuxBenefits = sumOfAuxBenefits + personA.monthlyMotherFatherPayment + personB.monthlyMotherFatherPayment
         if (scenario.maritalStatus == "married" || scenario.maritalStatus == "survivor"){//Don't include spousal or survivor benefits if it's divorce scenario
           sumOfAuxBenefits = sumOfAuxBenefits + personA.monthlySpousalPayment + personB.monthlySpousalPayment + personA.monthlySurvivorPayment + personB.monthlySurvivorPayment
           //Can add both personA's and personB's spousal amounts here, because monthlySpousalPayment will be zero if person not eligible. And will be zero if either person is deceased.
@@ -200,7 +201,7 @@ export class FamilyMaximumService {
           //if personB is considered deceased, first time through this function personA.monthlySurvivorPayment is "original benefit" amount for personA (which is deceased's PIA, plus any DRCs)
           //if personB is considered deceased, second time through this function personA.monthlySurvivorPayment will be that same amount, reduced for familyMax and for own entitlement
         }
-      //Find family max to be split among auxilliary beneficiaries (i.e., reduce by worker's own PIA in worker-alive scenario)
+      //Find family max to be split among auxilliary beneficiaries (i.e., reduce max by worker's own PIA in worker-alive scenario)
         let familyMaxForAuxBeneficiaries:number = familyMaximum
         if (personAaliveBoolean === true && personBaliveBoolean === true
             && (calcYear.date >= personA.spousalBenefitDate || (calcYear.date >= personB.retirementBenefitDate && childUnder16orDisabled === true))
@@ -232,16 +233,19 @@ export class FamilyMaximumService {
               personA.monthlySurvivorPayment = personA.monthlySurvivorPayment * percentageAvailable
               personB.monthlySurvivorPayment = personB.monthlySurvivorPayment * percentageAvailable
             }
+            //Mother/father payments can be reduced in divorce scenario, so they're outside the conditional above
+            personA.monthlyMotherFatherPayment = personA.monthlyMotherFatherPayment * percentageAvailable
+            personB.monthlyMotherFatherPayment = personB.monthlyMotherFatherPayment * percentageAvailable
         }
         else if (sumOfAuxBenefits < familyMaxForAuxBeneficiaries && familyMaxRunNumber == 2){
           //Determine how much is now available for the children, now that spousal/survivor benefits have been reduced for own entitlement
-          let amountAvailableForChildren:number
-          if (scenario.maritalStatus == "divorced"){
-            amountAvailableForChildren = familyMaxForAuxBeneficiaries
+          let amountAvailableForChildren:number = familyMaxForAuxBeneficiaries
+          if (scenario.maritalStatus !== "divorced"){
+            //In married or survivor scenario, we need to back out spousal/survivor amounts in order to see what's available for kids
+            amountAvailableForChildren = amountAvailableForChildren - personA.monthlySpousalPayment - personB.monthlySpousalPayment - personA.monthlySurvivorPayment - personB.monthlySurvivorPayment
           }
-          else {//i.e., it's married or survivor scenario, so we need to back various spousal/survivor amounts out from familyMaxForAuxBeneficiaries in order to see what's available for kids
-            amountAvailableForChildren = familyMaxForAuxBeneficiaries - personA.monthlySpousalPayment - personB.monthlySpousalPayment - personA.monthlySurvivorPayment - personB.monthlySurvivorPayment
-          }
+          //Regardless of married/survivor/divorce scenario, we have to back out mother/father benefits. (Even mother/father benefits of an ex-spouse count toward family max.)
+          amountAvailableForChildren = amountAvailableForChildren - personA.monthlyMotherFatherPayment - personB.monthlyMotherFatherPayment
           //Give each entitled child their share of that amount, but don't let benefit exceed "original benefit"
             let numberOfEntitledChildren:number = 0 //can't just use scenario.children.length because that would include children who eventually age out of child benefit eligibility
             for (let child of scenario.children){
@@ -258,427 +262,427 @@ export class FamilyMaximumService {
 
   //access by, eg this.annualIndexedValuesArray[entitlementYear - 1979].secondPIAbendPoint
   //Note that these are the COLAs FOR a given year (effective January of next year)
-      //https://www.ssa.gov/oact/cola/colaseries.html as compared to https://www.ssa.gov/cola/
-      annualIndexedValuesArray = [
-        {
-          "Year": 1979,
-          "firstPIAbendPoint": 180,
-          "secondPIAbendPoint": 1085,
-          "firstFamilyMaxBendPoint": 230,
-          "secondFamilyMaxBendPoint": 332,
-          "thirdFamilyMaxBendPoint": 433,
-          "COLA": 0.099,
-          "MaxTaxableWages": 22900
-        },
-        {
-          "Year": 1980,
-          "firstPIAbendPoint": 194,
-          "secondPIAbendPoint": 1171,
-          "firstFamilyMaxBendPoint": 248,
-          "secondFamilyMaxBendPoint": 358,
-          "thirdFamilyMaxBendPoint": 467,
-          "COLA": 0.143,
-          "MaxTaxableWages": 25900
-        },
-        {
-          "Year": 1981,
-          "firstPIAbendPoint": 211,
-          "secondPIAbendPoint": 1274,
-          "firstFamilyMaxBendPoint": 270,
-          "secondFamilyMaxBendPoint": 390,
-          "thirdFamilyMaxBendPoint": 508,
-          "COLA": 0.112,
-          "MaxTaxableWages": 29700
-        },
-        {
-          "Year": 1982,
-          "firstPIAbendPoint": 230,
-          "secondPIAbendPoint": 1388,
-          "firstFamilyMaxBendPoint": 294,
-          "secondFamilyMaxBendPoint": 425,
-          "thirdFamilyMaxBendPoint": 554,
-          "COLA": 0.074,
-          "MaxTaxableWages": 32400
-        },
-        {
-          "Year": 1983,
-          "firstPIAbendPoint": 254,
-          "secondPIAbendPoint": 1528,
-          "firstFamilyMaxBendPoint": 324,
-          "secondFamilyMaxBendPoint": 468,
-          "thirdFamilyMaxBendPoint": 610,
-          "COLA": 0.035,
-          "MaxTaxableWages": 35700
-        },
-        {
-          "Year": 1984,
-          "firstPIAbendPoint": 267,
-          "secondPIAbendPoint": 1612,
-          "firstFamilyMaxBendPoint": 342,
-          "secondFamilyMaxBendPoint": 493,
-          "thirdFamilyMaxBendPoint": 643,
-          "COLA": 0.035,
-          "MaxTaxableWages": 37800
-        },
-        {
-          "Year": 1985,
-          "firstPIAbendPoint": 280,
-          "secondPIAbendPoint": 1691,
-          "firstFamilyMaxBendPoint": 358,
-          "secondFamilyMaxBendPoint": 517,
-          "thirdFamilyMaxBendPoint": 675,
-          "COLA": 0.031,
-          "MaxTaxableWages": 39600
-        },
-        {
-          "Year": 1986,
-          "firstPIAbendPoint": 297,
-          "secondPIAbendPoint": 1790,
-          "firstFamilyMaxBendPoint": 379,
-          "secondFamilyMaxBendPoint": 548,
-          "thirdFamilyMaxBendPoint": 714,
-          "COLA": 0.013,
-          "MaxTaxableWages": 42000
-        },
-        {
-          "Year": 1987,
-          "firstPIAbendPoint": 310,
-          "secondPIAbendPoint": 1866,
-          "firstFamilyMaxBendPoint": 396,
-          "secondFamilyMaxBendPoint": 571,
-          "thirdFamilyMaxBendPoint": 745,
-          "COLA": 0.042,
-          "MaxTaxableWages": 43800
-        },
-        {
-          "Year": 1988,
-          "firstPIAbendPoint": 319,
-          "secondPIAbendPoint": 1922,
-          "firstFamilyMaxBendPoint": 407,
-          "secondFamilyMaxBendPoint": 588,
-          "thirdFamilyMaxBendPoint": 767,
-          "COLA": 0.04,
-          "MaxTaxableWages": 45000
-        },
-        {
-          "Year": 1989,
-          "firstPIAbendPoint": 339,
-          "secondPIAbendPoint": 2044,
-          "firstFamilyMaxBendPoint": 433,
-          "secondFamilyMaxBendPoint": 626,
-          "thirdFamilyMaxBendPoint": 816,
-          "COLA": 0.047,
-          "MaxTaxableWages": 48000
-        },
-        {
-          "Year": 1990,
-          "firstPIAbendPoint": 356,
-          "secondPIAbendPoint": 2145,
-          "firstFamilyMaxBendPoint": 455,
-          "secondFamilyMaxBendPoint": 656,
-          "thirdFamilyMaxBendPoint": 856,
-          "COLA": 0.054,
-          "MaxTaxableWages": 51300
-        },
-        {
-          "Year": 1991,
-          "firstPIAbendPoint": 370,
-          "secondPIAbendPoint": 2230,
-          "firstFamilyMaxBendPoint": 473,
-          "secondFamilyMaxBendPoint": 682,
-          "thirdFamilyMaxBendPoint": 890,
-          "COLA": 0.037,
-          "MaxTaxableWages": 53400
-        },
-        {
-          "Year": 1992,
-          "firstPIAbendPoint": 387,
-          "secondPIAbendPoint": 2333,
-          "firstFamilyMaxBendPoint": 495,
-          "secondFamilyMaxBendPoint": 714,
-          "thirdFamilyMaxBendPoint": 931,
-          "COLA": 0.03,
-          "MaxTaxableWages": 55500
-        },
-        {
-          "Year": 1993,
-          "firstPIAbendPoint": 401,
-          "secondPIAbendPoint": 2420,
-          "firstFamilyMaxBendPoint": 513,
-          "secondFamilyMaxBendPoint": 740,
-          "thirdFamilyMaxBendPoint": 966,
-          "COLA": 0.026,
-          "MaxTaxableWages": 57600
-        },
-        {
-          "Year": 1994,
-          "firstPIAbendPoint": 422,
-          "secondPIAbendPoint": 2545,
-          "firstFamilyMaxBendPoint": 539,
-          "secondFamilyMaxBendPoint": 779,
-          "thirdFamilyMaxBendPoint": 1016,
-          "COLA": 0.028,
-          "MaxTaxableWages": 60600
-        },
-        {
-          "Year": 1995,
-          "firstPIAbendPoint": 426,
-          "secondPIAbendPoint": 2567,
-          "firstFamilyMaxBendPoint": 544,
-          "secondFamilyMaxBendPoint": 785,
-          "thirdFamilyMaxBendPoint": 1024,
-          "COLA": 0.026,
-          "MaxTaxableWages": 61200
-        },
-        {
-          "Year": 1996,
-          "firstPIAbendPoint": 437,
-          "secondPIAbendPoint": 2635,
-          "firstFamilyMaxBendPoint": 559,
-          "secondFamilyMaxBendPoint": 806,
-          "thirdFamilyMaxBendPoint": 1052,
-          "COLA": 0.029,
-          "MaxTaxableWages": 62700
-        },
-        {
-          "Year": 1997,
-          "firstPIAbendPoint": 455,
-          "secondPIAbendPoint": 2741,
-          "firstFamilyMaxBendPoint": 581,
-          "secondFamilyMaxBendPoint": 839,
-          "thirdFamilyMaxBendPoint": 1094,
-          "COLA": 0.021,
-          "MaxTaxableWages": 65400
-        },
-        {
-          "Year": 1998,
-          "firstPIAbendPoint": 477,
-          "secondPIAbendPoint": 2875,
-          "firstFamilyMaxBendPoint": 609,
-          "secondFamilyMaxBendPoint": 880,
-          "thirdFamilyMaxBendPoint": 1147,
-          "COLA": 0.013,
-          "MaxTaxableWages": 68400
-        },
-        {
-          "Year": 1999,
-          "firstPIAbendPoint": 505,
-          "secondPIAbendPoint": 3043,
-          "firstFamilyMaxBendPoint": 645,
-          "secondFamilyMaxBendPoint": 931,
-          "thirdFamilyMaxBendPoint": 1214,
-          "COLA": 0.025,
-          "MaxTaxableWages": 72600
-        },
-        {
-          "Year": 2000,
-          "firstPIAbendPoint": 531,
-          "secondPIAbendPoint": 3202,
-          "firstFamilyMaxBendPoint": 679,
-          "secondFamilyMaxBendPoint": 980,
-          "thirdFamilyMaxBendPoint": 1278,
-          "COLA": 0.035,
-          "MaxTaxableWages": 76200
-        },
-        {
-          "Year": 2001,
-          "firstPIAbendPoint": 561,
-          "secondPIAbendPoint": 3381,
-          "firstFamilyMaxBendPoint": 717,
-          "secondFamilyMaxBendPoint": 1034,
-          "thirdFamilyMaxBendPoint": 1349,
-          "COLA": 0.026,
-          "MaxTaxableWages": 80400
-        },
-        {
-          "Year": 2002,
-          "firstPIAbendPoint": 592,
-          "secondPIAbendPoint": 3567,
-          "firstFamilyMaxBendPoint": 756,
-          "secondFamilyMaxBendPoint": 1092,
-          "thirdFamilyMaxBendPoint": 1424,
-          "COLA": 0.014,
-          "MaxTaxableWages": 84900
-        },
-        {
-          "Year": 2003,
-          "firstPIAbendPoint": 606,
-          "secondPIAbendPoint": 3653,
-          "firstFamilyMaxBendPoint": 774,
-          "secondFamilyMaxBendPoint": 1118,
-          "thirdFamilyMaxBendPoint": 1458,
-          "COLA": 0.021,
-          "MaxTaxableWages": 87000
-        },
-        {
-          "Year": 2004,
-          "firstPIAbendPoint": 612,
-          "secondPIAbendPoint": 3689,
-          "firstFamilyMaxBendPoint": 782,
-          "secondFamilyMaxBendPoint": 1129,
-          "thirdFamilyMaxBendPoint": 1472,
-          "COLA": 0.027,
-          "MaxTaxableWages": 87900
-        },
-        {
-          "Year": 2005,
-          "firstPIAbendPoint": 627,
-          "secondPIAbendPoint": 3779,
-          "firstFamilyMaxBendPoint": 801,
-          "secondFamilyMaxBendPoint": 1156,
-          "thirdFamilyMaxBendPoint": 1508,
-          "COLA": 0.041,
-          "MaxTaxableWages": 90000
-        },
-        {
-          "Year": 2006,
-          "firstPIAbendPoint": 656,
-          "secondPIAbendPoint": 3955,
-          "firstFamilyMaxBendPoint": 838,
-          "secondFamilyMaxBendPoint": 1210,
-          "thirdFamilyMaxBendPoint": 1578,
-          "COLA": 0.033,
-          "MaxTaxableWages": 94200
-        },
-        {
-          "Year": 2007,
-          "firstPIAbendPoint": 680,
-          "secondPIAbendPoint": 4100,
-          "firstFamilyMaxBendPoint": 869,
-          "secondFamilyMaxBendPoint": 1255,
-          "thirdFamilyMaxBendPoint": 1636,
-          "COLA": 0.023,
-          "MaxTaxableWages": 97500
-        },
-        {
-          "Year": 2008,
-          "firstPIAbendPoint": 711,
-          "secondPIAbendPoint": 4288,
-          "firstFamilyMaxBendPoint": 909,
-          "secondFamilyMaxBendPoint": 1312,
-          "thirdFamilyMaxBendPoint": 1711,
-          "COLA": 0.058,
-          "MaxTaxableWages": 102000
-        },
-        {
-          "Year": 2009,
-          "firstPIAbendPoint": 744,
-          "secondPIAbendPoint": 4483,
-          "firstFamilyMaxBendPoint": 950,
-          "secondFamilyMaxBendPoint": 1372,
-          "thirdFamilyMaxBendPoint": 1789,
-          "COLA": 0,
-          "MaxTaxableWages": 106800
-        },
-        {
-          "Year": 2010,
-          "firstPIAbendPoint": 761,
-          "secondPIAbendPoint": 4586,
-          "firstFamilyMaxBendPoint": 972,
-          "secondFamilyMaxBendPoint": 1403,
-          "thirdFamilyMaxBendPoint": 1830,
-          "COLA": 0,
-          "MaxTaxableWages": 106800
-        },
-        {
-          "Year": 2011,
-          "firstPIAbendPoint": 749,
-          "secondPIAbendPoint": 4517,
-          "firstFamilyMaxBendPoint": 957,
-          "secondFamilyMaxBendPoint": 1382,
-          "thirdFamilyMaxBendPoint": 1803,
-          "COLA": 0.036,
-          "MaxTaxableWages": 106800
-        },
-        {
-          "Year": 2012,
-          "firstPIAbendPoint": 767,
-          "secondPIAbendPoint": 4624,
-          "firstFamilyMaxBendPoint": 980,
-          "secondFamilyMaxBendPoint": 1415,
-          "thirdFamilyMaxBendPoint": 1845,
-          "COLA": 0.017,
-          "MaxTaxableWages": 110100
-        },
-        {
-          "Year": 2013,
-          "firstPIAbendPoint": 791,
-          "secondPIAbendPoint": 4768,
-          "firstFamilyMaxBendPoint": 1011,
-          "secondFamilyMaxBendPoint": 1459,
-          "thirdFamilyMaxBendPoint": 1903,
-          "COLA": 0.015,
-          "MaxTaxableWages": 113700
-        },
-        {
-          "Year": 2014,
-          "firstPIAbendPoint": 816,
-          "secondPIAbendPoint": 4917,
-          "firstFamilyMaxBendPoint": 1042,
-          "secondFamilyMaxBendPoint": 1505,
-          "thirdFamilyMaxBendPoint": 1962,
-          "COLA": 0.017,
-          "MaxTaxableWages": 117000
-        },
-        {
-          "Year": 2015,
-          "firstPIAbendPoint": 826,
-          "secondPIAbendPoint": 4980,
-          "firstFamilyMaxBendPoint": 1056,
-          "secondFamilyMaxBendPoint": 1524,
-          "thirdFamilyMaxBendPoint": 1987,
-          "COLA": 0,
-          "MaxTaxableWages": 118500
-        },
-        {
-          "Year": 2016,
-          "firstPIAbendPoint": 856,
-          "secondPIAbendPoint": 5157,
-          "firstFamilyMaxBendPoint": 1093,
-          "secondFamilyMaxBendPoint": 1578,
-          "thirdFamilyMaxBendPoint": 2058,
-          "COLA": 0.003,
-          "MaxTaxableWages": 118500
-        },
-        {
-          "Year": 2017,
-          "firstPIAbendPoint": 885,
-          "secondPIAbendPoint": 5336,
-          "firstFamilyMaxBendPoint": 1131,
-          "secondFamilyMaxBendPoint": 1633,
-          "thirdFamilyMaxBendPoint": 2130,
-          "COLA": 0.02,
-          "MaxTaxableWages": 127200
-        },
-        {
-          "Year": 2018,
-          "firstPIAbendPoint": 895,
-          "secondPIAbendPoint": 5397,
-          "firstFamilyMaxBendPoint": 1144,
-          "secondFamilyMaxBendPoint": 1651,
-          "thirdFamilyMaxBendPoint": 2154,
-          "COLA": 0.028,
-          "MaxTaxableWages": 128400
-        },
-        {
-          "Year": 2019,
-          "firstPIAbendPoint": 926,
-          "secondPIAbendPoint": 5583,
-          "firstFamilyMaxBendPoint": 1184,
-          "secondFamilyMaxBendPoint": 1708,
-          "thirdFamilyMaxBendPoint": 2228,
-          "COLA": 0.016,
-          "MaxTaxableWages": 132900
-        },
-        {
-          "Year": 2020,
-          "firstPIAbendPoint": 960,
-          "secondPIAbendPoint": 5785,
-          "firstFamilyMaxBendPoint": 1226,
-          "secondFamilyMaxBendPoint": 1770,
-          "thirdFamilyMaxBendPoint": 2309,
-          "COLA": null,//current year should always be set to null
-          "MaxTaxableWages": 137700,
-        }
-       ]
+  //https://www.ssa.gov/oact/cola/colaseries.html as compared to https://www.ssa.gov/cola/
+  annualIndexedValuesArray = [
+    {
+      "Year": 1979,
+      "firstPIAbendPoint": 180,
+      "secondPIAbendPoint": 1085,
+      "firstFamilyMaxBendPoint": 230,
+      "secondFamilyMaxBendPoint": 332,
+      "thirdFamilyMaxBendPoint": 433,
+      "COLA": 0.099,
+      "MaxTaxableWages": 22900
+    },
+    {
+      "Year": 1980,
+      "firstPIAbendPoint": 194,
+      "secondPIAbendPoint": 1171,
+      "firstFamilyMaxBendPoint": 248,
+      "secondFamilyMaxBendPoint": 358,
+      "thirdFamilyMaxBendPoint": 467,
+      "COLA": 0.143,
+      "MaxTaxableWages": 25900
+    },
+    {
+      "Year": 1981,
+      "firstPIAbendPoint": 211,
+      "secondPIAbendPoint": 1274,
+      "firstFamilyMaxBendPoint": 270,
+      "secondFamilyMaxBendPoint": 390,
+      "thirdFamilyMaxBendPoint": 508,
+      "COLA": 0.112,
+      "MaxTaxableWages": 29700
+    },
+    {
+      "Year": 1982,
+      "firstPIAbendPoint": 230,
+      "secondPIAbendPoint": 1388,
+      "firstFamilyMaxBendPoint": 294,
+      "secondFamilyMaxBendPoint": 425,
+      "thirdFamilyMaxBendPoint": 554,
+      "COLA": 0.074,
+      "MaxTaxableWages": 32400
+    },
+    {
+      "Year": 1983,
+      "firstPIAbendPoint": 254,
+      "secondPIAbendPoint": 1528,
+      "firstFamilyMaxBendPoint": 324,
+      "secondFamilyMaxBendPoint": 468,
+      "thirdFamilyMaxBendPoint": 610,
+      "COLA": 0.035,
+      "MaxTaxableWages": 35700
+    },
+    {
+      "Year": 1984,
+      "firstPIAbendPoint": 267,
+      "secondPIAbendPoint": 1612,
+      "firstFamilyMaxBendPoint": 342,
+      "secondFamilyMaxBendPoint": 493,
+      "thirdFamilyMaxBendPoint": 643,
+      "COLA": 0.035,
+      "MaxTaxableWages": 37800
+    },
+    {
+      "Year": 1985,
+      "firstPIAbendPoint": 280,
+      "secondPIAbendPoint": 1691,
+      "firstFamilyMaxBendPoint": 358,
+      "secondFamilyMaxBendPoint": 517,
+      "thirdFamilyMaxBendPoint": 675,
+      "COLA": 0.031,
+      "MaxTaxableWages": 39600
+    },
+    {
+      "Year": 1986,
+      "firstPIAbendPoint": 297,
+      "secondPIAbendPoint": 1790,
+      "firstFamilyMaxBendPoint": 379,
+      "secondFamilyMaxBendPoint": 548,
+      "thirdFamilyMaxBendPoint": 714,
+      "COLA": 0.013,
+      "MaxTaxableWages": 42000
+    },
+    {
+      "Year": 1987,
+      "firstPIAbendPoint": 310,
+      "secondPIAbendPoint": 1866,
+      "firstFamilyMaxBendPoint": 396,
+      "secondFamilyMaxBendPoint": 571,
+      "thirdFamilyMaxBendPoint": 745,
+      "COLA": 0.042,
+      "MaxTaxableWages": 43800
+    },
+    {
+      "Year": 1988,
+      "firstPIAbendPoint": 319,
+      "secondPIAbendPoint": 1922,
+      "firstFamilyMaxBendPoint": 407,
+      "secondFamilyMaxBendPoint": 588,
+      "thirdFamilyMaxBendPoint": 767,
+      "COLA": 0.04,
+      "MaxTaxableWages": 45000
+    },
+    {
+      "Year": 1989,
+      "firstPIAbendPoint": 339,
+      "secondPIAbendPoint": 2044,
+      "firstFamilyMaxBendPoint": 433,
+      "secondFamilyMaxBendPoint": 626,
+      "thirdFamilyMaxBendPoint": 816,
+      "COLA": 0.047,
+      "MaxTaxableWages": 48000
+    },
+    {
+      "Year": 1990,
+      "firstPIAbendPoint": 356,
+      "secondPIAbendPoint": 2145,
+      "firstFamilyMaxBendPoint": 455,
+      "secondFamilyMaxBendPoint": 656,
+      "thirdFamilyMaxBendPoint": 856,
+      "COLA": 0.054,
+      "MaxTaxableWages": 51300
+    },
+    {
+      "Year": 1991,
+      "firstPIAbendPoint": 370,
+      "secondPIAbendPoint": 2230,
+      "firstFamilyMaxBendPoint": 473,
+      "secondFamilyMaxBendPoint": 682,
+      "thirdFamilyMaxBendPoint": 890,
+      "COLA": 0.037,
+      "MaxTaxableWages": 53400
+    },
+    {
+      "Year": 1992,
+      "firstPIAbendPoint": 387,
+      "secondPIAbendPoint": 2333,
+      "firstFamilyMaxBendPoint": 495,
+      "secondFamilyMaxBendPoint": 714,
+      "thirdFamilyMaxBendPoint": 931,
+      "COLA": 0.03,
+      "MaxTaxableWages": 55500
+    },
+    {
+      "Year": 1993,
+      "firstPIAbendPoint": 401,
+      "secondPIAbendPoint": 2420,
+      "firstFamilyMaxBendPoint": 513,
+      "secondFamilyMaxBendPoint": 740,
+      "thirdFamilyMaxBendPoint": 966,
+      "COLA": 0.026,
+      "MaxTaxableWages": 57600
+    },
+    {
+      "Year": 1994,
+      "firstPIAbendPoint": 422,
+      "secondPIAbendPoint": 2545,
+      "firstFamilyMaxBendPoint": 539,
+      "secondFamilyMaxBendPoint": 779,
+      "thirdFamilyMaxBendPoint": 1016,
+      "COLA": 0.028,
+      "MaxTaxableWages": 60600
+    },
+    {
+      "Year": 1995,
+      "firstPIAbendPoint": 426,
+      "secondPIAbendPoint": 2567,
+      "firstFamilyMaxBendPoint": 544,
+      "secondFamilyMaxBendPoint": 785,
+      "thirdFamilyMaxBendPoint": 1024,
+      "COLA": 0.026,
+      "MaxTaxableWages": 61200
+    },
+    {
+      "Year": 1996,
+      "firstPIAbendPoint": 437,
+      "secondPIAbendPoint": 2635,
+      "firstFamilyMaxBendPoint": 559,
+      "secondFamilyMaxBendPoint": 806,
+      "thirdFamilyMaxBendPoint": 1052,
+      "COLA": 0.029,
+      "MaxTaxableWages": 62700
+    },
+    {
+      "Year": 1997,
+      "firstPIAbendPoint": 455,
+      "secondPIAbendPoint": 2741,
+      "firstFamilyMaxBendPoint": 581,
+      "secondFamilyMaxBendPoint": 839,
+      "thirdFamilyMaxBendPoint": 1094,
+      "COLA": 0.021,
+      "MaxTaxableWages": 65400
+    },
+    {
+      "Year": 1998,
+      "firstPIAbendPoint": 477,
+      "secondPIAbendPoint": 2875,
+      "firstFamilyMaxBendPoint": 609,
+      "secondFamilyMaxBendPoint": 880,
+      "thirdFamilyMaxBendPoint": 1147,
+      "COLA": 0.013,
+      "MaxTaxableWages": 68400
+    },
+    {
+      "Year": 1999,
+      "firstPIAbendPoint": 505,
+      "secondPIAbendPoint": 3043,
+      "firstFamilyMaxBendPoint": 645,
+      "secondFamilyMaxBendPoint": 931,
+      "thirdFamilyMaxBendPoint": 1214,
+      "COLA": 0.025,
+      "MaxTaxableWages": 72600
+    },
+    {
+      "Year": 2000,
+      "firstPIAbendPoint": 531,
+      "secondPIAbendPoint": 3202,
+      "firstFamilyMaxBendPoint": 679,
+      "secondFamilyMaxBendPoint": 980,
+      "thirdFamilyMaxBendPoint": 1278,
+      "COLA": 0.035,
+      "MaxTaxableWages": 76200
+    },
+    {
+      "Year": 2001,
+      "firstPIAbendPoint": 561,
+      "secondPIAbendPoint": 3381,
+      "firstFamilyMaxBendPoint": 717,
+      "secondFamilyMaxBendPoint": 1034,
+      "thirdFamilyMaxBendPoint": 1349,
+      "COLA": 0.026,
+      "MaxTaxableWages": 80400
+    },
+    {
+      "Year": 2002,
+      "firstPIAbendPoint": 592,
+      "secondPIAbendPoint": 3567,
+      "firstFamilyMaxBendPoint": 756,
+      "secondFamilyMaxBendPoint": 1092,
+      "thirdFamilyMaxBendPoint": 1424,
+      "COLA": 0.014,
+      "MaxTaxableWages": 84900
+    },
+    {
+      "Year": 2003,
+      "firstPIAbendPoint": 606,
+      "secondPIAbendPoint": 3653,
+      "firstFamilyMaxBendPoint": 774,
+      "secondFamilyMaxBendPoint": 1118,
+      "thirdFamilyMaxBendPoint": 1458,
+      "COLA": 0.021,
+      "MaxTaxableWages": 87000
+    },
+    {
+      "Year": 2004,
+      "firstPIAbendPoint": 612,
+      "secondPIAbendPoint": 3689,
+      "firstFamilyMaxBendPoint": 782,
+      "secondFamilyMaxBendPoint": 1129,
+      "thirdFamilyMaxBendPoint": 1472,
+      "COLA": 0.027,
+      "MaxTaxableWages": 87900
+    },
+    {
+      "Year": 2005,
+      "firstPIAbendPoint": 627,
+      "secondPIAbendPoint": 3779,
+      "firstFamilyMaxBendPoint": 801,
+      "secondFamilyMaxBendPoint": 1156,
+      "thirdFamilyMaxBendPoint": 1508,
+      "COLA": 0.041,
+      "MaxTaxableWages": 90000
+    },
+    {
+      "Year": 2006,
+      "firstPIAbendPoint": 656,
+      "secondPIAbendPoint": 3955,
+      "firstFamilyMaxBendPoint": 838,
+      "secondFamilyMaxBendPoint": 1210,
+      "thirdFamilyMaxBendPoint": 1578,
+      "COLA": 0.033,
+      "MaxTaxableWages": 94200
+    },
+    {
+      "Year": 2007,
+      "firstPIAbendPoint": 680,
+      "secondPIAbendPoint": 4100,
+      "firstFamilyMaxBendPoint": 869,
+      "secondFamilyMaxBendPoint": 1255,
+      "thirdFamilyMaxBendPoint": 1636,
+      "COLA": 0.023,
+      "MaxTaxableWages": 97500
+    },
+    {
+      "Year": 2008,
+      "firstPIAbendPoint": 711,
+      "secondPIAbendPoint": 4288,
+      "firstFamilyMaxBendPoint": 909,
+      "secondFamilyMaxBendPoint": 1312,
+      "thirdFamilyMaxBendPoint": 1711,
+      "COLA": 0.058,
+      "MaxTaxableWages": 102000
+    },
+    {
+      "Year": 2009,
+      "firstPIAbendPoint": 744,
+      "secondPIAbendPoint": 4483,
+      "firstFamilyMaxBendPoint": 950,
+      "secondFamilyMaxBendPoint": 1372,
+      "thirdFamilyMaxBendPoint": 1789,
+      "COLA": 0,
+      "MaxTaxableWages": 106800
+    },
+    {
+      "Year": 2010,
+      "firstPIAbendPoint": 761,
+      "secondPIAbendPoint": 4586,
+      "firstFamilyMaxBendPoint": 972,
+      "secondFamilyMaxBendPoint": 1403,
+      "thirdFamilyMaxBendPoint": 1830,
+      "COLA": 0,
+      "MaxTaxableWages": 106800
+    },
+    {
+      "Year": 2011,
+      "firstPIAbendPoint": 749,
+      "secondPIAbendPoint": 4517,
+      "firstFamilyMaxBendPoint": 957,
+      "secondFamilyMaxBendPoint": 1382,
+      "thirdFamilyMaxBendPoint": 1803,
+      "COLA": 0.036,
+      "MaxTaxableWages": 106800
+    },
+    {
+      "Year": 2012,
+      "firstPIAbendPoint": 767,
+      "secondPIAbendPoint": 4624,
+      "firstFamilyMaxBendPoint": 980,
+      "secondFamilyMaxBendPoint": 1415,
+      "thirdFamilyMaxBendPoint": 1845,
+      "COLA": 0.017,
+      "MaxTaxableWages": 110100
+    },
+    {
+      "Year": 2013,
+      "firstPIAbendPoint": 791,
+      "secondPIAbendPoint": 4768,
+      "firstFamilyMaxBendPoint": 1011,
+      "secondFamilyMaxBendPoint": 1459,
+      "thirdFamilyMaxBendPoint": 1903,
+      "COLA": 0.015,
+      "MaxTaxableWages": 113700
+    },
+    {
+      "Year": 2014,
+      "firstPIAbendPoint": 816,
+      "secondPIAbendPoint": 4917,
+      "firstFamilyMaxBendPoint": 1042,
+      "secondFamilyMaxBendPoint": 1505,
+      "thirdFamilyMaxBendPoint": 1962,
+      "COLA": 0.017,
+      "MaxTaxableWages": 117000
+    },
+    {
+      "Year": 2015,
+      "firstPIAbendPoint": 826,
+      "secondPIAbendPoint": 4980,
+      "firstFamilyMaxBendPoint": 1056,
+      "secondFamilyMaxBendPoint": 1524,
+      "thirdFamilyMaxBendPoint": 1987,
+      "COLA": 0,
+      "MaxTaxableWages": 118500
+    },
+    {
+      "Year": 2016,
+      "firstPIAbendPoint": 856,
+      "secondPIAbendPoint": 5157,
+      "firstFamilyMaxBendPoint": 1093,
+      "secondFamilyMaxBendPoint": 1578,
+      "thirdFamilyMaxBendPoint": 2058,
+      "COLA": 0.003,
+      "MaxTaxableWages": 118500
+    },
+    {
+      "Year": 2017,
+      "firstPIAbendPoint": 885,
+      "secondPIAbendPoint": 5336,
+      "firstFamilyMaxBendPoint": 1131,
+      "secondFamilyMaxBendPoint": 1633,
+      "thirdFamilyMaxBendPoint": 2130,
+      "COLA": 0.02,
+      "MaxTaxableWages": 127200
+    },
+    {
+      "Year": 2018,
+      "firstPIAbendPoint": 895,
+      "secondPIAbendPoint": 5397,
+      "firstFamilyMaxBendPoint": 1144,
+      "secondFamilyMaxBendPoint": 1651,
+      "thirdFamilyMaxBendPoint": 2154,
+      "COLA": 0.028,
+      "MaxTaxableWages": 128400
+    },
+    {
+      "Year": 2019,
+      "firstPIAbendPoint": 926,
+      "secondPIAbendPoint": 5583,
+      "firstFamilyMaxBendPoint": 1184,
+      "secondFamilyMaxBendPoint": 1708,
+      "thirdFamilyMaxBendPoint": 2228,
+      "COLA": 0.016,
+      "MaxTaxableWages": 132900
+    },
+    {
+      "Year": 2020,
+      "firstPIAbendPoint": 960,
+      "secondPIAbendPoint": 5785,
+      "firstFamilyMaxBendPoint": 1226,
+      "secondFamilyMaxBendPoint": 1770,
+      "thirdFamilyMaxBendPoint": 2309,
+      "COLA": null,//current year should always be set to null
+      "MaxTaxableWages": 137700,
+    }
+    ]
 }

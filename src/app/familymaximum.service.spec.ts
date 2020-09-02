@@ -201,7 +201,7 @@ describe('FamilyMaximumService', () => {
       personB = service.calculateFamilyMaximum(personB, service.today) //Turns 62 in 2017, so bend points are $1,131	$1,633	$2,130. Family max = 150% x 400 = 600
       service.applyFamilyMaximumCouple(1, scenario, calcYear, personA, true, personB, true)
       //Combined family max is $2100. That's $1100 for personB and 2 children, or $366.67 each.
-      benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
+      benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
       //personB's spousal benefit now adjusted downward by greater of PIA ($400) or retirementBenefit ($315). So it's reduced to zero.
       service.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, true)
       //Now we have $1100 available between child1 and child2. So they should each be able to get their full $500 child benefit.
@@ -253,7 +253,7 @@ describe('FamilyMaximumService', () => {
       personA.familyMaximum = 650 //Just comes from example in POMS. Not calculated.
       personB.familyMaximum = 280 //Just comes from example in POMS. Not calculated.
       service.applyFamilyMaximumCouple(1, scenario, calcYear, personA, true, personB, true)
-      benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
+      benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
       service.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, true)
       expect(scenario.children[0].monthlyChildPayment)
         .toBeCloseTo(176.67, 1)
@@ -295,7 +295,7 @@ describe('FamilyMaximumService', () => {
       personA.familyMaximum = 650 //Just comes from example in POMS. Not calculated.
       personB.familyMaximum = 280 //Just comes from example in POMS. Not calculated.
       service.applyFamilyMaximumCouple(1, scenario, calcYear, personA, true, personB, true)
-      benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
+      benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
       service.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, true)
       expect(scenario.children[0].monthlyChildPayment)
         .toEqual(200)
@@ -362,7 +362,7 @@ describe('FamilyMaximumService', () => {
       //5707.60 / 9750 = 58.5395% available to pay
       //So personA's survivor benefit is now at 3000 x 0.585395 = $1756.19
       //And each child's benefit is now at 2250 x 0.585395 = $1317.14
-      benefitService.adjustSpousalAndSurvivorBenefitsForOwnEntitlement(personA, personB)
+      benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
       //personB's survivor benefit now adjusted downward by own retirementBenefit ($393.75). So it's reduced to $1,362.43
       service.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, false)
       //The $393.75 is divided among the three children ($131.25 each), so they now should be getting $1317.14 + 131.25 = $1448.39 (which doesn't exceed original benefit, so we're good) 
