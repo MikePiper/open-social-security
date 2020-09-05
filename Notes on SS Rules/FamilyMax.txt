@@ -30,12 +30,15 @@ https://secure.ssa.gov/poms.nsf/lnx/0300615768 (combined family max)
             *Note that for RIB LIM, it's supposed to use non-WEP PIA, when that matters.
             *RIB-LIM happens right after reduction for age. So it happens after second time through family max application.
 3) Total all "original benefits" and see if total exceeds (family max - worker's PIA)
-4) If it does, find percentage that we can pay: (family max - worker's PIA)/total of original benefits. If it doesn't, consider percentage to be 100% rather than > 100%. (That is, don't let anybody's aux benefit exceed "original benefit.")
+4) If it does, find percentage that we can pay: (family max - worker's PIA)/total of original benefits.
+    If it doesn't, consider percentage to be 100% rather than > 100%. (That is, don't let anybody's aux benefit exceed "original benefit.")
 5) Multiply each person's original benefit by that percentage. We should now be at (rather than in excess of) family max
-6) Then, check to see if anybody is getting their own retirement/disability benefit. If so, reduce current aux benefit by that amount (but not below zero). So now each person's aux benefit is "original benefit, multiplied by fraction for FamilyMax as necessary, reduced for entitlement on own work record"
+6) Then, check to see if anybody is getting their own retirement/disability benefit. If so, reduce current aux benefit by that amount (but not below zero).
+    So now each person's aux benefit is "original benefit, multiplied by fraction for FamilyMax as necessary, reduced for entitlement on own work record"
     *In case of calculating spousal benefit, we're reducing by greater of person's own retirement benefit or PIA. In survivor benefit, we're reducing by person's own retirement benefit.
     *In our case, this will only be for spouse/widow, as children are assumed not to be working
-7) Re-total aux benefits on work record in question. Total will now be below family max if spouse/widow is entitled on own record. Divide extra additional amount (i.e., amount by which family max exceeds current sum of aux benefits) among children.
+7) Re-total aux benefits on work record in question. Total will now be below family max if spouse/widow is entitled on own record. Divide extra additional amount
+    (i.e., amount by which family max exceeds current sum of aux benefits) among children.
 8) Make sure nobody's benefit exceeds original benefit.
 9) Reduce spouse/widow(er) benefit for age, if applicable
 

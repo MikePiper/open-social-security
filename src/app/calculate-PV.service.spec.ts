@@ -946,8 +946,8 @@ describe('tests calculateCouplePV', () => {
         personB.spousalBenefitDate = new MonthYearDate(2025, 2)
         personB.childInCareSpousalBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
         //^^Spousal benefit begins March 2023 when personA starts retirement. But it's child in care spousal benefit until child turns 16 in March 2025. Here we are having them file Form SSA-25 immediately at that date.
-        personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-        personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+        personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
+        personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
         expect(claimStrategy.PV).toBeCloseTo(406206, 0)
         //manual calculation
@@ -1002,8 +1002,8 @@ describe('tests calculateCouplePV', () => {
         personB.survivorBenefitDate = new MonthYearDate(personB.survivorFRA)//doesn't file for survivor benefits prior to survivor FRA
         mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
         mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
-        personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-        personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+        personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
+        personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
         expect(claimStrategy.PV).toBeCloseTo(367748, 0)
         //manual calculation:
@@ -1063,8 +1063,8 @@ describe('tests calculateCouplePV', () => {
           personB.childInCareSpousalBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
           mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
           mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
-          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
+          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
           let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
           expect(claimStrategy.PV).toBeCloseTo(467825, 0)
           //manual calculation:
@@ -1133,8 +1133,8 @@ describe('tests calculateCouplePV', () => {
           //^^personB starts their spousal benefit when they start their retirement benefit. (They also get child-in-care spousal benefits earlier, but those end in March 2026 when child turns 16.)
           mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
           mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
-          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
+          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
           let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
           expect(claimStrategy.PV).toBeCloseTo(429664, 0)
           //manual calculation
@@ -1185,8 +1185,8 @@ describe('tests calculateCouplePV', () => {
           personB.childInCareSpousalBenefitDate = new MonthYearDate(personA.retirementBenefitDate)
           mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
           mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
-          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
+          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
           let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
           expect(claimStrategy.PV).toBeCloseTo(424414, 0)
           //manual calculation
@@ -1254,8 +1254,8 @@ describe('tests calculateCouplePV', () => {
           //^^Spousal benefit begins March 2023 when personA starts retirement. But it's child in care spousal benefit at all ages, given disabled child.
           mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
           mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
-          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
-          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over.)
+          personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
+          personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
           let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
@@ -1288,7 +1288,6 @@ describe('tests calculateCouplePV', () => {
             expect(claimStrategy.outputTable[10][7]).toEqual("$27,000") //12 months of each getting $1125
             expect(claimStrategy.outputTable[10][8]).toEqual("$41,850") //total of above amounts
         })
-
 })
 
 

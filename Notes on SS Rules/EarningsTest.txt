@@ -47,23 +47,3 @@ Conclusion: Doesn't matter.
     So we might end up with a situation where in the table PersonB's benefit is overstated and PersonA's is understated, but it wouldn't affect PV for the year at all.
 
 
-----
-ON ORDERING RE: EARNINGS TEST AND FAMILY MAXIMUM
-        SS Act notes:
-        203(a)(1) is family max
-        203(a)(3)(A) is combined family max
-        203(b) and 203(f) are earnings test
-
-        203(b)(1)(B)(i) (and half-sentence immediately beforehand) appear to indicate that family max is applied before earnings test.
-
-        CFR 404.437 says that "We will further reduce your benefits (other than a disability insurance benefit) because of your excess earnings (see § 404.430), after your benefits may have been reduced because of the following: (a) The family maximum (see §§ 404.403 and 404.404)"
-
-        POMS is pretty clear that family maximum happens first
-        https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501155
-            "Charge excess earnings to auxiliary or survivor benefits after adjusting the benefits for the maximum"
-        https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501095
-            "The amount of benefits we use to charge the excess is the amount after any reduction for the maximum (without first making any annual earnings test deduction)"
-
-        Conversely CFR 404.402(a) states "Deductions because of earnings or work (see §§ 404.415 and 404.417) [...] are made (1) Before making any reductions because of the maximum (see § 404.403)"
-
-        So that's 4 places (Act, 2 POMS, 1 CFR) saying family max happens first. And 1 saying earnings test happens first.

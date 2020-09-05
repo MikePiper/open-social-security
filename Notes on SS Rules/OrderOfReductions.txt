@@ -1,0 +1,88 @@
+
+202(e)(2)(D) is RIB-LIM provision for widows. 202(f)(2)(D) for widowers.
+202(k) is simultaneous entitlement to benefits
+202(k)(5) is GPO
+202(q) is reduction for age
+203(a)(1) is family max
+203(a)(3)(A) is combined family max
+203(b) and 203(f) are earnings test
+215(g) is rounding of benefits to dollar
+
+----
+ON ORDERING RE: EARNINGS TEST AND FAMILY MAXIMUM
+
+        203(b)(1)(B)(i) (and half-sentence immediately beforehand) appear to indicate that family max is applied before earnings test.
+
+        CFR 404.437 says that "We will further reduce your benefits (other than a disability insurance benefit) because of your excess earnings (see § 404.430), after your benefits may have been reduced because of the following: (a) The family maximum (see §§ 404.403 and 404.404)"
+
+        POMS is pretty clear that family maximum happens first
+        https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501155
+            "Charge excess earnings to auxiliary or survivor benefits after adjusting the benefits for the maximum"
+        https://secure.ssa.gov/apps10/poms.nsf/lnx/0302501095
+            "The amount of benefits we use to charge the excess is the amount after any reduction for the maximum (without first making any annual earnings test deduction)"
+
+        Conversely CFR 404.402(a) states "Deductions because of earnings or work (see §§ 404.415 and 404.417) [...] are made (1) Before making any reductions because of the maximum (see § 404.403)"
+
+        So that's 4 places (Act, 2 POMS, 1 CFR) saying family max happens first. And 1 saying earnings test happens first.
+-----
+
+
+GN 02603.045
+https://secure.ssa.gov/apps10/poms.nsf/lnx/0202603045
+
+"As the result of the Parisi by Cooney v. Chater reduction of benefits under the family maximum in cases involving dual entitlement –
+Title II of the Social Security Act) court case decision, Acquiescence Ruling 97-1(1), now applies to all States. Under this ruling,
+we will consider only the benefit actually payable when reducing the benefits of dually entitled auxiliaries or survivors.
+(The benefit payable to the dually entitled person is the amount before any applicable reduction for age, government pension offset (GPO), or workers' compensation offset (WC).)
+Pay any resulting increase to other auxiliaries or survivors entitled on the same record.
+
+NOTE: Only pay this increase to others who are not dually entitled. If there are no other beneficiaries who are not dually entitled, this change does not apply.
+As used in the following section, the phrase decision or determination means any decision by a court, Appeals Council, or administrative law judge or any initial or reconsideration determination that awards benefits."
+
+Point being, when reducing for family max, we consider "only the benefit actually payable" -- which is BEFORE reduction for age or GPO
+...but after earnings test and own entitlement, because those aren't mentioned here.
+
+Similarly...
+GN 02603.020 Deduction before Reduction and Facility of Payment
+...says that reduction for family max can happen AFTER reduction for own entitlement and earnings test. (But family max reduction explicitly must be before reduction for GPO and reduction for age.)
+
+
+-----
+WE KNOW:
+*For spousal, reduction for own entitlement happens before reduction for age. See "method b" vs "method c" here: https://secure.ssa.gov/apps10/poms.nsf/lnx/0300615020
+*For survivor, reduction for age happens before reduction for own entitlement (See method b vs c in POMS above)
+*RIB-LIM reduction happens before reduction due to own entitlement (see SS Act 202(k)(3)(A))
+*RIB-LIM happens after reduction for age and family max (see POMS RS 00615.320)
+*Reduction for earnings test happens after reduction for age and reduction for own entitlement (see RS 02501.095).
+*Reduction for family max can happen after reduction for own entitlement and earnings test, but must be before reduction for age and GPO (see GN 02603.020)
+*GPO happens after reduction for age and RIB-LIM (see 202(k)(5))
+*GPO happens after own entitlement (see CFR 404-408a)
+
+----
+
+Both alive, current:
+    Calculate original benefits
+    Family max, first run
+    Own entitlement
+    Family max, second run
+    Age
+    Earnings test
+    GPO
+
+    ^^ This seems to satisfy all of the above rules, and it matches examples A6, A7, A8, A9, B2 from GN 02603.060.
+
+One alive, one deceased, current:
+    Calculate original benefits
+    Family max, first run
+    Family max, second run
+    Age
+    RIB-LIM
+    Own entitlement
+    Earnings test
+    GPO
+
+    Survivor examples from GN 02603.060 (A1, A2, B1) are not as clear as far as which deductions apply. So it's hard to know if they match our math here. But they don't clearly NOT match...
+
+    Tricky point is that we have all these things that have to happen "after AGE" in survivor case (RIB-LIM, earnings test, and own entitlement) and family max has to be before age.
+        *So if all those things have to be after age, and age has to be after famiily max, all of those things have to be after family max, even though "deduction before reduction" says they can happen before family max.
+        *Exception would be if there is no "age" reduction. Then all those things that can come before family max (per "deduction before reduction") can indeed come before family max.

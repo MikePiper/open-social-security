@@ -285,56 +285,22 @@ export class CalculatePvService {
       //Assume personA and personB are alive
             //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, true)
-            //Adjust each person's monthlyPayment as necessary for family max
-              this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, true, personB, true)
-            //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
-              this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
-            //Redo family max application
-              this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, true)
-            //Adjust spousal monthlyPayment fields as necessary for age
-              this.benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
-            //Adjust spousal/survivor monthlyPayment fields for GPO
-              this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
-            //Adjust as necessary for earnings test (and tally months withheld)
-              this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, true, personB, true)
+            //Apply deductions and reductions as necessary
+              this.applyDeductionsAndReductions(scenario, calcYear, personA, true, personB, true)
             //add everybody's monthlyPayment fields to appropriate annual totals (annualBenefitBothAlive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, true, personB, true, printOutputTable)
       //Assume personA is alive and personB is deceased
             //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, false)
-            //Adjust each person's monthlyPayment as necessary for family max
-              this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, true, personB, false)
-            //Adjust survivor benefit for age (i.e., for early entitlement of still-living person, if applicable)
-              personA = this.benefitService.adjustSurvivorBenefitsForAge(scenario, personA)
-            //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
-              this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personA, personB)
-            //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
-              this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
-            //Redo family max application
-              this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, false)
-            //Adjust spousal/survivor monthlyPayment fields for GPO
-              this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
-            //Adjust as necessary for earnings test (and tally months withheld)
-              this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, true, personB, false)
+            //Apply deductions and reductions as necessary
+              this.applyDeductionsAndReductions(scenario, calcYear, personA, true, personB, false)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitOnlyPersonAalive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, true, personB, false, printOutputTable)
       //Assume personA is deceased and personB is alive
             //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, true)
-            //Adjust each person's monthlyPayment as necessary for family max
-              this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, false, personB, true)
-            //Adjust survivor benefit for age (i.e., for early entitlement of still-living person, if applicable)
-              personB = this.benefitService.adjustSurvivorBenefitsForAge(scenario, personB)
-            //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
-              this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
-            //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
-              this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
-            //Redo family max application
-              this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, false, personB, true)
-            //Adjust spousal/survivor monthlyPayment fields for GPO
-              this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
-            //Adjust as necessary for earnings test (and tally months withheld)
-              this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, false, personB, true)
+            //Apply deductions and reductions as necessary
+              this.applyDeductionsAndReductions(scenario, calcYear, personA, false, personB, true)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitOnlyPersonBalive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, true, printOutputTable)
       //Assume personA and personB are deceased
@@ -342,7 +308,7 @@ export class CalculatePvService {
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, false)
             //Adjust each person's monthlyPayment as necessary for family max
               this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, false, personB, false)
-            //Earnings test not necessary
+            //Family max is only deduction/reduction necessary in "both parents deceased" case
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitBothDeceased)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, false, printOutputTable)
       }
@@ -435,7 +401,7 @@ export class CalculatePvService {
         // (b) conditions are appropriate for us to do so            
         if (!savedCalculationYear && (this.readyForSavedCalculationYearForFasterLoop(scenario, calcYear, personA, personB)) === true){
               savedCalculationYear = this.createSavedCalculationYearForFasterLoop(calcYear)
-            }
+        }
       }
       //increment month by 1 and create new CalculationYear object if it's now January
       calcYear.date.setMonth(calcYear.date.getMonth()+1)
@@ -598,7 +564,7 @@ export class CalculatePvService {
           personA.survivorBenefitInMonthOfEntitlement = personA.monthlySurvivorPayment
         }
         //if this is personA's motherFatherBenefitDate, pass along monthlyMotherFatherPayment for same reason as above
-        if (calcYear.date.valueOf() == personA.motherFatherBenefitDate.valueOf()){
+        if (personA.motherFatherBenefitDate && calcYear.date.valueOf() == personA.motherFatherBenefitDate.valueOf()){
           personA.motherFatherBenefitInMonthOfEntitlement = personA.monthlyMotherFatherPayment
         }
       }
@@ -632,11 +598,14 @@ export class CalculatePvService {
       savedCalculationYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive
       savedCalculationYear.annualBenefitOnlyPersonBalive = calcYear.annualBenefitOnlyPersonBalive
       savedCalculationYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit
+      savedCalculationYear.tablePersonAannualRetirementBenefitOnlyAalive = calcYear.tablePersonAannualRetirementBenefitOnlyAalive
       savedCalculationYear.tablePersonAannualSpousalBenefit = calcYear.tablePersonAannualSpousalBenefit
       savedCalculationYear.tablePersonAannualSurvivorBenefit = calcYear.tablePersonAannualSurvivorBenefit
+      savedCalculationYear.tablePersonAannualMotherFatherBenefit = calcYear.tablePersonAannualMotherFatherBenefit
       savedCalculationYear.tablePersonBannualRetirementBenefit = calcYear.tablePersonBannualRetirementBenefit
       savedCalculationYear.tablePersonBannualSpousalBenefit = calcYear.tablePersonBannualSpousalBenefit
       savedCalculationYear.tablePersonBannualSurvivorBenefit = calcYear.tablePersonBannualSurvivorBenefit
+      savedCalculationYear.tablePersonBannualMotherFatherBenefit = calcYear.tablePersonBannualMotherFatherBenefit
       savedCalculationYear.tableTotalAnnualChildBenefitsBothParentsAlive = calcYear.tableTotalAnnualChildBenefitsBothParentsAlive
       savedCalculationYear.tableTotalAnnualChildBenefitsBothParentsDeceased = calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased
       savedCalculationYear.tableTotalAnnualChildBenefitsOnlyPersonAalive = calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive
@@ -650,11 +619,14 @@ export class CalculatePvService {
     calcYear.annualBenefitOnlyPersonAalive = savedCalculationYear.annualBenefitOnlyPersonAalive
     calcYear.annualBenefitOnlyPersonBalive = savedCalculationYear.annualBenefitOnlyPersonBalive
     calcYear.tablePersonAannualRetirementBenefit = savedCalculationYear.tablePersonAannualRetirementBenefit
+    calcYear.tablePersonAannualRetirementBenefitOnlyAalive = savedCalculationYear.tablePersonAannualRetirementBenefitOnlyAalive
     calcYear.tablePersonAannualSpousalBenefit = savedCalculationYear.tablePersonAannualSpousalBenefit
     calcYear.tablePersonAannualSurvivorBenefit = savedCalculationYear.tablePersonAannualSurvivorBenefit
+    calcYear.tablePersonAannualMotherFatherBenefit = savedCalculationYear.tablePersonAannualMotherFatherBenefit
     calcYear.tablePersonBannualRetirementBenefit = savedCalculationYear.tablePersonBannualRetirementBenefit
     calcYear.tablePersonBannualSpousalBenefit = savedCalculationYear.tablePersonBannualSpousalBenefit
     calcYear.tablePersonBannualSurvivorBenefit = savedCalculationYear.tablePersonBannualSurvivorBenefit
+    calcYear.tablePersonBannualMotherFatherBenefit = savedCalculationYear.tablePersonBannualMotherFatherBenefit
     calcYear.tableTotalAnnualChildBenefitsBothParentsAlive = savedCalculationYear.tableTotalAnnualChildBenefitsBothParentsAlive
     calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased = savedCalculationYear.tableTotalAnnualChildBenefitsBothParentsDeceased
     calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive = savedCalculationYear.tableTotalAnnualChildBenefitsOnlyPersonAalive
@@ -663,7 +635,7 @@ export class CalculatePvService {
 
   whenShouldPVcalculationStart(scenario:CalculationScenario, personA:Person, personB?:Person):MonthYearDate{
     let startDate:MonthYearDate
-    let childUnder16OrDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, this.today)
+    let childUnder16orDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, this.today)
     //Determine if there is a child who has not yet filed. (This is important because it might open possibility of retroactive application.)
         let childWhoHasntFiled:boolean = false
         for (let child of scenario.children){
@@ -765,7 +737,7 @@ export class CalculatePvService {
         personB.dateOfDeath.getFullYear() < this.today.getFullYear() && //personB died last year or earlier and...
           (childWhoHasntFiled === true //Child can file retroactive
           || (personA.isOnDisability === true && personA.initialAge >= 50 && personA.hasFiledAsSurvivor === false) //or personA can file retroactive survivor because they're disabled and at least age 50 (such that "no retroactive before FRA" rule doesn't apply)
-          || (childUnder16OrDisabled === true && personA.hasFiledAsMotherFather === false)) //or personA can file retroactive mother/father
+          || (childUnder16orDisabled === true && personA.hasFiledAsMotherFather === false)) //or personA can file retroactive mother/father
         )
       ){
         startDate = new MonthYearDate(this.today.getFullYear()-1, 0)//Jan 1 of last year
@@ -779,7 +751,7 @@ export class CalculatePvService {
           startDate = new MonthYearDate(personA.survivorBenefitDate.getFullYear(), 0)
         }
         //...but no later than Jan1 of this year if there's a child under 16 or disabled (because there will be child benefits and mother/father benefits this year).
-        if (childUnder16OrDisabled === true && startDate > new MonthYearDate(this.today.getFullYear(), 0)){
+        if (childUnder16orDisabled === true && startDate > new MonthYearDate(this.today.getFullYear(), 0)){
           startDate = new MonthYearDate(this.today.getFullYear(), 0)//Jan 1 of this year
         }
       } 
@@ -803,7 +775,93 @@ export class CalculatePvService {
     return presentValue
   }
 
-
+  applyDeductionsAndReductions(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB:Person, personBaliveBoolean:boolean){
+    //See OrderOfReductions.txt for a discussion of the reasoning behind all this
+    if (personAaliveBoolean === true && personBaliveBoolean === true){
+        //Adjust each person's monthlyPayment as necessary for family max
+          this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+        //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
+          this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
+        //Redo family max application
+          this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+        //Adjust spousal monthlyPayment fields as necessary for age
+          this.benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
+        //Adjust as necessary for earnings test (and tally months withheld)
+          this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+        //Adjust spousal/survivor monthlyPayment fields for GPO
+          this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
+    }
+    else if (personAaliveBoolean === true && personBaliveBoolean === false){
+        //If there is no reduction for age...
+        if (personA.survivorBenefitDate >= personA.survivorFRA || calcYear.date < personA.survivorBenefitDate){
+          //There's no spousal right now, since we're assuming B is deceased. So "no reduction for age" just means personA isn't getting widow(er) yet, or personA reached FRA before filing for widow(er).
+            //Mother/father not an issue, since it's not reduced for age.
+          //Adjust each person's monthlyPayment as necessary for family max
+            this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
+            this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personA, personB)
+          //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
+            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
+          //Adjust as necessary for earnings test (and tally months withheld)
+            this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Redo family max application
+            this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Adjust spousal/survivor monthlyPayment fields for GPO
+            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
+        }
+        else {//i.e., there is reduction for age
+          //Adjust each person's monthlyPayment as necessary for family max
+            this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Redo family max application
+            this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Adjust survivor benefit for age (i.e., for early entitlement of still-living person, if applicable)
+            personA = this.benefitService.adjustSurvivorBenefitsForAge(scenario, personA)
+          //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
+            this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personA, personB)
+          //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
+            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
+          //Adjust as necessary for earnings test (and tally months withheld)
+            this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Adjust spousal/survivor monthlyPayment fields for GPO
+            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
+        }
+    }
+    else if (personAaliveBoolean === false && personBaliveBoolean === true){
+        //If there is no reduction for age...
+        if (personB.survivorBenefitDate >= personB.survivorFRA || calcYear.date < personB.survivorBenefitDate){
+          //There's no spousal right now, since we're assuming A is deceased. So "no reduction for age" just means personB isn't getting widow(er) yet, or personB reached FRA before filing for widow(er).
+            //Mother/father not an issue, since it's not reduced for age.
+          //Adjust each person's monthlyPayment as necessary for family max
+            this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
+            this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
+          //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
+            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
+          //Adjust as necessary for earnings test (and tally months withheld)
+            this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Redo family max application
+            this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Adjust spousal/survivor monthlyPayment fields for GPO
+            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
+        }
+        else {//i.e., there is reduction for age
+          //Adjust each person's monthlyPayment as necessary for family max
+            this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Redo family max application
+            this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Adjust survivor benefit for age (i.e., for early entitlement of still-living person, if applicable)
+            personA = this.benefitService.adjustSurvivorBenefitsForAge(scenario, personB)
+          //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
+            this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
+          //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
+            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
+          //Adjust as necessary for earnings test (and tally months withheld)
+            this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
+          //Adjust spousal/survivor monthlyPayment fields for GPO
+            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
+        }
+    }
+  }
 
 
 
