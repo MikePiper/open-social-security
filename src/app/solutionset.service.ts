@@ -14,9 +14,15 @@ import { ClaimStrategy } from './data model classes/claimStrategy'
 })
 export class SolutionSetService {
 
-  constructor(private benefitService: BenefitService, private birthdayService:BirthdayService) { }
-
   today: MonthYearDate = new MonthYearDate()
+
+  constructor(private benefitService: BenefitService, private birthdayService:BirthdayService) {
+    this.setToday(new MonthYearDate())
+  }
+
+  setToday(today:MonthYearDate){
+    this.today = new MonthYearDate(today)
+  }
 
   generateSingleSolutionSet(scenario:CalculationScenario, person:Person, claimStrategy:ClaimStrategy){
     let solutionSet:SolutionSet = {
@@ -104,6 +110,7 @@ export class SolutionSetService {
     let personAautomaticSpousalUnsuspensionSolution:ClaimingSolution
     let personAspousalSolution:ClaimingSolution
     let personAsurvivorSolution:ClaimingSolution
+    let personAmotherFatherSolution:ClaimingSolution
 
     let personBdisabilityConversionSolution:ClaimingSolution
     let personBretirementSolution:ClaimingSolution
@@ -161,8 +168,12 @@ export class SolutionSetService {
 
 
         //personA survivor stuff
-          personAsurvivorSolution = this.generateSurvivorClaimingSolution(personA, personB, scenario)
+          personAsurvivorSolution = this.generateSurvivorClaimingSolution(personA, scenario)
           if (personAsurvivorSolution) {solutionSet.solutionsArray.push(personAsurvivorSolution)}
+
+        //personA mother/father stuff
+          personAmotherFatherSolution = this.generateMotherFatherClaimingSolution(personA, scenario)
+          if (personAmotherFatherSolution){solutionSet.solutionsArray.push(personAmotherFatherSolution)}
 
         //personA disability stuff
           if (personA.isOnDisability === true) {
@@ -440,9 +451,9 @@ export class SolutionSetService {
     else {return undefined}
   }
 
-  generateSurvivorClaimingSolution(livingPerson:Person, deceasedPerson:Person, scenario:CalculationScenario):ClaimingSolution{
+  generateSurvivorClaimingSolution(livingPerson:Person, scenario:CalculationScenario):ClaimingSolution{
     let survivorSolution:ClaimingSolution
-    if (scenario.maritalStatus == "survivor"){
+    if (scenario.maritalStatus == "survivor" && livingPerson.hasFiledAsSurvivor === false){
       let survivorFilingAge: number = this.birthdayService.findAgeOnDate(livingPerson, livingPerson.survivorBenefitDate)
       let personAsavedSurvivorAgeYears: number = Math.floor(survivorFilingAge)
       let personAsavedSurvivorAgeMonths: number = Math.round((survivorFilingAge%1)*12)
@@ -457,4 +468,22 @@ export class SolutionSetService {
     if (survivorSolution && livingPerson.survivorBenefitInMonthOfEntitlement > 0){return survivorSolution}
     else {return undefined}
   }
+
+  generateMotherFatherClaimingSolution(livingPerson:Person, scenario:CalculationScenario):ClaimingSolution{
+    let motherFatherSolution:ClaimingSolution
+    if (livingPerson.motherFatherBenefitDate && livingPerson.hasFiledAsMotherFather === false){
+      let filingAge: number = this.birthdayService.findAgeOnDate(livingPerson, livingPerson.motherFatherBenefitDate)
+      let filingAgeYears: number = Math.floor(filingAge)
+      let filingAgeMonths: number = Math.round((filingAge%1)*12)
+      if (livingPerson.motherFatherBenefitDate < this.today){
+        motherFatherSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveMotherFather", livingPerson, livingPerson.motherFatherBenefitDate, filingAgeYears, filingAgeMonths)
+      }
+      else {
+        motherFatherSolution = new ClaimingSolution(scenario.maritalStatus, "motherFather", livingPerson, livingPerson.motherFatherBenefitDate, filingAgeYears, filingAgeMonths)
+      }
+    }
+    if (motherFatherSolution && livingPerson.motherFatherBenefitInMonthOfEntitlement > 0){return motherFatherSolution}
+    else {return undefined}
+  }
+
 }

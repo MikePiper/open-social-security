@@ -299,7 +299,8 @@ export class OutputTableService {
 
   generateOutputTableSurvivor(personA:Person, claimStrategy:ClaimStrategy, scenario:CalculationScenario, calcYear:CalculationYear) : ClaimStrategy {
     //first line: no need to make a table row if this year has no benefits
-    if (calcYear.date.getFullYear() >= personA.retirementBenefitDate.getFullYear() || calcYear.date.getFullYear() >= personA.survivorBenefitDate.getFullYear()){
+    if (calcYear.date.getFullYear() >= personA.retirementBenefitDate.getFullYear() || calcYear.date.getFullYear() >= personA.survivorBenefitDate.getFullYear()
+        || scenario.children.length > 0){
       //Find whether there is a non-disabled child age 18 or under (we need to include up to year after 18, because that will be first full year with no child benefits)
       let childUnder19:boolean = false
       if (scenario.children.length > 0) {
@@ -311,7 +312,7 @@ export class OutputTableService {
       }
     //Need another year-by-year row if...
     if (personA.age <= 71 || //person is not 70 for entire year
-        childUnder19 === true || //there is a non-disabled children under 19
+        childUnder19 === true || //there is a non-disabled child under 19
         (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear) || //there's a benefit cut assumption and cutyear hasn't yet been reached
         (personA.eligibleForNonCoveredPension === true && personA.entitledToNonCoveredPension === false) //person is eligible for noncovered pension but it hasn't yet begun
         ){
@@ -319,9 +320,10 @@ export class OutputTableService {
         claimStrategy.outputTable.push([
           calcYear.date.getFullYear(),
           calcYear.tablePersonAannualRetirementBenefitOnlyAalive.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualMotherFatherBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           calcYear.tablePersonAannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-          (calcYear.tablePersonAannualRetirementBenefitOnlyAalive + calcYear.tablePersonAannualSurvivorBenefit + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+          (calcYear.tablePersonAannualRetirementBenefitOnlyAalive + calcYear.tablePersonAannualMotherFatherBenefit + calcYear.tablePersonAannualSurvivorBenefit + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
         ])
       }
       else {
@@ -338,9 +340,10 @@ export class OutputTableService {
         claimStrategy.outputTable.push([
           calcYear.date.getFullYear().toString() + " and beyond",
           calcYear.tablePersonAannualRetirementBenefitOnlyAalive.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
+          calcYear.tablePersonAannualMotherFatherBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           calcYear.tablePersonAannualSurvivorBenefit.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
           calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0}),
-          (calcYear.tablePersonAannualRetirementBenefitOnlyAalive + calcYear.tablePersonAannualSurvivorBenefit + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
+          (calcYear.tablePersonAannualRetirementBenefitOnlyAalive + calcYear.tablePersonAannualMotherFatherBenefit + calcYear.tablePersonAannualSurvivorBenefit + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive).toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})
         ])
         claimStrategy.outputTable.push([
           "After you are deceased",

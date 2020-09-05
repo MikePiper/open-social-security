@@ -5,7 +5,7 @@ import {MonthYearDate} from "./monthyearDate"
 type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityConversion" | "suspendToday" | "suspendAtFRA" | "suspendAtSomeOtherDate" | "unsuspend" |
 "spousal" | "retroactiveSpousal" | "childInCareSpousal" | "childInCareSpousalSuspension" | "automaticSpousalUnsuspension" |
 "survivor" | "retroactiveSurvivor" |
-"child" | "retroactiveChild" | "motherFather" |
+"child" | "retroactiveChild" | "motherFather" | "retroactiveMotherFather" |
 "doNothing"
 
   //This class represents the bulleted items in the recommended strategy output. (That is, one ClaimingSolution object for each item in the bulleted list.)
@@ -58,6 +58,7 @@ type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityCon
       case "survivor":
       case "retroactiveSurvivor":
         this.shortMessage += " (survivor) " + dateString
+        break;
       case "suspendToday":
         this.shortMessage += " (suspend retirement today)"
         break;
@@ -82,6 +83,7 @@ type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityCon
         }
         break;
       case "motherFather":
+      case "retroactiveMotherFather":
         if (person.gender == "male"){
           this.shortMessage += "(father benefits) " + dateString
         }
@@ -147,10 +149,18 @@ type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityCon
           break;
         case "motherFather":
           if (person.gender == "male"){
-            this.message = "You file for father benefits to begin as of " + dateString + "."
+            this.message = "You file for father benefits to begin as of " + dateString + ageString
           }
           else if (person.gender == "female"){
-            this.message = "You file for mother benefits to begin as of " + dateString + "."
+            this.message = "You file for mother benefits to begin as of " + dateString + ageString
+          }
+          break;
+        case "retroactiveMotherFather":
+          if (person.gender == "male"){
+            this.message = "You file for father benefits to begin (retroactively) as of " + dateString + ageString
+          }
+          else if (person.gender == "female"){
+            this.message = "You file for mother benefits to begin (retroactively) as of " + dateString + ageString
           }
           break;
         case "doNothing": // doNothing always produced for personA in solutionset.service.ts

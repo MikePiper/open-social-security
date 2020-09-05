@@ -46,6 +46,9 @@ export class Person {
     entitledToRetirement:boolean //just the results of whether calcYear.date >= person.retirementBenefitDate
 
     fixedRetirementBenefitDate: MonthYearDate //if they have already filed or are on disability and will be until FRA
+    fixedSurvivorBenefitDate:MonthYearDate //if they are survivor when using calculator and have already filed for widow(er) benefit
+    fixedMotherFatherBenefitDate:MonthYearDate //if they are survivor when using calculator and have already filed for mother/father benefit
+
     retirementBenefitDate: MonthYearDate //date for which we test various choices, if no fixed date
         DRCsViaSuspension: number = 0
         beginSuspensionDate: MonthYearDate = new MonthYearDate(1900, 0, 1) //When testing in "one is fixed" maximize functions, this is basically just going to be "FRA but no earlier than today"   Benefit IS suspended for this month

@@ -30,6 +30,7 @@ export class MaximizePVService {
       this.twelveMonthsAgo = new MonthYearDate(today)
       this.twelveMonthsAgo.setFullYear(this.twelveMonthsAgo.getFullYear()-1)
       this.calculatePVservice.setToday(today)
+      this.solutionSetService.setToday(today)
     }
 
     maximizeSinglePersonPV(person:Person, scenario:CalculationScenario) : SolutionSet{
@@ -318,10 +319,14 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       //find initial retirementBenefitDate for personA
       personA.retirementBenefitDate = this.findEarliestPossibleRetirementBenefitDate(personA)
   
-      //find initial survivorBenefitDate for personA
-      personA.survivorBenefitDate = this.findEarliestSurvivorBenefitDate(personA, personB)
+      //find initial survivorBenefitDate for personA. (Don't want to do this if they've already filed. If they've already filed we go get the applicable fixed date in home component.)
+      if (personA.hasFiledAsSurvivor === false){personA.survivorBenefitDate = this.findEarliestSurvivorBenefitDate(personA, personB)}
   
-  
+      //find motherFatherBenefitDate for personA. Doesn't have to be iterated at all. Doesn't depend on anybody's various filing dates.
+        //(Don't want to do this if they've already filed. If they've already filed we go get the applicable fixed date in home component.)
+      if (personA.hasFiledAsMotherFather === false){personA.motherFatherBenefitDate = this.findEarliestMotherFatherBenefitDate(personB, scenario)}
+
+
       //set personB.retirementBenefitDate (date they actually filed if applicable; if they hadn't filed then FRA if they died prior to FRA or date of death if they died after FRA)
         if (personB.hasFiled === true){
           personB.retirementBenefitDate = new MonthYearDate(personB.fixedRetirementBenefitDate)
@@ -391,7 +396,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
             //Increment personA.survivorBenefitDate
               personA.survivorBenefitDate.setMonth(personA.survivorBenefitDate.getMonth()+1)
           } 
-          //Increment personA's retirementBenefitDate, and reset spousal benefit dates as necessary. (Shouldn't matter really...)
+          //Increment personA's retirementBenefitDate, and reset spousal benefit dates as necessary. (Spousal dates shouldn't matter really...)
             personA = this.incrementRetirementORendSuspensionDate(personA)
             personA = this.adjustSpousalBenefitDate(personA, personB, scenario)
             personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
@@ -403,6 +408,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         personA.beginSuspensionDate = new MonthYearDate(savedStrategy.personABeginSuspensionDate)
         personA.endSuspensionDate = new MonthYearDate(savedStrategy.personAEndSuspensionDate)
         personA.survivorBenefitDate = new MonthYearDate(savedStrategy.personAsurvivorDate)
+        //No need to set personA.motherFatherBenefitDate again, since it was never varied.
         personB.retirementBenefitDate = new MonthYearDate(savedStrategy.personBRetirementDate)
         personB.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
         personB.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personBchildInCareSpousalDate)
@@ -611,6 +617,20 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       }
       return earliestSurvivorBenefitDate
       }
+
+    findEarliestMotherFatherBenefitDate(deceasedPerson:Person, scenario:CalculationScenario):MonthYearDate{
+      let motherFatherBenefitDate:MonthYearDate
+      //return undefined if childUnder16orDisabled === false as of date calculator is being used
+      if (this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, this.today) === false){
+        return undefined
+      }
+      //Per 404.621, retroactivity up to 6 months allowed (but no earlier than date of death). Doesn't matter if mother/father is disabled or not. Doesn't matter if FRA or not.
+      motherFatherBenefitDate = new MonthYearDate(this.sixMonthsAgo)
+      if (motherFatherBenefitDate < deceasedPerson.dateOfDeath){
+        motherFatherBenefitDate = new MonthYearDate(deceasedPerson.dateOfDeath)
+      }
+      return motherFatherBenefitDate
+    }
 
     initializeBeginEndSuspensionDates(person:Person):Person{
       //If user has already filed or is on disability, initialize begin/end suspension dates as later of their FRA or today, and set person's retirementBenefitDate using fixedRetirementBenefitDate field 

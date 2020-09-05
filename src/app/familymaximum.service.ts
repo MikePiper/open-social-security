@@ -141,7 +141,6 @@ export class FamilyMaximumService {
 
   applyFamilyMaximumCouple(familyMaxRunNumber:number, scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB:Person, personBaliveBoolean:boolean) {
     if (scenario.children.length > 0 || personA.isOnDisability === true || personB.isOnDisability === true){//Only bother with all this if we know familymax might be applicable (because of kids or a person being disabled)
-
       let familyMaximum:number = 0
       let sumOfAuxBenefits:number = 0
 
@@ -151,11 +150,11 @@ export class FamilyMaximumService {
 
       //Find out whether to use personA's family max, personB's family or, or combined family max
         if (personA.monthlySpousalPayment > 0 || personA.monthlySurvivorPayment > 0 //if personA is entitled on personB's record...
-          || (entitledChild === true && personB.entitledToRetirement === true && personA.entitledToRetirement === false)){ //or if there is a child entitled on personB but not on personA...
+          || (entitledChild === true && (personB.entitledToRetirement === true || personB.dateOfDeath <= calcYear.date) && personA.entitledToRetirement === false)){ //or if there is a child entitled on personB but not on personA...
           familyMaximum = personB.familyMaximum
         }
         if (personB.monthlySpousalPayment > 0 || personB.monthlySurvivorPayment > 0 //if personB is entitled on personA's record...
-          || (entitledChild === true && personA.entitledToRetirement === true && personB.entitledToRetirement === false)){ //or if there is a child entitled on personA but not on personB...
+          || (entitledChild === true && (personA.entitledToRetirement === true || personA.dateOfDeath <= calcYear.date) && personB.entitledToRetirement === false)){ //or if there is a child entitled on personA but not on personB...
           familyMaximum = personA.familyMaximum
         }
         if(entitledChild === true && (personA.entitledToRetirement === true || personAaliveBoolean === false) && (personB.entitledToRetirement === true || personBaliveBoolean === false) ){//if there is a child entitled on both personA and personB
