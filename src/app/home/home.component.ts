@@ -104,7 +104,8 @@ export class HomeComponent implements OnInit {
               1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989,
               1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
               2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-              2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019]
+              2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+              2020]
 
   inputBenefitYears: number[] = [1979, //Can't go earlier than 1979 or calculation rules are different. Tough luck to anybody older.
                     1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989,
@@ -142,6 +143,10 @@ export class HomeComponent implements OnInit {
   personAinputYear: number = 1960
   personAfixedRetirementBenefitMonth: number
   personAfixedRetirementBenefitYear: number
+  personAfixedMotherFatherBenefitMonth: number
+  personAfixedMotherFatherBenefitYear: number
+  personAfixedSurvivorBenefitMonth: number
+  personAfixedSurvivorBenefitYear: number
   personAnonCoveredPensionMonth:number = 1
   personAnonCoveredPensionYear:number = 2020
   personAassumedDeathAge: number = 100 // what many people might hope
@@ -151,6 +156,8 @@ export class HomeComponent implements OnInit {
   personBinputMonth: number = 4
   personBinputDay: number = 15
   personBinputYear: number = 1960
+  personBdeathInputMonth: number = 4
+  personBdeathInputYear: number = 2020
   personBfixedRetirementBenefitMonth: number
   personBfixedRetirementBenefitYear: number
   personBnonCoveredPensionMonth:number = 1
@@ -167,6 +174,8 @@ export class HomeComponent implements OnInit {
   childrenShow: boolean = false
   discountShow: boolean = false
   cutShow: boolean = false
+
+  childUnder16orDisabled: boolean = false
 
   qualifyingChildrenBoolean:boolean = false
 
@@ -200,6 +209,10 @@ export class HomeComponent implements OnInit {
   customPersonBbeginSuspensionYear: number = this.todayYear
   customPersonBendSuspensionMonth: number = this.todayMonth
   customPersonBendSuspensionYear: number = this.todayYear
+  customPersonAsurvivorBenefitMonth: number = this.todayMonth
+  customPersonAsurvivorBenefitYear: number = this.todayYear
+
+
 
 //Inputs from Range component
   rangeComponentShowCutRadio:boolean = false //This will be set based on a boolean emited by child (Range) component when user flips cut/nocut radio button. False will mean show without a cut, true will mean show with a cut.
@@ -241,18 +254,21 @@ export class HomeComponent implements OnInit {
         this.solutionSet = this.maximizePvService.maximizeSinglePersonPV(this.personA, this.scenario)
       }
       else if (this.scenario.maritalStatus == "married"){
-            if (this.personA.initialAge < 70 && this.personB.initialAge < 70) {//i.e., if both spouses are under 70 (and we therefore need to iterate ages for both)
-              this.solutionSet = this.maximizePvService.maximizeCouplePViterateBothPeople(this.personA, this.personB, this.scenario)
-            }
-            else if (this.personA.initialAge >= 70){//if personA is over 70, we only need to iterate ages for B
-              this.solutionSet = this.maximizePvService.maximizeCouplePViterateOnePerson(this.scenario, this.personB, this.personA)
-            }
-            else if (this.personB.initialAge >= 70){//if personB is over 70, we only need to iterate ages for A
-              this.solutionSet = this.maximizePvService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
-            }
+          if (this.personA.initialAge < 70 && this.personB.initialAge < 70) {//i.e., if both spouses are under 70 (and we therefore need to iterate ages for both)
+            this.solutionSet = this.maximizePvService.maximizeCouplePViterateBothPeople(this.personA, this.personB, this.scenario)
+          }
+          else if (this.personA.initialAge >= 70){//if personA is over 70, we only need to iterate ages for B
+            this.solutionSet = this.maximizePvService.maximizeCouplePViterateOnePerson(this.scenario, this.personB, this.personA)
+          }
+          else if (this.personB.initialAge >= 70){//if personB is over 70, we only need to iterate ages for A
+            this.solutionSet = this.maximizePvService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
+          }
       }
       else if (this.scenario.maritalStatus == "divorced") {
-            this.solutionSet = this.maximizePvService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
+          this.solutionSet = this.maximizePvService.maximizeCouplePViterateOnePerson(this.scenario, this.personA, this.personB)
+      }
+      else if (this.scenario.maritalStatus == "survivor"){
+          this.solutionSet = this.maximizePvService.maximizeSurvivorPV(this.personA, this.personB, this.scenario)
       }
     }
     // computation is finished
@@ -314,6 +330,7 @@ export class HomeComponent implements OnInit {
     this.personB.actualBirthDate = new Date (this.personBinputYear, this.personBinputMonth-1, this.personBinputDay-1)
     this.personB.SSbirthDate = this.birthdayService.findSSbirthdate(this.personBinputMonth, this.personBinputDay, this.personBinputYear)
     this.personB.FRA = this.birthdayService.findFRA(this.personB.SSbirthDate)
+    this.personB.dateOfDeath = new MonthYearDate(this.personBdeathInputYear, this.personBdeathInputMonth-1)
     this.personB.survivorFRA = this.birthdayService.findSurvivorFRA(this.personB.SSbirthDate)
     this.personA.initialAge =  this.birthdayService.findAgeOnDate(this.personA, this.today)
       if (this.personA.initialAge > 70){
@@ -387,11 +404,21 @@ export class HomeComponent implements OnInit {
     this.personA.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(this.personA)
     this.personB.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(this.personB)
 
+    //Set fixedSurvivorBenefitDate and fixedMotherFatherBenefitDate if applicable
+    if (this.personAfixedSurvivorBenefitMonth && this.personAfixedSurvivorBenefitYear){
+      this.personA.fixedSurvivorBenefitDate = new MonthYearDate(this.personAfixedSurvivorBenefitYear, this.personAfixedSurvivorBenefitMonth-1)
+    }
+    if (this.personAfixedMotherFatherBenefitMonth && this.personAfixedMotherFatherBenefitYear){
+      this.personA.fixedMotherFatherBenefitDate = new MonthYearDate(this.personAfixedMotherFatherBenefitYear, this.personAfixedMotherFatherBenefitMonth-1)
+    }
+
     //Clear children array and only push as many children objects as applicable
     if (this.scenario.numberOfChildren > 0){
         this.scenario.setChildrenArray(this.childrenObjectsArray, this.today)
     }
     else {this.scenario.children = []}
+    this.childUnder16orDisabled = this.birthdayService.checkForChildUnder16orDisabled(this.scenario)
+
 
     //This childInCareSpousal field is used for determining whether to display spousal input dates in custom form. We normally set this in getCustomDateFormInputs(). But we set it here in case of disabled child so that spousal benefit input doesnt show up on initial load of custom date form.
     if (this.scenario.disabledChild === true){
@@ -412,6 +439,8 @@ export class HomeComponent implements OnInit {
     this.personA.childInCareSpousalBenefitDate = undefined
     this.personA.beginSuspensionDate = undefined
     this.personA.endSuspensionDate = undefined
+    this.personA.survivorBenefitDate = undefined
+    this.personA.motherFatherBenefitDate = undefined
     this.personB.retirementBenefitDate = undefined
     this.personB.spousalBenefitDate = undefined
     this.personB.childInCareSpousalBenefitDate = undefined
@@ -433,6 +462,21 @@ export class HomeComponent implements OnInit {
       }
       else {
         this.personB.retirementBenefitDate = new MonthYearDate(this.customPersonBretirementBenefitYear, this.customPersonBretirementBenefitMonth-1)
+      }
+
+    //If personA has a fixedSurvivorBenefitDate or fixedMotherFatherBenefitDate (i.e., person already filed), use those for personA's survivorBenefitDate and motherFatherBenefitDate.
+      //Otherwise, use input from Custom Date form. (Or in motherfatherbenefitdate case, just set it to earliest date. Like child benefits, we'll just have a message saying "file asap")
+      if (this.personA.hasFiledAsSurvivor === true){
+        this.personA.survivorBenefitDate = new MonthYearDate(this.personA.fixedSurvivorBenefitDate)
+      }
+      else {
+        this.personA.survivorBenefitDate = new MonthYearDate(this.customPersonAsurvivorBenefitYear, this.customPersonAsurvivorBenefitMonth-1)
+      }
+      if (this.personA.hasFiledAsMotherFather === true){
+        this.personA.motherFatherBenefitDate = new MonthYearDate(this.personA.fixedMotherFatherBenefitDate)
+      }
+      else {
+        this.personA.motherFatherBenefitDate = new MonthYearDate(this.maximizePvService.findEarliestMotherFatherBenefitDate(this.personB, this.scenario))
       }
 
     //If user is selecting custom begin/end suspension dates create Date objects and set applicable person field. (Set to 1900 if they haven't filed or are declining suspension.)
@@ -515,6 +559,7 @@ export class HomeComponent implements OnInit {
         this.personB.spousalBenefitDate = new MonthYearDate(this.customPersonBspousalBenefitYear, this.customPersonBspousalBenefitMonth-1)
       }
     }
+    
     //Call resetHiddenInputs() <-- necessary because right now that is the function that's bound to custom date form's (change) event. And we'll need that event to be bound to this function instead.
     this.resetHiddenInputs()
     console.log("-----")
@@ -558,6 +603,14 @@ export class HomeComponent implements OnInit {
       if (this.scenario.maritalStatus == "divorced" && this.personB.initialAge < 70) {
         this.personB.hasFiled = false
       }
+
+    //Reset applicable personB inputs if personB is deceased
+      if (this.scenario.maritalStatus == "survivor"){
+        this.personB.eligibleForNonCoveredPension = false
+        this.personBworking = false
+        this.personB.isOnDisability = false
+      }
+
     //reset earnings test inputs if "still working" is false
       if (this.personAworking === false) {
         this.personA.monthlyEarnings = 0
@@ -571,7 +624,7 @@ export class HomeComponent implements OnInit {
         this.personBquitWorkYear = null
         this.personB.quitWorkDate = new MonthYearDate(1, 0, 1) //If nothing was input for quitWorkDate, make up a date way in the past so "before/after today" check can run but returns false (and therefore earnings test gets skipped)
       }
-    //reset fixed retirement date inputs if person has no fixed retirement date
+    //reset fixed date inputs if person has no applicable fixed date
       if (this.personA.hasFiled === false && this.personA.isOnDisability === false) {
         this.personAfixedRetirementBenefitMonth = null
         this.personAfixedRetirementBenefitYear = null
@@ -581,6 +634,16 @@ export class HomeComponent implements OnInit {
         this.personBfixedRetirementBenefitMonth = null
         this.personBfixedRetirementBenefitYear = null
         this.personB.fixedRetirementBenefitDate = null
+      }
+      if (this.personA.hasFiledAsMotherFather === false){
+        this.personAfixedMotherFatherBenefitMonth = null
+        this.personAfixedMotherFatherBenefitYear = null
+        this.personA.fixedMotherFatherBenefitDate = null
+      }
+      if (this.personA.hasFiledAsSurvivor === false){
+        this.personAfixedSurvivorBenefitMonth = null
+        this.personAfixedSurvivorBenefitYear = null
+        this.personA.fixedSurvivorBenefitDate = null
       }
     //If person is disabled, set "still working" to false, set "has filed" to false
     if (this.personA.isOnDisability === true){
