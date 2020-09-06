@@ -17,13 +17,14 @@
       <tr class="highlighted">
         <th>Year</th>
         <th>Your Annual Retirement<span *ngIf="personA.isOnDisability === true">/Disability</span> Benefit</th>
+        <th *ngIf="scenario.maritalStatus == 'survivor' && scenario.children.length > 0">Your Annual Mother/Father Benefit</th>
         <th *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">Your Annual Spousal Benefit</th>
-        <th *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">Your Annual Survivor Benefit</th>
+        <th *ngIf="scenario.maritalStatus !== 'single'">Your Annual Survivor Benefit</th>
         <th *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Annual Retirement<span *ngIf="personB.isOnDisability === true">/Disability</span> Benefit</th>
         <th *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Annual Spousal Benefit</th>
         <th *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Annual Survivor Benefit</th>
         <th *ngIf="scenario.children.length > 0">Total Annual Child Benefit</th>
-        <th *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced' || scenario.children.length > 0">Total</th>
+        <th *ngIf="scenario.maritalStatus !== 'single' || scenario.children.length > 0">Total</th>
       </tr>
       <tr *ngFor="let row of claimStrategy.outputTable">
           <td *ngFor="let data of row">
