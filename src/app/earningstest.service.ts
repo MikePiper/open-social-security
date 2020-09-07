@@ -62,35 +62,51 @@ export class EarningsTestService {
     return graceYear
   }
 
+  // TODO: make version for DisabledChildAlive/DisabledChildDeceased
   applyEarningsTestSingle(scenario:CalculationScenario, person:Person, calcYear:CalculationYear,
-    disabledChildDeceased: boolean = false){
+    noDeceasedDisabledChild: boolean = true){
     //If it's the beginning of a year, calculate earnings test withholding and determine if this is a grace year
-    if (calcYear.date.getMonth() == 0){
+    if (calcYear.date.getMonth() == 0 && noDeceasedDisabledChild === true){
       calcYear.annualWithholdingDuetoSinglePersonEarnings = this.calculateWithholding(calcYear.date, person)
+      // in case with a deceased disabled child, their potential withholding starts out same as other case
+      calcYear.annualWithholdingDuetoSinglePersonEarningsDeceasedDisabledChild = calcYear.annualWithholdingDuetoSinglePersonEarnings
       calcYear.personAgraceYear = this.isGraceYear(person, calcYear.date)
       if (calcYear.personAgraceYear === true) {person.hasHadGraceYear = true}
     }
 
-    if (calcYear.annualWithholdingDuetoSinglePersonEarnings > 0){//If more withholding is necessary...
+    //If more withholding is necessary...
+    let moreWithholdingNecessary: boolean;
+    if (noDeceasedDisabledChild === true) {
+      moreWithholdingNecessary = calcYear.annualWithholdingDuetoSinglePersonEarnings > 0
+    } else {
+      moreWithholdingNecessary = calcYear.annualWithholdingDuetoSinglePersonEarningsDeceasedDisabledChild > 0
+    }
+    if (moreWithholdingNecessary) {
       if (calcYear.date >= person.retirementBenefitDate  //And they've started retirement benefit...
       && !(calcYear.personAgraceYear === true && calcYear.date >= person.quitWorkDate) //And it isn't a nonservice month in grace year...
       && calcYear.date < person.FRA){//And they are younger than FRA...
           //count how much is available for withholding
           let availableForWithholding:number = person.monthlyRetirementPayment
+          // child.monthlyChildPayment is 0 if disabledChild is deceased, so we can add all the child payments
           for (let child of scenario.children){
-            if (!child.isOnDisability || (disabledChildDeceased === false)) {
             availableForWithholding = availableForWithholding + child.monthlyChildPayment
-            }
           }
           //Set everybody's monthlyPayment to zero to reflect benefits being withheld this month
           person.monthlyRetirementPayment = 0
           for (let child of scenario.children){
             child.monthlyChildPayment = 0
           }
-          //Add to tally of months withheld
-          person.retirementARFcreditingMonths = person.retirementARFcreditingMonths + 1
-          //Reduce necessary withholding by amount that was withheld this month
-          calcYear.annualWithholdingDuetoSinglePersonEarnings = calcYear.annualWithholdingDuetoSinglePersonEarnings - availableForWithholding
+          if (noDeceasedDisabledChild === true) {
+            // Increment tally of months withheld
+            person.retirementARFcreditingMonths++
+            //Reduce necessary withholding by amount that was withheld this month
+            calcYear.annualWithholdingDuetoSinglePersonEarnings -= availableForWithholding
+          } else {
+            // Increment tally of months withheld
+            person.retirementARFcreditingMonthsDisabledChildDeceased++
+            //Reduce necessary withholding by amount that was withheld this month
+            calcYear.annualWithholdingDuetoSinglePersonEarningsDeceasedDisabledChild -= availableForWithholding
+          }
       }
     }
   }
@@ -239,11 +255,21 @@ export class EarningsTestService {
   }
 
 
-  addBackOverwithholding(calcYear:CalculationYear, scenario:CalculationScenario){
+  addBackOverwithholding(calcYear:CalculationYear, scenario:CalculationScenario,
+    disabledChildAlive: boolean = true){
     if (scenario.maritalStatus == "single"){
       if (calcYear.annualWithholdingDuetoSinglePersonEarnings < 0) {//If annualWithholding is negative due to overwithholding...
-        calcYear.annualBenefitSinglePersonAlive = calcYear.annualBenefitSinglePersonAlive - calcYear.annualWithholdingDuetoSinglePersonEarnings//add back for PV-related sum
-        calcYear.tablePersonAannualRetirementBenefit = calcYear.tablePersonAannualRetirementBenefit - calcYear.annualWithholdingDuetoSinglePersonEarnings//add back for table-related sum
+        if (scenario.disabledChild === true) {
+          if (disabledChildAlive === true) {
+            calcYear.annualBenefitSinglePersonAliveDisabledChildAlive -= calcYear.annualWithholdingDuetoSinglePersonEarnings
+            calcYear.tablePersonAannualRetirementBenefit -= calcYear.annualWithholdingDuetoSinglePersonEarnings//add back for table-related sum
+          } else {
+            calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased -= calcYear.annualWithholdingDuetoSinglePersonEarnings
+          }
+        } else {
+          calcYear.annualBenefitSinglePersonAlive -= calcYear.annualWithholdingDuetoSinglePersonEarnings//add back for PV-related sum
+          calcYear.tablePersonAannualRetirementBenefit -= calcYear.annualWithholdingDuetoSinglePersonEarnings//add back for table-related sum
+        } 
       }
     }
     else {

@@ -61,6 +61,7 @@ export class Person {
     monthlyChildPayment:number = 0
         originalBenefit:number = 0 //"original benefit" in the sense as used in family max application. (That is, this is a number that can change from one month to the next.)
     retirementARFcreditingMonths:number = 0 //for earnings test
+    retirementARFcreditingMonthsDisabledChildDeceased:number = 0 //for earnings test, if there is a disabled child
     spousalARFcreditingMonths:number = 0 //for earnings test and for months with child-in-care: (See POMS RS 00615.482)
 
     constructor(id:string){

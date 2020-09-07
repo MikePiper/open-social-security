@@ -124,10 +124,10 @@ export class FamilyMaximumService {
   }
 
   applyFamilyMaximumSingle(scenario:CalculationScenario, amountLeftForRestOfFamiliy:number, 
-    disabledChildDeceased: boolean = false){
+    disabledChildAlive: boolean = true){
       let numberOfAxilliaries:number = 0
       for (let child of scenario.children){
-        if ((child.isOnDisability === true && (disabledChildDeceased === false)) || child.age < 17.99){
+        if ((child.isOnDisability === true && (disabledChildAlive === true)) || child.age < 17.99){
           numberOfAxilliaries = numberOfAxilliaries + 1
         }
       }

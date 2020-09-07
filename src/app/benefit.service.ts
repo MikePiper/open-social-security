@@ -280,39 +280,54 @@ export class BenefitService {
     return childBenefitDate
   }
 
-  applyAssumedBenefitCut(scenario:CalculationScenario, calcYear:CalculationYear){
+  applyAssumedBenefitCut(scenario: CalculationScenario, calcYear: CalculationYear) {
     if (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() >= scenario.benefitCutYear && calcYear.date.getMonth() === 11) {
-    //If there's a benefit cut assumption...
-    //...and we've reached the year in question...
-    //...and it's December (because we only want to apply this cut at the end of the year, given that it's a multiplication to annual sums)
+      //If there's a benefit cut assumption...
+      //...and we've reached the year in question...
+      //...and it's December (because we only want to apply this cut at the end of the year, given that it's a multiplication to annual sums)
 
-    let cutFactor: number = scenario.cutFactor; // pre-calculate and use *= operation to simplify calculations
-    //Apply cut to sums included in PV calculation
-    calcYear.annualBenefitSinglePersonAlive *= cutFactor
-    calcYear.annualBenefitSinglePersonDeceased *= cutFactor
-    calcYear.annualBenefitBothAlive *= cutFactor
-    calcYear.annualBenefitOnlyPersonAalive *= cutFactor
-    calcYear.annualBenefitOnlyPersonBalive *= cutFactor
-    calcYear.annualBenefitBothDeceased *= cutFactor
-    //Apply cut to sums included in output table
-    calcYear.tablePersonAannualRetirementBenefit *= cutFactor
-    calcYear.tablePersonAannualSpousalBenefit *= cutFactor
-    calcYear.tablePersonAannualSurvivorBenefit *= cutFactor
-    calcYear.tablePersonBannualRetirementBenefit *= cutFactor
-    calcYear.tablePersonBannualSpousalBenefit *= cutFactor
-    calcYear.tablePersonBannualSurvivorBenefit *= cutFactor
-    calcYear.tableTotalAnnualChildBenefitsSingleParentAlive *= cutFactor
-    calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased *= cutFactor
-    calcYear.tableTotalAnnualChildBenefitsBothParentsAlive *= cutFactor
-    calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased *= cutFactor
-    calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive *= cutFactor
-    calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive *= cutFactor
-	}
+      let cutFactor: number = scenario.cutFactor; // pre-calculate and use *= operation to simplify calculations
+      //Apply cut to sums included in PV calculation
+      if (scenario.maritalStatus == "single") {
+        if (scenario.disabledChild) {
+          calcYear.annualBenefitSinglePersonAliveDisabledChildAlive *= cutFactor
+          calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased *= cutFactor
+          calcYear.annualBenefitSinglePersonDeceasedDisabledChildAlive *= cutFactor
+          calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased *= cutFactor
+        } else {
+          calcYear.annualBenefitSinglePersonAlive *= cutFactor
+          calcYear.annualBenefitSinglePersonDeceased *= cutFactor
+        }
+      } else { // maritalStatus not "single"
+        calcYear.annualBenefitBothAlive *= cutFactor
+        calcYear.annualBenefitOnlyPersonAalive *= cutFactor
+        calcYear.annualBenefitOnlyPersonBalive *= cutFactor
+        calcYear.annualBenefitBothDeceased *= cutFactor
+        //Apply cut to sums included in output table
+        calcYear.tablePersonAannualSpousalBenefit *= cutFactor
+        calcYear.tablePersonAannualSurvivorBenefit *= cutFactor
+        calcYear.tablePersonBannualRetirementBenefit *= cutFactor
+        calcYear.tablePersonBannualSpousalBenefit *= cutFactor
+        calcYear.tablePersonBannualSurvivorBenefit *= cutFactor
+      }
+      //Apply cut to sum included in output table
+      calcYear.tablePersonAannualRetirementBenefit *= cutFactor
+      if (scenario.children.length > 0) {
+        if (scenario.maritalStatus = "single") {
+          calcYear.tableTotalAnnualChildBenefitsSingleParentAlive *= cutFactor
+          calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased *= cutFactor
+        } else {
+          calcYear.tableTotalAnnualChildBenefitsBothParentsAlive *= cutFactor
+          calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased *= cutFactor
+          calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive *= cutFactor
+          calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive *= cutFactor
+        }
+      }
+    }
   }
-
   
   calculateMonthlyPaymentsSingle(scenario:CalculationScenario, calcYear:CalculationYear, person:Person, personAliveBoolean:boolean, 
-    disabledChildDeceased: boolean = false){
+    disabledChildAlive: boolean){
     //Reset monthlyPayment fields
     person.monthlyRetirementPayment = 0
     for (let child of scenario.children){
@@ -348,7 +363,8 @@ export class BenefitService {
           person.monthlyRetirementPayment = person.retirementBenefit
           for (let child of scenario.children){
             if (child.age < 17.99 || child.isOnDisability === true){//if child is eligible for a benefit...
-              if (!child.isOnDisability || (disabledChildDeceased === false)) {
+              if (!child.isOnDisability || (disabledChildAlive === true)) { 
+                // leaves child's monthlyChildPayment at 0 if child is disabled and not alive
                 if (calcYear.date >= child.childBenefitDate){//child gets a benefit if we have reached his/her childBenefitDate
                   child.monthlyChildPayment = person.PIA * 0.5
                 }
@@ -362,7 +378,7 @@ export class BenefitService {
       for (let child of scenario.children){
         if (child.age < 17.99 || child.isOnDisability === true){//Use 17.99 as the cutoff because sometimes when child is actually 18 javascript value will be 17.9999999
           // TODO: need to check childBenefitDate??
-          if (!child.isOnDisability || (disabledChildDeceased === false)) {
+          if (!child.isOnDisability || (disabledChildAlive === true)) {
             if (person.eligibleForNonCoveredPension === false){
               child.monthlyChildPayment = person.PIA * 0.75
             }

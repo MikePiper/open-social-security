@@ -38,6 +38,7 @@ export class CalculationYear {
 
 
     annualWithholdingDuetoSinglePersonEarnings: number
+    annualWithholdingDuetoSinglePersonEarningsDeceasedDisabledChild: number
     annualWithholdingDueToPersonAearningsBothAlive: number
         annuannualWithholdingDueToPersonAearningsOnlyAalive:number //calculated the same as the field above. But needs to be a separate total so we can subtract from it separately as amounts get withheld in such scenarios.
     annualWithholdingDueToPersonBearningsBothAlive: number
@@ -48,14 +49,20 @@ export class CalculationYear {
     personBoverWithholding: number = 0//These amounts no longer used in monthly PV calc
 
     //Sums for calculating PV (lumps everybody's total benefit amount into one sum, per mortality scenario)
-    annualBenefitSinglePersonAlive: number = 0  // for case where disabledChild (if any) is alive
-    annualBenefitSinglePersonDeceased: number = 0 // for case where disabledChild (if any) is alive
+    // Single person with no disabled child
+    annualBenefitSinglePersonAlive: number = 0
+    annualBenefitSinglePersonDeceased: number = 0
+    // Single person with a disabled child
+    annualBenefitSinglePersonAliveDisabledChildAlive: number = 0
     annualBenefitSinglePersonAliveDisabledChildDeceased: number = 0
+    annualBenefitSinglePersonDeceasedDisabledChildAlive: number = 0
     annualBenefitSinglePersonDeceasedDisabledChildDeceased: number = 0
+    // Married couple
     annualBenefitBothAlive: number = 0
     annualBenefitBothDeceased: number = 0
     annualBenefitOnlyPersonAalive: number = 0
     annualBenefitOnlyPersonBalive: number = 0
+
     annualPV: number = 0
 
     //person-by-person sums for table output (Assumes any parents are alive -- aside from survivor benefit amounts)
@@ -66,10 +73,16 @@ export class CalculationYear {
     tablePersonBannualSpousalBenefit: number = 0
     tablePersonBannualSurvivorBenefit: number = 0
         //Note that these mirror the PV-related sums above, because we need a different sum for each case
-        tableTotalAnnualChildBenefitsSingleParentAlive: number = 0  // for case where disabledChild (if any) is alive
-        tableTotalAnnualChildBenefitsSingleParentDeceased: number = 0  // for case where disabledChild (if any) is alive
-        tableTotalAnnualChildBenefitsSingleParentAliveDisabledChildDeceased: number = 0
-        tableTotalAnnualChildBenefitsSingleParentDeceasedDisabledChildDeceased: number = 0
+        // (Assumes any children are alive) 
+        // For single person
+        tableTotalAnnualChildBenefitsSingleParentAlive: number = 0
+        tableTotalAnnualChildBenefitsSingleParentDeceased: number = 0
+        // Single person with disabled child - may not need all these choices, since assuming children alive
+        // tableTotalAnnualChildBenefitsSingleParentAliveDisabledChildAlive: number = 0
+        // tableTotalAnnualChildBenefitsSingleParentDeceasedDisabledChildAlive: number = 0
+        // tableTotalAnnualChildBenefitsSingleParentAliveDisabledChildDeceased: number = 0
+        // tableTotalAnnualChildBenefitsSingleParentDeceasedDisabledChildDeceased: number = 0
+        // For other than single persn
         tableTotalAnnualChildBenefitsBothParentsAlive: number = 0
         tableTotalAnnualChildBenefitsBothParentsDeceased: number = 0
         tableTotalAnnualChildBenefitsOnlyPersonAalive: number = 0

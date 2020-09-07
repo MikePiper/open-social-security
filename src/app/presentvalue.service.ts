@@ -23,9 +23,40 @@ export class PresentValueService {
 
   today: MonthYearDate = new MonthYearDate()
 
+  // used when a single-person scenario includes a disabled child
+  updateAnnualTotalsSingleDisabledChild(person:Person, scenario:CalculationScenario, 
+    printOutputTable:boolean, calcYear:CalculationYear,
+    personAlive: boolean, disabledChildAlive: boolean): void {
+
+      //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
+    this.benefitService.calculateMonthlyPaymentsSingle(scenario, calcYear, person, personAlive, disabledChildAlive)
+
+    //Adjust each person's monthlyPayment as necessary for family max
+    if (scenario.children.length > 0){
+      let amountLeftForRestOfFamiliy:number
+      if (personAlive) {
+        amountLeftForRestOfFamiliy = person.familyMaximum - person.PIA
+      } else {
+        amountLeftForRestOfFamiliy = person.familyMaximum
+      }
+      scenario = this.familyMaximumService.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamiliy, disabledChildAlive)
+    }
+
+    if (personAlive) { // We only need to applyEarningsTestSingle if the person is alive (and earning) 
+      //Adjust benefits as necessary for earnings test (and tally months withheld)
+      if (person.quitWorkDate > this.today){
+        this.earningsTestService.applyEarningsTestSingle(scenario, person, calcYear, disabledChildAlive)
+      }
+    }
+
+    //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
+    this.addMonthlyPaymentAmountsToApplicableSumsSingleDisabledChild(scenario, calcYear, person, personAlive, printOutputTable, disabledChildAlive)
+  }
+
   calculateSinglePersonPV(person:Person, scenario:CalculationScenario, printOutputTable:boolean) : ClaimStrategy{
     //Create ClaimStrategy object for saving PVs
     let claimStrategy:ClaimStrategy = new ClaimStrategy(person)
+
     //reset values for new PV calc
       claimStrategy.PV = 0
       claimStrategy.pvNoCut = 0
@@ -63,19 +94,29 @@ export class PresentValueService {
 
     let cutThisYear:boolean = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
     
+    // FOR TESTING set limits for logging monthly and yearly results
+    let logMonthlyAge = 0
+    let logYearlyAge = 115
+
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
+
     while (person.age < 115) {
       //Do we have to recalculate any benefits? (e.g., due to reaching FRA and ARF happening, or due to suspension ending) (Never have to recalculate a child's benefit amount.)
         this.benefitService.monthlyCheckForBenefitRecalculationsSingle(person, calcYear)
       
       //Do we ever have to recalculate family max? (No. In family scenario might have to recalculate combined family max though. Or rather, combined family max doesn't get calculated at beginning but rather in a later year?)
       
-      //Assume person is alive
+      let personAlive: boolean
+      let disabledChildAlive: boolean
 
-          // Assume there is no disabled child, or if there is, he/she is alive
+        if (scenario.disabledChild === false) {
+          // Handle the case where there is no disabled child      
+          
+          // Calculate as if person is alive
+          personAlive = true
 
             //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
-            this.benefitService.calculateMonthlyPaymentsSingle(scenario, calcYear, person, true)
+            this.benefitService.calculateMonthlyPaymentsSingle(scenario, calcYear, person, personAlive, false)
 
             //Adjust each person's monthlyPayment as necessary for family max
               if (scenario.children.length > 0){
@@ -89,64 +130,64 @@ export class PresentValueService {
             }
 
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
-            this.addMonthlyPaymentAmountsToApplicableSumsSingle(scenario, calcYear, person, true, printOutputTable)
+            this.addMonthlyPaymentAmountsToApplicableSumsSingle(scenario, calcYear, person, personAlive, printOutputTable)
 
-        // If there is a disabled child, calculate as if that child is deceased
-          if (scenario.disabledChild) {
-            //calculate monthlyPayment field for each person (checks to see if we're before or after retirementBenefitDate, checks if benefit suspended or not, checks if children are under 18 or disabled)
-            this.benefitService.calculateMonthlyPaymentsSingle(scenario, calcYear, person, true, true)
 
-            //Adjust each person's monthlyPayment as necessary for family max
-              if (scenario.children.length > 0){
-                let amountLeftForRestOfFamiliy:number = person.familyMaximum - person.PIA
-                scenario = this.familyMaximumService.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamiliy, true)
-              }
+      // Calculate as if person is deceased
+            personAlive = false
 
-            //Adjust as necessary for earnings test (and tally months withheld)
-            if (person.quitWorkDate > this.today){
-              this.earningsTestService.applyEarningsTestSingle(scenario, person, calcYear, true)
+            //calculate monthlyPayment field for each person (sets child monthlyPayments to 75% of PIA if they are under 18 or disabled)
+            this.benefitService.calculateMonthlyPaymentsSingle(scenario, calcYear, person, personAlive, false)
+
+            //adjust each person's monthlyPayment as necessary for family max
+            if (scenario.children.length > 0){
+              let amountLeftForRestOfFamiliy:number = person.familyMaximum
+              scenario = this.familyMaximumService.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamiliy, disabledChildAlive)
             }
 
-            //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
-            this.addMonthlyPaymentAmountsToApplicableSumsSingle(scenario, calcYear, person, true, printOutputTable, true)
+            //Earnings test: not necessary in Single scenario if person is deceased
+
+            //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
+            this.addMonthlyPaymentAmountsToApplicableSumsSingle(scenario, calcYear, person, personAlive, printOutputTable)
+            // log2a print results for the month, if no disable child
+            if (person.age < logMonthlyAge) {
+              console.log(
+                calcYear.date.month, 
+                Math.round(calcYear.annualBenefitSinglePersonAlive),
+                Math.round(calcYear.annualBenefitSinglePersonDeceased)
+              )
+            }
+
+
+          } else { // There is a disabled child. 
+
+            // Calculate as if the parent is alive and the disabled child is alive
+            this.updateAnnualTotalsSingleDisabledChild(person, scenario, printOutputTable, calcYear, 
+              true, true)
+
+            // Calculate as if the parent is alive and the disabled child is deceased
+            this.updateAnnualTotalsSingleDisabledChild(person, scenario, printOutputTable, calcYear, 
+              true, false)
+
+            // Calculate as if the parent is deceased and the disabled child is alive
+            this.updateAnnualTotalsSingleDisabledChild(person, scenario, printOutputTable, calcYear, 
+              false, true)
+
+            // Calculate as if the parent is deceased and the disabled child is deceased
+            this.updateAnnualTotalsSingleDisabledChild(person, scenario, printOutputTable, calcYear, 
+              false, false)
+
+            // log2b print results for the month, if disabled child
+            if (person.age < logMonthlyAge) {
+              console.log(
+                calcYear.date.month, 
+                Math.round(calcYear.annualBenefitSinglePersonAliveDisabledChildAlive),
+                Math.round(calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased),
+                Math.round(calcYear.annualBenefitSinglePersonDeceasedDisabledChildAlive),
+                Math.round(calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased)
+              )
+            }
           }
-
-
-      //Assume person is deceased
-
-      // Assume there is no disabled child, or if there is, he/she is alive
-
-            //calculate monthlyPayment field for each person (sets child monthlyPayments to 75% of PIA if they are under 18 or disabled)
-            this.benefitService.calculateMonthlyPaymentsSingle(scenario, calcYear, person, false)
-
-            //adjust each person's monthlyPayment as necessary for family max
-            if (scenario.children.length > 0){
-              let amountLeftForRestOfFamiliy:number = person.familyMaximum
-              scenario = this.familyMaximumService.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamiliy)
-            }
-
-            //Earnings test: not necessary in Single scenario if person is deceased
-
-            //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
-            this.addMonthlyPaymentAmountsToApplicableSumsSingle(scenario, calcYear, person, false, printOutputTable)
-
-        // If there is a disabled child, calculate as if that child is deceased
-        if (scenario.disabledChild) {
-            //calculate monthlyPayment field for each person (sets child monthlyPayments to 75% of PIA if they are under 18 or disabled)
-            this.benefitService.calculateMonthlyPaymentsSingle(scenario, calcYear, person, false, true)
-
-            //adjust each person's monthlyPayment as necessary for family max
-            if (scenario.children.length > 0){
-              let amountLeftForRestOfFamiliy:number = person.familyMaximum
-              scenario = this.familyMaximumService.applyFamilyMaximumSingle(scenario, amountLeftForRestOfFamiliy, true)
-            }
-
-            //Earnings test: not necessary in Single scenario if person is deceased
-
-            //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
-            this.addMonthlyPaymentAmountsToApplicableSumsSingle(scenario, calcYear, person, false, printOutputTable, true)
-
-        }
 
 
         //Increase everybody's age by 1/12
@@ -173,28 +214,55 @@ export class PresentValueService {
               //Calculate probability of being alive at end of age in question. (Have to use age-1 here because we want their age as of beginning of year.)
           let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(person, person.age - 1)
           let probabilityPersonDeceased:number = 1 - probabilityPersonAlive
+          let probabilityDisabledChildAlive: number
+          let probabilityDisabledChildDeceased: number
           if (scenario.disabledChild === false) {
             calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * probabilityPersonAlive + calcYear.annualBenefitSinglePersonDeceased * probabilityPersonDeceased
+            // log1a Print results for the year if no disabled child
+            if (person.age < logYearlyAge) {
+              console.log(calcYear.date.year, 
+                Number(person.age.toFixed(2)),
+                probabilityPersonAlive,
+                probabilityPersonDeceased,
+                Math.round(calcYear.annualBenefitSinglePersonAlive), 
+                Math.round(calcYear.annualBenefitSinglePersonDeceased),
+                calcYear.annualPV,
+                this.discountToPresentValue(scenario.discountRate, calcYear.annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
+              )
+            }
           } else {
             // there is a disabled child
-            let probabilityDisabledChildAlive: number = 
+            probabilityDisabledChildAlive =
               this.mortalityService.calculateProbabilityAlive(scenario.disabledChildPerson, scenario.disabledChildPerson.age - 1);
-            let probabilityDisabledChildDeceased: number = 1 - probabilityDisabledChildAlive;
+            probabilityDisabledChildDeceased = 1 - probabilityDisabledChildAlive;
             calcYear.annualPV =  
             probabilityPersonAlive * 
-            ( (calcYear.annualBenefitSinglePersonAlive * probabilityDisabledChildAlive) +
+            ( (calcYear.annualBenefitSinglePersonAliveDisabledChildAlive * probabilityDisabledChildAlive) +
               (calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased * probabilityDisabledChildDeceased))
                 + 
             probabilityPersonDeceased * 
-            ( (calcYear.annualBenefitSinglePersonDeceased * probabilityDisabledChildAlive) +
+            ( (calcYear.annualBenefitSinglePersonDeceasedDisabledChildAlive * probabilityDisabledChildAlive) +
             (calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased * probabilityDisabledChildDeceased))
+          // log1b Print results for the year, if disabled child
+            if (person.age < logYearlyAge) {
+              console.log(calcYear.date.year, 
+                Number(person.age.toFixed(2)),
+                scenario.disabledChildPerson.age.toFixed(2),
+                probabilityPersonAlive,
+                probabilityDisabledChildAlive,
+                probabilityPersonAlive * probabilityDisabledChildAlive,
+                probabilityPersonAlive * probabilityDisabledChildDeceased,
+                probabilityPersonDeceased * probabilityDisabledChildAlive,
+                probabilityPersonDeceased * probabilityDisabledChildDeceased,
+                Math.round(calcYear.annualBenefitSinglePersonAliveDisabledChildAlive), 
+                Math.round(calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased),
+                Math.round(calcYear.annualBenefitSinglePersonDeceasedDisabledChildAlive),
+                Math.round(calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased),
+                calcYear.annualPV,
+                this.discountToPresentValue(scenario.discountRate, calcYear.annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
+              )
+            }
           }
-          console.log(calcYear.date.year, 
-            Math.round(calcYear.annualBenefitSinglePersonAlive), 
-            Math.round(calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased),
-            Math.round(calcYear.annualBenefitSinglePersonDeceased),
-            Math.round(calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased)
-            )
           //Discount that probability-weighted annual benefit amount back to this year
           calcYear.annualPV = this.discountToPresentValue(scenario.discountRate, calcYear.annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
 
@@ -1057,78 +1125,93 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     return person
   }
 
-
-  addMonthlyPaymentAmountsToApplicableSumsSingle(scenario:CalculationScenario, calcYear:CalculationYear, person:Person, personAliveBoolean:boolean, printOutputTable:Boolean,
-    disabledChildDeceased: boolean = false){
+  // NOTE: this procedure to be used only if there is no disabled child
+  addMonthlyPaymentAmountsToApplicableSumsSingle(scenario:CalculationScenario, calcYear:CalculationYear, person:Person, personAliveBoolean:boolean, printOutputTable:Boolean){
     if (personAliveBoolean === true){
       //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
       if (calcYear.date >= this.today || (person.hasFiled === false && person.isOnDisability === false) ){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
         calcYear.annualBenefitSinglePersonAlive += person.monthlyRetirementPayment
       }
-      if (disabledChildDeceased === false) { // include all child benefits
+      for (let child of scenario.children){
+        if (calcYear.date >= this.today || child.hasFiled === false){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
+          calcYear.annualBenefitSinglePersonAlive += child.monthlyChildPayment
+        }
+      }
+      if (printOutputTable === true){
+        calcYear.tablePersonAannualRetirementBenefit += person.monthlyRetirementPayment
         for (let child of scenario.children){
-          if (calcYear.date >= this.today || child.hasFiled === false){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
-            calcYear.annualBenefitSinglePersonAlive += child.monthlyChildPayment
-          }
-        }
-        if (printOutputTable === true){
-          calcYear.tablePersonAannualRetirementBenefit += person.monthlyRetirementPayment
-          for (let child of scenario.children){
-            calcYear.tableTotalAnnualChildBenefitsSingleParentAlive += child.monthlyChildPayment
-          }
-        }
-      } else { // disabledChild is deceased; we don't include his/her benefits
-        for (let child of scenario.children){
-          if (calcYear.date >= this.today || child.hasFiled === false){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
-            if (!child.isOnDisability) {
-              calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased += child.monthlyChildPayment
-            }
-          }
-        }
-        if (printOutputTable === true){
-          calcYear.tablePersonAannualRetirementBenefit += person.monthlyRetirementPayment
-          for (let child of scenario.children){
-            if (!child.isOnDisability) {
-              calcYear.tableTotalAnnualChildBenefitsSingleParentAliveDisabledChildDeceased += child.monthlyChildPayment
-            }
-          }
+          calcYear.tableTotalAnnualChildBenefitsSingleParentAlive += child.monthlyChildPayment
         }
       }
     }
     else {//i.e., "person is deceased"
       //sum everybody's monthlyPayment fields and add that sum to appropriate annual total (annualBenefitPersonDeceased)
-      if (disabledChildDeceased === false) { // include all child benefits
+      for (let child of scenario.children){
+        if (calcYear.date >= this.today){//only want to include child survivor benefit in PV calc if it is not from a month in the past (would never have a retroactive child survivor application, since if parent is already deceased calculator doesn't run)
+          calcYear.annualBenefitSinglePersonDeceased += child.monthlyChildPayment
+        }
+        if (printOutputTable === true){
+          calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased += child.monthlyChildPayment
+        }
+      }
+    }
+  }
+
+  // NOTE: Use this procedure in those cases which include a disabled child, who might be deceased
+  addMonthlyPaymentAmountsToApplicableSumsSingleDisabledChild(scenario:CalculationScenario, calcYear:CalculationYear, person:Person, 
+    personAliveBoolean:boolean, printOutputTable:Boolean, disabledChildAlive: boolean){
+    if (personAliveBoolean === true){
+      //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitSinglePersonAlive for PV calc and appropriate table sum for table output)
+      if (calcYear.date >= this.today || (person.hasFiled === false && person.isOnDisability === false) ){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
+        if (disabledChildAlive === true) { 
+          calcYear.annualBenefitSinglePersonAliveDisabledChildAlive += person.monthlyRetirementPayment
+        } else {
+          calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased += person.monthlyRetirementPayment
+        } 
+      }
+      if (disabledChildAlive === true) { // include all child benefits
+        for (let child of scenario.children){
+          if (calcYear.date >= this.today || child.hasFiled === false){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
+            calcYear.annualBenefitSinglePersonAliveDisabledChildAlive += child.monthlyChildPayment
+          }
+        }
+        if (printOutputTable === true){ // for the output table, we assume all children are alive
+          calcYear.tablePersonAannualRetirementBenefit += person.monthlyRetirementPayment
+          for (let child of scenario.children){
+            calcYear.tableTotalAnnualChildBenefitsSingleParentAlive += child.monthlyChildPayment
+          }
+        }
+      } else { // disabledChild is deceased; his/her monthlyChildPayment is 0, so we can add it with the rest
+        for (let child of scenario.children){
+          if (calcYear.date >= this.today || child.hasFiled === false){//if this benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e,. not because of a prior filing)
+            calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased += child.monthlyChildPayment
+          }
+        }
+        // calcYear.tableTotalAnnualChildBenefitsSingleParentAlive is calculated above,
+        // assuming all children are alive
+      }
+    }
+    else {//i.e., "person is deceased"
+      // add children's monthlyPayment to appropriate annual total (annualBenefitPersonDeceased)
+      if (disabledChildAlive === true) { // include all child benefits
         for (let child of scenario.children){
           if (calcYear.date >= this.today){//only want to include child survivor benefit in PV calc if it is not from a month in the past (would never have a retroactive child survivor application, since if parent is already deceased calculator doesn't run)
-            calcYear.annualBenefitSinglePersonDeceased += child.monthlyChildPayment
+            calcYear.annualBenefitSinglePersonDeceasedDisabledChildAlive += child.monthlyChildPayment
           }
           if (printOutputTable === true){
             calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased += child.monthlyChildPayment
           }
         }
-      } else { // disabledChild is deceased; we don't include his/her benefits
+      } else { // disabledChild is deceased; his/her monthlyChildPayment is 0, so we can add it with the rest
         for (let child of scenario.children){
           if (calcYear.date >= this.today){//only want to include child survivor benefit in PV calc if it is not from a month in the past (would never have a retroactive child survivor application, since if parent is already deceased calculator doesn't run)
-            if (!child.isOnDisability) {
-                calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased += child.monthlyChildPayment
-            }
-          }
-          if (printOutputTable === true){
-            if (!child.isOnDisability) {
-              calcYear.tableTotalAnnualChildBenefitsSingleParentDeceasedDisabledChildDeceased += child.monthlyChildPayment
-            }
+            calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased += child.monthlyChildPayment
           }
         }
+        // calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased is calculated above,
+        // assuming all children are alive
       }
     }
-    console.log(
-      personAliveBoolean, 
-      disabledChildDeceased, 
-      Math.round(calcYear.annualBenefitSinglePersonAlive),
-      Math.round(calcYear.annualBenefitSinglePersonDeceased),
-      Math.round(calcYear.annualBenefitSinglePersonAliveDisabledChildDeceased),
-      Math.round(calcYear.annualBenefitSinglePersonDeceasedDisabledChildDeceased)
-    )
   }
 
 
