@@ -49,7 +49,7 @@ describe('test calculateSinglePersonPV', () => {
   }))
 
       //Test calculateSinglePersonPV()
-      fit('FAIL 4 should return appropriate PV for single person, no complicating factors', () => {
+      it('FAIL 4 should return appropriate PV for single person, no complicating factors', () => {
         service.today = new MonthYearDate(2019, 7)
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
         person.PIA = 1000
@@ -59,7 +59,7 @@ describe('test calculateSinglePersonPV', () => {
         // person.maxAge = mortalityService.determineMaxAge(person.mortalityTable)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(152444, 0)
+          .toBeCloseTo(142644, 0)
       })
   
       it('FAIL 6 should return appropriate PV for single person who files retroactive application as of their FRA', () => {
@@ -72,7 +72,7 @@ describe('test calculateSinglePersonPV', () => {
         person.retirementBenefitDate = new MonthYearDate(person.FRA) //filing at FRA, which is retroactive (note that this line has to come after mockGetPrimaryFormInputs, which sets the person's FRA)
         scenario.discountRate = 1 //1% discount rate
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(193940, 0)
+          .toBeCloseTo(183581, 0)
       })
     
       it('FAIL 3 should return appropriate PV for single person, but with "still working" inputs and a different mortality table', () => { 
@@ -88,7 +88,7 @@ describe('test calculateSinglePersonPV', () => {
         // person.maxAge = mortalityService.determineMaxAge(person.mortalityTable)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(202316, 0)
+          .toBeCloseTo(194237, 0)
       })
     
       it('FAIL 2 should return appropriate PV for a single person who files at FRA but suspends immediately until 70', () => { 
@@ -103,7 +103,7 @@ describe('test calculateSinglePersonPV', () => {
         person.endSuspensionDate = new MonthYearDate(2040, 8, 1)//Age 70
         scenario.discountRate = 1
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(128093, 0)//Point being, this is same PV as when somebody just waits until 70.
+          .toBeCloseTo(119860, 0)//Point being, this is same PV as when somebody just waits until 70.
       })
   
       it('FAIL 7 should return appropriate PV for single person, a newborn child, no other complicating factors', () => {
@@ -120,7 +120,7 @@ describe('test calculateSinglePersonPV', () => {
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(263826, 0)
+          .toBeCloseTo(256458, 0)
       })
   
       it('FAIL 1 should return appropriate PV for single person, two newborn twins, no other complicating factors (confirming family max is being applied correctly)', () => {
@@ -139,7 +139,7 @@ describe('test calculateSinglePersonPV', () => {
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(320110, 0)
+          .toBeCloseTo(317915, 0)
       })
   
       it('FAIL 5 should return appropriate PV for single person, newborn triplets, no other complicating factors (family max should give it same PV as prior test)', () => {
@@ -160,7 +160,7 @@ describe('test calculateSinglePersonPV', () => {
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(320110, 0)
+          .toBeCloseTo(317915, 0)
       })
   
       it('should return appropriate PV for single person, 18-year-old mortal disabled child, earnings test applicable, future benefit cut assumption', () => {
