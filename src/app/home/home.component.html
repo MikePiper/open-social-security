@@ -804,7 +804,7 @@
       </span>
 
       <!--Survivor Scenario Custom Date Inputs -->
-      <span *ngIf="scenario.maritalStatus == 'survivor'">
+      <span *ngIf="scenario.maritalStatus == 'survivor' && personA.hasFiledAsSurvivor === false">
         <div class="form-inline" >
           <label>Month/year in which you will file for widow(er) benefits:</label>
           <select class="form-control" [(ngModel)]="customPersonAsurvivorBenefitMonth" name="customPersonAsurvivorBenefitMonth" id="customPersonAsurvivorBenefitMonth" required>

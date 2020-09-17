@@ -240,7 +240,7 @@ export class HomeComponent implements OnInit {
     console.log(this.personB)
     this.getPrimaryFormInputs()
     this.solutionSet.claimStrategy.outputTableComplete = false //set this to false to begin with, in case it had been true from prior runs of function
-    this.errorCollection = this.inputValidationService.checkForFixedRetirementDateErrors(this.errorCollection, this.scenario, this.personA, this.personB)
+    this.errorCollection = this.inputValidationService.checkPrimaryFormInputsForErrors(this.errorCollection, this.scenario, this.personA, this.personB)
     this.focusError()
 
     //If there are no fixedRetirementDate errors, call appropriate "maximizePV" function to find best solution
@@ -249,7 +249,7 @@ export class HomeComponent implements OnInit {
         "claimStrategy":new ClaimStrategy(this.personA, this.personB),
         "solutionsArray": [],
         "computationComplete": false
-      };
+      }
       if (this.scenario.maritalStatus == "single") {
         this.solutionSet = this.maximizePvService.maximizeSinglePersonPV(this.personA, this.scenario)
       }

@@ -2,7 +2,6 @@ import {Injectable} from '@angular/core'
 import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {ErrorCollection} from './data model classes/errorcollection'
-import { isUndefined } from 'util';
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
 @Injectable({
@@ -10,12 +9,59 @@ import {MonthYearDate} from "./data model classes/monthyearDate"
 })
 export class InputValidationService {
 
-  constructor() { }
   deemedFilingCutoff: Date = new Date(1954, 0, 1)
-  today:MonthYearDate = new MonthYearDate()
+  today: MonthYearDate = new MonthYearDate()
+  sixMonthsAgo:MonthYearDate
+  twelveMonthsAgo:MonthYearDate
 
-  //This has to happen separately from the function that checks for all the custom-date errors, becuase this relates to inputs from primary form
-  checkForFixedRetirementDateErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person){
+  constructor() {
+    this.setToday(new MonthYearDate())
+  }
+
+  setToday(today:MonthYearDate){
+    this.today = new MonthYearDate(today)
+    this.sixMonthsAgo = new MonthYearDate(today)
+    this.sixMonthsAgo.setMonth(this.sixMonthsAgo.getMonth()-6)
+    this.twelveMonthsAgo = new MonthYearDate(today)
+    this.twelveMonthsAgo.setFullYear(this.twelveMonthsAgo.getFullYear()-1)
+  }
+
+  checkErrorCollectionForErrors(errorCollection:ErrorCollection):boolean{
+    if (
+      errorCollection.personAfixedRetirementDateError ||
+      errorCollection.personBfixedRetirementDateError ||
+      errorCollection.personAfixedMotherFatherDateError ||
+      errorCollection.personAfixedSurvivorDateError ||
+      errorCollection.customPersonAretirementDateError ||
+      errorCollection.customPersonBretirementDateError ||
+      errorCollection.customPersonAspousalDateError ||
+      errorCollection.customPersonBspousalDateError ||
+      errorCollection.customPersonAbeginSuspensionDateError ||
+      errorCollection.customPersonBbeginSuspensionDateError ||
+      errorCollection.customPersonAendSuspensionDateError ||
+      errorCollection.customPersonBendSuspensionDateError ||
+      errorCollection.customPersonASurvivorDateError
+      ){
+        console.log(errorCollection)
+        return true
+      }
+    else {
+      return false
+    }
+  }
+
+  checkPrimaryFormInputsForErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person):ErrorCollection{
+    errorCollection = this.checkForFixedRetirementDateErrors(errorCollection, scenario, personA, personB)
+    errorCollection = this.checkForFixedSurvivorDateErrors(errorCollection, scenario, personA, personB)
+    // this.checkForFixedMotherFatherDateErrors()
+
+    //Set hasErrors boolean
+    errorCollection.hasErrors = this.checkErrorCollectionForErrors(errorCollection)
+
+    return errorCollection
+  }
+
+  checkForFixedRetirementDateErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person):ErrorCollection{
     //reset errors
     errorCollection.personAfixedRetirementDateError = undefined
     errorCollection.personBfixedRetirementDateError = undefined
@@ -23,44 +69,25 @@ export class InputValidationService {
     if (personA.hasFiled === true || personA.isOnDisability === true) {
       errorCollection.personAfixedRetirementDateError = this.checkValidRetirementInput(scenario, personA, personA.fixedRetirementBenefitDate)
     }
-    if ( (scenario.maritalStatus == "married" && personB.hasFiled === true) ||
-        (scenario.maritalStatus == 'married' && personB.isOnDisability === true) ||
-        (scenario.maritalStatus == "divorced" && personB.isOnDisability === false) )  {//If married and personB has filed or is disabled, or if divorced and personB is not disabled. (If divorced and personB *is* disabled, personB just automatically gets a date of today)
+    if ( ((scenario.maritalStatus == "married" || scenario.maritalStatus == "survivor") && personB.hasFiled === true) || //If married or survivor and personB has filed
+        (scenario.maritalStatus == 'married' && personB.isOnDisability === true) || //or married and personB on disability
+        (scenario.maritalStatus == "divorced" && personB.isOnDisability === false) )  {//or if divorced and personB is not disabled. (If divorced and personB *is* disabled, personB just automatically gets a date of today)
       errorCollection.personBfixedRetirementDateError = this.checkValidRetirementInput(scenario, personB, personB.fixedRetirementBenefitDate)
     }
-    //Set hasErrors boolean
-    if (
-      isUndefined(errorCollection.personAfixedRetirementDateError) &&
-      isUndefined(errorCollection.personBfixedRetirementDateError) &&
-      isUndefined(errorCollection.customPersonAretirementDateError) &&
-      isUndefined(errorCollection.customPersonBretirementDateError) &&
-      isUndefined(errorCollection.customPersonAspousalDateError) &&
-      isUndefined(errorCollection.customPersonBspousalDateError) &&
-      isUndefined(errorCollection.customPersonAbeginSuspensionDateError) &&
-      isUndefined(errorCollection.customPersonBbeginSuspensionDateError) &&
-      isUndefined(errorCollection.customPersonAendSuspensionDateError) &&
-      isUndefined(errorCollection.customPersonBendSuspensionDateError)
-      ) {
-        errorCollection.hasErrors = false
-      }
-      else {
-        errorCollection.hasErrors = true
-      }
-      if (errorCollection.personAfixedRetirementDateError){console.log(errorCollection.personAfixedRetirementDateError)}
-      if (errorCollection.personBfixedRetirementDateError){console.log(errorCollection.personBfixedRetirementDateError)}
-      if (errorCollection.customPersonAretirementDateError){console.log(errorCollection.customPersonAretirementDateError)}
-      if (errorCollection.customPersonBretirementDateError){console.log(errorCollection.customPersonBretirementDateError)}
-      if (errorCollection.customPersonBspousalDateError){console.log(errorCollection.customPersonBspousalDateError)}
-      if (errorCollection.customPersonAbeginSuspensionDateError){console.log(errorCollection.customPersonAbeginSuspensionDateError)}
-      if (errorCollection.customPersonBbeginSuspensionDateError){console.log(errorCollection.customPersonBbeginSuspensionDateError)}
-      if (errorCollection.customPersonAendSuspensionDateError){console.log(errorCollection.customPersonAendSuspensionDateError)}
-      if (errorCollection.customPersonBendSuspensionDateError){console.log(errorCollection.customPersonBendSuspensionDateError)}
-
     return errorCollection
   }
 
-  //This has to happen separately from the function that checks for fixed-date errors, becuase this relates to inputs from custom dates form
-  checkForCustomDateErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person){
+  checkForFixedSurvivorDateErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person):ErrorCollection{
+    //reset error
+    errorCollection.personAfixedSurvivorDateError = undefined
+    //Check for errors
+    if (scenario.maritalStatus == "survivor" || personA.hasFiledAsSurvivor === true){
+      errorCollection.personAfixedSurvivorDateError = this.checkValidSurvivorInput(personA, personB, personA.fixedSurvivorBenefitDate)
+    }
+    return errorCollection
+  }
+
+  checkForCustomDateErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person):ErrorCollection{
     //reset errors
     errorCollection.customPersonAretirementDateError = undefined
     errorCollection.customPersonBretirementDateError = undefined
@@ -70,6 +97,7 @@ export class InputValidationService {
     errorCollection.customPersonBbeginSuspensionDateError = undefined
     errorCollection.customPersonAendSuspensionDateError = undefined
     errorCollection.customPersonBendSuspensionDateError = undefined
+    errorCollection.customPersonASurvivorDateError = undefined
     //Check for errors
     errorCollection.customPersonAretirementDateError = this.checkValidRetirementInput(scenario, personA, personA.retirementBenefitDate)
     if (scenario.maritalStatus == "married" || scenario.maritalStatus == "divorced"){
@@ -87,39 +115,17 @@ export class InputValidationService {
       errorCollection.customPersonBbeginSuspensionDateError = this.checkValidBeginSuspensionInput(personB)
       errorCollection.customPersonBendSuspensionDateError = this.checkValidEndSuspensionInput(personB)
     }
+    if (scenario.maritalStatus == "survivor"){
+      errorCollection.customPersonASurvivorDateError = this.checkValidSurvivorInput(personA, personB, personA.survivorBenefitDate)
+    }
     //Set hasErrors boolean
-    if (
-      isUndefined(errorCollection.personAfixedRetirementDateError) &&
-      isUndefined(errorCollection.personBfixedRetirementDateError) &&
-      isUndefined(errorCollection.customPersonAretirementDateError) &&
-      isUndefined(errorCollection.customPersonBretirementDateError) &&
-      isUndefined(errorCollection.customPersonAspousalDateError) &&
-      isUndefined(errorCollection.customPersonBspousalDateError) &&
-      isUndefined(errorCollection.customPersonAbeginSuspensionDateError) &&
-      isUndefined(errorCollection.customPersonBbeginSuspensionDateError) &&
-      isUndefined(errorCollection.customPersonAendSuspensionDateError) &&
-      isUndefined(errorCollection.customPersonBendSuspensionDateError)
-      ) {
-        errorCollection.hasErrors = false
-      }
-      else {
-        errorCollection.hasErrors = true
-      }
-      if (errorCollection.personAfixedRetirementDateError){console.log(errorCollection.personAfixedRetirementDateError)}
-      if (errorCollection.personBfixedRetirementDateError){console.log(errorCollection.personBfixedRetirementDateError)}
-      if (errorCollection.customPersonAretirementDateError){console.log(errorCollection.customPersonAretirementDateError)}
-      if (errorCollection.customPersonBretirementDateError){console.log(errorCollection.customPersonBretirementDateError)}
-      if (errorCollection.customPersonBspousalDateError){console.log(errorCollection.customPersonBspousalDateError)}
-      if (errorCollection.customPersonAbeginSuspensionDateError){console.log(errorCollection.customPersonAbeginSuspensionDateError)}
-      if (errorCollection.customPersonBbeginSuspensionDateError){console.log(errorCollection.customPersonBbeginSuspensionDateError)}
-      if (errorCollection.customPersonAendSuspensionDateError){console.log(errorCollection.customPersonAendSuspensionDateError)}
-      if (errorCollection.customPersonBendSuspensionDateError){console.log(errorCollection.customPersonBendSuspensionDateError)}
+    errorCollection.hasErrors = this.checkErrorCollectionForErrors(errorCollection)
 
     return errorCollection
   }
 
-  checkValidRetirementInput(scenario:CalculationScenario, person:Person, retirementBenefitDate:MonthYearDate) {
-    let error = undefined
+  checkValidRetirementInput(scenario:CalculationScenario, person:Person, retirementBenefitDate:MonthYearDate):string {
+    let error:string = undefined
 
     //Make sure there is an input
     if (!retirementBenefitDate || isNaN(retirementBenefitDate.getFullYear()) ){
@@ -143,12 +149,10 @@ export class InputValidationService {
 
     //If retirement benefit input date is in the past, make sure it's for a legitimate reason
     if (retirementBenefitDate < this.today){
-      let sixMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6)
       if (person.fixedRetirementBenefitDate) {//i.e., because they already filed, are disabled, or they are personB in a divorce scenario)
         //no error
       }
-      else if (retirementBenefitDate >= person.FRA && retirementBenefitDate >= sixMonthsAgo){
+      else if (retirementBenefitDate >= person.FRA && retirementBenefitDate >= this.sixMonthsAgo){
         //no error
       }
       else {
@@ -159,8 +163,8 @@ export class InputValidationService {
     return error
   }
 
-  checkValidSpousalInput(scenario:CalculationScenario, person:Person, otherPerson:Person, ownRetirementBenefitDate:MonthYearDate, spousalBenefitDate:MonthYearDate, otherPersonRetirementBenefitDate:MonthYearDate) {
-    let error = undefined
+  checkValidSpousalInput(scenario:CalculationScenario, person:Person, otherPerson:Person, ownRetirementBenefitDate:MonthYearDate, spousalBenefitDate:MonthYearDate, otherPersonRetirementBenefitDate:MonthYearDate):string {
+    let error:string = undefined
     let secondStartDate:MonthYearDate = new MonthYearDate(1,1,1)
     //Make sure there is an input (Note that this will get overridden in the customDates function after the error check, in cases where there isn't supposed to be a user input)
     if ( isNaN(spousalBenefitDate.getFullYear()) || isNaN(spousalBenefitDate.getMonth()) ) {
@@ -169,17 +173,13 @@ export class InputValidationService {
 
     //If spousal input date is in the past, make sure it's for a legitimate reason
     if (spousalBenefitDate < this.today){
-      let sixMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6)
-      let twelveMonthsAgo:MonthYearDate = new MonthYearDate(this.today)
-      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth()-12)
       if (person.fixedRetirementBenefitDate) {//i.e., person is disabled, has filed, or is personB in a divorce scenario
         //no error, because retirement date is in the past, and validation function already checks to make sure spousal input date is valid with respect to both people's retirement dates)
       }
-      else if (spousalBenefitDate >= person.FRA && spousalBenefitDate >= sixMonthsAgo && otherPerson.isOnDisability === false){
+      else if (spousalBenefitDate >= person.FRA && spousalBenefitDate >= this.sixMonthsAgo && otherPerson.isOnDisability === false){
         //no error
       }
-      else if (spousalBenefitDate >= person.FRA && spousalBenefitDate >= twelveMonthsAgo && otherPerson.isOnDisability === true){
+      else if (spousalBenefitDate >= person.FRA && spousalBenefitDate >= this.twelveMonthsAgo && otherPerson.isOnDisability === true){
         //no error
       }
       else {
@@ -245,10 +245,10 @@ export class InputValidationService {
     return error
   }
 
-  checkValidBeginSuspensionInput(person){
+  checkValidBeginSuspensionInput(person:Person):string{
     let error: string = undefined
     //Must be a valid date (ie, includes both month and year inputs)
-    if (isNaN(person.beginSuspensionDate)) {
+    if (isNaN(person.beginSuspensionDate.getFullYear()) || isNaN(person.beginSuspensionDate.getMonth())) {
       error = "Please enter a date."
     }
     //can't be before today
@@ -266,10 +266,10 @@ export class InputValidationService {
     return error
   }
 
-  checkValidEndSuspensionInput(person){
+  checkValidEndSuspensionInput(person:Person):string{
     let error: string = undefined
     //Must be a valid date (ie, includes both month and year inputs)
-    if (isNaN(person.endSuspensionDate)){
+    if (isNaN(person.endSuspensionDate.getFullYear()) || isNaN(person.endSuspensionDate.getMonth())){
       error = "Please enter a date."
     }
     //Can't be before begin suspension date
@@ -283,5 +283,39 @@ export class InputValidationService {
     return error
   }
 
+  checkValidSurvivorInput(livingPerson:Person, deceasedPerson:Person, survivorBenefitDate:MonthYearDate):string{
+    let error:string = undefined
+    //Make sure there is an input
+    if (!survivorBenefitDate || isNaN(survivorBenefitDate.getFullYear()) || isNaN(survivorBenefitDate.getMonth()) ){
+        error = "Please enter a date." 
+    }
+    //Can't be before age 60 (50 if disabled)
+    let age50date:MonthYearDate = new MonthYearDate(livingPerson.SSbirthDate.getFullYear()+50, livingPerson.SSbirthDate.getMonth())
+    let age60date:MonthYearDate = new MonthYearDate(livingPerson.SSbirthDate.getFullYear()+60, livingPerson.SSbirthDate.getMonth())
+    if (survivorBenefitDate < age50date || (survivorBenefitDate < age60date && livingPerson.isOnDisability === false) ) {
+      error = "A survivor benefit cannot be claimed before age 60 (50 if disabled)."
+    }
+    //Can't be before deceasedPerson.dateOfDeath
+    if (survivorBenefitDate < deceasedPerson.dateOfDeath){
+      error = "A survivor benefit cannot be claimed prior to the deceased spouse's date of death."
+    }
+    //If input date is in the past, make sure it's for a legitimate reason
+    if (survivorBenefitDate < this.today){
+      if (livingPerson.fixedSurvivorBenefitDate) {//i.e., because they already filed for survivor benefits
+        //no error
+      }
+      else if (survivorBenefitDate >= livingPerson.survivorFRA && survivorBenefitDate >= this.sixMonthsAgo){//survivorBenefitdate is after survivor FRA and no more than 6 months ago
+        //no error
+      }
+      else if (livingPerson.isOnDisability === true && survivorBenefitDate >= this.twelveMonthsAgo){//survivor is disabled and survivorBenefitDate is no more than 12 months ago
+        //no error
+      }
+      else {
+        error = "The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date must also be no earlier than your survivor FRA."
+      }
+    }
+
+    return error
+  }
 
 }

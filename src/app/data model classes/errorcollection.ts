@@ -3,6 +3,9 @@ export class ErrorCollection {
     //Error variables relating to primary form
     personAfixedRetirementDateError:string
     personBfixedRetirementDateError:string
+    personAfixedMotherFatherDateError:string
+    personAfixedSurvivorDateError:string
+
 
     //error varibles relating to custom date form
     customPersonAretirementDateError:string
@@ -13,6 +16,7 @@ export class ErrorCollection {
     customPersonBbeginSuspensionDateError:string
     customPersonAendSuspensionDateError:string
     customPersonBendSuspensionDateError:string
+    customPersonASurvivorDateError:string
 
     hasErrors:boolean
 
