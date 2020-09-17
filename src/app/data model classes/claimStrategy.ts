@@ -6,8 +6,7 @@ This code is contributed to the project by Brian Courts, copyright 2020, release
 https://github.com/brian-courts
 */
 
-// EndSuspensionDates less than this value are placeholders, not actual dates
-let minimumEndSuspensionDate: MonthYearDate = new MonthYearDate(1950, 1);
+
 
 export class ClaimStrategy {
     //This class stores information about claims for a person or a couple
@@ -31,6 +30,7 @@ export class ClaimStrategy {
     personBchildInCareSpousalDate: MonthYearDate
     personBBeginSuspensionDate: MonthYearDate
     personBEndSuspensionDate: MonthYearDate
+    personBsurvivorDate: MonthYearDate
 
     PV: number = 0 //This is the present value calculated for the strategy, given the inputs used.
     pvNoCut: number = 0 //If user chooses to assume a benefit cut, this field is used to save what the PV of the strategy would be if there were NOT a cut, for the sake of the range component output
@@ -56,45 +56,7 @@ export class ClaimStrategy {
             if (personB.childInCareSpousalBenefitDate) {this.personBchildInCareSpousalDate  = new MonthYearDate(personB.childInCareSpousalBenefitDate)}
             this.personBBeginSuspensionDate = new MonthYearDate(personB.beginSuspensionDate)
             this.personBEndSuspensionDate = new MonthYearDate(personB.endSuspensionDate)
-        }
-    }
-
-    indexDateA(): MonthYearDate { //date at which person A's own retirement benefits begin (or re-start)
-        let indexDate:MonthYearDate
-        //if personA has no PIA, we index based on their spousal benefit
-        if (this.personA.PIA == 0){
-            indexDate = new MonthYearDate(this.personASpousalDate)
-        }
-        else {//i.e., personA has a PIA
-            if (this.personAEndSuspensionDate > minimumEndSuspensionDate) {
-                indexDate = new MonthYearDate(this.personAEndSuspensionDate)
-            }
-            else {
-                indexDate = new MonthYearDate(this.personARetirementDate)
-            }
-        }
-        return indexDate
-    }
-
-    indexDateB(): MonthYearDate { //date at which person B's own retirement benefits begin (or re-start)
-        let indexDate:MonthYearDate
-        if (this.personB){
-            //if personB has no PIA, we index based on their spousal benefit
-            if (this.personB.PIA == 0){
-                indexDate = new MonthYearDate(this.personBSpousalDate)
-            }
-            else {//i.e., personB has a PIA
-                if (this.personBEndSuspensionDate > minimumEndSuspensionDate) {
-                    indexDate = new MonthYearDate(this.personBEndSuspensionDate)
-                }
-                else {
-                    indexDate = new MonthYearDate(this.personBRetirementDate)
-                }
-            }
-            return indexDate
-        }
-        else {//i.e., there is no personB
-            return null
+            this.personBsurvivorDate = new MonthYearDate(personB.survivorBenefitDate)
         }
     }
 

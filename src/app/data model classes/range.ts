@@ -14,21 +14,21 @@ It can store data for two possible scenarios at the same time:
 */ 
 
 export class Range {
-    firstDateA: MonthYearDate; // first date for person A
-    lastDateA: MonthYearDate; // last date for person A
+    firstDateX: MonthYearDate; // first date for variable that will be on x-axis (most often: personA.retirementBenefitDate)
+    lastDateX: MonthYearDate; // last date for above variable
     rows: number; // number of rows in this range
-    firstValueA: number;
-    firstYearA: number; // year of first date for person A
-    firstMonthA: number; // month of first date for person A
-    yearMarksA: number[] = new Array(); // column number of start of each year, to mark x-axis
+    firstValueX: number; //.valueOf() for firstDateX
+    firstYearX: number; // getFullYear() of firstDateX
+    firstMonthX: number; // getMonth() of firstDateX
+    yearMarksX: number[] = new Array(); // column number of start of each year, to mark x-axis
 
-    firstDateB: MonthYearDate; // first date for person B
-    lastDateB: MonthYearDate; // last date for person B
+    firstDateY: MonthYearDate; // first date for variable that will be on y-axis (most often: personB.retirementBenefitDate)
+    lastDateY: MonthYearDate; // last date for firstDateY
     columns: number; // number of columnss in this range
-    firstValueB: number;
-    firstYearB: number; // year of first date for person B
-    firstMonthB: number; // month of first date for person B
-    yearMarksB: number[] = new Array(); // column number of start of each year, to mark y-axis
+    firstValueY: number; //valueOf() for firstDateY
+    firstYearY: number; // getFullYear() of firstDateY
+    firstMonthY: number; // getMonth() of firstDateY
+    yearMarksY: number[] = new Array(); // column number of start of each year, to mark y-axis
 
     // identifiers (and array indices) for the various conditions
     static NO_CUT = 0;
@@ -85,70 +85,71 @@ export class Range {
     topBreak = this.fractionBreak[0];
     topCount: number[] = [0, 0];  // how many NO_CUT & CUT pv's are in the top percentage
 
-    constructor(firstDateA: MonthYearDate, lastDateA: MonthYearDate, firstDateB?: MonthYearDate, lastDateB?: MonthYearDate) {
-        this.firstDateA = firstDateA;
-        this.lastDateA = lastDateA;
-        this.firstValueA = firstDateA.valueOf();
-        this.firstYearA = firstDateA.getFullYear();
-        this.firstMonthA = firstDateA.getMonth();
+    constructor(firstDateX: MonthYearDate, lastDateX: MonthYearDate, firstDateY?: MonthYearDate, lastDateY?: MonthYearDate) {
+        this.firstDateX = new MonthYearDate(firstDateX)
+        this.lastDateX = new MonthYearDate(lastDateX)
+        this.firstValueX = firstDateX.valueOf();
+        this.firstYearX = firstDateX.getFullYear();
+        this.firstMonthX = firstDateX.getMonth();
 
         // personA does columns
-        this.columns = lastDateA.valueOf() - this.firstValueA + 1;
+        this.columns = lastDateX.valueOf() - this.firstValueX + 1;
 
         // generate location of marks at year transitions
-        this.yearMarksA[0] = 0;
-        let nextMark:number = 12 - firstDateA.getMonth();
+        this.yearMarksX[0] = 0;
+        let nextMark:number = 12 - firstDateX.getMonth();
         while (nextMark < this.columns) {
-            this.yearMarksA.push(nextMark);
+            this.yearMarksX.push(nextMark);
             nextMark += 12;
         }
-        this.yearMarksA.push(this.columns);
+        this.yearMarksX.push(this.columns);
         
-        if (firstDateB && lastDateB) { // this is for a couple 
-            this.firstDateB = firstDateB;
-            this.lastDateB = lastDateB;
-            this.firstValueB = firstDateB.valueOf();
-            this.firstYearB = firstDateB.getFullYear();
-            this.firstMonthB = firstDateB.getMonth();
-            this.rows = lastDateB.valueOf() - this.firstValueB + 1;
+        if (firstDateY && lastDateY) { // this is for a couple 
+            this.firstDateY = firstDateY;
+            this.lastDateY = lastDateY;
+            this.firstValueY = firstDateY.valueOf();
+            this.firstYearY = firstDateY.getFullYear();
+            this.firstMonthY = firstDateY.getMonth();
+            this.rows = lastDateY.valueOf() - this.firstValueY + 1;
             // generate location of marks at year transitions
-            this.yearMarksB[0] = 0;
-            let nextMark:number = 12 - firstDateB.getMonth();
+            this.yearMarksY[0] = 0;
+            let nextMark:number = 12 - firstDateY.getMonth();
             while (nextMark < this.rows) {
-                this.yearMarksB.push(nextMark);
+                this.yearMarksY.push(nextMark);
                 nextMark += 12;
             }
-            this.yearMarksB.push(this.rows);        
+            this.yearMarksY.push(this.rows);        
         } else { // this is for one person
             this.rows = 1;
         }
         this.initializeArrays(this.rows, this.columns);
     }
 
-    addedMonthsString(month: number, year: number, addMonths: number): string {
-        month += addMonths;
-        while (month > 11) {
-            year++;
-            month -= 12;
-        }
-        return (month + 1) + '/' + year;
-    }
+    //Commenting this out because I think it's no longer needed
+            // addedMonthsString(month: number, year: number, addMonths: number): string {
+            //     month += addMonths;
+            //     while (month > 11) {
+            //         year++;
+            //         month -= 12;
+            //     }
+            //     return (month + 1) + '/' + year;
+            // }
 
-    columnDateString(column: number): string {
-        return this.addedMonthsString(this.firstMonthA, this.firstYearA, column);
-    }
+            // columnDateString(column: number): string {
+            //     return this.addedMonthsString(this.firstMonthX, this.firstYearX, column);
+            // }
 
-    rowDateString(row: number): string {
-        return this.addedMonthsString(this.firstMonthB, this.firstYearB, row);
-    }
+            // rowDateString(row: number): string {
+            //     return this.addedMonthsString(this.firstMonthY, this.firstYearY, row);
+            // }
 
-    rowColumnDatesString(row: number, col: number): string {
-        if (this.rows > 1) {
-            return "You " + this.columnDateString(col) + ", Spouse " + this.rowDateString(row);
-        } else {
-            return this.columnDateString(col);
-        }
-    }
+            // rowColumnDatesString(row: number, col: number): string {
+            //     if (this.rows > 1) {
+            //         return "You " + this.columnDateString(col) + ", Spouse " + this.rowDateString(row);
+            //     } else {
+            //         return this.columnDateString(col);
+            //     }
+            // }
 
     initializeArrays(rows: number, cols: number) {
         // we wouldn't need two-dimensional arrays for one person, but we'll make them, 
@@ -179,7 +180,7 @@ export class Range {
     }
 
     //store the PV data for the given date combination at corresponding row & col, and save new max/min info if appropriate
-    processPVs(claimStrategy: ClaimStrategy, personAfixed:boolean) {
+    processPVs(claimStrategy: ClaimStrategy) {
         let pv: number;
         let row: number;
         let col: number;
@@ -191,17 +192,12 @@ export class Range {
                 pv = claimStrategy.PV;
             }
 
-            if (personAfixed === false){
-                col = this.getColAtDate(claimStrategy.indexDateA());
-            }
-            else {//if personA is fixed (i.e., over age 70), we actually want the index of personB, because personB's date will be the columns in the (single-row) range output
-                col = this.getColAtDate(claimStrategy.indexDateB());
-            }
-
+            col = this.getColAtDate(this.getIndexDateXfromClaimStrategy(claimStrategy));
+     
             if (this.rows === 1) {
                 row = 0;
             } else {
-                row = this.getRowAtDate(claimStrategy.indexDateB());
+                row = this.getRowAtDate(this.getIndexDateYfromClaimStrategy(claimStrategy));
             }
 
             if (col >= 0 && row >= 0){//Check that row and col are not negative.
@@ -237,12 +233,12 @@ export class Range {
         return this.claimStrategiesArrays[condition][row][column]; 
     }
 
-    getColAtDate(dateA: MonthYearDate): number {
-        return dateA.valueOf() - this.firstValueA;
+    getColAtDate(dateX: MonthYearDate): number {
+        return dateX.valueOf() - this.firstValueX;
     }
 
-    getRowAtDate(dateB: MonthYearDate): number {
-        return dateB.valueOf() - this.firstValueB;
+    getRowAtDate(dateY: MonthYearDate): number {
+        return dateY.valueOf() - this.firstValueY;
     }
 
     inRangeRowCol(row: number, col: number): boolean {
@@ -310,5 +306,90 @@ export class Range {
         return "" + (this.pvArrays[condition][row][col] * this.pvPercentFactorArray[condition]).toFixed(1);
     }
       
+    getIndexDateXfromClaimStrategy(claimStrategy:ClaimStrategy): MonthYearDate { //date that would be shown on x-axis for this ClaimStrategy. Is usually personA.retirementBenefitDate, but could be:
+        //personB.retirementBenefitDate if personA is already age 70 so there is no y-axis
+        //personA.spousalBenefitDate (if no PIA of their own)
+        //personA.endSuspensionDate (if already filed but younger than 70)
+            //...unless personA is planning to begin suspension at date other than later of FRA or today, in which case this claimStrategy won't be in the Range, so we want to return a negative Column value (so use placeholder date)
+        let indexDate:MonthYearDate = new MonthYearDate(claimStrategy.personARetirementDate)
+        //If personA is already age 70 (and this is therefore a 1-row graph with no y-axis), use personB's retirementBenefitDate
+        if (claimStrategy.personA.initialAge >= 70){
+            indexDate = new MonthYearDate(claimStrategy.personBRetirementDate)
+        }
+        else {//i.e. personA is younger than 70
+            //if personA has no PIA, we index based on their spousal benefit
+            if (claimStrategy.personA.PIA == 0){
+                indexDate = new MonthYearDate(claimStrategy.personASpousalDate)
+            }
+            else {//i.e., personA has a PIA
+                //Check if we should return suspension-related date
+                if (claimStrategy.personA.declineSuspension === true){//if user has checked box for "decline Suspension" in custom date form
+                    indexDate = new MonthYearDate(this.firstDateX) //We want "column" to be zero, because personA is essentially "starting" benefit as soon as possible (since not stopping it at all) 
+                }
+                else {
+                    // EndSuspensionDates less than this value are placeholders, not actual dates
+                    let minimumEndSuspensionDate: MonthYearDate = new MonthYearDate(1950, 1)
+                    if (claimStrategy.personAEndSuspensionDate > minimumEndSuspensionDate) {//i.e., personA has an actual endSuspensionDate set
+                        let laterOfFRAorToday:MonthYearDate
+                        laterOfFRAorToday = claimStrategy.personA.FRA > new MonthYearDate() ? new MonthYearDate(claimStrategy.personA.FRA) : new MonthYearDate()
+                        if (claimStrategy.personABeginSuspensionDate.valueOf() == laterOfFRAorToday.valueOf()){
+                            indexDate = new MonthYearDate(claimStrategy.personAEndSuspensionDate)
+                        }
+                        else {//this ClaimStrategy is not in Range (because person isn't suspending at later of FRA or today), so we want to return a negative Column value
+                            indexDate = new MonthYearDate(1900, 0)
+                        }
+                    }
+                }
+            }
+        }
+        return indexDate
+    }
+
+    getIndexDateYfromClaimStrategy(claimStrategy:ClaimStrategy): MonthYearDate { //date that would be shown on x-axis for this ClaimStrategy. Is usually personB.retirementBenefitDate, but could be:
+        //personA.survivorBenefitDate (in survivor scenario)
+        //personB.spousalBenefitDate (if no PIA of their own)
+        //personB.endSuspensionDate (if already filed but younger than 70)
+            //...unless personB is planning to begin suspension at date other than later of FRA or today, in which case this claimStrategy won't be in the Range, so we want to return a negative Column value (so use placeholder date)
+        let indexDate:MonthYearDate
+        if (claimStrategy.personB){
+            indexDate = new MonthYearDate(claimStrategy.personBRetirementDate)
+            //if personB is deceased, we Y-axis represents personA's survivorBenefitDate
+            if (claimStrategy.personB.dateOfDeath > claimStrategy.personB.SSbirthDate){
+                indexDate = new MonthYearDate(claimStrategy.personAsurvivorDate)
+            }
+            else {//i.e., it's not a survivor scenario
+                //if personB has no PIA, we index based on their spousal benefit
+                if (claimStrategy.personB.PIA == 0){
+                    indexDate = new MonthYearDate(claimStrategy.personBSpousalDate)
+                }
+                else {//i.e., personB has a PIA
+                    //Check if we should return suspension-related date
+                    if (claimStrategy.personB.declineSuspension === true){//if user has checked box for "decline Suspension" in custom date form
+                        indexDate = new MonthYearDate(this.firstDateY) //We want "column" to be zero, because personB is essentially "starting" benefit as soon as possible (since not stopping it at all) 
+                    }
+                    else {
+                        // EndSuspensionDates less than this value are placeholders, not actual dates
+                        let minimumEndSuspensionDate: MonthYearDate = new MonthYearDate(1950, 1)
+                        if (claimStrategy.personBEndSuspensionDate > minimumEndSuspensionDate) {//i.e., personB has an actual endSuspensionDate set
+                            let laterOfFRAorToday:MonthYearDate
+                            laterOfFRAorToday = claimStrategy.personB.FRA > new MonthYearDate() ? new MonthYearDate(claimStrategy.personB.FRA) : new MonthYearDate()
+                            if (claimStrategy.personBBeginSuspensionDate.valueOf() == laterOfFRAorToday.valueOf()){
+                                indexDate = new MonthYearDate(claimStrategy.personBEndSuspensionDate)
+                            }
+                            else {//this ClaimStrategy is not in Range (because person isn't suspending at later of FRA or today), so we want to return a negative Column value
+                                indexDate = new MonthYearDate(1900, 0)
+                            }
+                        }
+                    }
+                }
+            }
+            return indexDate
+        }
+        else {//i.e., there is no personB
+            return null
+        }
+    }
+
+
 
 }

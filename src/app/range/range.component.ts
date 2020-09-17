@@ -82,8 +82,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
 
   range: Range; // the object holding data for the range of options
-  startDateA: MonthYearDate; // date at which personA first receives benefits, to be used when converting row to date
-  startDateB: MonthYearDate; // date at which personB first receives benefits, to be used when converting column to date
   
   // - - - - - - graph parameters - - - - - -
 
@@ -107,12 +105,13 @@ export class RangeComponent implements OnInit, AfterViewInit {
   chartTitleHeight: number;
   axisTickSize: number = 10;
   axisLabelSpace: number = 5;
-  personAaxisTitle: string = "Your Retirement Benefit Begins";
-  personBaxisTitle: string = "Your Spouse's Retirement Benefit Begins";
-  personA_zeroPIAaxisTitle: string = "Your Spousal Benefit Begins"
-  personB_zeroPIAaxisTitle: string = "Your Spouse's Spousal Benefit Begins"
-  xAxisTitle: string = this.personAaxisTitle;
-  yAxisTitle: string = this.personBaxisTitle;
+  personAretirementAxisTitle: string = "Your Retirement Benefit Begins"
+  personBretirementAxisTitle: string = "Your Spouse's Retirement Benefit Begins"
+  personAspousalAxisTitle: string = "Your Spousal Benefit Begins"
+  personBspousalAxisTitle: string = "Your Spouse's Spousal Benefit Begins"
+  personAsurvivorAxisTitle: string = "Your Survivor Benefit Begins"
+  xAxisTitle: string = this.personAretirementAxisTitle;
+  yAxisTitle: string = this.personBretirementAxisTitle;
   xTitleWidth: number;
   xTitleHeight: number;
   yTitleWidth: number;
@@ -177,7 +176,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // console.log("range.component.ngAfterViewInit");
     this.initDisplay();
     this.changeDetectorRef.detectChanges();
   }
@@ -188,8 +186,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
       console.log("this.scenario.range is undefined or null.");
     } else {
 
-      this.startDateA = this.range.firstDateA;
-      this.startDateB = this.range.firstDateB;
       this.selectedRow = -1;
       this.selectedColumn = -1;
 
@@ -290,18 +286,22 @@ export class RangeComponent implements OnInit, AfterViewInit {
     //Change axis titles if necessary
       //If personA is already 70, we're only iterating one person (only one axis on graph), but that person is personB
       if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70){
-        this.xAxisTitle = this.personBaxisTitle
+        this.xAxisTitle = this.personBretirementAxisTitle
       }
-    //If either person has a zero PIA, we need to reword their axis title appropriately
-      if (this.personA.PIA == 0){
-        this.xAxisTitle = this.personA_zeroPIAaxisTitle
-      }
-      if (this.personB.PIA == 0){
-        this.yAxisTitle = this.personB_zeroPIAaxisTitle
-        if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70){
-          this.xAxisTitle = this.personB_zeroPIAaxisTitle
+      //If either person has a zero PIA, we need to reword their axis title appropriately
+        if (this.personA.PIA == 0){
+          this.xAxisTitle = this.personAspousalAxisTitle
         }
-      }
+        if (this.personB.PIA == 0){
+          this.yAxisTitle = this.personBspousalAxisTitle
+          if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70){
+            this.xAxisTitle = this.personBspousalAxisTitle
+          }
+        }
+      //If survivor scenario, y-axis is personA's survivor benefit
+        if (this.scenario.maritalStatus == "survivor"){
+          this.yAxisTitle = this.personAsurvivorAxisTitle
+        }
 
     // Calculate chart element dimensions to fit actual axis contents
     let context:CanvasRenderingContext2D = this.canvasContext;
@@ -420,15 +420,15 @@ export class RangeComponent implements OnInit, AfterViewInit {
     context.fillStyle = 'black';
     context.textAlign = 'center';
     
-    let year = this.range.firstYearA;
-    for (let i = 0; i < this.range.yearMarksA.length; i++) {
+    let year = this.range.firstYearX;
+    for (let i = 0; i < this.range.yearMarksX.length; i++) {
       context.beginPath();
       context.moveTo(tickX, tickTop);
       context.lineTo(tickX, tickBottom);
       context.stroke();
-      if (i < this.range.yearMarksA.length - 1) {
+      if (i < this.range.yearMarksX.length - 1) {
         // draw label for this range
-        nextX = this.cellBaseX + (this.range.yearMarksA[i + 1] * this.cellWidth)
+        nextX = this.cellBaseX + (this.range.yearMarksX[i + 1] * this.cellWidth)
         if ((nextX - tickX) > this.labelWidth) {
           labelX = (nextX + tickX) / 2;
           context.fillText(year.toString(), labelX, labelY);
@@ -440,21 +440,21 @@ export class RangeComponent implements OnInit, AfterViewInit {
 
     if (isCouple) {
       // add y-axis tick marks and year labels
-      year = this.range.firstYearB;
+      year = this.range.firstYearY;
       context.textAlign = 'right';
       let tickRight: number = axisLeft - this.halfAxisWidth;
       let tickLeft: number = tickRight - this.axisTickSize;
       let tickY: number = axisBottom;
       let nextY: number;
       let labelX: number = tickRight - this.axisLabelSpace;
-      for (let i = 0; i < this.range.yearMarksB.length; i++) {
+      for (let i = 0; i < this.range.yearMarksY.length; i++) {
         context.beginPath();
         context.moveTo(tickLeft, tickY);
         context.lineTo(tickRight, tickY);
         context.stroke();
-        if (i < this.range.yearMarksB.length - 1) {
+        if (i < this.range.yearMarksY.length - 1) {
           // draw label for this range
-          nextY = this.rowBaseY - ((this.range.yearMarksB[i + 1]) * this.cellWidth)
+          nextY = this.rowBaseY - ((this.range.yearMarksY[i + 1]) * this.cellWidth)
           if ((tickY - nextY) > this.labelHeight) {
             labelY = (nextY + tickY) / 2 + this.axisLabelFontSize/2;
             context.fillText(year.toString(), labelX, labelY);
@@ -512,25 +512,10 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.personB.spousalBenefitDate = new MonthYearDate(selectedClaimStrategy.personBSpousalDate)
 
       if (this.scenario.maritalStatus == "single"){
-          solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, this.range.pvArrays[this.currentCondition][row][col])
+        solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, this.range.pvArrays[this.currentCondition][row][col])
       }
-      else if (this.scenario.maritalStatus == "married"){
-        //If one spouse is already age 70, the ClaimStrategy object has that spouse's dates as personB dates ("because they're fixedSpouse from maximize function"), regardless of which person it was.
-        //So we have to swap them if it was actually personA who was over 70.
-          if (this.birthdayService.findAgeOnDate(this.personA, today) >= 70 ){
-            this.personB.retirementBenefitDate = new MonthYearDate(selectedClaimStrategy.personARetirementDate)
-            this.personB.beginSuspensionDate = new MonthYearDate(selectedClaimStrategy.personABeginSuspensionDate)
-            this.personB.endSuspensionDate = new MonthYearDate(selectedClaimStrategy.personAEndSuspensionDate)
-            this.personB.spousalBenefitDate = new MonthYearDate(selectedClaimStrategy.personASpousalDate)
-            this.personA.retirementBenefitDate = new MonthYearDate(selectedClaimStrategy.personBRetirementDate)
-            this.personA.beginSuspensionDate = new MonthYearDate(selectedClaimStrategy.personBBeginSuspensionDate)
-            this.personA.endSuspensionDate = new MonthYearDate(selectedClaimStrategy.personBEndSuspensionDate)
-            this.personA.spousalBenefitDate = new MonthYearDate(selectedClaimStrategy.personBSpousalDate)
-          }
-          solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
-      }
-      else if (this.scenario.maritalStatus == "divorced"){
-          solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
+      else {
+        solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, this.range.pvArrays[this.currentCondition][row][col])
       }
       return solutionSet
     }
@@ -543,7 +528,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
     this.solutionSet = this.getSolutionSet(row, col);
   }
 
-  getRowColumn(e: MouseEvent) { // returnValue[0] = x, returnValue[1] = y
+  getRowColumn(e: MouseEvent):number[] { // returnValue[0] = x, returnValue[1] = y
     let xy = this.getXY(e);
     let x = xy[0];
     let y = xy[1];
@@ -559,7 +544,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
     return [row, column];
   }
 
-  getXY(e: MouseEvent) {
+  getXY(e: MouseEvent):number[] {
     // Find the position of the mouse.
     let x = e.pageX - this.canvas.offsetLeft;
     let y = e.pageY - this.canvas.offsetTop;
@@ -584,7 +569,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
   }
 
   selectCell(event: MouseEvent) {
-    let rowColumn = this.getRowColumn(event);
+    let rowColumn:number[] = this.getRowColumn(event);
     // save location of newly-selected cell
     let selectRow = rowColumn[0];
     let selectColumn = rowColumn[1];
@@ -600,6 +585,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
       //Emit the newly selected ClaimStrategy to parent component
       let claimStrategyToEmit: ClaimStrategy = this.range.claimStrategiesArrays[this.currentCondition][selectRow][selectColumn];
       this.newClaimStrategySelected.emit(claimStrategyToEmit)
+      console.log(claimStrategyToEmit)
     }
   }
 
@@ -718,44 +704,6 @@ update(e: MouseEvent) {
     }
   }
 
-  findIndexForPerson(person:Person):number{
-    //return -999 as index if there is no corresponding option in the Range
-    let index:number = -999
-
-    //Find earliest date in Range
-    let earliestDateInRange:MonthYearDate
-    if (person.id == "A"){earliestDateInRange = new MonthYearDate(this.range.firstDateA)}
-    if (person.id == "B"){earliestDateInRange = new MonthYearDate(this.range.firstDateB)}
-
-    //if person has PIA=0, we look at spousalBenefitDate
-    if (person.PIA == 0){
-      index = person.spousalBenefitDate.valueOf() - earliestDateInRange.valueOf()
-    }
-    else {//i.e., person will have a retirement benefit of their own
-      if (person.hasFiled === false && person.isOnDisability === false){//If person has not filed and is not on disability
-        //We look at person's retirementBenefitDate
-        index = person.retirementBenefitDate.valueOf() - earliestDateInRange.valueOf()
-      }
-      else {//i.e., person has filed or is on disability but is younger than 70 
-        //We look at person's begin/end suspension dates and declineSuspension field
-        if (person.declineSuspension === true){
-          index = 0 //essentially "starting" benefit as soon as possible (since not stopping it at all)
-        }
-        else {//i.e, they are planning to suspend
-          let laterOfFRAorToday:MonthYearDate = new MonthYearDate()
-          laterOfFRAorToday = person.FRA > today? person.FRA : today
-          if (person.beginSuspensionDate.valueOf() == laterOfFRAorToday.valueOf()){//they are suspending at later of FRA or today (which is what is necessary in order for there to be a corresponding selection in Range)
-              index = person.endSuspensionDate.valueOf() - earliestDateInRange.valueOf()
-          }
-          else {//i.e., they're suspending, but starting later than "later of FRA or today"
-            //just going to return -999, since no corresponding selection in Range
-          }
-        }
-      }
-    }
-    return index
-  }
-
   updateRangeComponentBasedOnDropDownInputs(){//This is called when "submit" is clicked with customDate inputs, in order to update Range component so that the input dates are selected in graph
   //remove message about previously-selected strategy not being in the Range, if such a message was present
   this.selectedStrategyNotInRangeChartMessage = undefined
@@ -787,14 +735,9 @@ update(e: MouseEvent) {
           )
         ){//i.e., the spousal inputs selected are an option in the Range
             //Find the corresponding row and column.
+            let claimStrategy:ClaimStrategy = new ClaimStrategy(this.personA, this.personB)
               //Find column
-                if (this.birthdayService.findAgeOnDate(this.personA, today) < 70){//if personA is younger than 70
-                  column = this.findIndexForPerson(this.personA)
-                }
-                else {//i.e., personA is over 70
-                  //We look at appropriate date from personB
-                  column = this.findIndexForPerson(this.personB)
-                }
+                  column = this.range.getIndexDateXfromClaimStrategy(claimStrategy).valueOf() - this.range.firstDateX.valueOf()
               //Find row
                 if (this.scenario.maritalStatus == "single"
                     || this.scenario.maritalStatus == "divorced"
@@ -804,9 +747,9 @@ update(e: MouseEvent) {
                       row = 0
                     }
                 else{
-                    row = this.findIndexForPerson(this.personB)
+                    row = this.range.getIndexDateYfromClaimStrategy(claimStrategy).valueOf() - this.range.firstDateY.valueOf()
                 }
-            if (row == -999 || column == -999){//i.e., the suspension inputs selected are NOT an option in the range 
+            if (row < 0 || column < 0){//i.e., the suspension inputs selected are NOT an option in the range 
               this.selectedStrategyNotInRangeChartMessage = "Note: The strategy you have selected is not represented in the color-coded graph, because the graph always assumes that, if you voluntarily suspend benefits, you will suspend them as early as possible."
               if (this.scenario.maritalStatus == "single"){
                 this.solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, new ClaimStrategy(this.personA))
