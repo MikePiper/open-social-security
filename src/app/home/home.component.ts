@@ -299,7 +299,6 @@ export class HomeComponent implements OnInit {
     this.customClaimStrategy = new ClaimStrategy(this.personA, this.personB)//new object in order to reset outputTable to be undefined, PV to be undefined, and outputTableComplete to be false
     this.getCustomDateFormInputs()
     this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, customCalculationScenario, this.personA, this.personB)
-
     //Calc PV with input dates
       if (this.errorCollection.hasErrors === false){
         if (this.scenario.maritalStatus == "single") {
@@ -447,6 +446,7 @@ export class HomeComponent implements OnInit {
     this.personB.endSuspensionDate = undefined
     this.personB.survivorBenefitDate = undefined
 
+    //Set retirementBenefitDate fields
     //If there are inputs for a fixedRetirementBenefitDate (as would be the case if person has filed or is on disability -- or for personB in a divorce scenario) go get those inputs and make a Date object
       //Then use that object for personA's retirementBenefitDate. Otherwise, use input from Custom Date form.
       if (this.personAfixedRetirementBenefitMonth || this.personAfixedRetirementBenefitYear){
@@ -460,13 +460,22 @@ export class HomeComponent implements OnInit {
         this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1)
         this.personB.retirementBenefitDate = new MonthYearDate(this.personB.fixedRetirementBenefitDate)
       }
-      else {
+      else {//personB has no fixedRetirementBenefitDate
         this.personB.retirementBenefitDate = new MonthYearDate(this.customPersonBretirementBenefitYear, this.customPersonBretirementBenefitMonth-1)
+        if (this.scenario.maritalStatus == "survivor"){//it's a survivor scenario, and personB hadn't filed as of date of death (we know this because personB has no fixedRetirementBenefitDate)
+          //set to FRA if they died prior to FRA or date of death if they died after FRA
+          if (this.personB.dateOfDeath < this.personB.FRA){
+            this.personB.retirementBenefitDate = new MonthYearDate(this.personB.FRA)
+          }
+          else {
+            this.personB.retirementBenefitDate = new MonthYearDate(this.personB.dateOfDeath)
+          }
+        }
       }
-    
+
 
     //Set survivor benefit dates
-        //In survivor scenario, if personA has a fixedSurvivorBenefitDate or fixedMotherFatherBenefitDate (i.e., person already filed), use those for personA's survivorBenefitDate and motherFatherBenefitDate.
+        //In survivor scenario, if personA has a fixedSurvivorBenefitDate or fixedMotherFatherBenefitDate (i.e., person already filed), use those for applicable fields.
         //Otherwise, use input from Custom Date form. (Or in motherfatherbenefitdate case, just set it to earliest date. Like child benefits, we'll just have a message saying "file asap")
         if (this.scenario.maritalStatus == "survivor"){
           if (this.personA.hasFiledAsSurvivor === true){
@@ -769,6 +778,8 @@ export class HomeComponent implements OnInit {
       this.customPersonAretirementBenefitYear = claimStrategy.personARetirementDate.getFullYear()
       this.customPersonAspousalBenefitMonth = claimStrategy.personASpousalDate.getMonth()+1
       this.customPersonAspousalBenefitYear = claimStrategy.personASpousalDate.getFullYear()
+      this.customPersonAsurvivorBenefitMonth = claimStrategy.personAsurvivorDate.getMonth()+1
+      this.customPersonAsurvivorBenefitYear = claimStrategy.personAsurvivorDate.getFullYear()
   
       this.customPersonAbeginSuspensionMonth = claimStrategy.personABeginSuspensionDate.getMonth()+1
       this.customPersonAbeginSuspensionYear = claimStrategy.personABeginSuspensionDate.getFullYear()

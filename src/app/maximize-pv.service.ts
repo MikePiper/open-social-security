@@ -389,7 +389,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
               let currentTest: ClaimStrategy = this.calculatePVservice.calculateCouplePV(personA, personB, scenario, false)
               
                //Store data for this combination of claim dates
-              // scenario.range.processPVs(currentTest)
+              scenario.range.processPVs(currentTest)
   
               //If PV is greater than saved PV, save new PV and save new testDates.
               if (currentTest.PV >= savedStrategy.PV) {

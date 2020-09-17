@@ -1289,6 +1289,28 @@ describe('tests calculateCouplePV', () => {
             expect(claimStrategy.outputTable[10][7]).toEqual("$27,000") //12 months of each getting $1125
             expect(claimStrategy.outputTable[10][8]).toEqual("$41,850") //total of above amounts
         })
+
+        it ('should calculate survivorPV appropriately...', () => {
+          service.setToday(new MonthYearDate(2020, 8))//Sept 2020 when creating this test
+          scenario.maritalStatus = "survivor"
+          personA.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
+          personB.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
+          personA.SSbirthDate = new MonthYearDate(1960, 3)
+          personB.SSbirthDate = new MonthYearDate(1960, 3)
+          personB.dateOfDeath = new MonthYearDate(2020, 3)//personB died April 2020 (not quite age 60)
+          mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
+          mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
+          personB.hasFiled = false //personB died before having filed and before reaching their FRA, so their retirementBenefitDate is their FRA
+          personA.PIA = 600
+          personB.PIA = 2340
+          personA.retirementBenefitDate = new MonthYearDate(2028, 9)//Oct 2028
+          personA.survivorBenefitDate = new MonthYearDate(2023, 7)//Aug 2023
+          personB.retirementBenefitDate = new MonthYearDate(personB.FRA)//personB hadn't filed as of date of death and died before FRA, so we use FRA for this field
+          scenario.discountRate = 1
+          let results = service.calculateCouplePV(personA, personB, scenario, false)
+          expect(results.PV)
+          .toBeCloseTo(488867, 0)
+        })
 })
 
 
