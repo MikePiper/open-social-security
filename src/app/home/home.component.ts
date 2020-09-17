@@ -304,11 +304,8 @@ export class HomeComponent implements OnInit {
       if (this.errorCollection.hasErrors === false){
         if (this.scenario.maritalStatus == "single") {
           this.customClaimStrategy = this.calculatePvService.calculateSinglePersonPV(this.personA, customCalculationScenario, true)
-          }
-        if(this.scenario.maritalStatus == "married") {
-          this.customClaimStrategy = this.calculatePvService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
-          }
-        if(this.scenario.maritalStatus == "divorced") {
+        }
+        else {
           this.customClaimStrategy = this.calculatePvService.calculateCouplePV(this.personA, this.personB, customCalculationScenario, true)
         }
         this.asComparedToPV = this.rangeComponentShowCutRadio == true ? this.solutionSet.claimStrategy.PV : this.solutionSet.claimStrategy.pvNoCut
@@ -330,7 +327,9 @@ export class HomeComponent implements OnInit {
     this.personB.actualBirthDate = new Date (this.personBinputYear, this.personBinputMonth-1, this.personBinputDay-1)
     this.personB.SSbirthDate = this.birthdayService.findSSbirthdate(this.personBinputMonth, this.personBinputDay, this.personBinputYear)
     this.personB.FRA = this.birthdayService.findFRA(this.personB.SSbirthDate)
-    this.personB.dateOfDeath = new MonthYearDate(this.personBdeathInputYear, this.personBdeathInputMonth-1)
+    if (this.scenario.maritalStatus == "survivor"){
+      this.personB.dateOfDeath = new MonthYearDate(this.personBdeathInputYear, this.personBdeathInputMonth-1)
+    }
     this.personB.survivorFRA = this.birthdayService.findSurvivorFRA(this.personB.SSbirthDate)
     this.personA.initialAge =  this.birthdayService.findAgeOnDate(this.personA, this.today)
       if (this.personA.initialAge > 70){
@@ -446,6 +445,7 @@ export class HomeComponent implements OnInit {
     this.personB.childInCareSpousalBenefitDate = undefined
     this.personB.beginSuspensionDate = undefined
     this.personB.endSuspensionDate = undefined
+    this.personB.survivorBenefitDate = undefined
 
     //If there are inputs for a fixedRetirementBenefitDate (as would be the case if person has filed or is on disability -- or for personB in a divorce scenario) go get those inputs and make a Date object
       //Then use that object for personA's retirementBenefitDate. Otherwise, use input from Custom Date form.
@@ -463,21 +463,30 @@ export class HomeComponent implements OnInit {
       else {
         this.personB.retirementBenefitDate = new MonthYearDate(this.customPersonBretirementBenefitYear, this.customPersonBretirementBenefitMonth-1)
       }
+    
 
-    //If personA has a fixedSurvivorBenefitDate or fixedMotherFatherBenefitDate (i.e., person already filed), use those for personA's survivorBenefitDate and motherFatherBenefitDate.
-      //Otherwise, use input from Custom Date form. (Or in motherfatherbenefitdate case, just set it to earliest date. Like child benefits, we'll just have a message saying "file asap")
-      if (this.personA.hasFiledAsSurvivor === true){
-        this.personA.survivorBenefitDate = new MonthYearDate(this.personA.fixedSurvivorBenefitDate)
-      }
-      else {
-        this.personA.survivorBenefitDate = new MonthYearDate(this.customPersonAsurvivorBenefitYear, this.customPersonAsurvivorBenefitMonth-1)
-      }
-      if (this.personA.hasFiledAsMotherFather === true){
-        this.personA.motherFatherBenefitDate = new MonthYearDate(this.personA.fixedMotherFatherBenefitDate)
-      }
-      else {
-        this.personA.motherFatherBenefitDate = new MonthYearDate(this.maximizePvService.findEarliestMotherFatherBenefitDate(this.personB, this.scenario))
-      }
+    //Set survivor benefit dates
+        //In survivor scenario, if personA has a fixedSurvivorBenefitDate or fixedMotherFatherBenefitDate (i.e., person already filed), use those for personA's survivorBenefitDate and motherFatherBenefitDate.
+        //Otherwise, use input from Custom Date form. (Or in motherfatherbenefitdate case, just set it to earliest date. Like child benefits, we'll just have a message saying "file asap")
+        if (this.scenario.maritalStatus == "survivor"){
+          if (this.personA.hasFiledAsSurvivor === true){
+            this.personA.survivorBenefitDate = new MonthYearDate(this.personA.fixedSurvivorBenefitDate)
+          }
+          else {
+            this.personA.survivorBenefitDate = new MonthYearDate(this.customPersonAsurvivorBenefitYear, this.customPersonAsurvivorBenefitMonth-1)
+          }
+          if (this.personA.hasFiledAsMotherFather === true){
+            this.personA.motherFatherBenefitDate = new MonthYearDate(this.personA.fixedMotherFatherBenefitDate)
+          }
+          else {
+            this.personA.motherFatherBenefitDate = new MonthYearDate(this.maximizePvService.findEarliestMotherFatherBenefitDate(this.personB, this.scenario))
+          }
+        }
+        else{//If not a survivor scenario, set survivorBenefitDate to survivorFRA
+          this.personA.survivorBenefitDate = new MonthYearDate(this.personA.survivorFRA)
+          this.personB.survivorBenefitDate = new MonthYearDate(this.personB.survivorFRA)
+        }
+
 
     //If user is selecting custom begin/end suspension dates create Date objects and set applicable person field. (Set to 1900 if they haven't filed or are declining suspension.)
       if ((this.personA.hasFiled === true || this.personA.isOnDisability === true) && this.personA.declineSuspension === false) {
@@ -562,11 +571,6 @@ export class HomeComponent implements OnInit {
     
     //Call resetHiddenInputs() <-- necessary because right now that is the function that's bound to custom date form's (change) event. And we'll need that event to be bound to this function instead.
     this.resetHiddenInputs()
-    console.log("-----")
-    console.log("personA.retirementBenefitDate: " + this.personA.retirementBenefitDate.toString())
-    console.log("personA.spousalBenefitDate: " + this.personA.spousalBenefitDate.toString())
-    console.log("personB.retirementBenefitDate: " + this.personB.retirementBenefitDate.toString())
-    console.log("personB.spousalBenefitDate: " + this.personB.spousalBenefitDate.toString())
   }
 
 
@@ -609,6 +613,11 @@ export class HomeComponent implements OnInit {
         this.personB.eligibleForNonCoveredPension = false
         this.personBworking = false
         this.personB.isOnDisability = false
+      }
+
+    //Reset personB.dateOfDeath if not survivor scenario
+      if (this.scenario.maritalStatus !== "survivor"){
+        this.personB.dateOfDeath = undefined
       }
 
     //reset earnings test inputs if "still working" is false

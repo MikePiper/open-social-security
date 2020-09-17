@@ -64,7 +64,7 @@ export class MaximizePVService {
         //run PV calc (again) and compare results. 
         let currentTest:ClaimStrategy = this.calculatePVservice.calculateSinglePersonPV(person, scenario, false) //TODO: maybe this has to be two lines? first is constructor instantiating the ClaimStrategy, and second runs PV calc function?
             // store data for this combination of claim dates
-            scenario.range.processPVs(currentTest, false);
+            scenario.range.processPVs(currentTest)
             //Save better of the two. (If they're literally the same, save the second one tested, because it gives better longevity insurance)
             if (currentTest.PV >= savedStrategy.PV){
             savedStrategy = new ClaimStrategy(person)
@@ -160,13 +160,13 @@ export class MaximizePVService {
               let currentTest: ClaimStrategy = this.calculatePVservice.calculateCouplePV(personA, personB, scenario, false)
               
                // store data for this combination of claim dates
-              scenario.range.processPVs(currentTest, false);
+              scenario.range.processPVs(currentTest)
   
               //If PV is greater than saved PV, save new PV and save new testDates.
               if (currentTest.PV >= savedStrategy.PV) {
                 savedStrategy = new ClaimStrategy(personA, personB)
                 savedStrategy.PV = currentTest.PV
-                }
+              }
   
             //Find next possible claiming combination for spouseB
               personB = this.incrementRetirementORendSuspensionDate(personB)
@@ -214,7 +214,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     fixedSpouse.retirementBenefitDate = new MonthYearDate(fixedSpouse.fixedRetirementBenefitDate)
 
     //find initial retirementBenefitDate for flexibleSpouse
-    flexibleSpouse.retirementBenefitDate = this.findEarliestPossibleRetirementBenefitDate(flexibleSpouse)
+    flexibleSpouse.retirementBenefitDate = new MonthYearDate(this.findEarliestPossibleRetirementBenefitDate(flexibleSpouse))
 
     //If flexibleSpouse has already filed or is on disability, initialize their begin&end suspension date as their FRA (but no earlier than this month). And set retirementBenefitDate to fixedRetirementBenefitDate
       flexibleSpouse = this.initializeBeginEndSuspensionDates(flexibleSpouse)
@@ -222,6 +222,10 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     //Set initial spousalBenefitDate for flexibleSpouse and fixed spouse
       flexibleSpouse = this.adjustSpousalBenefitDate(flexibleSpouse, fixedSpouse, scenario)
       fixedSpouse = this.adjustSpousalBenefitDate(fixedSpouse, flexibleSpouse, scenario)
+
+    //Set survivorBenefitDate fields to survivorFRA. (We're just assuming here that nobody files for survivor benefits early.)
+      flexibleSpouse.survivorBenefitDate = new MonthYearDate(flexibleSpouse.survivorFRA)
+      fixedSpouse.survivorBenefitDate = new MonthYearDate(fixedSpouse.survivorFRA)
 
     //Initialize savedStrategy, with zero PV, using each spouse's current dates
     let savedStrategy:ClaimStrategy
@@ -248,11 +252,11 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       //and call processPVs to store data for this combination of claim dates
       if (flexibleSpouse.id == "A"){
         var currentTest: ClaimStrategy = this.calculatePVservice.calculateCouplePV(flexibleSpouse, fixedSpouse, scenario, false)
-        scenario.range.processPVs(currentTest, false)
+        scenario.range.processPVs(currentTest)
       }
       else {
         var currentTest: ClaimStrategy = this.calculatePVservice.calculateCouplePV(fixedSpouse, flexibleSpouse, scenario, false)
-        scenario.range.processPVs(currentTest, true)
+        scenario.range.processPVs(currentTest)
       }
 
 
@@ -385,7 +389,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
               let currentTest: ClaimStrategy = this.calculatePVservice.calculateCouplePV(personA, personB, scenario, false)
               
                //Store data for this combination of claim dates
-              // scenario.range.processPVs(currentTest, false)
+              // scenario.range.processPVs(currentTest)
   
               //If PV is greater than saved PV, save new PV and save new testDates.
               if (currentTest.PV >= savedStrategy.PV) {
