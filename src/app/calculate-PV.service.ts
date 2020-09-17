@@ -176,6 +176,7 @@ export class CalculatePvService {
   }
 
   calculateCouplePV(personA:Person, personB:Person, scenario:CalculationScenario, printOutputTable:boolean) : ClaimStrategy{
+    
     //Create ClaimStrategy object for saving PVs
       let claimStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
 
