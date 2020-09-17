@@ -15,9 +15,9 @@ describe('FamilyMaximumService', () => {
     TestBed.configureTestingModule({
       providers: [FamilyMaximumService, BenefitService, BirthdayService]
     })
-    service = TestBed.get(FamilyMaximumService)
-    benefitService = TestBed.get(BenefitService)
-    birthdayService = TestBed.get(BirthdayService)
+    service = TestBed.inject(FamilyMaximumService)
+    benefitService = TestBed.inject(BenefitService)
+    birthdayService = TestBed.inject(BirthdayService)
   })
 
 

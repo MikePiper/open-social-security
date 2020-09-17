@@ -13,8 +13,8 @@ describe('BenefitService', () => {
     TestBed.configureTestingModule({
       providers: [BenefitService, BirthdayService]
     })
-    service = TestBed.get(BenefitService)
-    birthdayService = TestBed.get(BirthdayService)
+    service = TestBed.inject(BenefitService)
+    birthdayService = TestBed.inject(BirthdayService)
   })
 
   it('should be created', inject([BenefitService], (service: BenefitService) => {

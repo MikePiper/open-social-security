@@ -37,12 +37,12 @@ describe('test calculateSinglePersonPV', () => {
     TestBed.configureTestingModule({
       providers: [CalculatePvService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
     })
-    service = TestBed.get(CalculatePvService)
-    birthdayService = TestBed.get(BirthdayService)
-    benefitService = TestBed.get(BenefitService)
-    mortalityService = TestBed.get(MortalityService)
-    familyMaximumService = TestBed.get(FamilyMaximumService)
-    earningsTestService = TestBed.get(EarningsTestService)
+    service = TestBed.inject(CalculatePvService)
+    birthdayService = TestBed.inject(BirthdayService)
+    benefitService = TestBed.inject(BenefitService)
+    mortalityService = TestBed.inject(MortalityService)
+    familyMaximumService = TestBed.inject(FamilyMaximumService)
+    earningsTestService = TestBed.inject(EarningsTestService)
     scenario = new CalculationScenario()
     person = new Person("A")
   })
@@ -258,12 +258,12 @@ describe('tests calculateCouplePV', () => {
     TestBed.configureTestingModule({
       providers: [CalculatePvService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
     })
-    service = TestBed.get(CalculatePvService)
-    birthdayService = TestBed.get(BirthdayService)
-    benefitService = TestBed.get(BenefitService)
-    mortalityService = TestBed.get(MortalityService)
-    familyMaximumService = TestBed.get(FamilyMaximumService)
-    earningsTestService = TestBed.get(EarningsTestService)
+    service = TestBed.inject(CalculatePvService)
+    birthdayService = TestBed.inject(BirthdayService)
+    benefitService = TestBed.inject(BenefitService)
+    mortalityService = TestBed.inject(MortalityService)
+    familyMaximumService = TestBed.inject(FamilyMaximumService)
+    earningsTestService = TestBed.inject(EarningsTestService)
     scenario = new CalculationScenario()
     personA = new Person("A")
     personB = new Person("B")
@@ -271,23 +271,23 @@ describe('tests calculateCouplePV', () => {
 
     //Test the actual present value calculated
     it('should return appropriate PV for married couple, basic inputs', () => {
-      service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
+      service.today = new MonthYearDate(2020, 8) //hard-coding "today" so that it doesn't fail in future just because date changes
       scenario.maritalStatus = "married"
       personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
       personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
-      personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964
-      personB.SSbirthDate = new MonthYearDate(1963, 6, 1) //Spouse B born in July 1963
+      personA.SSbirthDate = new MonthYearDate(1964, 8) //Spouse A born in Sept 1964
+      personB.SSbirthDate = new MonthYearDate(1963, 6) //Spouse B born in July 1963
       mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
       mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 700
       personB.PIA = 1900
-      personA.retirementBenefitDate = new MonthYearDate (2032, 8, 1) //At age 68
-      personB.retirementBenefitDate = new MonthYearDate (2029, 8, 1) //At age 66 and 2 months
-      personA.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
-      personB.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
+      personA.retirementBenefitDate = new MonthYearDate (2032, 8) //At age 68
+      personB.retirementBenefitDate = new MonthYearDate (2029, 8) //At age 66 and 2 months
+      personA.spousalBenefitDate = new MonthYearDate (2032, 8) //Later of two retirement benefit dates
+      personB.spousalBenefitDate = new MonthYearDate (2032, 8) //Later of two retirement benefit dates
       scenario.discountRate = 1
       expect(service.calculateCouplePV(personA, personB, scenario, false).PV)
-        .toBeCloseTo(530272, 0)
+        .toBeCloseTo(542950, 0)
     })
   
     it('should return appropriate PV for married couple, basic inputs, no spousal benefits, one filing early one late', () => {
@@ -313,6 +313,7 @@ describe('tests calculateCouplePV', () => {
       //for personA, it's 82.5% of personB's PIA ($825). After reduction for own entitlement, it'll be $0.
       //for personB, it'll be $531.67/month
     })
+
   
   
     it('should return appropriate PV for married couple, still working', () => {
@@ -1300,7 +1301,7 @@ describe('test discountToPresentValue', () => {
     TestBed.configureTestingModule({
       providers: [CalculatePvService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
     })
-    service = TestBed.get(CalculatePvService)
+    service = TestBed.inject(CalculatePvService)
   })
 
   it('should correctly calculate present value for cashflow 2 years in future', () => {
@@ -1329,8 +1330,8 @@ describe('test whenShouldPVcalculationStart()', () => {
     TestBed.configureTestingModule({
       providers: [CalculatePvService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
     })
-    service = TestBed.get(CalculatePvService)
-    birthdayService = TestBed.get(BirthdayService)
+    service = TestBed.inject(CalculatePvService)
+    birthdayService = TestBed.inject(BirthdayService)
     scenario = new CalculationScenario()
     personA = new Person("A")
     personB = new Person("B")

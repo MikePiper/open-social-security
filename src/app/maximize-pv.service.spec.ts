@@ -55,10 +55,10 @@ describe('test maximizeSinglePersonPV', () => {
     TestBed.configureTestingModule({
       providers: [CalculatePvService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
     })
-    service = TestBed.get(MaximizePVService)
-    benefitService = TestBed.get(BenefitService)
-    birthdayService = TestBed.get(BirthdayService)
-    mortalityService = TestBed.get(MortalityService)
+    service = TestBed.inject(MaximizePVService)
+    benefitService = TestBed.inject(BenefitService)
+    birthdayService = TestBed.inject(BirthdayService)
+    mortalityService = TestBed.inject(MortalityService)
     scenario = new CalculationScenario()
     person = new Person("A")
   })
@@ -187,11 +187,11 @@ describe('Tests for maximizeCouplePViterateBothPeople', () => {
     TestBed.configureTestingModule({
       providers: [CalculatePvService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
     })
-    service = TestBed.get(MaximizePVService)
-    mortalityService = TestBed.get(MortalityService)
-    birthdayService = TestBed.get(BirthdayService)
-    benefitService = TestBed.get(BenefitService)
-    familyMaximumService = TestBed.get(FamilyMaximumService)
+    service = TestBed.inject(MaximizePVService)
+    mortalityService = TestBed.inject(MortalityService)
+    birthdayService = TestBed.inject(BirthdayService)
+    benefitService = TestBed.inject(BenefitService)
+    familyMaximumService = TestBed.inject(FamilyMaximumService)
     scenario = new CalculationScenario()
     personA = new Person("A")
     personB = new Person("B")
@@ -492,11 +492,11 @@ describe('Tests for maximizeCouplePViterateOnePerson', () => {
     TestBed.configureTestingModule({
       providers: [CalculatePvService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
     })
-    service = TestBed.get(MaximizePVService)
-    calculatePVservice = TestBed.get(CalculatePvService)
-    benefitService = TestBed.get(BenefitService)
-    mortalityService = TestBed.get(MortalityService)
-    birthdayService = TestBed.get(BirthdayService)
+    service = TestBed.inject(MaximizePVService)
+    calculatePVservice = TestBed.inject(CalculatePvService)
+    benefitService = TestBed.inject(BenefitService)
+    mortalityService = TestBed.inject(MortalityService)
+    birthdayService = TestBed.inject(BirthdayService)
     scenario = new CalculationScenario()
     personA = new Person("A")
     personB = new Person("B")
@@ -751,10 +751,10 @@ describe('Tests for maximizeSurvivorPV', () => {
     TestBed.configureTestingModule({
       providers: [CalculatePvService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
     })
-    service = TestBed.get(MaximizePVService)
-    benefitService = TestBed.get(BenefitService)
-    mortalityService = TestBed.get(MortalityService)
-    birthdayService = TestBed.get(BirthdayService)
+    service = TestBed.inject(MaximizePVService)
+    benefitService = TestBed.inject(BenefitService)
+    mortalityService = TestBed.inject(MortalityService)
+    birthdayService = TestBed.inject(BirthdayService)
     scenario = new CalculationScenario()
     personA = new Person("A")
     personB = new Person("B")
@@ -1073,10 +1073,10 @@ describe('test functions that find earliest/latest dates', () => {
     TestBed.configureTestingModule({
       providers: [CalculatePvService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
     })
-    service = TestBed.get(MaximizePVService)
-    birthdayService = TestBed.get(BirthdayService)
-    benefitService = TestBed.get(BenefitService)
-    mortalityService = TestBed.get(MortalityService)
+    service = TestBed.inject(MaximizePVService)
+    birthdayService = TestBed.inject(BirthdayService)
+    benefitService = TestBed.inject(BenefitService)
+    mortalityService = TestBed.inject(MortalityService)
     personA = new Person("A")
     scenario = new CalculationScenario()
   })
