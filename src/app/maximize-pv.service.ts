@@ -323,8 +323,9 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       //find initial retirementBenefitDate for personA
       personA.retirementBenefitDate = this.findEarliestPossibleRetirementBenefitDate(personA)
   
-      //find initial survivorBenefitDate for personA. (Don't want to do this if they've already filed. If they've already filed we go get the applicable fixed date in home component.)
+      //find initial survivorBenefitDate for personA.
       if (personA.hasFiledAsSurvivor === false){personA.survivorBenefitDate = this.findEarliestSurvivorBenefitDate(personA, personB)}
+      else {personA.survivorBenefitDate = new MonthYearDate(personA.fixedSurvivorBenefitDate)}
   
       //find motherFatherBenefitDate for personA. Doesn't have to be iterated at all. Doesn't depend on anybody's various filing dates.
         //(Don't want to do this if they've already filed. If they've already filed we go get the applicable fixed date in home component.)

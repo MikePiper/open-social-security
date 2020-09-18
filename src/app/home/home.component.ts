@@ -726,7 +726,7 @@ export class HomeComponent implements OnInit {
     }
 
     //Find latest reasonable survivorBenefitDate for personA <- used to know whether to display custom survivorBenefitDate field. If we're already past that date, no sense discussing multiple options.
-    if (this.scenario.maritalStatus == "survivor"){
+    if (this.scenario.maritalStatus == "survivor" && this.solutionSet.computationComplete === true){
       this.personAlatestSurvivorBenefitDate = new MonthYearDate(this.maximizePvService.findLatestSurvivorBenefitDate(this.personA, this.personB))
     }
 
