@@ -406,4 +406,15 @@ describe('InputvalidationService', () => {
       .toBeUndefined()
   }))
 
+  it('should reject mother/father benefit date that is prior to date of death', inject([InputValidationService], (service: InputValidationService) => {
+    service.setToday(new MonthYearDate(2020, 8))//Sept 2020 writing this test
+    let livingPerson:Person = new Person("A")
+    let deceasedPerson:Person = new Person("B")
+    deceasedPerson.dateOfDeath = new MonthYearDate(2020, 7)//died August 2020
+    livingPerson.SSbirthDate = new MonthYearDate (1952, 8)//Age 68 now, has already reached survivor FRA
+    livingPerson.fixedMotherFatherBenefitDate = new MonthYearDate(2020, 6)
+    mockGetPrimaryFormInputs(livingPerson, service.today, birthdayService)
+    expect(service.checkValidMotherFatherInput(livingPerson, deceasedPerson, livingPerson.fixedMotherFatherBenefitDate))
+      .toEqual("A mother/father benefit cannot be claimed prior to the deceased spouse's date of death.")
+  }))
 });

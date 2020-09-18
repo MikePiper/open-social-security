@@ -211,6 +211,7 @@ export class HomeComponent implements OnInit {
   customPersonBendSuspensionYear: number = this.todayYear
   customPersonAsurvivorBenefitMonth: number = this.todayMonth
   customPersonAsurvivorBenefitYear: number = this.todayYear
+    personAlatestSurvivorBenefitDate:MonthYearDate//Not an input itself, but used to know whether to display custom survivorBenefitDate field. If we're already past that date, no sense discussing multiple options.
 
 
 
@@ -715,10 +716,29 @@ export class HomeComponent implements OnInit {
       this.customPersonBendSuspensionMonth = null
       this.customPersonBendSuspensionYear = null
     }
+
+    //Set hasFiledAsSurvivor and hasFiledAsMotherFather to false if they can't have filed for such
+    if (this.scenario.maritalStatus !=="survivor" || this.personA.initialAge < 50 || (this.personA.initialAge < 60 && this.personA.isOnDisability === false) ){
+      this.personA.hasFiledAsSurvivor = false
+    }
+    if (this.scenario.maritalStatus !=="survivor" || this.qualifyingChildrenBoolean === false || this.birthdayService.checkForChildUnder16orDisabled(this.scenario) === false){
+      this.personA.hasFiledAsMotherFather = false
+    }
+
+    //Find latest reasonable survivorBenefitDate for personA <- used to know whether to display custom survivorBenefitDate field. If we're already past that date, no sense discussing multiple options.
+    if (this.scenario.maritalStatus == "survivor"){
+      this.personAlatestSurvivorBenefitDate = new MonthYearDate(this.maximizePvService.findLatestSurvivorBenefitDate(this.personA, this.personB))
+    }
+
     //Zero children if qualifyingChildren boolean is false
     if (this.qualifyingChildrenBoolean === false){
       this.scenario.numberOfChildren = 0
       this.scenario.children = []
+      this.childUnder16orDisabled = this.birthdayService.checkForChildUnder16orDisabled(this.scenario)
+      this.personA.hasFiledAsMotherFather = false
+      this.personAfixedMotherFatherBenefitMonth = null
+      this.personAfixedMotherFatherBenefitYear = null
+      this.personA.fixedMotherFatherBenefitDate = null
     }
     if (this.personA.isOnDisability === false && this.personA.hasFiled === false && this.personB.isOnDisability === false && this.personB.hasFiled === false){
       for (let child of this.scenario.children){

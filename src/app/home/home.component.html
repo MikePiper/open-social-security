@@ -177,7 +177,7 @@
       <!--End personA Already-Filed Inputs -->
 
       <!--Begin personA Already-Filed Mother/Father Inputs-->
-      <div *ngIf="scenario.maritalStatus == 'survivor' && childUnder16orDisabled === true">
+      <div *ngIf="(scenario.maritalStatus == 'survivor' && childUnder16orDisabled === true)">
         <label>Have you already filed for mother/father benefits?</label>
         <input type="radio" id="personAfiledMotherFatherYes" [(ngModel)]="personA.hasFiledAsMotherFather" name="personA.hasFiledAsMotherFather" [value]="true">
         <label for="personAfiledMotherFatherYes">Yes</label>
@@ -804,7 +804,7 @@
       </span>
 
       <!--Survivor Scenario Custom Date Inputs -->
-      <span *ngIf="scenario.maritalStatus == 'survivor' && personA.hasFiledAsSurvivor === false">
+      <span *ngIf="scenario.maritalStatus == 'survivor' && personA.hasFiledAsSurvivor === false && this.today < personAlatestSurvivorBenefitDate">
         <div class="form-inline" >
           <label>Month/year in which you will file for widow(er) benefits:</label>
           <select class="form-control" [(ngModel)]="customPersonAsurvivorBenefitMonth" name="customPersonAsurvivorBenefitMonth" id="customPersonAsurvivorBenefitMonth" required>
@@ -815,7 +815,16 @@
           </select>
           <span *ngIf="errorCollection.customPersonASurvivorDateError" class="alert alert-danger">{{errorCollection.customPersonASurvivorDateError}}</span>
         </div>
-        <h3 *ngIf="childUnder16orDisabled === true">Why isn't there an input for the date at which you'll claim mother/father benefits??</h3>
+      </span>
+      <span *ngIf="scenario.maritalStatus == 'survivor' && personA.hasFiledAsSurvivor === false && this.today >= personAlatestSurvivorBenefitDate">
+        <h3>Why isn't there an input for the date at which you'll claim survivor benefits??</h3>
+        <p>
+          Survivor benefits do not grow as a result of waiting beyond your survivor full retirement age. Because you have already reached such age, 
+          the calculator always assumes that you will claim them as early as possible, given that there is no drawback to doing so.
+        </p>
+      </span>
+      <span *ngIf="scenario.maritalStatus == 'survivor' && childUnder16orDisabled === true">
+        <h3>Why isn't there an input for the date at which you'll claim mother/father benefits??</h3>
         <p>
           Mother/father benefits are not reduced for early filing. So if a person is eligible to file for such benefits
           (<a href="https://www.ssa.gov/OP_Home/cfr20/404/404-0339.htm" target="_blank">see here for eligibility details</a>),

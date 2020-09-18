@@ -53,7 +53,7 @@ export class InputValidationService {
   checkPrimaryFormInputsForErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person):ErrorCollection{
     errorCollection = this.checkForFixedRetirementDateErrors(errorCollection, scenario, personA, personB)
     errorCollection = this.checkForFixedSurvivorDateErrors(errorCollection, scenario, personA, personB)
-    // this.checkForFixedMotherFatherDateErrors()
+    errorCollection = this.checkForFixedMotherFatherDateErrors(errorCollection, scenario, personA, personB)
 
     //Set hasErrors boolean
     errorCollection.hasErrors = this.checkErrorCollectionForErrors(errorCollection)
@@ -81,8 +81,18 @@ export class InputValidationService {
     //reset error
     errorCollection.personAfixedSurvivorDateError = undefined
     //Check for errors
-    if (scenario.maritalStatus == "survivor" || personA.hasFiledAsSurvivor === true){
+    if (scenario.maritalStatus == "survivor" && personA.hasFiledAsSurvivor === true){
       errorCollection.personAfixedSurvivorDateError = this.checkValidSurvivorInput(personA, personB, personA.fixedSurvivorBenefitDate)
+    }
+    return errorCollection
+  }
+
+  checkForFixedMotherFatherDateErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person):ErrorCollection{
+    //reset error
+    errorCollection.personAfixedMotherFatherDateError = undefined
+    //check for errors
+    if (scenario.maritalStatus == "survivor" && personA.hasFiledAsMotherFather === true){
+      errorCollection.personAfixedMotherFatherDateError = this.checkValidMotherFatherInput(personA, personB, personA.fixedMotherFatherBenefitDate)
     }
     return errorCollection
   }
@@ -314,8 +324,42 @@ export class InputValidationService {
         error = "The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date must also be no earlier than your survivor FRA."
       }
     }
-
+    //If they haven't already filed (so we're looking at CustomDate form rather than fixedSurvivorBenefitDate)...
+    //...don't let be after later of survivorFRA or today
+    if (livingPerson.hasFiledAsSurvivor === false){
+      let latestReasonableDate:MonthYearDate
+      latestReasonableDate = livingPerson.survivorFRA > this.today ? new MonthYearDate(livingPerson.survivorFRA) : new MonthYearDate(this.today) 
+      if (survivorBenefitDate > latestReasonableDate){
+        error = "Survivor benefits do not continue to grow as a result of waiting beyond your survivor FRA. Please choose a date that is no later than your survivor FRA (or no later than today, if you have already reached your survivor FRA)."
+      }
+    }
     return error
   }
 
+
+  checkValidMotherFatherInput(livingPerson:Person, deceasedPerson:Person, motherFatherBenefitDate:MonthYearDate):string{
+    //Per 404.621, retroactivity up to 6 months allowed (but no earlier than date of death). Doesn't matter if mother/father is disabled or not. Doesn't matter if FRA or not.
+    let error:string = undefined
+    //Make sure there is an input
+    if (!motherFatherBenefitDate || isNaN(motherFatherBenefitDate.getFullYear()) || isNaN(motherFatherBenefitDate.getMonth()) ){
+      error = "Please enter a date." 
+    }
+    //Can't be before deceasedPerson.dateOfDeath
+    if (motherFatherBenefitDate < deceasedPerson.dateOfDeath){
+      error = "A mother/father benefit cannot be claimed prior to the deceased spouse's date of death."
+    }
+    //If input date is in the past, make sure it's for a legitimate reason
+    if (motherFatherBenefitDate < this.today){
+      if (livingPerson.fixedMotherFatherBenefitDate) {//i.e., because they already filed for survivor benefits
+        //no error
+      }
+      else if (motherFatherBenefitDate >= this.sixMonthsAgo){//survivorBenefitdate is no more than 6 months ago
+        //no error
+      }
+      else {
+        error = "The effective date for a retroactive application for mother/father benefits must be no earlier than 6 months before today."
+      }
+    }
+    return error
+  }
 }

@@ -362,11 +362,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       //Set endingTestDate for each type of benefit.
         //For retirement, the month personA turns 70.
         let retirementBenefitEndTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth())
-        //For survivor, later of their survivor FRA or personB.dateOfDeath
-        let survivorBenefitEndTestDate = new MonthYearDate(personA.survivorFRA)
-        if (survivorBenefitEndTestDate < personB.dateOfDeath){
-          survivorBenefitEndTestDate = new MonthYearDate(personB.dateOfDeath)
-        }
+        //For survivor, earliest possible survivorBenefitDate that is not before survivorFRA
+        let survivorBenefitEndTestDate = this.findLatestSurvivorBenefitDate(personA, personB)
   
       //Get limits for storage of PV for range of claim options
         let earliestStartRetirement: MonthYearDate = new MonthYearDate(personA.retirementBenefitDate)
@@ -621,6 +618,13 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       }
       return earliestSurvivorBenefitDate
       }
+
+    findLatestSurvivorBenefitDate(livingPerson:Person, deceasedPerson:Person):MonthYearDate{
+      //Basically, find the earliest date that is an option and no earlier than survivorFRA
+      let latestSurvivorBenefitDate:MonthYearDate = new MonthYearDate(this.findEarliestSurvivorBenefitDate(livingPerson, deceasedPerson))
+      if (latestSurvivorBenefitDate < livingPerson.survivorFRA){latestSurvivorBenefitDate = new MonthYearDate(livingPerson.survivorFRA)}
+      return latestSurvivorBenefitDate
+    }
 
     findEarliestMotherFatherBenefitDate(deceasedPerson:Person, scenario:CalculationScenario):MonthYearDate{
       let motherFatherBenefitDate:MonthYearDate
