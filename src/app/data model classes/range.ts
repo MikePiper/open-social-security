@@ -122,6 +122,9 @@ export class Range {
         } else { // this is for one person
             this.rows = 1;
         }
+        console.log("this.firstDateY: "+this.firstDateY.toString())
+        console.log("this.lastDateY: "+this.lastDateY.toString())
+        console.log("this.rows: "+this.rows)
         this.initializeArrays(this.rows, this.columns);
     }
 

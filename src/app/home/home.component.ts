@@ -923,6 +923,24 @@ export class HomeComponent implements OnInit {
           if (params['aFiled']){
             this.personA.hasFiled = params['aFiled'] == "true" ? true : false
           }
+          if (params['aFiledSurvivor']){
+            this.personA.hasFiledAsSurvivor = params['aFiledSurvivor'] == "true" ? true : false
+          }
+          if (params['aFixedSurvBm']){
+            this.personAfixedSurvivorBenefitMonth = Number(params['aFixedSurvBm'])
+          }
+          if (params['aFixedSurvBy']){
+            this.personAfixedSurvivorBenefitYear = Number(params['aFixedSurvBy'])
+          }
+          if (params['aFiledMotherFather']){
+            this.personA.hasFiledAsMotherFather = params['aFiledMotherFather'] == "true" ? true : false
+          }
+          if (params['aFixedMFBm']){
+            this.personAfixedMotherFatherBenefitMonth = Number(params['aFixedMFBm'])
+          }
+          if (params['aFixedMFBy']){
+            this.personAfixedMotherFatherBenefitYear = Number(params['aFixedMFBy'])
+          }
           if (params['aEligiblePension']){
             this.personA.eligibleForNonCoveredPension = params['aEligiblePension'] == "true" ? true : false
           }
@@ -957,6 +975,12 @@ export class HomeComponent implements OnInit {
           }
           if (params['bDOBy']){
             this.personBinputYear = Number(params['bDOBy'])
+          }
+          if (params['bDODm']){
+            this.personBdeathInputMonth = Number(params['bDODm'])
+          }
+          if (params['bDODy']){
+            this.personBdeathInputYear = Number(params['bDODy'])
           }
           if (params['bDisability']){
             this.personB.isOnDisability = params['bDisability'] == "true" ? true : false

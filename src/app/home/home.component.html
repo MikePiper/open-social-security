@@ -177,7 +177,8 @@
       <!--End personA Already-Filed Inputs -->
 
       <!--Begin personA Already-Filed Mother/Father Inputs-->
-      <div *ngIf="(scenario.maritalStatus == 'survivor' && childUnder16orDisabled === true)">
+      <div *ngIf="scenario.maritalStatus == 'survivor' && ((childUnder16orDisabled === true && this.today < personA.survivorFRA) || personAfixedMotherFatherBenefitMonth || personAfixedMotherFatherBenefitYear)">
+        <!--survivor scenario, and childUnder16orDisabled and person hasn't yet reached survivor FRA (so no automatic conversion to survivorbenefit) OR there's an input already provided in the date fields-->
         <label>Have you already filed for mother/father benefits?</label>
         <input type="radio" id="personAfiledMotherFatherYes" [(ngModel)]="personA.hasFiledAsMotherFather" name="personA.hasFiledAsMotherFather" [value]="true">
         <label for="personAfiledMotherFatherYes">Yes</label>
@@ -197,7 +198,8 @@
       <!--End personA Already-Filed Mother/Father Inputs-->
 
       <!--Begin personA Already-Filed Widow(er) Inputs-->
-      <div *ngIf="scenario.maritalStatus == 'survivor' && childUnder16orDisabled === false && (personA.initialAge >=60 || (personA.isOnDisability === true && personA.initialAge >= 50))">
+      <div *ngIf="scenario.maritalStatus == 'survivor' && ( (childUnder16orDisabled === false && (personA.initialAge >= 60 || (personA.isOnDisability === true && personA.initialAge >= 50) ) ) || this.today >= personA.survivorFRA || personAfixedSurvivorBenefitMonth || personAfixedSurvivorBenefitYear )">
+        <!--survivor scenario and: [over 60 (or over 50 and disabled) and no childunder16ordisabled] OR [over survivorFRA] OR [there's an input for fixedSurvivorBenefitMonth/Year]-->
         <label>Have you already filed for survivor benefits (i.e., widow/widower benefits<span *ngIf="childUnder16orDisabled === true">, as distinct from mother/father benefits</span>)?</label>
         <input type="radio" id="personAfiledSurvivorYes" [(ngModel)]="personA.hasFiledAsSurvivor" name="personA.hasFiledAsSurvivor" [value]="true">
         <label for="personAfiledSurvivorYes">Yes</label>
@@ -913,6 +915,12 @@
 &&aQuity={{personAquitWorkYear}}
 &&aEarnings={{personA.monthlyEarnings}}
 &&aFiled={{personA.hasFiled}}
+&&aFiledSurvivor={{personA.hasFiledAsSurvivor}}
+&&aFixedSurvBm={{personAfixedSurvivorBenefitMonth}}
+&&aFixedSurvBy={{personAfixedSurvivorBenefitYear}}
+&&aFiledMotherFather={{personA.hasFiledAsMotherFather}}
+&&aFixedMFBm={{personAfixedMotherFatherBenefitMonth}}
+&&aFixedMFBy={{personAfixedMotherFatherBenefitYear}}
 &&aEligiblePension={{personA.eligibleForNonCoveredPension}}
 &&aPensionm={{personAnonCoveredPensionMonth}}
 &&aPensiony={{personAnonCoveredPensionYear}}
@@ -924,6 +932,8 @@
 &&bDOBm={{personBinputMonth}}
 &&bDOBd={{personBinputDay}}
 &&bDOBy={{personBinputYear}}
+&&bDODm={{personBdeathInputMonth}}
+&&bDODy={{personBdeathInputYear}}
 &&bDisability={{personB.isOnDisability}}
 &&bPIA={{personBprimaryPIAinput}}
 &&bFixedRBm={{personBfixedRetirementBenefitMonth}}
