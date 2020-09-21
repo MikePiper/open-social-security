@@ -296,7 +296,6 @@ export class HomeComponent implements OnInit {
     if (this.rangeComponentShowCutRadio === false){
       customCalculationScenario.benefitCutAssumption = false
     }
-
     this.customClaimStrategy = new ClaimStrategy(this.personA, this.personB)//new object in order to reset outputTable to be undefined, PV to be undefined, and outputTableComplete to be false
     this.getCustomDateFormInputs()
     this.errorCollection = this.inputValidationService.checkForCustomDateErrors(this.errorCollection, customCalculationScenario, this.personA, this.personB)
@@ -456,6 +455,10 @@ export class HomeComponent implements OnInit {
       }
       else {
         this.personA.retirementBenefitDate = new MonthYearDate(this.customPersonAretirementBenefitYear, this.customPersonAretirementBenefitMonth-1)
+        if (this.personA.PIA == 0){
+          this.personA.retirementBenefitDate = new MonthYearDate(this.maximizePvService.findEarliestPossibleRetirementBenefitDate(this.personA))
+        }
+        //^^If they have no PIA, there will be no inputs appearing on custom date form. So the value would be today's date, which makes no sense and will often cause input validation error.
       }
       if (this.personBfixedRetirementBenefitMonth || this.personBfixedRetirementBenefitYear){
         this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1)
@@ -463,6 +466,8 @@ export class HomeComponent implements OnInit {
       }
       else {//personB has no fixedRetirementBenefitDate
         this.personB.retirementBenefitDate = new MonthYearDate(this.customPersonBretirementBenefitYear, this.customPersonBretirementBenefitMonth-1)
+        if (this.personB.PIA == 0){this.personB.retirementBenefitDate = new MonthYearDate(this.maximizePvService.findEarliestPossibleRetirementBenefitDate(this.personB))}
+        //^^If they have no PIA, there will be no inputs appearing on custom date form. So the value would be today's date, which makes no sense and will often cause input validation error.
         if (this.scenario.maritalStatus == "survivor"){//it's a survivor scenario, and personB hadn't filed as of date of death (we know this because personB has no fixedRetirementBenefitDate)
           //set to FRA if they died prior to FRA or date of death if they died after FRA
           if (this.personB.dateOfDeath < this.personB.FRA){
@@ -599,18 +604,23 @@ export class HomeComponent implements OnInit {
   resetHiddenInputs(){
     //If a person has no PIA, retirementBenefitDate input will be hidden, so set it to satisfy deemed filing rule using their selected spousal benefit date.
       if (this.personA.PIA == 0){
-        this.personA.retirementBenefitDate = new MonthYearDate(this.personA.spousalBenefitDate)
-        // //But don't let retirementBenefitDate be later than 70, or inputvalidation.service will give error.
-        // if (this.personA.retirementBenefitDate > new MonthYearDate(this.personA.SSbirthDate.getFullYear()+70, this.personA.SSbirthDate.getMonth()) ){
-        //   this.personA.retirementBenefitDate = new MonthYearDate(this.personA.SSbirthDate.getFullYear()+70, this.personA.SSbirthDate.getMonth())
-        // }
+        if (this.scenario.maritalStatus == "married" || this.scenario.maritalStatus == "divorced"){
+          this.personA.retirementBenefitDate = new MonthYearDate(this.personA.spousalBenefitDate)
+        }
+        else if (this.scenario.maritalStatus == "survivor"){
+          this.personA.retirementBenefitDate = new MonthYearDate(this.maximizePvService.findEarliestPossibleRetirementBenefitDate(this.personA))
+        }
+        //But don't let retirementBenefitDate be later than 70, or inputvalidation.service will give error.
+        if (this.personA.retirementBenefitDate > new MonthYearDate(this.personA.SSbirthDate.getFullYear()+70, this.personA.SSbirthDate.getMonth()) ){
+          this.personA.retirementBenefitDate = new MonthYearDate(this.personA.SSbirthDate.getFullYear()+70, this.personA.SSbirthDate.getMonth())
+        }
       }
       if (this.personB.PIA == 0){
         this.personB.retirementBenefitDate = new MonthYearDate(this.personB.spousalBenefitDate)
-        // //But don't let retirementBenefitDate be later than 70, or inputvalidation.service will give error.
-        // if (this.personB.retirementBenefitDate > new MonthYearDate(this.personB.SSbirthDate.getFullYear()+70, this.personB.SSbirthDate.getMonth()) ){
-        //   this.personB.retirementBenefitDate = new MonthYearDate(this.personB.SSbirthDate.getFullYear()+70, this.personB.SSbirthDate.getMonth())
-        // }
+        //But don't let retirementBenefitDate be later than 70, or inputvalidation.service will give error.
+        if (this.personB.retirementBenefitDate > new MonthYearDate(this.personB.SSbirthDate.getFullYear()+70, this.personB.SSbirthDate.getMonth()) ){
+          this.personB.retirementBenefitDate = new MonthYearDate(this.personB.SSbirthDate.getFullYear()+70, this.personB.SSbirthDate.getMonth())
+        }
       }
 
     //Reset "personB has filed" to false if divorced. (Otherwise can have bug if they selected married, yes personB has filed, then switch to divorced because the "has personB filed" input disappears and calc won't run.)

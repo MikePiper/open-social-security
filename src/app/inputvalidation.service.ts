@@ -180,7 +180,7 @@ export class InputValidationService {
     if ( isNaN(spousalBenefitDate.getFullYear()) || isNaN(spousalBenefitDate.getMonth()) ) {
       error = "Please enter a date."
     }
-
+      
     //If spousal input date is in the past, make sure it's for a legitimate reason
     if (spousalBenefitDate < this.today){
       if (person.fixedRetirementBenefitDate) {//i.e., person is disabled, has filed, or is personB in a divorce scenario
@@ -250,7 +250,9 @@ export class InputValidationService {
     if (spousalBenefitDate < earliestDate) {error = "Please enter a later date. A person cannot file for spousal benefits before the first month in which they are 62 for the entire month."}
 
     //Validation in case they try to start spousal benefit before other spouse's retirement benefit.
-    if (spousalBenefitDate < otherPersonRetirementBenefitDate && scenario.maritalStatus == "married") {error = "A person cannot start spousal benefits before the other spouse has filed for his/her own retirement benefit."}
+    if (spousalBenefitDate < otherPersonRetirementBenefitDate && scenario.maritalStatus == "married" && otherPerson.PIA > 0){//if otherPerson has zero PIA, we really don't care what this person has for spousal benefit date.
+      error = "A person cannot start spousal benefits before the other spouse has filed for his/her own retirement benefit."
+    }
    
     return error
   }

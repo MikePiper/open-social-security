@@ -375,7 +375,12 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
   
   
       //Create new range object for storage of data
-        scenario.range = new Range(earliestStartRetirement, retirementBenefitEndTestDate, earliestStartSurvivor, survivorBenefitEndTestDate)
+        if (personA.PIA > 0){
+          scenario.range = new Range(earliestStartRetirement, retirementBenefitEndTestDate, earliestStartSurvivor, survivorBenefitEndTestDate)
+        }
+        else {//if personA has zero PIA, we want x-axis for range to be based on survivor dates. And we want it to be a 1-row Range, so we use personB.retirementBenefitDate for earliest and latest y-axis
+          scenario.range = new Range(earliestStartSurvivor, survivorBenefitEndTestDate, personB.retirementBenefitDate, personB.retirementBenefitDate)
+        }
         let solutionSet: SolutionSet
   
       while (personA.retirementBenefitDate <= retirementBenefitEndTestDate && personA.endSuspensionDate <= retirementBenefitEndTestDate) {

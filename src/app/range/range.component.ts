@@ -290,7 +290,12 @@ export class RangeComponent implements OnInit, AfterViewInit {
       }
       //If either person has a zero PIA, we need to reword their axis title appropriately
         if (this.personA.PIA == 0){
-          this.xAxisTitle = this.personAspousalAxisTitle
+          if (this.scenario.maritalStatus == "survivor"){
+            this.xAxisTitle = this.personAsurvivorAxisTitle
+          }
+          else {
+            this.xAxisTitle = this.personAspousalAxisTitle
+          }
         }
         if (this.personB.PIA == 0){
           this.yAxisTitle = this.personBspousalAxisTitle

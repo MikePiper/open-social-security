@@ -309,6 +309,7 @@ export class Range {
     getIndexDateXfromClaimStrategy(claimStrategy:ClaimStrategy): MonthYearDate { //date that would be shown on x-axis for this ClaimStrategy. Is usually personA.retirementBenefitDate, but could be:
         //personB.retirementBenefitDate if personA is already age 70 so there is no y-axis
         //personA.spousalBenefitDate (if no PIA of their own)
+        //personA.survivorBenefitDate (if no PIA of their own and it's a survivor scenario)
         //personA.endSuspensionDate (if already filed but younger than 70)
             //...unless personA is planning to begin suspension at date other than later of FRA or today, in which case this claimStrategy won't be in the Range, so we want to return a negative Column value (so use placeholder date)
         let indexDate:MonthYearDate = new MonthYearDate(claimStrategy.personARetirementDate)
@@ -317,9 +318,14 @@ export class Range {
             indexDate = new MonthYearDate(claimStrategy.personBRetirementDate)
         }
         else {//i.e. personA is younger than 70
-            //if personA has no PIA, we index based on their spousal benefit
+            //if personA has no PIA, we index based on their spousal benefit (or survivor benefit if survivor scenario)
             if (claimStrategy.personA.PIA == 0){
-                indexDate = new MonthYearDate(claimStrategy.personASpousalDate)
+                if (claimStrategy.personB.dateOfDeath > claimStrategy.personB.SSbirthDate){//i.e., it's a survivor scenario
+                    indexDate = new MonthYearDate(claimStrategy.personAsurvivorDate)
+                }
+                else {
+                    indexDate = new MonthYearDate(claimStrategy.personASpousalDate)
+                }
             }
             else {//i.e., personA has a PIA
                 //Check if we should return suspension-related date
@@ -354,7 +360,8 @@ export class Range {
         if (claimStrategy.personB){
             indexDate = new MonthYearDate(claimStrategy.personBRetirementDate)
             //if personB is deceased, we Y-axis represents personA's survivorBenefitDate
-            if (claimStrategy.personB.dateOfDeath > claimStrategy.personB.SSbirthDate){
+            if (claimStrategy.personB.dateOfDeath > claimStrategy.personB.SSbirthDate && claimStrategy.personA.PIA > 0){
+                //We check that personA has a PIA here, because if they don't, we want this to be a 1-row Range, with indexing on x-axis based on survivordate. And so we want every claim strategy to have the same Y-index date. (In this case it will end up as personB.retirementBenefitDate, which is fine.)
                 indexDate = new MonthYearDate(claimStrategy.personAsurvivorDate)
             }
             else {//i.e., it's not a survivor scenario
