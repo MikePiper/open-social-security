@@ -161,7 +161,6 @@ describe('test calculateSinglePersonPV', () => {
       })
   
       it('should return appropriate PV for single person, 18-year-old mortal disabled child, earnings test applicable, future benefit cut assumption', () => {
-        console.log("18-year-old disabled mortal child, earnings test applicable")
         service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "single"
@@ -192,7 +191,6 @@ describe('test calculateSinglePersonPV', () => {
       })
   
       it('should return appropriate PV for single person, 18-year-old immortal disabled child, earnings test applicable, future benefit cut assumption', () => {
-        console.log("18-year-old disabled immortal child, earnings test applicable")
         service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "single"
@@ -223,7 +221,6 @@ describe('test calculateSinglePersonPV', () => {
       })
   
       it('should return appropriate PV for single person, 38-year old mortal disabled child, earnings test applicable, future benefit cut assumption', () => {
-        console.log("38-year old disabled mortal child, earnings test applicable")
         service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "single"
@@ -254,7 +251,6 @@ describe('test calculateSinglePersonPV', () => {
       })
   
       it('should return appropriate PV for single person, 38-year old disabled mortal child and 4-year-old non-disabled non-disabled child, earnings test applicable, future benefit cut assumption', () => {
-        console.log("38-year old disabled mortal child and 4-year-old non-disabled, earnings test applicable")
         service.today = new MonthYearDate(2018, 11)//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
         earningsTestService.today = new MonthYearDate(2018, 11) //Ditto
         scenario.maritalStatus = "single"
