@@ -49,25 +49,23 @@ describe('test calculateSinglePersonPV', () => {
   }))
 
       //Test calculateSinglePersonPV()
-      it('FAIL 4 should return appropriate PV for single person, no complicating factors', () => {
+      it('4 should return appropriate PV for single person, no complicating factors', () => {
         service.today = new MonthYearDate(2019, 7)
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
         person.PIA = 1000
         person.retirementBenefitDate = new MonthYearDate(2030, 3, 1) //filing at age 70
         scenario.discountRate = 1 //1% discount rate
         mortalityService.determineMortalityTable(person, "male", "SSA", 0)
-        // person.maxAge = mortalityService.determineMaxAge(person.mortalityTable)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
           .toBeCloseTo(142644, 0)
       })
   
-      it('FAIL 6 should return appropriate PV for single person who files retroactive application as of their FRA', () => {
+      it('should return appropriate PV for single person who files retroactive application as of their FRA', () => {
         service.today = new MonthYearDate(2018, 9)
         person.SSbirthDate = new MonthYearDate(1952, 3, 1) //Person born April 1952
         person.PIA = 1000
         mortalityService.determineMortalityTable(person, "male", "SSA", 0)
-        // person.maxAge = mortalityService.determineMaxAge(person.mortalityTable)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         person.retirementBenefitDate = new MonthYearDate(person.FRA) //filing at FRA, which is retroactive (note that this line has to come after mockGetPrimaryFormInputs, which sets the person's FRA)
         scenario.discountRate = 1 //1% discount rate
@@ -75,7 +73,7 @@ describe('test calculateSinglePersonPV', () => {
           .toBeCloseTo(183581, 0)
       })
     
-      it('FAIL 3 should return appropriate PV for single person, but with "still working" inputs and a different mortality table', () => { 
+      it('should return appropriate PV for single person, but with "still working" inputs and a different mortality table', () => { 
         service.today = new MonthYearDate(2019, 7)
         scenario.maritalStatus = "single"
         person.SSbirthDate = new MonthYearDate(1960, 3, 1) //Person born April 1960
@@ -85,13 +83,12 @@ describe('test calculateSinglePersonPV', () => {
         person.monthlyEarnings = 4500 //Just picking something here...
         scenario.discountRate = 1 //1% discount rate
         mortalityService.determineMortalityTable(person, "female", "NS1", 0) //Using female nonsmoker1 mortality table
-        // person.maxAge = mortalityService.determineMaxAge(person.mortalityTable)
         mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
           .toBeCloseTo(194237, 0)
       })
     
-      it('FAIL 2 should return appropriate PV for a single person who files at FRA but suspends immediately until 70', () => { 
+      it('should return appropriate PV for a single person who files at FRA but suspends immediately until 70', () => { 
         service.today = new MonthYearDate(2019, 7)
         scenario.maritalStatus = "single"
         mortalityService.determineMortalityTable(person, "male", "SSA", 0)
@@ -106,7 +103,7 @@ describe('test calculateSinglePersonPV', () => {
           .toBeCloseTo(119860, 0)//Point being, this is same PV as when somebody just waits until 70.
       })
   
-      it('FAIL 7 should return appropriate PV for single person, a newborn child, no other complicating factors', () => {
+      it('should return appropriate PV for single person, a newborn child, no other complicating factors', () => {
         service.today = new MonthYearDate(2019, 7)
         let child1:Person = new Person("1")
         scenario.maritalStatus = "single"
@@ -123,7 +120,7 @@ describe('test calculateSinglePersonPV', () => {
           .toBeCloseTo(256458, 0)
       })
   
-      it('FAIL 1 should return appropriate PV for single person, two newborn twins, no other complicating factors (confirming family max is being applied correctly)', () => {
+      it('should return appropriate PV for single person, two newborn twins, no other complicating factors (confirming family max is being applied correctly)', () => {
         service.today = new MonthYearDate(2019, 0)
         let child1:Person = new Person("1")
         let child2:Person = new Person("2")
@@ -142,7 +139,7 @@ describe('test calculateSinglePersonPV', () => {
           .toBeCloseTo(317915, 0)
       })
   
-      it('FAIL 5 should return appropriate PV for single person, newborn triplets, no other complicating factors (family max should give it same PV as prior test)', () => {
+      it('should return appropriate PV for single person, newborn triplets, no other complicating factors (family max should give it same PV as prior test)', () => {
         service.today = new MonthYearDate(2019, 0)
         let child1:Person = new Person("1")
         let child2:Person = new Person("2")
@@ -274,7 +271,7 @@ describe('test calculateSinglePersonPV', () => {
         scenario.disabledChild = true
         scenario.disabledChildPerson = child1
         scenario.disabledChildPerson.initialAgeRounded = 19
-        // assume child doesn't die until age 200 (practically immortal)
+        // assume adult disabled child has typical mortality 
         mortalityService.determineMortalityTable(scenario.disabledChildPerson, "male", "SSA", 0);
         scenario.disabledChildPerson.baseMortalityFactor = mortalityService.calculateBaseMortalityFactor(child1);
         person.PIA = 1000
@@ -410,7 +407,7 @@ describe('test maximizeSinglePersonPV', () => {
     //solutionsArray should have two items: begin suspension date (at FRA), and end suspension date (age 70)
   })
 
-  it('should tell a single person to file ASAP with disabled child, 1% discount rate and SSA life expectancy', () => {
+  it('should tell a single person to file ASAP with immortal disabled child, 1% discount rate and SSA life expectancy', () => {
     service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
     let child:Person = new Person("1")
     scenario.maritalStatus = "single"
@@ -418,8 +415,37 @@ describe('test maximizeSinglePersonPV', () => {
     person.actualBirthDate = new Date(1960, 3, 15) //Person born April 16 1960
     person.SSbirthDate = new MonthYearDate(1960, 3, 1)
     person.PIA = 1000
-    child.SSbirthDate = new MonthYearDate(1990, 7)
+    child.SSbirthDate = new MonthYearDate(1980, 7)
     child.isOnDisability = true
+    scenario.disabledChild = true
+    scenario.disabledChildPerson = child
+    scenario.disabledChildPerson.initialAgeRounded = 38 // doesn't affect calculations, since immortal
+    // assume child doesn't die until age 200 (practically immortal)
+    mortalityService.determineMortalityTable(scenario.disabledChildPerson, "male", "fixed", 200);
+    scenario.disabledChildPerson.baseMortalityFactor = mortalityService.calculateBaseMortalityFactor(child);
+    scenario.discountRate = 1 //1% discount rate
+    mortalityService.determineMortalityTable(person, "male", "SSA", 0)
+    mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)
+    expect(service.maximizeSinglePersonPV(person, scenario).solutionsArray[0].date)
+      .toEqual(new MonthYearDate(2022, 4, 1))
+  })
+
+  it('should tell a single person to file ASAP with 38-year-old mortal disabled child, 1% discount rate and SSA life expectancy', () => {
+    service.today = new MonthYearDate(2018, 10) //hard-coding "today" so that it doesn't fail in future just because date changes
+    let child:Person = new Person("1")
+    scenario.maritalStatus = "single"
+    scenario.children = [child]
+    person.actualBirthDate = new Date(1960, 3, 15) //Person born April 16 1960
+    person.SSbirthDate = new MonthYearDate(1960, 3, 1)
+    person.PIA = 1000
+    child.SSbirthDate = new MonthYearDate(1980, 7)
+    child.isOnDisability = true
+    scenario.disabledChild = true
+    scenario.disabledChildPerson = child
+    scenario.disabledChildPerson.initialAgeRounded = 38
+    // assume child has typical mortality
+    mortalityService.determineMortalityTable(scenario.disabledChildPerson, "male", "SSA", 0);
+    scenario.disabledChildPerson.baseMortalityFactor = mortalityService.calculateBaseMortalityFactor(child);
     scenario.discountRate = 1 //1% discount rate
     mortalityService.determineMortalityTable(person, "male", "SSA", 0)
     mockGetPrimaryFormInputs(person, service.today, birthdayService, benefitService, mortalityService)

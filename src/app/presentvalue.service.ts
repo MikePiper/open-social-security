@@ -96,7 +96,7 @@ export class PresentValueService {
     
     // FOR TESTING set limits for logging monthly and yearly results
     let logMonthlyAge = 0
-    let logYearlyAge = 115
+    let logYearlyAge = 0
 
     //Calculate PV via monthly loop until they hit age 115 (by which point "remaining lives" is zero)
 

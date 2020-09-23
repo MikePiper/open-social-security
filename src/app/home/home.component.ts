@@ -383,8 +383,6 @@ export class HomeComponent implements OnInit {
     this.mortalityService.determineMortalityTable(this.personB, this.personBgender, this.personBmortalityInput, this.personBassumedDeathAge)
     this.personA.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(this.personA)
     this.personB.baseMortalityFactor = this.mortalityService.calculateBaseMortalityFactor(this.personB)
-    // this.personA.maxAge = this.mortalityService.determineMaxAge(this.personA.mortalityTable)
-    // this.personB.maxAge = this.mortalityService.determineMaxAge(this.personB.mortalityTable)
 
     //Clear children array and only push as many children objects as applicable
     if (this.scenario.numberOfChildren > 0){

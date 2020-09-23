@@ -17,7 +17,6 @@ export class Person {
     baseMortalityFactor: number //calculated as 1/lives remaining at initial age. We multiply this factor by livesRemaining at given age to determine probabilityAlive at that age. 
     age: number //as in, "age as of current calculation year"
     mortalityTable: number[]
-    maxAge: number // maximum age person can attain: lowest age in mortality table with lives = 0
 
     eligibleForNonCoveredPension:boolean = false
     entitledToNonCoveredPension:boolean = false

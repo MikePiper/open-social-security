@@ -11,16 +11,12 @@ export class MortalityService {
 
   calculateProbabilityAlive(person:Person, age:number){//"age" here is age as of beginning of year in question. person.initialAgeRounded is rounded age as of date filling out form
     let probabilityAlive: number
-    if (age >= person.maxAge) {
-      probabilityAlive = 0
-    } else {
     //Calculate probability of being alive at end of age in question
     let ageLastBirthday = Math.floor(age)
     probabilityAlive = //need probability of being alive at end of "currentCalculationDate" year
       (person.mortalityTable[ageLastBirthday + 1] * (1 - (age%1)) //eg if user is 72 and 4 months at beginning of year, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
     + person.mortalityTable[ageLastBirthday + 2] * (age%1))
     * person.baseMortalityFactor
-    }
 
     return Number(probabilityAlive)
   }
@@ -36,59 +32,31 @@ export class MortalityService {
   // determineMortalityTable (gender:string, mortalityInput:string, assumedDeathAge:number): number[] {
     determineMortalityTable (person: Person, gender:string, mortalityInput:string, assumedDeathAge:number) {
       let mortalityTable: number[] = []
-      let maxAge: number = 0
     // changed the logic to be faster; when a test passes, the rest of the 'else if' tests are skipped
     if (gender == "male") {
-      if (mortalityInput == "SSA2017") {mortalityTable = this.male2017SSAtable; maxAge = 112}
-      else if (mortalityInput == "NS1") {mortalityTable = this.maleNS1; maxAge = 115}
-      else if (mortalityInput == "NS2") {mortalityTable = this.maleNS2; maxAge = 114}
-      else if (mortalityInput == "SSA") {mortalityTable = this.male2015SSAtable; maxAge = 112}
-      else if (mortalityInput === "SSA2016") {mortalityTable = this.male2016SSAtable; maxAge = 112}
-      else if (mortalityInput == "SM1") {mortalityTable = this.maleSM1; maxAge = 113}
-      else if (mortalityInput == "SM2") {mortalityTable = this.maleSM2; maxAge = 113}
-      else if (mortalityInput == "fixed") {mortalityTable = this.createMortalityTable(assumedDeathAge); maxAge = assumedDeathAge + 1}
+      if (mortalityInput == "SSA2017") {mortalityTable = this.male2017SSAtable}
+      else if (mortalityInput == "NS1") {mortalityTable = this.maleNS1}
+      else if (mortalityInput == "NS2") {mortalityTable = this.maleNS2}
+      else if (mortalityInput == "SSA") {mortalityTable = this.male2015SSAtable}
+      else if (mortalityInput === "SSA2016") {mortalityTable = this.male2016SSAtable}
+      else if (mortalityInput == "SM1") {mortalityTable = this.maleSM1}
+      else if (mortalityInput == "SM2") {mortalityTable = this.maleSM2}
+      else if (mortalityInput == "fixed") {mortalityTable = this.createMortalityTable(assumedDeathAge)}
     }
     else { // gender == "female"
-      if (mortalityInput === "SSA2017") {mortalityTable = this.female2017SSAtable; maxAge = 114}
-      else if (mortalityInput == "NS1") {mortalityTable = this.femaleNS1; maxAge = 116}
-      else if (mortalityInput == "NS2") {mortalityTable = this.femaleNS2; maxAge = 116}
-      else if (mortalityInput == "SSA") {mortalityTable = this.female2015SSAtable; maxAge = 114}
-      else if (mortalityInput === "SSA2016") {mortalityTable = this.female2016SSAtable; maxAge = 114}
-      else if (mortalityInput == "SM1") {mortalityTable = this.femaleSM1; maxAge = 114}
-      else if (mortalityInput == "SM2") {mortalityTable = this.femaleSM2; maxAge = 116}
-      else if (mortalityInput == "fixed") {mortalityTable = this.createMortalityTable(assumedDeathAge); maxAge = assumedDeathAge + 1}
+      if (mortalityInput === "SSA2017") {mortalityTable = this.female2017SSAtable}
+      else if (mortalityInput == "NS1") {mortalityTable = this.femaleNS1}
+      else if (mortalityInput == "NS2") {mortalityTable = this.femaleNS2}
+      else if (mortalityInput == "SSA") {mortalityTable = this.female2015SSAtable}
+      else if (mortalityInput === "SSA2016") {mortalityTable = this.female2016SSAtable}
+      else if (mortalityInput == "SM1") {mortalityTable = this.femaleSM1}
+      else if (mortalityInput == "SM2") {mortalityTable = this.femaleSM2}
+      else if (mortalityInput == "fixed") {mortalityTable = this.createMortalityTable(assumedDeathAge)}
     }
     
     person.mortalityTable = mortalityTable
-    person.maxAge = maxAge
     // console.log(gender, mortalityInput, assumedDeathAge, mortalityTable[50])
     // return mortalityTable
-  }
-
-  determineMaxAge(mortalityTable: number[]): number {
-    let age: number = mortalityTable.length - 1
-
-    /* 
-      sample table
-      [9, 8, 7, 6, 0, 0, 0]
-      For calculation purposes, maxAge is 4, because person can have age up to 3.99...,
-      Probability being alive at any age 4 or greater will be 0
-      */
-
-    if (mortalityTable[age] != 0) {
-      // the mortality table does not have any zeroes at the end, 
-      // so tag on a couple for livesAtAge calculations 
-      mortalityTable.push(0)
-      mortalityTable.push(0)
-      // maxAge will be one higher 
-    } else {
-      while (mortalityTable[age] == 0) {
-        age--;
-        // in example table, get zeroes at 6, 5, and 4, decrement to 3, not zero
-        // maxAge will be one higher
-      } 
-    }
-    return age + 1
   }
 
   createMortalityTable(deathAge:number){
@@ -228,6 +196,14 @@ male2017SSAtable = [
   0,
   0,
   0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
   ]
 
 //Lives remaining out of 100k, from SSA 2017 period life table
@@ -353,6 +329,22 @@ female2017SSAtable = [
   0,
   0,
   0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0
   ]
 
@@ -471,6 +463,28 @@ male2016SSAtable = [
   6,
   3,
   1,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0,
   0,
   0,
@@ -605,6 +619,28 @@ female2016SSAtable = [
   0,
   0,
   0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
 ]
 
 //Lives remaining out of 100k, from SSA 2015 period life table
@@ -721,6 +757,28 @@ male2015SSAtable = [
   5,
   2,
   1,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0,
   0,
   0,
@@ -854,6 +912,28 @@ female2015SSAtable = [
   0,
   0,
   0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
 ]
 
 maleNS1 = [
@@ -979,6 +1059,28 @@ maleNS1 = [
   0,
   0,
   0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0 
 ]
 
@@ -1097,6 +1199,28 @@ maleNS2 = [
   4, 
   2, 
   1, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0, 
   0,
   0,
@@ -1221,6 +1345,28 @@ maleSM1 = [
   4, 
   2, 
   1, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0, 
   0,
   0,
@@ -1345,6 +1491,28 @@ maleSM2 = [
   3, 
   2, 
   1, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0, 
   0, 
   0,
@@ -1472,6 +1640,28 @@ femaleNS1 = [
   2, 
   1, 
   1, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0, 
   0, 
   0,
@@ -1599,6 +1789,28 @@ femaleNS2 = [
   2, 
   1, 
   1, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0, 
   0, 
   0,
@@ -1724,6 +1936,28 @@ femaleSM1 = [
   3, 
   2, 
   1, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0, 
   0, 
   0,
@@ -1849,6 +2083,28 @@ femaleSM2 = [
   3, 
   1, 
   1, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0, 
   0, 
   0,

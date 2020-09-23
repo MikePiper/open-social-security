@@ -39,16 +39,6 @@ describe('MortalityService', () => {
     expect(table[84]).toEqual(0)
   }))
 
-  it('should correctly determine ageMax and probabilities for age >= ageMax', inject([MortalityService], (service: MortalityService) => {
-    let table1 = [9, 8, 7, 6, 0, 0, 0]
-    let table2 = [6, 5, 4, 3, 2]
-    expect(service.determineMaxAge(table1)).toEqual(4)
-    expect(service.determineMaxAge(table2)).toEqual(5)
-    expect(table2[5]).toEqual(0) // zeroes should be appended to table that doesn't have any. 
-    expect(table2[6]).toEqual(0)
-  }))
-
-
   //check that calculateProbabilityAlive() does math appropriately
   it('should accurately calculate probability alive', inject([MortalityService], (service: MortalityService) => {
     // let scenario:CalculationScenario = new CalculationScenario()
