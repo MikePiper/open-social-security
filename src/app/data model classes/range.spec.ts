@@ -1,5 +1,4 @@
 import {TestBed} from '@angular/core/testing'
-import { monitorEventLoopDelay } from 'perf_hooks'
 import { BirthdayService } from '../birthday.service'
 import { CalculationScenario } from './calculationscenario'
 import {ClaimStrategy} from "./claimStrategy"

@@ -103,9 +103,5 @@ export class MonthYearDate {
         return Number(this.year * 12 + this.month)
     }
 
-    equals(other: MonthYearDate): boolean {
-        return (this.year == other.year) && (this.month == other.month);
-    }
-
 
 }

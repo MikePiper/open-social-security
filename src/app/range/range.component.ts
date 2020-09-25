@@ -495,9 +495,6 @@ export class RangeComponent implements OnInit, AfterViewInit {
     this.pointerPercentString = '';
   }
 
- fractionToPercent(num: number, places: number) {
-    return (num * 100).toFixed(places);
-  }
 
   getSolutionSet(row: number, col: number): SolutionSet {
     let solutionSet: SolutionSet;

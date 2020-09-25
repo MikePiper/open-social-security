@@ -221,17 +221,6 @@ export class Range {
         }
     }
 
-    getMinimumPvClaimStrategy(condition: number): ClaimStrategy {
-        let row = this.pvMinRowArray[condition];
-        let column = this.pvMinColArray[condition];
-        return this.claimStrategiesArrays[condition][row][column]; 
-    }
-
-    getMaximumPvClaimStrategy(condition: number): ClaimStrategy {
-        let row = this.pvMaxRowArray[condition];
-        let column = this.pvMaxColArray[condition];
-        return this.claimStrategiesArrays[condition][row][column]; 
-    }
 
     getColAtDate(dateX: MonthYearDate): number {
         return dateX.valueOf() - this.firstValueX;
@@ -246,9 +235,7 @@ export class Range {
             && (row <= this.rows) && (col < this.columns);
     }
 
-    inRangeDates(dateA: MonthYearDate, dateB: MonthYearDate): boolean {
-        return this.inRangeRowCol(this.getColAtDate(dateA), this.getRowAtDate(dateB));
-    }
+
 
     initFracsAndColors(): void {
 
@@ -297,9 +284,6 @@ export class Range {
         return this.colorArrays[condition][row][col];
     }
       
-    getPv(condition: number, row: number, col: number): number {
-        return this.pvArrays[condition][row][col];
-    }
       
     // returns string showing percent of maxPv at given location
     getPvPercentString(condition: number, row: number, col: number): string {
