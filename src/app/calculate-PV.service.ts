@@ -286,21 +286,21 @@ export class CalculatePvService {
             //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, true)
             //Apply deductions and reductions as necessary
-              this.applyDeductionsAndReductions(scenario, calcYear, personA, true, personB, true)
+              this.applyDeductionsAndReductions(scenario, calcYear, personA, true, personB, true, printOutputTable)
             //add everybody's monthlyPayment fields to appropriate annual totals (annualBenefitBothAlive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, true, personB, true, printOutputTable)
       //Assume personA is alive and personB is deceased
             //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, true, personB, false)
             //Apply deductions and reductions as necessary
-              this.applyDeductionsAndReductions(scenario, calcYear, personA, true, personB, false)
+              this.applyDeductionsAndReductions(scenario, calcYear, personA, true, personB, false, printOutputTable)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitOnlyPersonAalive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, true, personB, false, printOutputTable)
       //Assume personA is deceased and personB is alive
             //calculate "original benefit" amounts for each person (spousal/survivor amounts not yet reduced for family max, own entitlement, age, or GPO)
               this.benefitService.calculateMonthlyPaymentsCouple(scenario, calcYear, personA, false, personB, true)
             //Apply deductions and reductions as necessary
-              this.applyDeductionsAndReductions(scenario, calcYear, personA, false, personB, true)
+              this.applyDeductionsAndReductions(scenario, calcYear, personA, false, personB, true, printOutputTable)
             //add everybody's monthlyPayment fields to appropriate annual total (annualBenefitOnlyPersonBalive for PV calc and appropriate table sum for table output)
               this.addMonthlyPaymentAmountsToApplicableSumsForCouple(scenario, calcYear, personA, false, personB, true, printOutputTable)
       //Assume personA and personB are deceased
@@ -775,7 +775,7 @@ export class CalculatePvService {
     return presentValue
   }
 
-  applyDeductionsAndReductions(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB:Person, personBaliveBoolean:boolean){
+  applyDeductionsAndReductions(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB:Person, personBaliveBoolean:boolean, printOutputTable:boolean){
     //See OrderOfReductions.txt for a discussion of the reasoning behind all this
     if (personAaliveBoolean === true && personBaliveBoolean === true){
         //Adjust each person's monthlyPayment as necessary for family max
