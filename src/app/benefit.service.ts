@@ -168,7 +168,7 @@ export class BenefitService {
     return livingPerson
   }
 
-  adjustSurvivorBenefitsForRIB_LIM(livingPerson:Person, deceasedPerson:Person){
+  adjustSurvivorBenefitsForRIB_LIM(livingPerson:Person, deceasedPerson:Person):Person{
     //Determine whether RIB-LIM limit is 82.5% of deceased's PIA or amount deceased was receiving
       let RIB_LIMlimit:number = 0
       if (deceasedPerson.eligibleForNonCoveredPension === false){
@@ -191,6 +191,7 @@ export class BenefitService {
       if (livingPerson.monthlySurvivorPayment > RIB_LIMlimit){
         livingPerson.monthlySurvivorPayment = RIB_LIMlimit
       }
+      return livingPerson
   }
 
   adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA:Person, personB:Person){

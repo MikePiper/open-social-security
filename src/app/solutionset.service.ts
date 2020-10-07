@@ -168,11 +168,11 @@ export class SolutionSetService {
 
 
         //personA survivor stuff
-          personAsurvivorSolution = this.generateSurvivorClaimingSolution(personA, scenario)
+          personAsurvivorSolution = this.generateSurvivorClaimingSolution(personA, personB, scenario)
           if (personAsurvivorSolution) {solutionSet.solutionsArray.push(personAsurvivorSolution)}
 
         //personA mother/father stuff
-          personAmotherFatherSolution = this.generateMotherFatherClaimingSolution(personA, scenario)
+          personAmotherFatherSolution = this.generateMotherFatherClaimingSolution(personA, personB, scenario)
           if (personAmotherFatherSolution){solutionSet.solutionsArray.push(personAmotherFatherSolution)}
 
         //personA disability stuff
@@ -451,7 +451,7 @@ export class SolutionSetService {
     else {return undefined}
   }
 
-  generateSurvivorClaimingSolution(livingPerson:Person, scenario:CalculationScenario):ClaimingSolution{
+  generateSurvivorClaimingSolution(livingPerson:Person, deceasedPerson:Person, scenario:CalculationScenario):ClaimingSolution{
     let survivorSolution:ClaimingSolution
     if (scenario.maritalStatus == "survivor" && livingPerson.hasFiledAsSurvivor === false){
       let survivorFilingAge: number = this.birthdayService.findAgeOnDate(livingPerson, livingPerson.survivorBenefitDate)
@@ -465,11 +465,19 @@ export class SolutionSetService {
         survivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", livingPerson, livingPerson.survivorBenefitDate, personAsavedSurvivorAgeYears, personAsavedSurvivorAgeMonths)
       }
     }
-    if (survivorSolution && livingPerson.survivorBenefitInMonthOfEntitlement > 0){return survivorSolution}
+    //Check if there's actually going to be a survivor benefit at SOME point, given selected filing dates
+      //Basically, if they will never have a survivor benefit (because they filed for retirement already and because after various reductions survivor benefit is zero) then we don't want the solution object
+    livingPerson.monthlySurvivorPayment = this.benefitService.calculateSurvivorOriginalBenefit(deceasedPerson)
+    livingPerson = this.benefitService.adjustSurvivorBenefitsForAge(scenario, livingPerson)
+    livingPerson = this.benefitService.adjustSurvivorBenefitsForRIB_LIM(livingPerson, deceasedPerson)
+    livingPerson.monthlySurvivorPayment = livingPerson.monthlySurvivorPayment - this.benefitService.calculateRetirementBenefit(livingPerson, livingPerson.retirementBenefitDate)
+    if (survivorSolution && (livingPerson.monthlySurvivorPayment > 0 || livingPerson.survivorBenefitDate < livingPerson.retirementBenefitDate)){
+      return survivorSolution
+    }
     else {return undefined}
   }
 
-  generateMotherFatherClaimingSolution(livingPerson:Person, scenario:CalculationScenario):ClaimingSolution{
+  generateMotherFatherClaimingSolution(livingPerson:Person, deceasedPerson:Person, scenario:CalculationScenario):ClaimingSolution{
     let motherFatherSolution:ClaimingSolution
     if (livingPerson.motherFatherBenefitDate && livingPerson.hasFiledAsMotherFather === false){
       let filingAge: number = this.birthdayService.findAgeOnDate(livingPerson, livingPerson.motherFatherBenefitDate)
@@ -482,7 +490,15 @@ export class SolutionSetService {
         motherFatherSolution = new ClaimingSolution(scenario.maritalStatus, "motherFather", livingPerson, livingPerson.motherFatherBenefitDate, filingAgeYears, filingAgeMonths)
       }
     }
-    if (motherFatherSolution && livingPerson.motherFatherBenefitInMonthOfEntitlement > 0){return motherFatherSolution}
+    //Check if there's a childUnder16orDisabled
+    let childUnder16orDisabled:boolean = this.birthdayService.checkForChildUnder16orDisabledOnGivenDate(scenario, this.today)
+    //Check if there's actually going to be a mother/father benefit at SOME point, given selected filing dates
+      //Basically, if they will never have a mother/father benefit (because they filed for retirement already and because such would reduce mother/father to zero) then we don't want the solution object
+    let motherFatherBenefit:number = this.benefitService.calculateMotherFatherOriginalBenefit(deceasedPerson)
+    motherFatherBenefit = motherFatherBenefit - this.benefitService.calculateRetirementBenefit(livingPerson, livingPerson.retirementBenefitDate)
+    if (childUnder16orDisabled && motherFatherSolution && (motherFatherBenefit > 0 || livingPerson.motherFatherBenefitDate < livingPerson.retirementBenefitDate)){
+      return motherFatherSolution
+    }
     else {return undefined}
   }
 

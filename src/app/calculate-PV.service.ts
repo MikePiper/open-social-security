@@ -556,18 +556,6 @@ export class CalculatePvService {
           }
         }
       }
-
-      //if printOutputTable is true, and this is survivor scenario, and right now we're doing calc for personAalive=true and personBalive=false...
-      if (printOutputTable === true && scenario.maritalStatus=="survivor" && personAaliveBoolean === true && personBaliveBoolean === false){
-        //if this is personA's survivorBenefitDate, pass along monthlySurvivorPayment for the sake of generating the solution set (need to know if benefit > 0)
-        if (calcYear.date.valueOf() == personA.survivorBenefitDate.valueOf()){
-          personA.survivorBenefitInMonthOfEntitlement = personA.monthlySurvivorPayment
-        }
-        //if this is personA's motherFatherBenefitDate, pass along monthlyMotherFatherPayment for same reason as above
-        if (personA.motherFatherBenefitDate && calcYear.date.valueOf() == personA.motherFatherBenefitDate.valueOf()){
-          personA.motherFatherBenefitInMonthOfEntitlement = personA.monthlyMotherFatherPayment
-        }
-      }
   }
 
   readyForSavedCalculationYearForFasterLoop(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personB:Person):boolean{
