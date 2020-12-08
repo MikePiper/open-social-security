@@ -10,10 +10,24 @@ import { FamilyMaximumService } from './familymaximum.service';
 @Injectable()
 export class BenefitService {
 
-  constructor(private birthdayService: BirthdayService, private familyMaximumService: FamilyMaximumService) { }
-
-  today: MonthYearDate = new MonthYearDate()
+  today: MonthYearDate
+  sixMonthsAgo:MonthYearDate
+  twelveMonthsAgo:MonthYearDate
   deemedFilingCutoff: Date = new Date(1954, 0, 1)//January 2, 1954. If date is LESS than cutoff, old rules. If greater than OR EQUAL TO cutoff, new rules.
+
+  constructor(private birthdayService: BirthdayService, private familyMaximumService: FamilyMaximumService) {
+    this.setToday(new MonthYearDate())
+  }
+
+  setToday(today:MonthYearDate){
+    this.today = new MonthYearDate(today)
+    this.sixMonthsAgo = new MonthYearDate(today)
+    this.sixMonthsAgo.setMonth(this.sixMonthsAgo.getMonth()-6)
+    this.twelveMonthsAgo = new MonthYearDate(today)
+    this.twelveMonthsAgo.setFullYear(this.twelveMonthsAgo.getFullYear()-1)
+  }
+
+
 
   //For people who will be getting pension from noncovered employment, at any given time we have to know whether to use WEP_PIA or nonWEP_PIA
   checkWhichPIAtoUse(person:Person, date:MonthYearDate){

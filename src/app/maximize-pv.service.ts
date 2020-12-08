@@ -14,7 +14,7 @@ import { CalculatePvService } from './calculate-PV.service'
   providedIn: 'root'
 })
 export class MaximizePVService {
-  today: MonthYearDate = new MonthYearDate()
+  today: MonthYearDate
   sixMonthsAgo:MonthYearDate
   twelveMonthsAgo:MonthYearDate
 

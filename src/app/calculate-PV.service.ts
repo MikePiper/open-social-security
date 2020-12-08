@@ -15,7 +15,7 @@ import { ClaimStrategy } from './data model classes/claimStrategy'
 @Injectable()
 export class CalculatePvService {
 
-  today: MonthYearDate = new MonthYearDate()
+  today: MonthYearDate
   sixMonthsAgo:MonthYearDate
   twelveMonthsAgo:MonthYearDate
 
@@ -30,6 +30,7 @@ export class CalculatePvService {
       this.sixMonthsAgo.setMonth(this.sixMonthsAgo.getMonth()-6)
       this.twelveMonthsAgo = new MonthYearDate(today)
       this.twelveMonthsAgo.setFullYear(this.twelveMonthsAgo.getFullYear()-1)
+      this.benefitService.setToday(this.today)
     }
 
 
