@@ -74,6 +74,27 @@ export class BenefitService {
     return Number(retirementBenefit)
   }
 
+  //This calculates initial retirement benefit, accounting for the fact that DRCs aren't applicable until each January or age 70
+  calculateInitialRetirementBenefit(person:Person, benefitDate:MonthYearDate):number{
+    let initialRetirementBenefit:number
+    let age70date:MonthYearDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth())
+    if (benefitDate > person.FRA){
+      if (benefitDate.getFullYear() == person.FRA.getFullYear()){//i.e., they filed in year of FRA, but after FRA. So we use FRA as date for initial benefit
+        initialRetirementBenefit = this.calculateRetirementBenefit(person, person.FRA)
+      }
+      else if (benefitDate.valueOf() >= age70date.valueOf()){//i.e., they filed at age 70 (or later), so we use age 70 date because DRCs are immediately applicable.
+        initialRetirementBenefit = this.calculateRetirementBenefit(person, age70date)
+      }
+      else {//i.e., they filed after year of FRA, but prior to age 70, so we use January of filing year
+        initialRetirementBenefit = this.calculateRetirementBenefit(person, new MonthYearDate(benefitDate.getFullYear(), 0))
+      }
+    }
+    else {//No DRCs, so we just use their filing date
+      initialRetirementBenefit = this.calculateRetirementBenefit(person, benefitDate)
+    }
+    return initialRetirementBenefit
+  }
+
   //calculates "original benefit" for use in family max formula (i.e., before reduction for family max, before reduction for own entitlement, before reduction for age, before reduction for GPO)
   calculateSpousalOriginalBenefit(otherPerson:Person):number{
     let spousalOriginalBenefit:number = otherPerson.PIA * 0.5

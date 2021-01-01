@@ -80,6 +80,57 @@ describe('BenefitService', () => {
     //calc by hand: 1000 * 1.08 + 1000 * (2/3/100) * 16 = 1186.67
   })
 
+  //Testing calculateInitialRetirementBenefit()
+  it('should calculate initial retirement benefit 60 months early as 70% of PIA', () => {
+    let person:Person = new Person("A")
+    person.SSbirthDate = new MonthYearDate(1960, 7)//Born Aug 1960
+    person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA Aug 2027
+    person.PIA = 1000
+    let benefitDate = new MonthYearDate (2022, 7) //Benefit date 5 years prior to FRA
+    expect(service.calculateInitialRetirementBenefit(person, benefitDate))
+        .toEqual(700)
+  })
+
+  it('should calculate initial retirement benefit 2 months after FRA but in calendar year of FRA as PIA', () => {
+    let person:Person = new Person("A")
+    person.SSbirthDate = new MonthYearDate(1960, 7)//Born Aug 1960
+    person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA Aug 2027
+    person.PIA = 1000
+    let benefitDate = new MonthYearDate (2027, 9) //Benefit date 2 months after FRA
+    expect(service.calculateInitialRetirementBenefit(person, benefitDate))
+        .toEqual(person.PIA)
+  })
+
+  it('should calculate initial retirement benefit in calendar year following FRA using January of filing year', () => {
+    let person:Person = new Person("A")
+    person.SSbirthDate = new MonthYearDate(1960, 7)//Born Aug 1960
+    person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA Aug 2027
+    person.PIA = 1000
+    let benefitDate = new MonthYearDate (2028, 2) //Benefit date in March of year after FRA
+    expect(service.calculateInitialRetirementBenefit(person, benefitDate))
+        .toEqual(service.calculateRetirementBenefit(person, new MonthYearDate(2028, 0)))
+  })
+
+  it('should calculate initial retirement benefit using age 70 date when filing at 70', () => {
+    let person:Person = new Person("A")
+    person.SSbirthDate = new MonthYearDate(1960, 7)//Born Aug 1960
+    person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA Aug 2027
+    person.PIA = 1000
+    let benefitDate = new MonthYearDate (2030, 7) //Benefit date is age 70
+    expect(service.calculateInitialRetirementBenefit(person, benefitDate))
+        .toEqual(service.calculateRetirementBenefit(person, new MonthYearDate(2030, 7)))
+  })
+
+  it('should calculate initial retirement benefit using age 70 date when filing after 70', () => {
+    let person:Person = new Person("A")
+    person.SSbirthDate = new MonthYearDate(1960, 7)//Born Aug 1960
+    person.FRA = birthdayService.findFRA(person.SSbirthDate) //FRA Aug 2027
+    person.PIA = 1000
+    let benefitDate = new MonthYearDate (2030, 9) //Benefit date is age 70 and 2 months
+    expect(service.calculateInitialRetirementBenefit(person, benefitDate))
+        .toEqual(service.calculateRetirementBenefit(person, new MonthYearDate(2030, 7)))
+  })
+
     //testing determineChildBenefitDate()
     it('should return correct childBenefitDate in single scenario if child has filed', () => {
         let scenario:CalculationScenario = new CalculationScenario
