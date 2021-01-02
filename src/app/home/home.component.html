@@ -627,7 +627,8 @@
       <!--End "Other Inputs" such as discount rate and benefit cut assumptions -->
 
       <div>
-        <button type="submit" id="maximizeSubmit" class="btn btn-primary no-print" >Submit</button>
+        <button *ngIf="!(scenario.maritalStatus == 'single' && personA.initialAge >= 70)" type="submit" id="maximizeSubmit" class="btn btn-primary no-print" >Submit</button>
+        <p *ngIf="scenario.maritalStatus == 'single' && personA.initialAge >= 70" class="alert alert-danger">Since you are single and already age 70, there is nothing to calculate, as your filing decision has already been made. (If you haven't yet filed, you should file immediately.)</p>
       </div>
       <div class="statusMessage" *ngIf="this.statusMessage">{{this.statusMessage}}</div>
       <p *ngIf="!this.solutionSet.computationComplete && scenario.maritalStatus == 'married'">If you are married, your computer will have to do quite a lot of math. Depending on your browser and your computer's processor speed, this calculation may take up to a minute. Please be patient with your computer.</p>
