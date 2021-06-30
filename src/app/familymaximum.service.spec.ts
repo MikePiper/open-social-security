@@ -100,15 +100,15 @@ describe('FamilyMaximumService', () => {
       person.fixedRetirementBenefitDate = new MonthYearDate(2015, 5, 13)
       person.PIA = 2000
       expect(service.calculateFamilyMaximum(person, service.today).familyMaximum)
-          .toBeCloseTo(2977.46, 1)
+          .toBeCloseTo(3000, 1)
       //2017 COLA = 2%. 2016 COLA = 0.3%. 2015 COLA = 0.
       //2000 / 1.02 / 1.003 / 1  = 1954.92 <- PIAbeforeCOLAs
       //In 2015, PIA bend points were $826 and $4980
       //AIME = 1954.92/0.32 - 1.8125 * 826 = 4612
       //85% of AIME = 3920.2
       //family max (before COLAs) is lesser of 85% of AIME (3920.2) or 150% of PIAbeforeCOLA (2932.38) = 2932.38
-      //Now we add back COLAs (2000 - 1954.92 = 45.08)
-      //2932.38 + 45.08 = 2977.46
+      //Now we add back COLAs (2000/1954.92 = 1.02306)
+      //2932.38 * 1.02306 = 3000
     })
   
     it('calculateFamilyMaximum() should calculate family maximum appropriately based on normal retirement benefit', () => {

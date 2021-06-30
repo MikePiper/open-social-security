@@ -60,7 +60,8 @@ export class FamilyMaximumService {
             person.familyMaximum = PIAbeforeCOLAs
           }
       //Then we have to add COLAs back.
-          person.familyMaximum = person.familyMaximum + (person.PIA - PIAbeforeCOLAs)
+          person.familyMaximum = person.familyMaximum * (person.PIA / PIAbeforeCOLAs)
+
     }
     else {//i.e., person isn't disabled
     //Family max is 150% up to first bend point, 272% from first to second, 134% from second to third, 175% beyond that
