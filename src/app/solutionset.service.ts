@@ -425,12 +425,14 @@ export class SolutionSetService {
 
   generateChildInCareSpousalSuspensionClaimingSolution(person:Person, scenario:CalculationScenario):ClaimingSolution{
     let childInCareSpousalSuspensionSolution:ClaimingSolution
-    if (scenario.youngestChildTurns16date < person.FRA && scenario.disabledChild === false && person.childInCareSpousalBenefitDate < person.FRA){
-      //create childInCareSpousalSuspension
-      let ageOnYoungest16Date:number = this.birthdayService.findAgeOnDate(person, scenario.youngestChildTurns16date)
-      let ageYearsOnYoungest16Date:number = Math.floor(ageOnYoungest16Date)
-      let ageMonthsOnYoungest16Date:number = Math.round((ageOnYoungest16Date%1)*12)
-      childInCareSpousalSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "childInCareSpousalSuspension", person, scenario.youngestChildTurns16date, ageYearsOnYoungest16Date, ageMonthsOnYoungest16Date)
+    if (person.childInCareSpousal === true){
+      if (scenario.youngestChildTurns16date < person.FRA && scenario.disabledChild === false && person.childInCareSpousalBenefitDate < person.FRA){
+        //create childInCareSpousalSuspension
+        let ageOnYoungest16Date:number = this.birthdayService.findAgeOnDate(person, scenario.youngestChildTurns16date)
+        let ageYearsOnYoungest16Date:number = Math.floor(ageOnYoungest16Date)
+        let ageMonthsOnYoungest16Date:number = Math.round((ageOnYoungest16Date%1)*12)
+        childInCareSpousalSuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "childInCareSpousalSuspension", person, scenario.youngestChildTurns16date, ageYearsOnYoungest16Date, ageMonthsOnYoungest16Date)
+      }
     }
     if (childInCareSpousalSuspensionSolution) {return childInCareSpousalSuspensionSolution}
     else{return undefined}
@@ -439,12 +441,14 @@ export class SolutionSetService {
 
   generateAutomaticSpousalUnsuspensionClaimingSolution(person:Person, otherPerson:Person, scenario:CalculationScenario):ClaimingSolution{
     let automaticSpousalUnsuspensionSolution:ClaimingSolution
-    if (scenario.youngestChildTurns16date < person.FRA && scenario.disabledChild === false && person.childInCareSpousalBenefitDate < person.FRA){//if there was a suspension solution to begin with...
-      //create automaticSpousalUnsuspension. But only do so if:
-      //a) person.PIA < 50% of otherPerson.PIA or at person.FRA they would not be entitled to a retirement benefit, AND
-      //b) their regular spousalBenefitDate is not before FRA (i.e., they haven't started regular spousal benefits yet by FRA. They would have started regular spousal if they have applied for retirement benefits by FRA, because deemed filing would happen.)
-      if ((person.PIA < 0.5 * otherPerson.PIA || person.retirementBenefitDate > person.FRA) && person.spousalBenefitDate >= person.FRA){
-        automaticSpousalUnsuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "automaticSpousalUnsuspension", person, person.FRA, 0, 0)//message doesn't include age, so no need to calculate it
+    if (person.childInCareSpousal === true){
+      if (scenario.youngestChildTurns16date < person.FRA && scenario.disabledChild === false && person.childInCareSpousalBenefitDate < person.FRA){//if there was a suspension solution to begin with...
+        //create automaticSpousalUnsuspension. But only do so if:
+        //a) person.PIA < 50% of otherPerson.PIA or at person.FRA they would not be entitled to a retirement benefit, AND
+        //b) their regular spousalBenefitDate is not before FRA (i.e., they haven't started regular spousal benefits yet by FRA. They would have started regular spousal if they have applied for retirement benefits by FRA, because deemed filing would happen.)
+        if ((person.PIA < 0.5 * otherPerson.PIA || person.retirementBenefitDate > person.FRA) && person.spousalBenefitDate >= person.FRA){
+          automaticSpousalUnsuspensionSolution = new ClaimingSolution(scenario.maritalStatus, "automaticSpousalUnsuspension", person, person.FRA, 0, 0)//message doesn't include age, so no need to calculate it
+        }
       }
     }
     if (automaticSpousalUnsuspensionSolution){return automaticSpousalUnsuspensionSolution}
