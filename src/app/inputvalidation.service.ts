@@ -3,6 +3,8 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {ErrorCollection} from './data model classes/errorcollection'
 import {MonthYearDate} from "./data model classes/monthyearDate"
+import { BirthdayService } from './birthday.service'
+import { MortalityService } from './mortality.service'
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +16,7 @@ export class InputValidationService {
   sixMonthsAgo:MonthYearDate
   twelveMonthsAgo:MonthYearDate
 
-  constructor() {
+  constructor(private birthdayService:BirthdayService, private mortalityService:MortalityService) {
     this.setToday(new MonthYearDate())
   }
 
@@ -32,6 +34,8 @@ export class InputValidationService {
       errorCollection.personBfixedRetirementDateError ||
       errorCollection.personAfixedMotherFatherDateError ||
       errorCollection.personAfixedSurvivorDateError ||
+      errorCollection.personAassumedDeathAgeError ||
+      errorCollection.personBassumedDeathAgeError ||
       errorCollection.customPersonAretirementDateError ||
       errorCollection.customPersonBretirementDateError ||
       errorCollection.customPersonAspousalDateError ||
@@ -51,12 +55,39 @@ export class InputValidationService {
   }
 
   checkPrimaryFormInputsForErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person):ErrorCollection{
+    errorCollection = this.checkForAssumedDeathAgeErrors(errorCollection, personA, personB)
     errorCollection = this.checkForFixedRetirementDateErrors(errorCollection, scenario, personA, personB)
     errorCollection = this.checkForFixedSurvivorDateErrors(errorCollection, scenario, personA, personB)
     errorCollection = this.checkForFixedMotherFatherDateErrors(errorCollection, scenario, personA, personB)
 
     //Set hasErrors boolean
     errorCollection.hasErrors = this.checkErrorCollectionForErrors(errorCollection)
+
+    return errorCollection
+  }
+
+  checkForAssumedDeathAgeErrors(errorCollection:ErrorCollection, personA:Person, personB:Person):ErrorCollection{
+    //reset errors
+    errorCollection.personAassumedDeathAgeError = undefined
+    errorCollection.personBassumedDeathAgeError = undefined
+    //check for errors
+      //check if personA's assumed age of death is valid
+      if (personA.mortalityTable[0]== 1){//personA is using assumed age at death. (Mortality table has just 1 for every year, then 0 for age of death, whereas normal mortality table starts with 100,000 lives.)
+        let assumedAgeAtDeath = personA.mortalityTable.findIndex(index => index == 0)
+        let ageEndOfThisYear = Math.floor(this.birthdayService.findAgeOnDate(personA, new MonthYearDate(this.today.getFullYear(), 11)))
+        //make sure assumedAgeAtDeath is not younger than their age in December of this year
+        if (assumedAgeAtDeath < ageEndOfThisYear){
+          errorCollection.personAassumedDeathAgeError = "Assumed death age is too young. Please choose an age no earlier than this person's age at the end of this calendar year."
+        }
+      }
+      //Same for personB
+      if (personB.mortalityTable[0]== 1){
+        let assumedAgeAtDeath = personB.mortalityTable.findIndex(index => index == 0)
+        let ageEndOfThisYear = Math.floor(this.birthdayService.findAgeOnDate(personB, new MonthYearDate(this.today.getFullYear(), 11)))
+        if (assumedAgeAtDeath < ageEndOfThisYear){
+          errorCollection.personBassumedDeathAgeError = "Assumed death age is too young. Please choose an age no earlier than this person's age at the end of this calendar year."
+        }
+      }
 
     return errorCollection
   }

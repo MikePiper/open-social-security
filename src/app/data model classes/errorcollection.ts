@@ -5,6 +5,8 @@ export class ErrorCollection {
     personBfixedRetirementDateError:string
     personAfixedMotherFatherDateError:string
     personAfixedSurvivorDateError:string
+    personAassumedDeathAgeError:string
+    personBassumedDeathAgeError:string
 
 
     //error varibles relating to custom date form

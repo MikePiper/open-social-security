@@ -237,72 +237,6 @@
             </select>
             <span *ngIf="errorCollection.personAfixedRetirementDateError" class="alert alert-danger">{{errorCollection.personAfixedRetirementDateError}}</span>
         </div>
-        <!--End personA Already-Filed Inputs -->
-
-        <!--personA Non-covered Pension Inputs -->
-        <div *ngIf="this.advanced === true">
-          <label>Do you receive (or will you receive) a pension from employment that was not covered by Social Security taxes?</label>
-          <input type="radio" id="personAnonCoveredPensionYes" [(ngModel)]="personA.eligibleForNonCoveredPension" name="personA.eligibleForNonCoveredPension" [value]="true">
-          <label for="personAnonCoveredPensionYes">Yes</label>
-          <input type="radio" id="personAnonCoveredPensionNo" [(ngModel)]="personA.eligibleForNonCoveredPension" name="personA.eligibleForNonCoveredPension" [value]="false">
-          <label for="personAnonCoveredPensionNo">No</label>
-          <div *ngIf="personA.eligibleForNonCoveredPension === true">
-            <div class="form-inline">
-              <label>Month and year in which your pension begins (or began):</label>
-              <select class="form-control" [(ngModel)]="personAnonCoveredPensionMonth" name="personAnonCoveredPensionMonth" id="personAnonCoveredPensionMonth" required>
-                <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-              </select>
-              <select class="form-control" [(ngModel)]="personAnonCoveredPensionYear" name="personAnonCoveredPensionYear" required>
-                <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-              </select>
-            </div>
-            <span *ngIf="scenario.maritalStatus != 'single'">
-              <label for="personAgovernmentPension">Monthly government pension (from non-covered employment)</label>
-              <input type="number" [(ngModel)]="personA.governmentPension" name="personA.governmentPension" id="personAgovernmentPension" #personAgovernmentPension="ngModel" required pattern="[0-9]{1,7}">
-              <span *ngIf="personAgovernmentPension.invalid" class="alert alert-danger">digits only, please</span>
-            </span>
-            <div>
-              <label *ngIf="personA.isOnDisability === false" for="personAsecondaryPIAinput">PIA without WEP reduction</label>
-              <label *ngIf="personA.isOnDisability === true && personA.entitledToNonCoveredPension === true" for="personAsecondaryPIAinput">Amount of your disability benefit, without WEP reduction</label>
-              <label *ngIf="personA.isOnDisability === true && personA.entitledToNonCoveredPension === false" for="personAsecondaryPIAinput">Amount of your disability benefit, after WEP reduction kicks in</label>
-              <input type="number" [(ngModel)]="personAsecondaryPIAinput" name="personAsecondaryPIAinput" id="personAsecondaryPIAinput" #personAsecondPIAinput="ngModel" required pattern="[0-9]{1,7}">
-              <span *ngIf="personAsecondPIAinput.invalid" class="alert alert-danger">digits only, please</span>
-              <p *ngIf="personA.isOnDisability === false" class="inputexplanation">
-                If you are affected by the Windfall Elimination Provision (WEP), please enter your WEP-reduced PIA in the "PIA" field. Here, in the field for "PIA without WEP reduction," please enter
-                your PIA <em>without</em> the effect of the WEP. This allows the calculator to account for the fact that the WEP does not reduce your PIA a) until you begin receiving the pension
-                and b) when calculating survivor benefits on your work record. The SSA can calculate these two PIA amounts for you over the phone, or you can calculate them yourself with
-                the SSA's <a href="https://www.ssa.gov/planners/retire/anyPiaWepjs04.html" target="_blank">Online Calculator (WEP Version)</a>
-                or the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> offline calculator.
-              </p>
-              <p *ngIf="personA.isOnDisability === true && personA.entitledToNonCoveredPension === true" class="inputexplanation">
-                If you are affected by the Windfall Elimination Provision (WEP), please enter what your monthly disability benefit would be if it were not reduced by the WEP.
-                This allows the calculator to account for the fact that the WEP does not reduce your primary insurance amount (PIA) when calculating survivor benefits on your work record.
-                The SSA can calculate this amount for you over the phone, or you can calculate it yourself with
-                the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> calculator.
-              </p>
-              <p *ngIf="personA.isOnDisability === true && personA.entitledToNonCoveredPension === false" class="inputexplanation">
-                Please enter what your monthly disability benefit will be after it is reduced by the Windfall Elimination Provision (WEP).
-                This allows the calculator to account for the fact that the WEP does not reduce your primary insurance amount (PIA) until you begin receiving your pension from noncovered employment.
-                The SSA can calculate this amount for you over the phone, or you can calculate it yourself with
-                the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> calculator.
-              </p>
-            </div>
-          </div>
-        </div>    
-        <!--End personA Non-covered Pension Inputs -->
-
-        <!--Begin personA Mortality Inputs -->
-          <div *ngIf="this.advanced === true" class="form-inline">
-            <label>Mortality table</label>
-            <select [(ngModel)]="personAmortalityInput" name="personAmortalityInput" class="form-control">
-              <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
-              <option value="NS2">2017 CSO Nonsmoker Preferred</option>
-              <option value="SSA2017">2017 Social Security Period Life Table</option>
-              <option value="SM1">2017 CSO Smoker Preferred</option>
-              <option value="SM2">2017 CSO Smoker Residual Standard</option>
-              <option value="fixed">Assumed age at death</option>
-            </select>
-          </div>
           <span *ngIf="scenario.maritalStatus != 'single'">
             <label for="personAgovernmentPension">Monthly government pension (from non-covered employment)</label>
             <input type="number" [(ngModel)]="personA.governmentPension" name="personA.governmentPension" id="personAgovernmentPension" #personAgovernmentPension="ngModel" required pattern="[0-9]{1,7}">
@@ -355,6 +289,11 @@
           <label for="personAassumedDeathAge">Assumed age at death</label>
           <input type="number" [(ngModel)]="personAassumedDeathAge" id="personAassumedDeathAge" name="personAassumedDeathAge" #personAassumedDeathAgeInput="ngModel" required pattern="[0-9]{1,7}">
           <span *ngIf="personAassumedDeathAgeInput.invalid" class="alert alert-danger">whole numbers only, please</span>
+          <p class="inputexplanation">
+            For an assumed age at death, the calculator assumes that you live throughout the calendar year in question. (For example, if you were born on any date in 1960 and you input an assumed 
+            death age of 74, the calculator will assume you are alive throughout 2034 and deceased throughout 2035.)
+          </p>
+          <p *ngIf="errorCollection.personAassumedDeathAgeError" class="alert alert-danger">{{errorCollection.personAassumedDeathAgeError}}</p>
         </span>
         <p class="inputexplanation">
           <a [routerLink]="['about']" fragment="mortality" target="_blank">See the "About" page</a> for more information about
@@ -543,6 +482,14 @@
           <label for="personBassumedDeathAge">Assumed age at death</label>
           <input type="number" [(ngModel)]="personBassumedDeathAge" id="personBassumedDeathAge" name="personBassumedDeathAge" #personBassumedDeathAgeInput="ngModel" required pattern="[0-9]{1,7}">
           <span *ngIf="personBassumedDeathAgeInput.invalid" class="alert alert-danger">whole numbers only, please</span>
+          <p class="inputexplanation">
+            For an assumed age at death, the calculator assumes that your
+            <span *ngIf="scenario.maritalStatus == 'married'">spouse</span>
+            <span *ngIf="scenario.maritalStatus == 'divorced'">ex-spouse</span>
+            lives throughout the calendar year in question. (For example, if they were born on any date in 1960 and you input an assumed 
+            death age of 74, the calculator will assume they are alive throughout 2034 and deceased throughout 2035.)
+          </p>
+          <p *ngIf="errorCollection.personBassumedDeathAgeError" class="alert alert-danger">{{errorCollection.personBassumedDeathAgeError}}</p>
         </span>
         <!--End personB Mortality Inputs -->
 

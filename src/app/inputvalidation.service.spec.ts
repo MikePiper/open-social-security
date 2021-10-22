@@ -4,7 +4,8 @@ import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
 import {BirthdayService} from './birthday.service'
 import {MonthYearDate} from "./data model classes/monthyearDate"
-import { NonNullAssert } from '@angular/compiler'
+import { ErrorCollection } from './data model classes/errorcollection'
+import { MortalityService } from './mortality.service'
 
 function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdayService:BirthdayService){
   person.FRA = birthdayService.findFRA(person.SSbirthDate)
@@ -14,14 +15,16 @@ function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdaySe
 }
 
 
-describe('InputvalidationService', () => {
+fdescribe('InputvalidationService', () => {
   let birthdayService:BirthdayService
+  let mortalityService:MortalityService
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [InputValidationService, BirthdayService]
+      providers: [InputValidationService, BirthdayService, MortalityService]
     })
     birthdayService = TestBed.inject(BirthdayService)
+    mortalityService = TestBed.inject(MortalityService)
   })
 
   it('should be created', inject([InputValidationService], (service: InputValidationService) => {
@@ -416,5 +419,36 @@ describe('InputvalidationService', () => {
     mockGetPrimaryFormInputs(livingPerson, service.today, birthdayService)
     expect(service.checkValidMotherFatherInput(livingPerson, deceasedPerson, livingPerson.fixedMotherFatherBenefitDate))
       .toEqual("A mother/father benefit cannot be claimed prior to the deceased spouse's date of death.")
+  }))
+
+  it("should reject an assumed age at death that is younger than the person's age at the end of this year", inject([InputValidationService], (service: InputValidationService) => {
+    service.setToday(new MonthYearDate(2021, 9))//October 2021 writing this test
+    let errorCollection:ErrorCollection = new ErrorCollection() 
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
+    personA.SSbirthDate = new MonthYearDate (1956, 4)//Born May 1956, so they're 65 right now.
+    personB.SSbirthDate = new MonthYearDate (1956, 4)
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed", 64)//64 is too young for an assumed death age.
+    personB.mortalityTable = mortalityService.determineMortalityTable("female", "SSA", 0)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService)
+    expect(service.checkForAssumedDeathAgeErrors(errorCollection, personA, personB).personAassumedDeathAgeError)
+      .toEqual("Assumed death age is too young. Please choose an age no earlier than this person's age at the end of this calendar year.")
+  }))
+
+
+  it("should allow an assumed age at death that is equal to the person's age at the end of this year", inject([InputValidationService], (service: InputValidationService) => {
+    service.setToday(new MonthYearDate(2021, 9))//October 2021 writing this test
+    let errorCollection:ErrorCollection = new ErrorCollection() 
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
+    personA.SSbirthDate = new MonthYearDate (1956, 4)//Born May 1956, so they're 65 right now.
+    personB.SSbirthDate = new MonthYearDate (1956, 4)
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed", 65)//65 should be allowed as an assumed death age (i.e., dying end of this year).
+    personB.mortalityTable = mortalityService.determineMortalityTable("female", "SSA", 0)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService)
+    expect(service.checkForAssumedDeathAgeErrors(errorCollection, personA, personB).personAassumedDeathAgeError)
+      .toBeUndefined()
   }))
 });
