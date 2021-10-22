@@ -70,7 +70,6 @@ export class BenefitService {
     if (person.eligibleForNonCoveredPension === true){
       person.nonWEPretirementBenefit = retirementBenefit / person.PIA * person.nonWEP_PIA
     }
-
     return Number(retirementBenefit)
   }
 
@@ -180,7 +179,7 @@ export class BenefitService {
 
     //if ARF has happened, use adjusted date
     //If person is receiving disabled widow(er) benefits (pre-60), adjustedSurvivorBenefitDate is [age-60 month + ARF crediting months] rather than [survivorBenefitDate + ARF months]
-      if (livingPerson.adjustedSurvivorBenefitDate > livingPerson.survivorBenefitDate){
+      if (livingPerson.age >= this.birthdayService.findAgeOnDate(livingPerson, livingPerson.survivorFRA)){
         dateForCountingEarlyEntitlement = new MonthYearDate(livingPerson.adjustedSurvivorBenefitDate)
       }
 

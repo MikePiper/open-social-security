@@ -73,7 +73,7 @@ describe('test calculateSinglePersonPV', () => {
         person.retirementBenefitDate = new MonthYearDate(person.FRA) //filing at FRA, which is retroactive (note that this line has to come after mockGetPrimaryFormInputs, which sets the person's FRA)
         scenario.discountRate = 1 //1% discount rate
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(183581, 0)
+          .toBeCloseTo(180441, 0)
       })
     
       it('should return appropriate PV for single person, but with "still working" inputs and a different mortality table', () => { 
@@ -103,7 +103,7 @@ describe('test calculateSinglePersonPV', () => {
         person.endSuspensionDate = new MonthYearDate(2040, 8, 1)//Age 70
         scenario.discountRate = 1
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(119860, 0)//Point being, this is same PV as when somebody just waits until 70.
+          .toBeCloseTo(119370, 0)//Point being, this is same PV as when somebody just waits until 70.
       })
   
       it('should return appropriate PV for single person, a newborn child, no other complicating factors', () => {
@@ -139,7 +139,7 @@ describe('test calculateSinglePersonPV', () => {
         mockGetPrimaryFormInputs(person, scenario, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(317915, 0)
+          .toBeCloseTo(318780, 0)
       })
   
       it('should return appropriate PV for single person, newborn triplets, no other complicating factors (family max should give it same PV as prior test)', () => {
@@ -160,7 +160,7 @@ describe('test calculateSinglePersonPV', () => {
         mockGetPrimaryFormInputs(person, scenario, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-          .toBeCloseTo(317915, 0)
+          .toBeCloseTo(318780, 0)
       })
   
       it('should return appropriate PV for single person, adult disabled child, earnings test applicable, future benefit cut assumption', () => {
@@ -184,7 +184,7 @@ describe('test calculateSinglePersonPV', () => {
         mockGetPrimaryFormInputs(person, scenario, service.today, birthdayService, benefitService, mortalityService)
         person = familyMaximumService.calculateFamilyMaximum(person, service.today)
         expect(service.calculateSinglePersonPV(person, scenario, false).PV)
-        .toBeCloseTo(357059, 0)
+        .toBeCloseTo(356479, 0)
       })
   
       //Integration testing -- not actually testing the calculated PV itself
@@ -307,7 +307,7 @@ describe('tests calculateCouplePV', () => {
       personB.spousalBenefitDate = new MonthYearDate (2030, 3) //Later of two retirement benefit dates
       scenario.discountRate = 1
       expect(service.calculateCouplePV(personA, personB, scenario, false).PV)
-        .toBeCloseTo(334463, 0)
+        .toBeCloseTo(332609, 0)
       //no spousal for anybody.
       //Survivor beginning at 66 and 8 months (Dec 2026)
       //for personA, it's 82.5% of personB's PIA ($825). After reduction for own entitlement, it'll be $0.
@@ -410,7 +410,7 @@ describe('tests calculateCouplePV', () => {
       personA.governmentPension = 300
       scenario.discountRate = 1
       expect(service.calculateCouplePV(personA, personB, scenario, false).PV)
-        .toBeCloseTo(157996, 0)
+        .toBeCloseTo(158226, 0)
     })
   
     it('should return appropriate PV for married couple (where spousal benefits are zero), both file at FRA but suspend immediately until 70', () => {
@@ -464,7 +464,7 @@ describe('tests calculateCouplePV', () => {
       scenario.discountRate = 1
       personA.hasFiled = true //Doing this just so that it triggers the monthly "count benefit" loop
       expect(service.calculateCouplePV(personA, personB, scenario, false).PV)
-        .toBeCloseTo(400045, 0)//See "present value service" spreadsheet for a calculation of this figure. (Update: the spreadsheet though was discounting to 62 instead of to "today")
+        .toBeCloseTo(399022, 0)//See "present value service" spreadsheet for a calculation of this figure. (Update: the spreadsheet though was discounting to 62 instead of to "today")
     })
   
     it('should return appropriate PV for married couple (where spousal benefits are relevant). PersonB is disabled prior to 62. He suspends FRA to 70. Person A files at 70 for retirement and spousal.', () => { 
@@ -488,7 +488,7 @@ describe('tests calculateCouplePV', () => {
       personB.spousalBenefitDate = new MonthYearDate (2040, 0) //Later of two retirement benefit dates
       scenario.discountRate = 1
       expect(service.calculateCouplePV(personA, personB, scenario, false).PV)
-        .toBeCloseTo(623279, 0)//Went year-by-year checking benefit amounts. They're good.
+        .toBeCloseTo(621734, 0)//Went year-by-year checking benefit amounts. They're good.
     })
 
     it('should return appropriate PV for married couple, personB recently started retirement benefit, suspends 3 months from now until 70. personA filed two years ago.', () => { 
@@ -512,7 +512,7 @@ describe('tests calculateCouplePV', () => {
       personB.spousalBenefitDate = new MonthYearDate (2018, 6) //Later of two retirement benefit dates
       scenario.discountRate = 1
       expect(service.calculateCouplePV(personA, personB, scenario, false).PV)
-        .toBeCloseTo(467770, 0)
+        .toBeCloseTo(466050, 0)
     })
 
     it('should return appropriate PV for married couple, both currently age 63, filed already, not suspending, spousal benefit relevant.', () => { 
@@ -638,6 +638,7 @@ describe('tests calculateCouplePV', () => {
         personB.nonCoveredPensionDate = new MonthYearDate(2027, 0)//Just some date before personB's spousal benefit date, so GPO is applicable
         personB.governmentPension = 1000
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
+        console.log(claimStrategy)
         expect(claimStrategy.outputTable[2][0]).toEqual(2028)
         expect(claimStrategy.outputTable[2][5]).toEqual("$0")
       })
@@ -872,7 +873,7 @@ describe('tests calculateCouplePV', () => {
         personB.quitWorkDate = new MonthYearDate(2048, 0) //Working until Jan 2048
         personB.monthlyEarnings = 3000
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-        expect(claimStrategy.PV).toBeCloseTo(377220, 0)
+        expect(claimStrategy.PV).toBeCloseTo(376954, 0)
         //manual calculation
           //personA retirement benefit = 600 (75% due to filing 48 months early)
           //personB retirement benefit = 1733.3333 (86.666% of PIA due to filing 24 months early)
@@ -909,7 +910,7 @@ describe('tests calculateCouplePV', () => {
         personB.quitWorkDate = new MonthYearDate(2048, 0) //Working until Jan 2048
         personB.monthlyEarnings = 2800
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-        expect(claimStrategy.PV).toBeCloseTo(380003, 0)
+        expect(claimStrategy.PV).toBeCloseTo(379750, 0)
         //manual calculation
           //personA retirement benefit = 600 (75% due to filing 48 months early) 
           //personA spousal benefit (20 months early) = 86.111% * (2000/2 - 800) = $172.2222
@@ -950,7 +951,7 @@ describe('tests calculateCouplePV', () => {
         personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
         personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-        expect(claimStrategy.PV).toBeCloseTo(406206, 0)
+        expect(claimStrategy.PV).toBeCloseTo(403991, 0)
         //manual calculation
           //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
           //personB.familyMaximum = 900
@@ -1006,7 +1007,7 @@ describe('tests calculateCouplePV', () => {
         personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
         personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-        expect(claimStrategy.PV).toBeCloseTo(367748, 0)
+        expect(claimStrategy.PV).toBeCloseTo(365492, 0)
         //manual calculation:
           //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
           //personB.familyMaximum = 900
@@ -1067,7 +1068,7 @@ describe('tests calculateCouplePV', () => {
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
           let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-          expect(claimStrategy.PV).toBeCloseTo(467825, 0)
+          expect(claimStrategy.PV).toBeCloseTo(465958, 0)
           //manual calculation:
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900
@@ -1137,7 +1138,7 @@ describe('tests calculateCouplePV', () => {
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
           let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-          expect(claimStrategy.PV).toBeCloseTo(429664, 0)
+          expect(claimStrategy.PV).toBeCloseTo(427487, 0)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900
@@ -1189,7 +1190,7 @@ describe('tests calculateCouplePV', () => {
           personA = familyMaximumService.calculateFamilyMaximum(personA, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
           personB = familyMaximumService.calculateFamilyMaximum(personB, service.today)  //(It's normally calculated in maximize PV function so it doesn't get done over and over. This has to be after PIA named of course.)
           let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-          expect(claimStrategy.PV).toBeCloseTo(424414, 0)
+          expect(claimStrategy.PV).toBeCloseTo(422185, 0)
           //manual calculation
             //personA.familyMaximum = 2684.32 (150% up to $1144, 272% up to $1651)
             //personB.familyMaximum = 900

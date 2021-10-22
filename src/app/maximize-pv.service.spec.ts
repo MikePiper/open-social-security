@@ -338,11 +338,11 @@ describe('Tests for maximizeCouplePViterateBothPeople', () => {
     //If there *were* a suspension solution, it would have more than 2 items.
   })
 
-  it('should tell personA to file at 68, if they have higher PIA, personB has normal life expectancy, and they are using A-dies-at-68 assumption', () => {
+  it('should tell personA to file at assumed death age, if they have higher PIA, personB has normal life expectancy, and they are using A-dies-at-68 assumption', () => {
     service.setToday(new MonthYearDate(2018, 11)) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
     scenario.maritalStatus = "married"
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed", 68)
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0)
     personA.actualBirthDate = new Date(1960, 2, 11) //personA born in March 1960
     personA.SSbirthDate = new MonthYearDate(1960, 2, 1)
     personB.actualBirthDate = new Date(1960, 2, 15) //personB born in March 1960
@@ -354,10 +354,12 @@ describe('Tests for maximizeCouplePViterateBothPeople', () => {
     personA.quitWorkDate = new MonthYearDate(2015,3,1) //already quit working
     personB.quitWorkDate = new MonthYearDate(2015,3,1) //already quit working
     scenario.discountRate = 0
+    console.log(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray)
     expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[1].date)
-    .toEqual(new MonthYearDate(2028, 2, 1))
+    .toEqual(new MonthYearDate(2029, 0))
     //We're looking at item [1] in the array. This array should have 2 items in it: retirementDate for personA and retirement date for personB.
-    //personBs should be somewhere early-ish, while personA should wait as long as possible (age 68)
+    //personBs should be somewhere early-ish, while personA should wait as long as possible (assumed death date)
+      //Note that an assumed age at death of 68 means we assume they live through 2028, then die in Jan 2029.
   })
 
   it('should tell personA to suspend from FRA to 70, if personA is disabled, personA has higher PIA, both have normal life expectancies', () => {
@@ -1131,7 +1133,7 @@ describe('test functions that find earliest/latest dates', () => {
     personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed" , 69) 
     mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
     let expectedDate:MonthYearDate = service.findLatestRetirementBenefitDate(personA)
-    expect(expectedDate).toEqual(new MonthYearDate(2029, 7))
+    expect(expectedDate).toEqual(new MonthYearDate(2030, 0))//"Assumed death age of 69 means we assume they die in January of the year they would turn 70."
   })
 
   it('should correctly determine earliest survivorBenefitDate when survivor is not disabled, is over 60 but younger than FRA, and deceased person died 4 months ago', () => {

@@ -508,12 +508,12 @@ export class RangeComponent implements OnInit, AfterViewInit {
       this.personA.beginSuspensionDate = new MonthYearDate(selectedClaimStrategy.personABeginSuspensionDate)
       this.personA.endSuspensionDate = new MonthYearDate(selectedClaimStrategy.personAEndSuspensionDate)
       this.personA.spousalBenefitDate = new MonthYearDate(selectedClaimStrategy.personASpousalDate)
-      this.personA.survivorBenefitDate = new MonthYearDate(selectedClaimStrategy.personAsurvivorDate)
+      this.personA.survivorBenefitDate = new MonthYearDate(selectedClaimStrategy.personASurvivorDate)
       this.personB.retirementBenefitDate = new MonthYearDate(selectedClaimStrategy.personBRetirementDate)
       this.personB.beginSuspensionDate = new MonthYearDate(selectedClaimStrategy.personBBeginSuspensionDate)
       this.personB.endSuspensionDate = new MonthYearDate(selectedClaimStrategy.personBEndSuspensionDate)
       this.personB.spousalBenefitDate = new MonthYearDate(selectedClaimStrategy.personBSpousalDate)
-      this.personB.survivorBenefitDate = new MonthYearDate(selectedClaimStrategy.personBsurvivorDate)
+      this.personB.survivorBenefitDate = new MonthYearDate(selectedClaimStrategy.personBSurvivorDate)
 
       if (this.scenario.maritalStatus == "single"){
         solutionSet = this.solutionSetService.generateSingleSolutionSet(this.scenario, this.personA, this.range.pvArrays[this.currentCondition][row][col])

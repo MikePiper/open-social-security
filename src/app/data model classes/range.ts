@@ -305,7 +305,7 @@ export class Range {
             //if personA has no PIA, we index based on their spousal benefit (or survivor benefit if survivor scenario)
             if (claimStrategy.personA.PIA == 0){
                 if (claimStrategy.personB.dateOfDeath > claimStrategy.personB.SSbirthDate){//i.e., it's a survivor scenario
-                    indexDate = new MonthYearDate(claimStrategy.personAsurvivorDate)
+                    indexDate = new MonthYearDate(claimStrategy.personASurvivorDate)
                 }
                 else {
                     indexDate = new MonthYearDate(claimStrategy.personASpousalDate)
@@ -346,7 +346,7 @@ export class Range {
             //if personB is deceased, we Y-axis represents personA's survivorBenefitDate
             if (claimStrategy.personB.dateOfDeath > claimStrategy.personB.SSbirthDate && claimStrategy.personA.PIA > 0){
                 //We check that personA has a PIA here, because if they don't, we want this to be a 1-row Range, with indexing on x-axis based on survivordate. And so we want every claim strategy to have the same Y-index date. (In this case it will end up as personB.retirementBenefitDate, which is fine.)
-                indexDate = new MonthYearDate(claimStrategy.personAsurvivorDate)
+                indexDate = new MonthYearDate(claimStrategy.personASurvivorDate)
             }
             else {//i.e., it's not a survivor scenario
                 //if personB has no PIA, we index based on their spousal benefit

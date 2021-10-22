@@ -1,6 +1,5 @@
 import {Injectable} from '@angular/core'
 import {Person} from './data model classes/person'
-import { CalculationScenario } from './data model classes/calculationscenario';
 
 
 //This is defined here as a limited group of explicit options so that if something is ever input as a typo elsewhere (eg "SS2016") it will throw an error
@@ -13,13 +12,25 @@ export class MortalityService {
 
   constructor() { }
 
-  calculateProbabilityAlive(scenario:CalculationScenario, person:Person, age:number, otherPerson?:Person){//"age" here is age as of beginning of year in question. person.initialAgeRounded is rounded age as of date filling out form
+  calculateProbabilityAlive(person:Person, age:number){//"age" here is age as of beginning of year in question. person.initialAgeRounded is rounded age as of date filling out form
     //Calculate probability of being alive at end of age in question
-    let ageLastBirthday = Math.floor(age)
-    let probabilityAlive = //need probability of being alive at end of "currentCalculationDate" year
+    let ageLastBirthday:number = Math.floor(age)
+    let probabilityAlive:number = //need probability of being alive at end of "currentCalculationDate" year
       (person.mortalityTable[ageLastBirthday + 1] * (1 - (age%1)) //eg if user is 72 and 4 months at beginning of year, we want probability of living to end of 72 * 8/12 (because they're 72 for 8 months of year) and probability of living to end of 73 * (4/12)
     + person.mortalityTable[ageLastBirthday + 2] * (age%1))
     * person.baseMortalityFactor
+
+    //If using assumed age at death (mortality table has just 1 for every year, then 0 for age of death, whereas normal mortality table starts with 100,000 lives)
+    //Find that assumed age at death. Then see whether person is beyond that age and if so, set probability of being alive to 0. (We're assuming they live through the calendar year in which they reach assumed age of death.)
+    if (person.mortalityTable[0] == 1){
+      let assumedDeathAge:number = person.mortalityTable.findIndex(x => x == 0)
+      if (age > assumedDeathAge){
+        probabilityAlive = 0
+      }
+      else {
+        probabilityAlive = 1
+      }
+    }
 
     return Number(probabilityAlive)
   }
@@ -27,7 +38,7 @@ export class MortalityService {
 
   calculateBaseMortalityFactor(person:Person):number{
     let baseMortalityFactor:number
-    baseMortalityFactor = 1 / person.mortalityTable[person.initialAgeRounded]
+    baseMortalityFactor = 1 / person.mortalityTable[Math.floor(person.initialAge)]
     return baseMortalityFactor
   }
 
@@ -64,10 +75,10 @@ export class MortalityService {
     let yearInTable: number = 0
     let newMortTable: number[] = []
     while (yearInTable < 140 ) {
-      if (yearInTable <= deathAge) {
-        newMortTable.push(1) //Lives remaining at every year up to and including death age is 1 (100% probability alive)
+      if (yearInTable < deathAge) {
+        newMortTable.push(1) //Lives remaining at every year before death age is 1 (100% probability alive)
       } else {
-        newMortTable.push(0) //Lives remaining at every year after death age is 0 (0% probability alive) -- we're assuming they live to the end of input death age
+        newMortTable.push(0) //Lives remaining at every year beginning with death age is 0 (0% probability alive) -- we're assuming they die as soon as they reach death age
       }
       yearInTable = yearInTable + 1
     }

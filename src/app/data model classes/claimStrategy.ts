@@ -22,7 +22,7 @@ export class ClaimStrategy {
     personAchildInCareSpousalDate: MonthYearDate
     personABeginSuspensionDate: MonthYearDate
     personAEndSuspensionDate: MonthYearDate
-    personAsurvivorDate: MonthYearDate
+    personASurvivorDate: MonthYearDate
     personAmotherFatherDate: MonthYearDate
     
     personBRetirementDate: MonthYearDate
@@ -30,7 +30,7 @@ export class ClaimStrategy {
     personBchildInCareSpousalDate: MonthYearDate
     personBBeginSuspensionDate: MonthYearDate
     personBEndSuspensionDate: MonthYearDate
-    personBsurvivorDate: MonthYearDate
+    personBSurvivorDate: MonthYearDate
 
     PV: number = 0 //This is the present value calculated for the strategy, given the inputs used.
     pvNoCut: number = 0 //If user chooses to assume a benefit cut, this field is used to save what the PV of the strategy would be if there were NOT a cut, for the sake of the range component output
@@ -46,7 +46,7 @@ export class ClaimStrategy {
         if (personA.childInCareSpousalBenefitDate) {this.personAchildInCareSpousalDate = new MonthYearDate(personA.childInCareSpousalBenefitDate)}
         this.personABeginSuspensionDate = new MonthYearDate(personA.beginSuspensionDate)
         this.personAEndSuspensionDate = new MonthYearDate(personA.endSuspensionDate)
-        this.personAsurvivorDate = new MonthYearDate(personA.survivorBenefitDate)
+        this.personASurvivorDate = new MonthYearDate(personA.survivorBenefitDate)
         if (personA.motherFatherBenefitDate){this.personAmotherFatherDate = new MonthYearDate(personA.motherFatherBenefitDate)}
     
         if (personB) {
@@ -56,7 +56,7 @@ export class ClaimStrategy {
             if (personB.childInCareSpousalBenefitDate) {this.personBchildInCareSpousalDate  = new MonthYearDate(personB.childInCareSpousalBenefitDate)}
             this.personBBeginSuspensionDate = new MonthYearDate(personB.beginSuspensionDate)
             this.personBEndSuspensionDate = new MonthYearDate(personB.endSuspensionDate)
-            this.personBsurvivorDate = new MonthYearDate(personB.survivorBenefitDate)
+            this.personBSurvivorDate = new MonthYearDate(personB.survivorBenefitDate)
         }
     }
 

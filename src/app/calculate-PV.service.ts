@@ -132,15 +132,18 @@ export class CalculatePvService {
             this.benefitService.applyAssumedBenefitCut(scenario, calcYear)
           }
 
-          //If printOutputTable is true, add row to output table.
-            if (printOutputTable === true){
-              claimStrategy = this.outputTableService.generateOutputTableSingle(person, claimStrategy, scenario, calcYear)
-            }
-
           //Apply probability alive to annual benefit amounts
               //Calculate probability of being alive at end of age in question. (Have to use age-1 here because we want their age as of beginning of year.)
-          let probabilityPersonAlive:number = this.mortalityService.calculateProbabilityAlive(scenario, person, person.age-1)
-          calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * probabilityPersonAlive + calcYear.annualBenefitSinglePersonDeceased * (1 - probabilityPersonAlive)
+          calcYear.probabilityAalive = this.mortalityService.calculateProbabilityAlive(person, person.age-1)
+          calcYear.annualPV = calcYear.annualBenefitSinglePersonAlive * calcYear.probabilityAalive + calcYear.annualBenefitSinglePersonDeceased * (1 - calcYear.probabilityAalive)
+
+          //If printOutputTable is true, add row to output table.
+          // if (printOutputTable === true){
+          //   claimStrategy = this.outputTableService.generateOutputTableSingle(person, claimStrategy, scenario, calcYear)
+          // }
+          if (printOutputTable === true){
+            this.outputTableService.addRowToOutputTable(claimStrategy, scenario, calcYear, person)
+          }
 
           //Discount that probability-weighted annual benefit amount back to this year
           calcYear.annualPV = this.discountToPresentValue(scenario.discountRate, calcYear.annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
@@ -176,7 +179,7 @@ export class CalculatePvService {
   }
 
   calculateCouplePV(personA:Person, personB:Person, scenario:CalculationScenario, printOutputTable:boolean) : ClaimStrategy{
-    
+
     //Create ClaimStrategy object for saving PVs
       let claimStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
 
@@ -200,6 +203,7 @@ export class CalculatePvService {
     personA.adjustedSpousalBenefitDate = new MonthYearDate(personA.spousalBenefitDate)
     personB.adjustedRetirementBenefitDate = new MonthYearDate(personB.retirementBenefitDate)
     personB.adjustedSpousalBenefitDate = new MonthYearDate(personB.spousalBenefitDate)
+
     personA.adjustedSurvivorBenefitDate = new MonthYearDate(personA.survivorBenefitDate)
     personB.adjustedSurvivorBenefitDate = new MonthYearDate(personB.survivorBenefitDate)
     personA.DRCsViaSuspension = 0
@@ -331,41 +335,47 @@ export class CalculatePvService {
         //Add back any overwithholding from earnings test
         this.earningsTestService.addBackOverwithholding(calcYear, scenario, personA)
 
-            //If printOutputTable is true, add row to output table.
-              if (printOutputTable === true && scenario.maritalStatus == "married"){
-                claimStrategy = this.outputTableService.generateOutputTableCouple(personA, personB, claimStrategy, scenario, calcYear)
-              }
-              if (printOutputTable === true && scenario.maritalStatus == "divorced"){
-                claimStrategy = this.outputTableService.generateOutputTableDivorced(personA, claimStrategy, scenario, calcYear)
-              }
-              if (printOutputTable === true && scenario.maritalStatus == "survivor"){
-                claimStrategy = this.outputTableService.generateOutputTableSurvivor(personA, claimStrategy, scenario, calcYear)
-              }
+
 
             //Calculate each person's probability of being alive at end of age in question. (Have to use age-1 here because we want their age as of beginning of year.)
-              let probabilityAalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personA, personA.age-1, personB)
-              let probabilityBalive:number = this.mortalityService.calculateProbabilityAlive(scenario, personB, personB.age-1, personA)
-              if (scenario.maritalStatus == "survivor"){probabilityBalive = 0}
+              calcYear.probabilityAalive = this.mortalityService.calculateProbabilityAlive(personA, personA.age-1)
+              calcYear.probabilityBalive = this.mortalityService.calculateProbabilityAlive(personB, personB.age-1)
+              if (scenario.maritalStatus == "survivor"){calcYear.probabilityBalive = 0}
 
             //Apply probability alive to annual benefit amounts
               let annualPV:number =
-                probabilityAalive * probabilityBalive * calcYear.annualBenefitBothAlive +
-                probabilityAalive * (1 - probabilityBalive) * calcYear.annualBenefitOnlyPersonAalive +
-                probabilityBalive * (1 - probabilityAalive) * calcYear.annualBenefitOnlyPersonBalive +
-                (1 - probabilityAalive) * (1 - probabilityBalive) * calcYear.annualBenefitBothDeceased
+                calcYear.probabilityAalive * calcYear.probabilityBalive * calcYear.annualBenefitBothAlive +
+                calcYear.probabilityAalive * (1 - calcYear.probabilityBalive) * calcYear.annualBenefitOnlyPersonAalive +
+                calcYear.probabilityBalive * (1 - calcYear.probabilityAalive) * calcYear.annualBenefitOnlyPersonBalive +
+                (1 - calcYear.probabilityAalive) * (1 - calcYear.probabilityBalive) * calcYear.annualBenefitBothDeceased
 
+            //If printOutputTable is true, add row to output table.
+            if (printOutputTable === true){
+              this.outputTableService.addRowToOutputTable(claimStrategy, scenario, calcYear, personA, personB)
+            }
+              // if (printOutputTable === true && scenario.maritalStatus == "married"){
+              //   claimStrategy = this.outputTableService.generateOutputTableCouple(personA, personB, claimStrategy, scenario, calcYear)
+              // }
+              // if (printOutputTable === true && scenario.maritalStatus == "divorced"){
+              //   claimStrategy = this.outputTableService.generateOutputTableDivorced(personA, claimStrategy, scenario, calcYear)
+              // }
+              // if (printOutputTable === true && scenario.maritalStatus == "survivor"){
+              //   claimStrategy = this.outputTableService.generateOutputTableSurvivor(personA, claimStrategy, scenario, calcYear)
+              // }
 
             // if (printOutputTable === true){
-            //   console.log("monthly loop year: " + calcYear.date.getFullYear())
-            //   console.log("probability A alive: " + probabilityAalive)
-            //   console.log("probability B alive: " + probabilityBalive)
+            //   console.log(calcYear.date.getFullYear())
+            //   console.log("probability A alive: " + calcYear.probabilityAalive)
+            //   console.log("probability B alive: " + calcYear.probabilityBalive)
             //   console.log("undiscounted annualPV: " + annualPV)
             // }
 
             //Discount that probability-weighted annual benefit amount back to this year
               annualPV = this.discountToPresentValue(scenario.discountRate, annualPV, this.today.getFullYear(), calcYear.date.getFullYear())
 
+
                 // if (printOutputTable === true){
+
                 //   console.log(calcYear.date.getFullYear())
                 //   console.log("discounted annualPV: " + annualPV)
                 //   console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
@@ -764,6 +774,8 @@ export class CalculatePvService {
     return presentValue
   }
 
+
+
   applyDeductionsAndReductions(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personAaliveBoolean:boolean, personB:Person, personBaliveBoolean:boolean, printOutputTable:boolean){
     //See OrderOfReductions.txt for a discussion of the reasoning behind all this
     if (personAaliveBoolean === true && personBaliveBoolean === true){
@@ -839,7 +851,7 @@ export class CalculatePvService {
           //Redo family max application
             this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
           //Adjust survivor benefit for age (i.e., for early entitlement of still-living person, if applicable)
-            personA = this.benefitService.adjustSurvivorBenefitsForAge(scenario, personB)
+            personB = this.benefitService.adjustSurvivorBenefitsForAge(scenario, personB)
           //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
             this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
           //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement

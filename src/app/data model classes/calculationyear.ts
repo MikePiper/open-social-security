@@ -15,6 +15,9 @@ export class CalculationYear {
     personAgraceYear: boolean = false
     personBgraceYear: boolean = false
 
+    probabilityAalive: number
+    probabilityBalive: number
+
     //Sums for calculating PV (lumps everybody's total benefit amount into one sum, per mortality scenario)
     annualBenefitSinglePersonAlive: number = 0
     annualBenefitSinglePersonDeceased: number = 0

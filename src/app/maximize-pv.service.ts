@@ -110,9 +110,9 @@ export class MaximizePVService {
         personA = this.adjustSpousalBenefitDate(personA, personB, scenario)
         personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
   
-      //Set survivorBenefitDate fields to survivorFRA. (We're just assuming here that nobody files for survivor benefits early.)
-        personA.survivorBenefitDate = new MonthYearDate(personA.survivorFRA)
-        personB.survivorBenefitDate = new MonthYearDate(personB.survivorFRA)
+      //Set survivorBenefitDate fields to survivorFRA, unless there's deemed filing for survivor benefit via assumed death age scenario.
+        personA = this.checkForDeemedSurvivorBenefitDate(personA, personB, scenario)
+        personB = this.checkForDeemedSurvivorBenefitDate(personB, personA, scenario)
   
       //Initialize savedStrategy, with zero PV, using personA's and personB's current dates
         let savedStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
@@ -154,6 +154,9 @@ export class MaximizePVService {
           //After personB's retirementBenefitDate has been reset, reset spousal dates as necessary for personA and personB
             personA = this.adjustSpousalBenefitDate(personA, personB, scenario)
             personB = this.adjustSpousalBenefitDate(personB, personA, scenario)
+          //And reset survivorBenefitDates as necessary, based on retirement and spousal dates
+            personA = this.checkForDeemedSurvivorBenefitDate(personA, personB, scenario)
+            personB = this.checkForDeemedSurvivorBenefitDate(personB, personA, scenario)
   
           while (personB.retirementBenefitDate <= spouseBendTestDate && personB.endSuspensionDate <= spouseBendTestDate) {
             //Calculate PV using current testDates
@@ -175,6 +178,9 @@ export class MaximizePVService {
             //After personB's retirement/spousal dates have been incremented, adjust personA's spousal date as necessary
               personA = this.adjustSpousalBenefitDate(personA, personB, scenario)
   
+            //And set survivorBenefitDate fields as necessary, based on retirement and spousal dates
+              personA = this.checkForDeemedSurvivorBenefitDate(personA, personB, scenario)
+              personB = this.checkForDeemedSurvivorBenefitDate(personB, personA, scenario)
           }
           //Increment personA's retirementBenefitDate
             personA = this.incrementRetirementORendSuspensionDate(personA)
@@ -183,11 +189,13 @@ export class MaximizePVService {
       //after loop is finished, set person objects' benefit dates to the saved dates, for sake of running PV calc again for outputTable
         personA.retirementBenefitDate = new MonthYearDate(savedStrategy.personARetirementDate)
         personA.spousalBenefitDate = new MonthYearDate(savedStrategy.personASpousalDate)
+        personA.survivorBenefitDate = new MonthYearDate(savedStrategy.personASurvivorDate)
         if (savedStrategy.personAchildInCareSpousalDate) {personA.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personAchildInCareSpousalDate)}
         personA.beginSuspensionDate = new MonthYearDate(savedStrategy.personABeginSuspensionDate)
         personA.endSuspensionDate = new MonthYearDate(savedStrategy.personAEndSuspensionDate)
         personB.retirementBenefitDate = new MonthYearDate(savedStrategy.personBRetirementDate)
         personB.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
+        personB.survivorBenefitDate = new MonthYearDate(savedStrategy.personBSurvivorDate)
         if (savedStrategy.personBchildInCareSpousalDate) {personB.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personBchildInCareSpousalDate)}
         personB.beginSuspensionDate = new MonthYearDate(savedStrategy.personBBeginSuspensionDate)
         personB.endSuspensionDate = new MonthYearDate(savedStrategy.personBEndSuspensionDate)
@@ -223,9 +231,9 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       flexibleSpouse = this.adjustSpousalBenefitDate(flexibleSpouse, fixedSpouse, scenario)
       fixedSpouse = this.adjustSpousalBenefitDate(fixedSpouse, flexibleSpouse, scenario)
 
-    //Set survivorBenefitDate fields to survivorFRA. (We're just assuming here that nobody files for survivor benefits early.)
-      flexibleSpouse.survivorBenefitDate = new MonthYearDate(flexibleSpouse.survivorFRA)
-      fixedSpouse.survivorBenefitDate = new MonthYearDate(fixedSpouse.survivorFRA)
+    //Set survivorBenefitDate fields to survivorFRA, unless there's deemed filing for survivor benefit via assumed death age scenario.
+        flexibleSpouse = this.checkForDeemedSurvivorBenefitDate(flexibleSpouse, fixedSpouse, scenario)
+        fixedSpouse = this.checkForDeemedSurvivorBenefitDate(fixedSpouse, flexibleSpouse, scenario)
 
     //Initialize savedStrategy, with zero PV, using each spouse's current dates
     let savedStrategy:ClaimStrategy
@@ -277,6 +285,9 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         flexibleSpouse = this.adjustSpousalBenefitDate(flexibleSpouse, fixedSpouse, scenario)
         fixedSpouse = this.adjustSpousalBenefitDate(fixedSpouse, flexibleSpouse, scenario)
 
+      //Set survivorBenefitDate fields as applicable, based on retirement and spousal benefit dates
+        flexibleSpouse = this.checkForDeemedSurvivorBenefitDate(flexibleSpouse, fixedSpouse, scenario)
+        fixedSpouse = this.checkForDeemedSurvivorBenefitDate(fixedSpouse, flexibleSpouse, scenario)
     }
 
       //after loop is finished, set person objects' benefit dates to the saved dates, for sake of running PV calc again for outputTable
@@ -284,6 +295,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         flexibleSpouse.retirementBenefitDate = new MonthYearDate(savedStrategy.personARetirementDate)
         flexibleSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personASpousalDate)
         flexibleSpouse.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personAchildInCareSpousalDate)
+        flexibleSpouse.survivorBenefitDate = new MonthYearDate(savedStrategy.personASurvivorDate)
         flexibleSpouse.beginSuspensionDate = new MonthYearDate(savedStrategy.personABeginSuspensionDate)
         flexibleSpouse.endSuspensionDate = new MonthYearDate(savedStrategy.personAEndSuspensionDate)
         fixedSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
@@ -294,6 +306,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         flexibleSpouse.retirementBenefitDate = new MonthYearDate(savedStrategy.personBRetirementDate)
         flexibleSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
         flexibleSpouse.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personBchildInCareSpousalDate)
+        flexibleSpouse.survivorBenefitDate = new MonthYearDate(savedStrategy.personBSurvivorDate)
         flexibleSpouse.beginSuspensionDate = new MonthYearDate(savedStrategy.personBBeginSuspensionDate)
         flexibleSpouse.endSuspensionDate = new MonthYearDate(savedStrategy.personBEndSuspensionDate)
         fixedSpouse.spousalBenefitDate = new MonthYearDate(savedStrategy.personASpousalDate)
@@ -414,7 +427,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         personA.childInCareSpousalBenefitDate = new MonthYearDate(savedStrategy.personAchildInCareSpousalDate)
         personA.beginSuspensionDate = new MonthYearDate(savedStrategy.personABeginSuspensionDate)
         personA.endSuspensionDate = new MonthYearDate(savedStrategy.personAEndSuspensionDate)
-        personA.survivorBenefitDate = new MonthYearDate(savedStrategy.personAsurvivorDate)
+        personA.survivorBenefitDate = new MonthYearDate(savedStrategy.personASurvivorDate)
         //No need to set personA.motherFatherBenefitDate again, since it was never varied.
         personB.retirementBenefitDate = new MonthYearDate(savedStrategy.personBRetirementDate)
         personB.spousalBenefitDate = new MonthYearDate(savedStrategy.personBSpousalDate)
@@ -548,6 +561,28 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       return person
     }
 
+    checkForDeemedSurvivorBenefitDate(person:Person, otherPerson:Person, scenario:CalculationScenario):Person{
+      if (scenario.maritalStatus == "married" || scenario.maritalStatus == "divorced"){//We don't want to mess with this in a situation in which the person is already a widow/widower.
+        let survivorBenefitDate:MonthYearDate = new MonthYearDate(person.survivorFRA)
+        let assumedDeathDate:MonthYearDate
+          if (otherPerson.mortalityTable[0]== 1){//otherPerson is using assumed age at death. (Mortality table has just 1 for every year, then 0 for age of death, whereas normal mortality table starts with 100,000 lives.)
+            //find assumed death date
+            let assumedAgeAtDeath = otherPerson.mortalityTable.findIndex(index => index == 0)
+            assumedDeathDate = new MonthYearDate(otherPerson.SSbirthDate.getFullYear() + assumedAgeAtDeath + 1, 0)//We assume they die in January of the following year (i.e., they live through the calendar year in question).
+          }
+            //if person is already entitled to spousal prior to assumedDeathDate...
+            if (person.spousalBenefitDate < assumedDeathDate && otherPerson.retirementBenefitDate <= assumedDeathDate && (person.PIA < 0.5 * otherPerson.PIA || person.retirementBenefitDate > assumedDeathDate)){
+              //and person is not entitled to disability and not entitled to retirement (i.e., has no PIA or retirementBenefitDate is after date of death)
+              if (person.isOnDisability === false && (person.PIA == 0 || person.retirementBenefitDate > assumedDeathDate)){
+                //Then person is deemed to file survivor benefits at assumedDeathDate.
+                survivorBenefitDate = new MonthYearDate(assumedDeathDate)
+              }
+            }
+            person.survivorBenefitDate = new MonthYearDate(survivorBenefitDate)
+      }
+      return person
+    }
+
     incrementRetirementORendSuspensionDate(person:Person) : Person {
       if (person.isOnDisability === true) {
         person.endSuspensionDate.setMonth(person.endSuspensionDate.getMonth()+1)
@@ -583,12 +618,12 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
     }
 
     findLatestRetirementBenefitDate(person:Person):MonthYearDate{
-      //the month they turn 70, or if using fixed-death-age-assumption younger than 70, set to assumed month of death
+      //the month they turn 70, or if using fixed-death-age-assumption younger than 70, set to assumed month of death (We assume they live through the calendar year with the input death age.)
       let latestRetirementBenefitDate:MonthYearDate
       latestRetirementBenefitDate = new MonthYearDate(person.SSbirthDate.getFullYear()+70, person.SSbirthDate.getMonth())
       if (person.mortalityTable[70] == 0) {
-        let deceasedByAge:number = person.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69. But we want last possible filing date suggested to be 68, so we subtract 1 in following line.
-        latestRetirementBenefitDate = new MonthYearDate(person.SSbirthDate.getFullYear()+deceasedByAge-1, person.SSbirthDate.getMonth())
+        let deceasedByAge:number = person.mortalityTable.findIndex(item => item == 0)
+        latestRetirementBenefitDate = new MonthYearDate(person.SSbirthDate.getFullYear() + deceasedByAge + 1, 0)
       }
       return latestRetirementBenefitDate
     }
@@ -642,6 +677,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       }
       return latestSurvivorBenefitDate
     }
+
 
     findEarliestMotherFatherBenefitDate(deceasedPerson:Person, scenario:CalculationScenario):MonthYearDate{
       let motherFatherBenefitDate:MonthYearDate
@@ -708,8 +744,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       }
       //If using fixed-death-age-assumption younger than 70, don't let lastDate be later than assumed month of death
       if (person.mortalityTable[70] == 0) {
-        let deceasedByAge:number = person.mortalityTable.findIndex(item => item == 0) //If they chose assumed death at 68, "deceasedByAge" will be 69. But we want last possible filing date suggested to be 68, so we subtract 1 in following line.
-        let noLaterThanThisDate = new MonthYearDate(person.SSbirthDate.getFullYear()+deceasedByAge-1, person.SSbirthDate.getMonth())
+        let deceasedByAge:number = person.mortalityTable.findIndex(item => item == 0)
+        let noLaterThanThisDate = new MonthYearDate(person.SSbirthDate.getFullYear() + deceasedByAge + 1, 0)//We assume they live through the year that includes deceased by age, then die in following January.
         if (lastDate > noLaterThanThisDate){
           lastDate = new MonthYearDate(noLaterThanThisDate)
         }
