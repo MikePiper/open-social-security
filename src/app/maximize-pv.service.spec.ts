@@ -1229,4 +1229,58 @@ describe('test functions that find earliest/latest dates', () => {
     let expectedDate:MonthYearDate = service.findEarliestMotherFatherBenefitDate(personB, scenario)
     expect(expectedDate).toEqual(new MonthYearDate(2020, 4))
   })
+
 })
+
+  describe('test checkForDeemedSurvivorBenefitDate()', () => {
+    let service:MaximizePVService
+    let benefitService:BenefitService
+    let mortalityService:MortalityService
+    let birthdayService:BirthdayService
+    let scenario:CalculationScenario
+    let personA:Person
+    let personB:Person
+    beforeEach(() => {
+      TestBed.configureTestingModule({
+        providers: [CalculatePvService, BenefitService, EarningsTestService, SolutionSetService, MortalityService, BirthdayService]
+      })
+      service = TestBed.inject(MaximizePVService)
+      benefitService = TestBed.inject(BenefitService)
+      mortalityService = TestBed.inject(MortalityService)
+      birthdayService = TestBed.inject(BirthdayService)
+      scenario = new CalculationScenario()
+      personA = new Person("A")
+      personB = new Person("B")
+    })
+  
+      //Testing married calculation, where one person is using assumed age at death, which triggers deemed filing for the other person
+      //Testing the output table here basically, as well as that the deemed filing check works -- and the resulting benefit calculations.
+      it ('should calculate survivor benefit appropriately, in deemed survivor filing situation', () => {
+        service.setToday(new MonthYearDate(2021, 9))//Oct 2021 when creating this test
+        scenario.maritalStatus = "married"
+        scenario.discountRate = 2 //2% discount rate and shortish life expectancy for the wife, so she should file for spousal early
+        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed", 72)//Dies at age 72, which means we're assuming he's alive through 2023 and dead throughout 2024.
+        personB.mortalityTable = mortalityService.determineMortalityTable("female", "SM2", 0)
+        personA.SSbirthDate = new MonthYearDate(1951, 8)//Born Sept 1951
+        personB.SSbirthDate = new MonthYearDate(1958, 3)//Wife is several years younger, so she's 65 and 9 months when husband dies in Jan 2024.
+        personA.actualBirthDate = new Date(1951, 8, 5)
+        personB.actualBirthDate = new Date(1958, 3, 5)
+        personA.PIA = 1000
+        personB.PIA = 0 //She has no PIA, so she is not entitled to a retirement benefit, and therefore deemed survivor will occur if she has started her spousal.
+        personA.fixedRetirementBenefitDate = new MonthYearDate(2021, 8) //filed at 70
+        mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
+        mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
+        let results = service.maximizeCouplePViterateOnePerson(scenario, personB, personA)
+        //FRA of 66, filing at 70, so he gets 132% of his PIA per month. $1320.
+        //If she hasn't filed yet, it should tell her to file now (October 2021). So she'll be 63 and 6 months at that time. Her FRA is 66 and 8 months. So that's 38 months early.
+        //So she gets 74.16666% of 50% of his PIA, or $370.83 per month.
+        expect(results.claimStrategy.outputTable[0]).toEqual([2021, "$5,280", "$0", "$0", "$0", "$1,113", "$0", "$6,393"])
+        expect(results.claimStrategy.outputTable[1]).toEqual([2022, "$15,840", "$0", "$0", "$0", "$4,450", "$0", "$20,290"])
+        expect(results.claimStrategy.outputTable[2]).toEqual([2023, "$15,840", "$0", "$0", "$0", "$4,450", "$0", "$20,290"])
+        //Then she has a deemed filing for survivor benfits in January of 2024. She'll be 65 and 9 months at that time.
+        //Her survivor FRA is 66 and 4 months. So that's 7 months early. Out of a possible 76 months.
+        // 7/76 * 0.285 = 0.02625. So that's the percentage reduction. 0.02625 * $1320 = $34.65. So she gets $1,285.35 survivor per month.
+        expect(results.claimStrategy.outputTable[3]).toEqual([2024, "$0", "$0", "$0", "$0", "$0", "$15,424", "$15,424"])
+      })
+
+    })
