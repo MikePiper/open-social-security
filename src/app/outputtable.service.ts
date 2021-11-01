@@ -127,7 +127,9 @@ export class OutputTableService {
             arrayForCalcYear = []
         }
         else if (scenario.maritalStatus == "married" || scenario.maritalStatus == "divorced") {//scenario is married or divorced
-          //Do "personAalivePersonBdeceased"
+          //Only include "If you outlive your spouse" and "if your spouse outlives you" rows in cases in which neither person is using assumed death age.
+          if (personA.mortalityTable[0] > 1 && personB.mortalityTable[0] > 1) {
+            //Do "personAalivePersonBdeceased"
             //Push label string
             if (scenario.maritalStatus == "married") {arrayForCalcYear.push("If you outlive your spouse")}
             else {arrayForCalcYear.push("If you outlive your ex-spouse")}
@@ -147,7 +149,8 @@ export class OutputTableService {
             //Add row to output table, then reset arrayForCalcYear
             claimStrategy.outputTable.push(arrayForCalcYear)
             arrayForCalcYear = []
-          //Do "personAandPersonBdeceased"
+          }
+          //Do "personAandPersonBdeceased" if there are children
             if (scenario.children.length > 0) {
               //Push label string
               if (scenario.maritalStatus == "married") {arrayForCalcYear.push("After both you and your spouse are deceased")}

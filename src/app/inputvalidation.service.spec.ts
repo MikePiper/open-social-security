@@ -15,7 +15,7 @@ function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdaySe
 }
 
 
-fdescribe('InputvalidationService', () => {
+describe('InputvalidationService', () => {
   let birthdayService:BirthdayService
   let mortalityService:MortalityService
 

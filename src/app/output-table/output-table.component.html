@@ -5,12 +5,19 @@
     </p>
   </span>
 <span *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">
-  <p>
-      The following table shows what your year-by-year benefit amounts would be <em>if</em> both people are still alive throughout the year in question.
-      The survivor benefit amounts at the bottom of the table assume that
-      a) the deceased person lived at least until the age at which they planned to file for their retirement benefit and that
-      b) the surviving person waits at least until their full retirement age to file for a survivor benefit.
-  </p>
+  <!-- If both people are using regular mortality tables, explain significance of table output-->
+    <p *ngIf="personA.mortalityTable[0] > 1 && personB.mortalityTable[0] > 1">
+        The following table shows what your year-by-year benefit amounts would be <em>if</em> both people are still alive throughout the year in question.
+        The survivor benefit amounts at the bottom of the table assume that
+        a) the deceased person lived at least until the age at which they planned to file for their retirement benefit and that
+        b) the surviving person waits at least until their full retirement age to file for a survivor benefit.
+    </p>
+  <!-- If one person is using regular mortality tables, explain significance of table output-->
+    <p *ngIf="(personA.mortalityTable[0] == 1 && personB.mortalityTable[0] > 1) || (personA.mortalityTable[0] > 1 && personB.mortalityTable[0] == 1)">
+      The following table shows year-by-year benefit amounts. Note that in cases in which one person (and only one person) is using an assumed death age,
+      this table shows what the benefit amounts would be if the <em>other</em> person lives at least beyond that point.
+    </p>
+  <!-- If neither person is using regular mortality table (i.e., both using assumed death age), table should be pretty self-explanatory. -->
 </span>
 <div class="table-responsive">
   <table class="table-bordered table-striped">
@@ -33,3 +40,5 @@
       </tr>
   </table>
 </div>
+
+
