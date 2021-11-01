@@ -1,4 +1,5 @@
 import {Injectable} from '@angular/core'
+import { MonthYearDate } from './data model classes/monthyearDate'
 import {Person} from './data model classes/person'
 
 
@@ -83,6 +84,29 @@ export class MortalityService {
       yearInTable = yearInTable + 1
     }
     return newMortTable
+  }
+
+  findAssumedDeathAge(person:Person):number{
+    //If person isn't using an assumed death age, return undefined
+    if (person.mortalityTable[0] > 1){
+      return undefined
+    }
+    else {
+      return person.mortalityTable.findIndex(index => index == 0)
+    }
+  }
+
+  findAssumedDeathDate(person:Person):MonthYearDate{
+    //If person isn't using an assumed death age, return undefined
+    if (person.mortalityTable[0] > 1){
+      return undefined
+    }
+    else {
+      let assumedDeathDate:MonthYearDate
+      let assumedDeathAge:number = this.findAssumedDeathAge(person)
+      assumedDeathDate = new MonthYearDate(person.SSbirthDate.getFullYear() + assumedDeathAge + 1, 0)//We assume they die in January of the following year (i.e., they live through the calendar year in question).
+      return assumedDeathDate
+    }
   }
 
 //Lives remaining out of 100k, from SSA 2017 period life table

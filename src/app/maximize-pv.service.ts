@@ -9,6 +9,7 @@ import {FamilyMaximumService} from './familymaximum.service'
 import {BirthdayService} from './birthday.service'
 import { ClaimStrategy } from './data model classes/claimStrategy'
 import { CalculatePvService } from './calculate-PV.service'
+import { MortalityService } from './mortality.service'
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,7 @@ export class MaximizePVService {
   twelveMonthsAgo:MonthYearDate
 
   constructor(private calculatePVservice:CalculatePvService, private birthdayService:BirthdayService, private familyMaximumService:FamilyMaximumService,
-    private solutionSetService: SolutionSetService) {
+    private mortalityService:MortalityService, private solutionSetService: SolutionSetService) {
       this.setToday(new MonthYearDate())
     }
 
@@ -566,9 +567,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         let survivorBenefitDate:MonthYearDate = new MonthYearDate(person.survivorFRA)
         let assumedDeathDate:MonthYearDate
           if (otherPerson.mortalityTable[0]== 1){//otherPerson is using assumed age at death. (Mortality table has just 1 for every year, then 0 for age of death, whereas normal mortality table starts with 100,000 lives.)
-            //find assumed death date
-            let assumedAgeAtDeath = otherPerson.mortalityTable.findIndex(index => index == 0)
-            assumedDeathDate = new MonthYearDate(otherPerson.SSbirthDate.getFullYear() + assumedAgeAtDeath + 1, 0)//We assume they die in January of the following year (i.e., they live through the calendar year in question).
+            assumedDeathDate = this.mortalityService.findAssumedDeathDate(otherPerson)
           }
             //if person is already entitled to spousal prior to assumedDeathDate...
             if (person.spousalBenefitDate < assumedDeathDate && otherPerson.retirementBenefitDate <= assumedDeathDate && (person.PIA < 0.5 * otherPerson.PIA || person.retirementBenefitDate > assumedDeathDate)){
