@@ -7,13 +7,19 @@ import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import { BirthdayService } from './birthday.service';
 import { ClaimStrategy } from './data model classes/claimStrategy'
+import { MortalityService } from './mortality.service'
 
 
 describe('SolutionSetService', () => {
+  let service: SolutionSetService
+  let mortalityService:MortalityService
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [SolutionSetService, SolutionSet, BenefitService, BirthdayService]
+      providers: [SolutionSetService, SolutionSet, BenefitService, BirthdayService, MortalityService]
     })
+    service = TestBed.inject(SolutionSetService)
+    mortalityService = TestBed.inject(MortalityService)
+
   })
 
   it('should be created', inject([SolutionSetService], (service: SolutionSetService) => {
@@ -22,7 +28,7 @@ describe('SolutionSetService', () => {
 
 
 //Test generateSingleSolutionSet
-  it('SolutionSet object should have PV that was passed in', inject([SolutionSetService], (service: SolutionSetService) => {
+  it('SolutionSet object should have PV that was passed in', () => {
     let person:Person = new Person("A")
     let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "single"
@@ -34,9 +40,9 @@ describe('SolutionSetService', () => {
     person.retirementBenefitDate = new MonthYearDate(2029, 5, 1) //2 years and 2 months after FRA, for no particular reason
     expect(service.generateSingleSolutionSet(scenario, person, claimStrategy).claimStrategy.PV)
       .toEqual(180000)
-  }))
+  })
 
-  it('SolutionSet object should have appropriate date saved', inject([SolutionSetService], (service: SolutionSetService) => {
+  it('SolutionSet object should have appropriate date saved', () => {
     let person:Person = new Person("A") 
     let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "single"
@@ -52,11 +58,11 @@ describe('SolutionSetService', () => {
       .toEqual(person.retirementBenefitDate)
     expect(service.generateSingleSolutionSet(scenario, person, claimStrategy).solutionsArray[0].date)
       .not.toEqual(wrongDate)
-  }))
+  })
   
 
   //test generateCoupleSolutionSet
-  it('SolutionSet object should have appropriate date saved as earliest date', inject([SolutionSetService], (service: SolutionSetService) => {
+  it('SolutionSet object should have appropriate date saved as earliest date', () => {
     let personA:Person = new Person("A")
     let personB:Person = new Person("B")
     let scenario:CalculationScenario = new CalculationScenario()
@@ -67,6 +73,8 @@ describe('SolutionSetService', () => {
     personB.FRA = new MonthYearDate(2027, 3, 1) //FRA April 1, 2027
     personA.survivorFRA = new MonthYearDate(2026, 7) //Survivor FRA of August 2026 (66 years and 8 months)
     personB.survivorFRA = new MonthYearDate(2026, 7) //Survivor FRA of August 2026 (66 years and 8 months)
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed" , 69) 
+    personB.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed" , 69) 
     personA.PIA = 1200
     personB.PIA = 1900
     personA.initialAge = 58
@@ -85,7 +93,7 @@ describe('SolutionSetService', () => {
     personB.governmentPension = 0
     expect(service.generateCoupleSolutionSet(scenario, personA, personB, claimStrategy).solutionsArray[0].date)
       .toEqual(personB.retirementBenefitDate)
-  }))
+  })
 
 
 })

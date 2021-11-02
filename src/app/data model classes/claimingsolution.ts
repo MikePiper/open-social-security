@@ -3,7 +3,7 @@ import {MonthYearDate} from "./monthyearDate"
 
 //This is defined here as explicit options so that if something is ever input as a typo elsewhere (eg "retirmnt") it will throw an error
 type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityConversion" | "suspendToday" | "suspendAtFRA" | "suspendAtSomeOtherDate" | "unsuspend" |
-"spousal" | "retroactiveSpousal" | "childInCareSpousal" | "childInCareSpousalSuspension" | "automaticSpousalUnsuspension" |
+"spousal" | "retroactiveSpousal" | "childInCareSpousal" | "childInCareSpousalSuspension" | "automaticSpousalUnsuspension" | "declineSpousal" |
 "survivor" | "retroactiveSurvivor" |
 "child" | "retroactiveChild" | "motherFather" | "retroactiveMotherFather" |
 "doNothing"
@@ -54,6 +54,9 @@ type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityCon
         break;
       case "automaticSpousalUnsuspension":
         this.shortMessage += " (unsuspend spousal at FRA) " + dateString
+        break;
+      case "declineSpousal":
+        this.shortMessage += " (decline to file for spousal benefits)"
         break;
       case "survivor":
       case "retroactiveSurvivor":
@@ -117,6 +120,9 @@ type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityCon
           break;
         case "automaticSpousalUnsuspension":
           this.message = "Your spousal benefit begins again automatically at your full retirement age (" + dateString + ")."
+          break;
+        case "declineSpousal":
+          this.message = "You do not file for spousal benefits at any point."
           break;
         case "survivor":
           this.message = "You file for your survivor benefit to begin " + dateString + ageString
@@ -189,6 +195,15 @@ type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityCon
           break;
         case "automaticSpousalUnsuspension":
           this.message = "Your spouse's spousal benefit begins again automatically at his/her full retirement age (" + dateString + ")."
+          break;
+        case "declineSpousal":
+          this.message = "Your spouse does not file for spousal benefits at any point."
+          break;
+        case "survivor":
+          this.message = "Your spouse files for his/her survivor benefit to begin " + dateString + ageString
+          break;
+        case "retroactiveSurvivor":
+          this.message = "Your spouse files for his/her survivor benefit to begin (retroactively) as of " + dateString + ageString
           break;
         case "suspendToday":
           this.message = "Your spouse suspends his/her retirement benefit today."

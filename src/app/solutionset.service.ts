@@ -7,6 +7,7 @@ import {CalculationScenario} from './data model classes/calculationscenario'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import { BirthdayService } from './birthday.service';
 import { ClaimStrategy } from './data model classes/claimStrategy'
+import { MortalityService } from './mortality.service'
 
 
 @Injectable({
@@ -16,7 +17,7 @@ export class SolutionSetService {
 
   today: MonthYearDate = new MonthYearDate()
 
-  constructor(private benefitService: BenefitService, private birthdayService:BirthdayService) {
+  constructor(private benefitService: BenefitService, private birthdayService:BirthdayService, private mortalityService:MortalityService){ 
     this.setToday(new MonthYearDate())
   }
 
@@ -120,6 +121,7 @@ export class SolutionSetService {
     let personBchildInCareSpousalSuspensionSolution:ClaimingSolution
     let personBautomaticSpousalUnsuspensionSolution:ClaimingSolution
     let personBspousalSolution:ClaimingSolution
+    let personBsurvivorSolution:ClaimingSolution
 
     let childBenefitSolution:ClaimingSolution
     let secondChildBenefitSolution:ClaimingSolution
@@ -154,7 +156,7 @@ export class SolutionSetService {
             personAchildInCareSpousalSuspensionSolution = this.generateChildInCareSpousalSuspensionClaimingSolution(personA, scenario)
             personAautomaticSpousalUnsuspensionSolution = this.generateAutomaticSpousalUnsuspensionClaimingSolution(personA, personB, scenario)
           //Create personA regular spousal solution object
-            personAspousalSolution = this.generateSpousalClaimingSolution(personA, scenario)
+            personAspousalSolution = this.generateSpousalClaimingSolution(personA, personB, scenario)
 
             
 
@@ -164,12 +166,16 @@ export class SolutionSetService {
             personBchildInCareSpousalSuspensionSolution = this.generateChildInCareSpousalSuspensionClaimingSolution(personB, scenario)
             personBautomaticSpousalUnsuspensionSolution = this.generateAutomaticSpousalUnsuspensionClaimingSolution(personB, personA, scenario)
           //Create personB regular spousal solution object
-            personBspousalSolution = this.generateSpousalClaimingSolution(personB, scenario)
+            personBspousalSolution = this.generateSpousalClaimingSolution(personB, personA, scenario)
 
 
         //personA survivor stuff
           personAsurvivorSolution = this.generateSurvivorClaimingSolution(personA, personB, scenario)
           if (personAsurvivorSolution) {solutionSet.solutionsArray.push(personAsurvivorSolution)}
+
+        //personB survivor stuff
+          personBsurvivorSolution = this.generateSurvivorClaimingSolution(personB, personA, scenario)
+          if (personBsurvivorSolution) {solutionSet.solutionsArray.push(personBsurvivorSolution)}
 
         //personA mother/father stuff
           personAmotherFatherSolution = this.generateMotherFatherClaimingSolution(personA, personB, scenario)
@@ -390,16 +396,27 @@ export class SolutionSetService {
     else {return undefined}
   }
 
-  generateSpousalClaimingSolution(person:Person, scenario:CalculationScenario):ClaimingSolution{
+  generateSpousalClaimingSolution(person:Person, otherPerson:Person, scenario:CalculationScenario):ClaimingSolution{
     let spousalSolution:ClaimingSolution
     let filingAge: number = this.birthdayService.findAgeOnDate(person, person.spousalBenefitDate)
     let filingAgeYears: number = Math.floor(filingAge)
     let filingAgeMonths: number = Math.round((filingAge%1)*12)
-    if (person.spousalBenefitDate < this.today){
-      spousalSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveSpousal", person, person.spousalBenefitDate, filingAgeYears, filingAgeMonths)
+    //If otherPerson is using an assumed age at death, and person's spousalBenefitDate is after that assumed death date, this is a "decline spousal" situation.
+    if (otherPerson.mortalityTable[0] == 1){//i.e., otherPerson is using an assumed death age
+      let assumedDeathDate:MonthYearDate = this.mortalityService.findAssumedDeathDate(otherPerson)
+      if (person.spousalBenefitDate >= assumedDeathDate){
+        spousalSolution = new ClaimingSolution(scenario.maritalStatus, "declineSpousal", person, person.spousalBenefitDate, filingAgeYears, filingAgeMonths)
+      }
     }
-    else {
-      spousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousal", person, person.spousalBenefitDate, filingAgeYears, filingAgeMonths)
+
+    //If we didn't make a decline spousal solution above, make a normal spousal solution
+    if (spousalSolution == undefined){
+      if (person.spousalBenefitDate < this.today){
+        spousalSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveSpousal", person, person.spousalBenefitDate, filingAgeYears, filingAgeMonths)
+      }
+      else {
+        spousalSolution = new ClaimingSolution(scenario.maritalStatus, "spousal", person, person.spousalBenefitDate, filingAgeYears, filingAgeMonths)
+      }
     }
     return spousalSolution
   }
@@ -455,27 +472,31 @@ export class SolutionSetService {
     else {return undefined}
   }
 
-  generateSurvivorClaimingSolution(livingPerson:Person, deceasedPerson:Person, scenario:CalculationScenario):ClaimingSolution{
+  generateSurvivorClaimingSolution(person:Person, otherPerson:Person, scenario:CalculationScenario):ClaimingSolution{
     let survivorSolution:ClaimingSolution
-    if (scenario.maritalStatus == "survivor" && livingPerson.hasFiledAsSurvivor === false){
-      let survivorFilingAge: number = this.birthdayService.findAgeOnDate(livingPerson, livingPerson.survivorBenefitDate)
+    //We (tenatively) want a survivorSolution object if it's a survivor scenario and person hasn't filed or if otherPerson is using an assumed age at death
+    if (
+        (scenario.maritalStatus == "survivor" && person.id == "A" && person.hasFiledAsSurvivor === false) ||
+        (otherPerson.mortalityTable[0] == 1 && person.survivorBenefitDate >= this.mortalityService.findAssumedDeathDate(otherPerson))
+      ){
+      let survivorFilingAge: number = this.birthdayService.findAgeOnDate(person, person.survivorBenefitDate)
       let personAsavedSurvivorAgeYears: number = Math.floor(survivorFilingAge)
       let personAsavedSurvivorAgeMonths: number = Math.round((survivorFilingAge%1)*12)
       //Create survivor solution object
-      if (livingPerson.survivorBenefitDate < this.today){
-        survivorSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveSurvivor", livingPerson, livingPerson.survivorBenefitDate, personAsavedSurvivorAgeYears, personAsavedSurvivorAgeMonths)
+      if (person.survivorBenefitDate < this.today){
+        survivorSolution = new ClaimingSolution(scenario.maritalStatus, "retroactiveSurvivor", person, person.survivorBenefitDate, personAsavedSurvivorAgeYears, personAsavedSurvivorAgeMonths)
       }
       else {
-        survivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", livingPerson, livingPerson.survivorBenefitDate, personAsavedSurvivorAgeYears, personAsavedSurvivorAgeMonths)
+        survivorSolution = new ClaimingSolution(scenario.maritalStatus, "survivor", person, person.survivorBenefitDate, personAsavedSurvivorAgeYears, personAsavedSurvivorAgeMonths)
       }
     }
     //Check if there's actually going to be a survivor benefit at SOME point, given selected filing dates
       //Basically, if they will never have a survivor benefit (because they filed for retirement already and because after various reductions survivor benefit is zero) then we don't want the solution object
-    livingPerson.monthlySurvivorPayment = this.benefitService.calculateSurvivorOriginalBenefit(deceasedPerson)
-    livingPerson = this.benefitService.adjustSurvivorBenefitsForAge(scenario, livingPerson)
-    livingPerson = this.benefitService.adjustSurvivorBenefitsForRIB_LIM(livingPerson, deceasedPerson)
-    livingPerson.monthlySurvivorPayment = livingPerson.monthlySurvivorPayment - this.benefitService.calculateRetirementBenefit(livingPerson, livingPerson.retirementBenefitDate)
-    if (survivorSolution && (livingPerson.monthlySurvivorPayment > 0 || livingPerson.survivorBenefitDate < livingPerson.retirementBenefitDate)){
+    person.monthlySurvivorPayment = this.benefitService.calculateSurvivorOriginalBenefit(otherPerson)
+    person = this.benefitService.adjustSurvivorBenefitsForAge(scenario, person)
+    person = this.benefitService.adjustSurvivorBenefitsForRIB_LIM(person, otherPerson)
+    person.monthlySurvivorPayment = person.monthlySurvivorPayment - this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
+    if (survivorSolution && (person.monthlySurvivorPayment > 0 || person.survivorBenefitDate < person.retirementBenefitDate)){
       return survivorSolution
     }
     else {return undefined}
