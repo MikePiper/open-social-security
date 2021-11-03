@@ -270,9 +270,10 @@ export class HomeComponent implements OnInit {
       else if (this.scenario.maritalStatus == "survivor"){
           this.solutionSet = this.maximizePvService.maximizeSurvivorPV(this.personA, this.personB, this.scenario)
       }
+      this.solutionSet.computationComplete = true;
     }
     // computation is finished
-    this.solutionSet.computationComplete = true;
+
     this.normalCursor()
     this.primaryFormHasChanged = false//Set this to false so that customDates() doesn't rerun onSubmit() next time it is run, unless another change is made to primary inputs
     if (this.customClaimStrategy.PV > 0){//If customDates() has already been run (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs

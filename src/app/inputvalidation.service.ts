@@ -79,13 +79,26 @@ export class InputValidationService {
         if (assumedAgeAtDeath < ageEndOfThisYear){
           errorCollection.personAassumedDeathAgeError = "Assumed death age is too young. Please choose an age no earlier than this person's age at the end of this calendar year."
         }
+        //Make sure assumedAgeAtDeath is not younger than 62
+        if (assumedAgeAtDeath < 62){
+          errorCollection.personAassumedDeathAgeError = 'For an assumed age at death younger than 62, please run the calculator '
+          + 'using the "widow(er)" marital status, as if the person in question is already deceased. (While this will result in an assumed age at death younger than you are intending, '
+          + 'for any assumed death age younger than 62, the math is unaffected by whether the age at death is, for example, 57 as opposed to 61.)'
+        }
       }
       //Same for personB
       if (personB.mortalityTable[0]== 1){
         let assumedAgeAtDeath = personB.mortalityTable.findIndex(index => index == 0)
         let ageEndOfThisYear = Math.floor(this.birthdayService.findAgeOnDate(personB, new MonthYearDate(this.today.getFullYear(), 11)))
+        //make sure assumedAgeAtDeath is not younger than their age in December of this year
         if (assumedAgeAtDeath < ageEndOfThisYear){
           errorCollection.personBassumedDeathAgeError = "Assumed death age is too young. Please choose an age no earlier than this person's age at the end of this calendar year."
+        }
+        //Make sure assumedAgeAtDeath is not younger than 62
+        if (assumedAgeAtDeath < 62){
+          errorCollection.personBassumedDeathAgeError = 'For an assumed age at death younger than 62, please run the calculator '
+          + 'using the "widow(er)" marital status, as if the person in question is already deceased. (While this will result in an assumed age at death younger than you are intending, '
+          + 'for any assumed death age younger than 62, the math is unaffected by whether the age at death is, for example, 57 as opposed to 61.)'
         }
       }
 
