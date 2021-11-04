@@ -72,33 +72,44 @@ export class InputValidationService {
     errorCollection.personBassumedDeathAgeError = undefined
     //check for errors
       //check if personA's assumed age of death is valid
-      if (personA.mortalityTable[0]== 1){//personA is using assumed age at death. (Mortality table has just 1 for every year, then 0 for age of death, whereas normal mortality table starts with 100,000 lives.)
+      if (personA.mortalityTable[0] == 1){//personA is using assumed age at death. (Mortality table has just 1 for every year, then 0 for age of death, whereas normal mortality table starts with 100,000 lives.)
         let assumedAgeAtDeath = personA.mortalityTable.findIndex(index => index == 0)
-        let ageEndOfThisYear = Math.floor(this.birthdayService.findAgeOnDate(personA, new MonthYearDate(this.today.getFullYear(), 11)))
-        //make sure assumedAgeAtDeath is not younger than their age in December of this year
-        if (assumedAgeAtDeath < ageEndOfThisYear){
-          errorCollection.personAassumedDeathAgeError = "Assumed death age is too young. Please choose an age no earlier than this person's age at the end of this calendar year."
+        //Make sure assumed age at death is no greater than 140
+        if (assumedAgeAtDeath == -1){//.findIndex() returns -1 if the element is not found. (This is the case if the person's assumed age of death is not in the mortality table, and mortality table only goes to 140.)
+          errorCollection.personAassumedDeathAgeError = "Please enter an assumed age at death that is less than 140."
         }
-        //Make sure assumedAgeAtDeath is not younger than 62
-        if (assumedAgeAtDeath < 62){
-          errorCollection.personAassumedDeathAgeError = 'For an assumed age at death younger than 62, please run the calculator '
-          + 'using the "widow(er)" marital status, as if the person in question is already deceased. (While this will result in an assumed age at death younger than you are intending, '
-          + 'for any assumed death age younger than 62, the math is unaffected by whether the age at death is, for example, 57 as opposed to 61.)'
+        else {
+          let ageEndOfThisYear = Math.floor(this.birthdayService.findAgeOnDate(personA, new MonthYearDate(this.today.getFullYear(), 11)))
+          //make sure assumedAgeAtDeath is not younger than their age in December of this year
+          if (assumedAgeAtDeath < ageEndOfThisYear){
+            errorCollection.personAassumedDeathAgeError = "Assumed death age is too young. Please choose an age no earlier than this person's age at the end of this calendar year."
+          }
+          //Make sure assumedAgeAtDeath is not younger than 62
+          if (assumedAgeAtDeath < 62){
+            errorCollection.personAassumedDeathAgeError = 'For an assumed age at death younger than 62, please run the calculator '
+            + 'using the "widow(er)" marital status, as if the person in question is already deceased. (While this will result in an assumed age at death younger than you are intending, '
+            + 'for any assumed death age younger than 62, the math is unaffected by whether the age at death is, for example, 57 as opposed to 61.)'
+          }
         }
       }
       //Same for personB
       if (personB.mortalityTable[0]== 1){
         let assumedAgeAtDeath = personB.mortalityTable.findIndex(index => index == 0)
-        let ageEndOfThisYear = Math.floor(this.birthdayService.findAgeOnDate(personB, new MonthYearDate(this.today.getFullYear(), 11)))
-        //make sure assumedAgeAtDeath is not younger than their age in December of this year
-        if (assumedAgeAtDeath < ageEndOfThisYear){
-          errorCollection.personBassumedDeathAgeError = "Assumed death age is too young. Please choose an age no earlier than this person's age at the end of this calendar year."
+        if (assumedAgeAtDeath == -1){//.findIndex() returns -1 if the element is not found. (This is the case if the person's assumed age of death is not in the mortality table, and mortality table only goes to 140.)
+          errorCollection.personBassumedDeathAgeError = "Please enter an assumed age at death that is less than 140."
         }
-        //Make sure assumedAgeAtDeath is not younger than 62
-        if (assumedAgeAtDeath < 62){
-          errorCollection.personBassumedDeathAgeError = 'For an assumed age at death younger than 62, please run the calculator '
-          + 'using the "widow(er)" marital status, as if the person in question is already deceased. (While this will result in an assumed age at death younger than you are intending, '
-          + 'for any assumed death age younger than 62, the math is unaffected by whether the age at death is, for example, 57 as opposed to 61.)'
+        else {
+          let ageEndOfThisYear = Math.floor(this.birthdayService.findAgeOnDate(personB, new MonthYearDate(this.today.getFullYear(), 11)))
+          //make sure assumedAgeAtDeath is not younger than their age in December of this year
+          if (assumedAgeAtDeath < ageEndOfThisYear){
+            errorCollection.personBassumedDeathAgeError = "Assumed death age is too young. Please choose an age no earlier than this person's age at the end of this calendar year."
+          }
+          //Make sure assumedAgeAtDeath is not younger than 62
+          if (assumedAgeAtDeath < 62){
+            errorCollection.personBassumedDeathAgeError = 'For an assumed age at death younger than 62, please run the calculator '
+            + 'using the "widow(er)" marital status, as if the person in question is already deceased. (While this will result in an assumed age at death younger than you are intending, '
+            + 'for any assumed death age younger than 62, the math is unaffected by whether the age at death is, for example, 57 as opposed to 61.)'
+          }
         }
       }
 

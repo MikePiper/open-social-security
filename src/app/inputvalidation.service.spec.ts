@@ -451,4 +451,39 @@ describe('InputvalidationService', () => {
     expect(service.checkForAssumedDeathAgeErrors(errorCollection, personA, personB).personAassumedDeathAgeError)
       .toBeUndefined()
   }))
+
+  it("should reject an assumed age at death that is younger than 62", inject([InputValidationService], (service: InputValidationService) => {
+    service.setToday(new MonthYearDate(2021, 9))//October 2021 writing this test
+    let errorCollection:ErrorCollection = new ErrorCollection() 
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
+    personA.SSbirthDate = new MonthYearDate (1970, 4)//Born May 1970, so they're 51 right now.
+    personB.SSbirthDate = new MonthYearDate (1970, 4)//Born May 1970, so they're 51 right now.
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed", 61)//61 is too young for an assumed death age.
+    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "fixed", 61)//61 is too young for an assumed death age.
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService)
+    expect(service.checkForAssumedDeathAgeErrors(errorCollection, personA, personB).personAassumedDeathAgeError)
+      .toEqual('For an assumed age at death younger than 62, please run the calculator using the "widow(er)" marital status, as if the person in question is already deceased. (While this will result in an assumed age at death younger than you are intending, for any assumed death age younger than 62, the math is unaffected by whether the age at death is, for example, 57 as opposed to 61.)')
+      expect(service.checkForAssumedDeathAgeErrors(errorCollection, personA, personB).personBassumedDeathAgeError)
+      .toEqual('For an assumed age at death younger than 62, please run the calculator using the "widow(er)" marital status, as if the person in question is already deceased. (While this will result in an assumed age at death younger than you are intending, for any assumed death age younger than 62, the math is unaffected by whether the age at death is, for example, 57 as opposed to 61.)')
+  }))
+
+  it("should reject an assumed age at death that is greater than 140", inject([InputValidationService], (service: InputValidationService) => {
+    service.setToday(new MonthYearDate(2021, 9))//October 2021 writing this test
+    let errorCollection:ErrorCollection = new ErrorCollection() 
+    let personA:Person = new Person("A")
+    let personB:Person = new Person("B")
+    personA.SSbirthDate = new MonthYearDate (1956, 4)//Born May 1956, so they're 65 right now.
+    personB.SSbirthDate = new MonthYearDate (1956, 4)
+    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "fixed", 140)
+    personB.mortalityTable = mortalityService.determineMortalityTable("female", "fixed", 140)
+    mockGetPrimaryFormInputs(personA, service.today, birthdayService)
+    mockGetPrimaryFormInputs(personB, service.today, birthdayService)
+    expect(service.checkForAssumedDeathAgeErrors(errorCollection, personA, personB).personAassumedDeathAgeError)
+      .toEqual("Please enter an assumed age at death that is less than 140.")
+    expect(service.checkForAssumedDeathAgeErrors(errorCollection, personA, personB).personBassumedDeathAgeError)
+      .toEqual("Please enter an assumed age at death that is less than 140.")
+  }))
+
 });
