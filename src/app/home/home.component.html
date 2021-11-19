@@ -472,7 +472,7 @@
           <select [(ngModel)]="personBmortalityInput" name="personBmortalityInput" class="form-control">
             <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
             <option value="NS2">2017 CSO Nonsmoker Preferred</option>
-            <option value="{{this.defaultMortalityTableID}}">2017 Social Security Period Life Table</option>
+            <option value="{{this.defaultMortalityTableID}}">{{this.defaultMortalityTableName}}</option>
             <option value="SM1">2017 CSO Smoker Preferred</option>
             <option value="SM2">2017 CSO Smoker Residual Standard</option>
             <option value="fixed">Assumed age at death</option>
