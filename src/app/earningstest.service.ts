@@ -9,9 +9,16 @@ import { BirthdayService } from './birthday.service';
   providedIn: 'root'
 })
 export class EarningsTestService {
+  today: MonthYearDate
 
-  constructor(private birthdayService:BirthdayService) { }
-  today: MonthYearDate = new MonthYearDate()
+  constructor(private birthdayService:BirthdayService) {
+    this.setToday(new MonthYearDate())
+  }
+
+  setToday(today:MonthYearDate){
+    this.today = new MonthYearDate(today)
+  }
+ 
 
 
   calculateWithholding(currentCalculationDate:MonthYearDate, person:Person){
@@ -44,7 +51,7 @@ export class EarningsTestService {
       return Number(withholdingAmount)
   }
 
-  isGraceYear(person:Person, currentCalculationDate: MonthYearDate) {
+  isGraceYear(person:Person, currentCalculationDate: MonthYearDate):boolean {
     //If quitWorkDate has already happened (or happens this year) and at least one benefit has started (or starts this year) it's a grace year
     //Assumption: in the year they quit work, following months are non-service months.
     let graceYear:boolean = false
@@ -56,6 +63,9 @@ export class EarningsTestService {
         graceYear = true
       }
       if (person.spousalBenefitDate && person.spousalBenefitDate.getFullYear() <= currentCalculationDate.getFullYear()) {//i.e., if spousalBenefitDate exists, and it is this year or a prior year
+      graceYear = true
+      }
+      if (person.survivorBenefitDate && person.survivorBenefitDate.getFullYear() <= currentCalculationDate.getFullYear()) {//i.e., if survivorBenefitDate exists, and it is this year or a prior year
       graceYear = true
       }
     }

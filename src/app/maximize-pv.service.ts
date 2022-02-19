@@ -395,12 +395,13 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         else {//if personA has zero PIA, we want x-axis for range to be based on survivor dates. And we want it to be a 1-row Range, so we use personB.retirementBenefitDate for earliest and latest y-axis
           scenario.range = new Range(earliestStartSurvivor, survivorBenefitEndTestDate, personB.retirementBenefitDate, personB.retirementBenefitDate)
         }
+
         let solutionSet: SolutionSet
   
       while (personA.retirementBenefitDate <= retirementBenefitEndTestDate && personA.endSuspensionDate <= retirementBenefitEndTestDate) {
           //Reset personA.survivorBenefitDate to earliest possible
             personA.survivorBenefitDate = this.findEarliestSurvivorBenefitDate(personA, personB)
-  
+
           while (personA.survivorBenefitDate <= survivorBenefitEndTestDate) {
             //Calculate PV using current testDates
               let currentTest: ClaimStrategy = this.calculatePVservice.calculateCouplePV(personA, personB, scenario, false)

@@ -883,7 +883,7 @@ describe('Tests for maximizeSurvivorPV', () => {
     personA.PIA = 1900
     personB.PIA = 1100
     personA.quitWorkDate = new MonthYearDate(2021, 3) //April 2021
-    personA.monthlyEarnings = 20000
+    personA.monthlyEarnings = 30000
     scenario.discountRate = 1
     let results = service.maximizeSurvivorPV(personA, personB, scenario)
     //Current earnings test threshold is $18,240 for years prior to FRA. So 2020 or 2021 would be completely withheld, except grace year rule allows for benefits from April 2021 onward

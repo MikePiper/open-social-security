@@ -9,10 +9,15 @@ import { BirthdayService } from './birthday.service';
   providedIn: 'root'
 })
 export class FamilyMaximumService {
+  today:MonthYearDate
 
-  constructor(private birthdayService: BirthdayService) { }
+  constructor(private birthdayService: BirthdayService) {
+    this.setToday(new MonthYearDate())
+  }
   
-  today:MonthYearDate = new MonthYearDate()
+  setToday(today:MonthYearDate){
+    this.today = new MonthYearDate(today)
+  }
 
 
 
