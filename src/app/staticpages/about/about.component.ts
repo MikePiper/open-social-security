@@ -12,4 +12,6 @@ export class AboutComponent implements OnInit {
   ngOnInit() {
   }
 
+thisYear:Number = new Date().getFullYear();
+
 }
