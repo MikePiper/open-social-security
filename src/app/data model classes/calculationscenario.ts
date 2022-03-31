@@ -35,10 +35,11 @@ export class CalculationScenario {
 
     setChildrenArray(childrenArray:Person[], today:MonthYearDate){
         this.children = []
-        //Have to do it this wonky way using scenario.numberOfChildren, because childrenArray always has 4 objects in it, even if there are no actual children.
-        for (let i:number = 0; i < this.numberOfChildren; i++){ 
-            this.children.push(childrenArray[i])
-        }
+        if (this.numberOfChildren > 0){
+            //Have to do it this wonky way using scenario.numberOfChildren, because childrenArray always has 6 objects in it, even if there are no actual children.
+            for (let i:number = 0; i < this.numberOfChildren; i++){ 
+                this.children.push(childrenArray[i])
+            }
             //calculate ages of children
             for (let child of this.children){
                 if (!child.SSbirthDate){child.SSbirthDate = new MonthYearDate(2000, 3)} //This is here just so following line doesn't throw a console error when childinputs.component is initialized for first time. This nonsense date (equal to default for child DoB inputs) will be overridden by the getInputs() function in childinputs component.
@@ -61,6 +62,8 @@ export class CalculationScenario {
                     this.disabledChild = true
                 }
             }
+        }
+
     }
 }
 

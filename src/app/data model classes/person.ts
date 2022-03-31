@@ -7,6 +7,11 @@ type genderOption = "male" | "female"
 export class Person {
     id:string
     gender:genderOption
+    //As of right now, these 3 fields are only used for children inputs, though home.component html and ts could be adjusted to use these as well.
+    DoBinputMonth:number //"4" would mean April, so we have to adjust that to get the proper number (3)
+    DoBinputDay:number //same idea
+    DoBinputYear:number
+
     actualBirthDate: Date
     SSbirthDate: MonthYearDate
     FRA: MonthYearDate

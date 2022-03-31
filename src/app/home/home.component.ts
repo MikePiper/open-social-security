@@ -85,6 +85,7 @@ export class HomeComponent implements OnInit {
   today:MonthYearDate = new MonthYearDate()
   deemedFilingCutoff: Date = new Date(1954, 0, 1)//January 2, 1954. If date is LESS than cutoff, old rules. If greater than OR EQUAL TO cutoff, new rules.
   statusMessage:string = ""
+  childParams:string ="" //This is appended to the url so that the user can copy/paste url and have child inputs automatically filled in
   primaryFormHasChanged: boolean = false
         /*
         This is set to true when they change an input in the primary form. Then set to false after onSubmit() has been run. Point is that we want the whole maximize function to be run when
@@ -411,11 +412,12 @@ export class HomeComponent implements OnInit {
     }
 
     //Clear children array and only push as many children objects as applicable
-    if (this.scenario.numberOfChildren > 0){
-        this.scenario.setChildrenArray(this.childrenObjectsArray, this.today)
-    }
-    else {this.scenario.children = []}
+    this.scenario.setChildrenArray(this.childrenObjectsArray, this.today)
+
     this.childUnder16orDisabled = this.birthdayService.checkForChildUnder16orDisabled(this.scenario)
+
+    //set childParams for URL
+    this.childParams = this.buildChildParametersString()
 
 
     //This childInCareSpousal field is used for determining whether to display spousal input dates in custom form. We normally set this in getCustomDateFormInputs(). But we set it here in case of disabled child so that spousal benefit input doesnt show up on initial load of custom date form.
@@ -1010,7 +1012,65 @@ export class HomeComponent implements OnInit {
       if (params['children']){
         this.qualifyingChildrenBoolean = params['children'] == "true" ? true : false
       }
+      if (params['numberOfChildren']){
+        this.scenario.numberOfChildren = Number(params['numberOfChildren'])
+        if (this.scenario.numberOfChildren > 0){
+          this.child1.DoBinputDay = Number(params['child1DoBd'])
+          this.child1.DoBinputMonth = Number(params['child1DoBm'])
+          this.child1.DoBinputYear = Number(params['child1DoBy'])
+          this.child1.isOnDisability = params['child1disability'] == "true" ? true : false
+        }
+        if (this.scenario.numberOfChildren > 1){
+          this.child2.DoBinputDay = Number(params['child2DoBd'])
+          this.child2.DoBinputMonth = Number(params['child2DoBm'])
+          this.child2.DoBinputYear = Number(params['child2DoBy'])
+          this.child2.isOnDisability = params['child2disability'] == "true" ? true : false
+        }
+        if (this.scenario.numberOfChildren > 2){
+          this.child3.DoBinputDay = Number(params['child3DoBd'])
+          this.child3.DoBinputMonth = Number(params['child3DoBm'])
+          this.child3.DoBinputYear = Number(params['child3DoBy'])
+          this.child3.isOnDisability = params['child3disability'] == "true" ? true : false
+        }
+        if (this.scenario.numberOfChildren > 3){
+          this.child4.DoBinputDay = Number(params['child4DoBd'])
+          this.child4.DoBinputMonth = Number(params['child4DoBm'])
+          this.child4.DoBinputYear = Number(params['child4DoBy'])
+          this.child4.isOnDisability = params['child4disability'] == "true" ? true : false
+        }
+        if (this.scenario.numberOfChildren > 4){
+          this.child5.DoBinputDay = Number(params['child5DoBd'])
+          this.child5.DoBinputMonth = Number(params['child5DoBm'])
+          this.child5.DoBinputYear = Number(params['child5DoBy'])
+          this.child5.isOnDisability = params['child5disability'] == "true" ? true : false
+        }
+        if (this.scenario.numberOfChildren > 5){
+          this.child6.DoBinputDay = Number(params['child6DoBd'])
+          this.child6.DoBinputMonth = Number(params['child6DoBm'])
+          this.child6.DoBinputYear = Number(params['child6DoBy'])
+          this.child6.isOnDisability = params['child6disability'] == "true" ? true : false
+        }
+        this.scenario.setChildrenArray(this.childrenObjectsArray, this.today)
+      }
     })
+  }
+
+  buildChildParametersString():string{
+    let childParams = ""
+    if (this.scenario.children.length > 0){
+      for (let i = 0; i < this.scenario.children.length; i++){
+        if (this.scenario.children[i].actualBirthDate){
+          let childNumber:number = i + 1
+          let childBirthMonth:number = this.scenario.children[i].actualBirthDate.getMonth()+1
+          let childBirthDay:number = this.scenario.children[i].actualBirthDate.getDate()+1
+          childParams += "&&child" + childNumber + "DoBm=" + childBirthMonth
+          childParams += "&&child" + childNumber + "DoBd=" + childBirthDay
+          childParams += "&&child" + childNumber + "DoBy=" + this.scenario.children[i].actualBirthDate.getFullYear()
+          childParams += "&&child" + childNumber + "disability=" + this.scenario.children[i].isOnDisability
+        }
+      }
+    }
+    return childParams
   }
 
 }

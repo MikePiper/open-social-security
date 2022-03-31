@@ -2,13 +2,13 @@
   <h3>Child #{{child.id}}</h3>
   <div class="form-inline">
     <label>Date of birth</label>
-    <select class="form-control" [(ngModel)]="DoBinputMonth" name="DoBinputMonth" required>
+    <select class="form-control" [(ngModel)]="child.DoBinputMonth" name="child.DoBinputMonth" required>
       <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
     </select>
-    <select class="form-control" [(ngModel)]="DoBinputDay" name="DoBinputDay" required>
+    <select class="form-control" [(ngModel)]="child.DoBinputDay" name="child.DoBinputDay" required>
         <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
     </select>
-    <select class="form-control" [(ngModel)]="DoBinputYear" name="DoBinputYear" required>
+    <select class="form-control" [(ngModel)]="child.DoBinputYear" name="child.DoBinputYear" required>
         <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
     </select>
   </div>
