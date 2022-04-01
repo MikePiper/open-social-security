@@ -19,6 +19,12 @@
   <label>Yes</label>
   <input type="radio" [(ngModel)]="child.isOnDisability" name=child{{child.id}}.isOnDisability [value]="false">
   <label>No</label>
+  <!--SSI warning-->
+  <p *ngIf="child.isOnDisability === true" class="alert alert-warning">
+    <strong>Warning:</strong>
+    The calculator does not account for the impact that child benefits may have on any other benefits your child is receiving.
+    If your disabled child is currently receiving SSI (Supplemental Security Income) or any other means-tested benefits (e.g., from your state), your child receiving a child's benefit could reduce or eliminate those other benefits.
+  </p>
 
   <div *ngIf="personA.hasFiled === true || personA.isOnDisability === true || personB.hasFiled === true || personB.isOnDisability === true || (personB.fixedRetirementBenefitDate && personB.fixedRetirementBenefitDate < this.today)">
     <label>Has this child already filed for child benefits?</label>
