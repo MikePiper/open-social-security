@@ -509,6 +509,7 @@
           </select>
           <p *ngIf="scenario.numberOfChildren == 6" class="inputexplanation">As a result of the <a href="https://secure.ssa.gov/poms.nsf/lnx/0300615770" target="_blank">"combined family maximum" rule</a>,
             children beyond the sixth would not change the calculation in any way. Please prioritize first entering any children who are disabled, and then entering by age (youngest first).</p>
+          <p *ngIf="scenario.numberOfChildren > 0" class="alert alert-warning">Please note that the calculator assumes that any children remain alive throughout the duration of the calculation. (This is in contrast to <a href="https://obliviousinvestor.com/long-will-collect-social-security-survivor-benefits/" target="_blank">the calculator's treatment of adults</a>.) In cases in which your child has a very short life expectancy, this will have the effect of overstating the desirability of you <span *ngIf="scenario.maritalStatus == 'married'">or your spouse</span> filing early in order to make your child eligible for child benefits.</p>
           <app-childinputs *ngFor="let child of scenario.children" [child]="child" [personA]="personA" [personB]="personB"></app-childinputs>
 
         </div>
