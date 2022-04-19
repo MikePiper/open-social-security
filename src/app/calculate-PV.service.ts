@@ -587,6 +587,20 @@ export class CalculatePvService {
     if ((personA.eligibleForNonCoveredPension === true && personA.entitledToNonCoveredPension === false) || (personB.eligibleForNonCoveredPension === true && personB.entitledToNonCoveredPension === false)){
       return false
     }
+    //Return false if personA is using age-at-death mortality table and hasn't yet reached that age
+    if (personA.mortalityTable[0] == 1) {
+      let deceasedByAge:number = personA.mortalityTable.findIndex(item => item == 0)
+      if (personA.age <= deceasedByAge){
+        return false
+      }
+    }
+    //Same for personB
+    if (personB.mortalityTable[0] == 1) {
+      let deceasedByAge = personB.mortalityTable.findIndex(item => item == 0)
+      if (personB.age <= deceasedByAge){
+        return false
+      }
+    }
     return true
   }
 
