@@ -474,10 +474,14 @@ export class SolutionSetService {
 
   generateSurvivorClaimingSolution(person:Person, otherPerson:Person, scenario:CalculationScenario):ClaimingSolution{
     let survivorSolution:ClaimingSolution
-    //We (tenatively) want a survivorSolution object if it's a survivor scenario and person hasn't filed or if otherPerson is using an assumed age at death
+    let personAssumedDeathDate:MonthYearDate = this.mortalityService.findAssumedDeathDate(person)
+    let otherPersonAssumedDeathDate:MonthYearDate = this.mortalityService.findAssumedDeathDate(otherPerson)
+    //We (tenatively) want a survivorSolution object if:
     if (
+        //it's a survivor scenario and person hasn't filed 
         (scenario.maritalStatus == "survivor" && person.id == "A" && person.hasFiledAsSurvivor === false) ||
-        (otherPerson.mortalityTable[0] == 1 && person.survivorBenefitDate >= this.mortalityService.findAssumedDeathDate(otherPerson))
+        //or if a) otherPerson is using an assumed age at death and b) person's survivorBenefitDate is after that assumed death date and c) person's survivorBenefitDate is not after their own assumed death date, if they have one
+        (otherPersonAssumedDeathDate && person.survivorBenefitDate >= otherPersonAssumedDeathDate && (!personAssumedDeathDate || person.survivorBenefitDate < personAssumedDeathDate))
       ){
       let survivorFilingAge: number = this.birthdayService.findAgeOnDate(person, person.survivorBenefitDate)
       let personAsavedSurvivorAgeYears: number = Math.floor(survivorFilingAge)
