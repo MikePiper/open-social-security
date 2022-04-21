@@ -168,7 +168,8 @@ export class BenefitService {
     }
   }
 
-  adjustSurvivorBenefitsForAge(scenario:CalculationScenario, livingPerson:Person):Person{
+  adjustSurvivorBenefitsForAge(scenario:CalculationScenario, livingPerson:Person):number{
+    let survivorBenefit:number = livingPerson.monthlySurvivorPayment
     //per CFR 404.410: survivor benefits not reduced for month in which there is a child in care (under 16 or disabled) who is entitled to child benefits on worker's record.
     //per RS 00615.310: If survivor is disabled, can claim survivor benefits as early as 50 instead of 60. And if so, for sake of calculation, they are "deemed" to be age 60 on the date they file.
     let monthsEarly:number
@@ -196,13 +197,14 @@ export class BenefitService {
             monthsBetween60andSurvivorFRA = livingPerson.survivorFRA.getMonth() - livingPerson.SSbirthDate.getMonth() + 12 * (livingPerson.survivorFRA.getFullYear() - (livingPerson.SSbirthDate.getFullYear()+60))
           //Apply reduction
             let reductionPercentage:number = monthsEarly / monthsBetween60andSurvivorFRA * 0.285
-            livingPerson.monthlySurvivorPayment = livingPerson.monthlySurvivorPayment * (1 - reductionPercentage)
+            survivorBenefit = livingPerson.monthlySurvivorPayment * (1 - reductionPercentage)
         }
       }
-    return livingPerson
+    return survivorBenefit
   }
 
-  adjustSurvivorBenefitsForRIB_LIM(livingPerson:Person, deceasedPerson:Person):Person{
+  adjustSurvivorBenefitsForRIB_LIM(livingPerson:Person, deceasedPerson:Person):number{
+    let survivorBenefit:number = livingPerson.monthlySurvivorPayment
     //Determine whether RIB-LIM limit is 82.5% of deceased's PIA or amount deceased was receiving
       let RIB_LIMlimit:number = 0
       if (deceasedPerson.eligibleForNonCoveredPension === false){
@@ -222,10 +224,10 @@ export class BenefitService {
         }
       }
     //Limit survivor's monthlySurvivorPayment to RIB-LIM limit
-      if (livingPerson.monthlySurvivorPayment > RIB_LIMlimit){
-        livingPerson.monthlySurvivorPayment = RIB_LIMlimit
+      if (survivorBenefit > RIB_LIMlimit){
+        survivorBenefit = RIB_LIMlimit
       }
-      return livingPerson
+      return survivorBenefit
   }
 
   adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA:Person, personB:Person){

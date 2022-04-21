@@ -13,6 +13,7 @@ export class InputValidationService {
 
   deemedFilingCutoff: Date = new Date(1954, 0, 1)
   today: MonthYearDate = new MonthYearDate()
+  oneMonthAgo:MonthYearDate
   sixMonthsAgo:MonthYearDate
   twelveMonthsAgo:MonthYearDate
 
@@ -22,6 +23,8 @@ export class InputValidationService {
 
   setToday(today:MonthYearDate){
     this.today = new MonthYearDate(today)
+    this.oneMonthAgo = new MonthYearDate(today)
+    this.oneMonthAgo.setMonth(this.oneMonthAgo.getMonth()-1)
     this.sixMonthsAgo = new MonthYearDate(today)
     this.sixMonthsAgo.setMonth(this.sixMonthsAgo.getMonth()-6)
     this.twelveMonthsAgo = new MonthYearDate(today)
@@ -368,17 +371,37 @@ export class InputValidationService {
     }
     //If input date is in the past, make sure it's for a legitimate reason
     if (survivorBenefitDate < this.today){
-      if (livingPerson.fixedSurvivorBenefitDate) {//i.e., because they already filed for survivor benefits
+      //Because they already filed for survivor benefits
+      if (livingPerson.fixedSurvivorBenefitDate) {
         //no error
       }
-      else if (survivorBenefitDate >= livingPerson.survivorFRA && survivorBenefitDate >= this.sixMonthsAgo){//survivorBenefitdate is after survivor FRA and no more than 6 months ago
+      //Date of death was one month ago, and person is filing retroactive by one month per POMS GN 00204.030.D2a
+      else if (deceasedPerson.dateOfDeath.valueOf() == this.oneMonthAgo.valueOf() && survivorBenefitDate.valueOf() == this.oneMonthAgo.valueOf() ){
         //no error
       }
-      else if (livingPerson.isOnDisability === true && survivorBenefitDate >= this.twelveMonthsAgo){//survivor is disabled and survivorBenefitDate is no more than 12 months ago
+      //survivorBenefitdate is after survivor FRA and no more than 6 months ago
+      else if (survivorBenefitDate >= livingPerson.survivorFRA && survivorBenefitDate >= this.sixMonthsAgo){
         //no error
       }
+      //survivor is disabled and survivorBenefitDate is no more than 12 months ago
+      else if (livingPerson.isOnDisability === true && survivorBenefitDate >= this.twelveMonthsAgo){
+        //no error
+      }
+      // //RIB-LIM is applicable, and survivor is filing up to 6 months retroactively per POMS GN 00204.030.D
+      // let PIAforRIBLIM:number = deceasedPerson.entitledToNonCoveredPension ? deceasedPerson.nonWEP_PIA : deceasedPerson.PIA
+      // let retirementBenefitforRIBLIM:number = deceasedPerson.entitledToNonCoveredPension ? deceasedPerson.nonWEPretirementBenefit : deceasedPerson.retirementBenefit
+      // let RIBLIMlimit:number = PIAforRIBLIM > retirementBenefitforRIBLIM ? PIAforRIBLIM : retirementBenefitforRIBLIM
+      // else if ( RIB-LIM IS APPLICABLE && survivorBenefitDate >= this.sixMonthsAgo){
+      //   //RIB LIM would be applicable if survivor's benefit, based on deceased's PIA and survivor's survivorBenefitDate is less than greater of
+      //   //deceased person's retirementBenefit or 82.5% of deceased person's PIA (or nonWEPPIA and nonWEPretirement benefit if they were subject to WEP)
+      //     //Maybe
+      //       //ignore family max
+      //       //Determine whether RIB-LIM in this case is deceased's retirementBenefit or 82.5% of deceased person's PIA (or nonWEP versions if applicable)
+      //       //Then find how many months early would be necessary to adjust survivor original benefit to an amount less than the amount selected above.
+      //   //no error
+      // }
       else {
-        error = "The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date must also be no earlier than your survivor FRA."
+        error = "The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date for a retroactive application must also be no earlier than your survivor FRA, in most cases. (See <a href='https://secure.ssa.gov/poms.nsf/lnx/0200204030' target='_blank'>POMS GN 00204.030.D</a> for more information.)"
       }
     }
     //If they haven't already filed (so we're looking at CustomDate form rather than fixedSurvivorBenefitDate)...

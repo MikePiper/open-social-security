@@ -757,7 +757,7 @@
           <select class="form-control" [(ngModel)]="customPersonAsurvivorBenefitYear" name="customPersonAsurvivorBenefitYear" required>
             <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
           </select>
-          <span *ngIf="errorCollection.customPersonASurvivorDateError" class="alert alert-danger">{{errorCollection.customPersonASurvivorDateError}}</span>
+          <span *ngIf="errorCollection.customPersonASurvivorDateError" class="alert alert-danger" [innerHTML]="errorCollection.customPersonASurvivorDateError"></span>
         </div>
       </span>
       <span *ngIf="scenario.maritalStatus == 'survivor' && personA.hasFiledAsSurvivor === false && this.today >= personAlatestSurvivorBenefitDate">

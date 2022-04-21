@@ -238,8 +238,7 @@ describe('BenefitService', () => {
         person.survivorFRA = birthdayService.findSurvivorFRA(person.SSbirthDate) //66 and 2 months given 1957 DoB, so Dec 1959
         person.monthlySurvivorPayment = 1000
         person.survivorBenefitDate = new MonthYearDate(2017, 9)//person filed exactly at age 60
-        expect(service.adjustSurvivorBenefitsForAge(scenario, person).monthlySurvivorPayment)
-            .toBeCloseTo(715, 0) //1000 x .715
+        expect(service.adjustSurvivorBenefitsForAge(scenario, person)).toBeCloseTo(715, 0) //1000 x .715
       })
 
       it('should reduce survivor benefit for age appropriately.', () => {
@@ -249,8 +248,7 @@ describe('BenefitService', () => {
         person.survivorFRA = birthdayService.findSurvivorFRA(person.SSbirthDate) //66 and 2 months given 1957 DoB, so June 1959
         person.monthlySurvivorPayment = 1000
         person.survivorBenefitDate = new MonthYearDate(2021, 5)//person filed at age 64 and 2 months (24 months early)
-        expect(service.adjustSurvivorBenefitsForAge(scenario, person).monthlySurvivorPayment)
-            .toBeCloseTo(908, 0) //1000 - 1000 * (24/74) x (0.285)
+        expect(service.adjustSurvivorBenefitsForAge(scenario, person)).toBeCloseTo(908, 0) //1000 - 1000 * (24/74) x (0.285)
       })
 
       it('should not reduce survivor benefit when claimed at or after FRA.', () => {
@@ -260,7 +258,6 @@ describe('BenefitService', () => {
         person.survivorFRA = birthdayService.findSurvivorFRA(person.SSbirthDate) //66 and 2 months given 1957 DoB, so Dec 1959
         person.monthlySurvivorPayment = 1000
         person.survivorBenefitDate = new MonthYearDate(2023, 11)//person filed exactly at FRA
-        expect(service.adjustSurvivorBenefitsForAge(scenario, person).monthlySurvivorPayment)
-            .toBeCloseTo(1000, 0)
+        expect(service.adjustSurvivorBenefitsForAge(scenario, person)).toBeCloseTo(1000, 0)
       })
 })

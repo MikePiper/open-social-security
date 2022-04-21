@@ -366,7 +366,7 @@ describe('FamilyMaximumService', () => {
       //personB's survivor benefit now adjusted downward by own retirementBenefit ($393.75). So it's reduced to $1,362.43
       service.applyFamilyMaximumCouple(2, scenario, calcYear, personA, true, personB, false)
       //The $393.75 is divided among the three children ($131.25 each), so they now should be getting $1317.14 + 131.25 = $1448.39 (which doesn't exceed original benefit, so we're good) 
-      personA = benefitService.adjustSurvivorBenefitsForAge(scenario, personA)
+      personA.monthlySurvivorPayment = benefitService.adjustSurvivorBenefitsForAge(scenario, personA)
       //Not actually adjusted downward, because there's a child in care
       //No need to RIB-LIM because personB hadn't filed early.
       expect(scenario.children[0].monthlyChildPayment)

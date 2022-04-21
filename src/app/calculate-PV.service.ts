@@ -814,7 +814,7 @@ export class CalculatePvService {
           //Adjust each person's monthlyPayment as necessary for family max
             this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
           //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
-            this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personA, personB)
+            personA.monthlySurvivorPayment = this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personA, personB)
           //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
             this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
           //Adjust as necessary for earnings test (and tally months withheld)
@@ -830,9 +830,9 @@ export class CalculatePvService {
           //Redo family max application
             this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
           //Adjust survivor benefit for age (i.e., for early entitlement of still-living person, if applicable)
-            personA = this.benefitService.adjustSurvivorBenefitsForAge(scenario, personA)
+            personA.monthlySurvivorPayment = this.benefitService.adjustSurvivorBenefitsForAge(scenario, personA)
           //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
-            this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personA, personB)
+            personA.monthlySurvivorPayment = this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personA, personB)
           //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
             this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
           //Adjust as necessary for earnings test (and tally months withheld)
@@ -849,7 +849,7 @@ export class CalculatePvService {
           //Adjust each person's monthlyPayment as necessary for family max
             this.familyMaximumService.applyFamilyMaximumCouple(1, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
           //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
-            this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
+            personB.monthlySurvivorPayment = this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
           //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
             this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
           //Adjust as necessary for earnings test (and tally months withheld)
@@ -865,9 +865,9 @@ export class CalculatePvService {
           //Redo family max application
             this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
           //Adjust survivor benefit for age (i.e., for early entitlement of still-living person, if applicable)
-            personB = this.benefitService.adjustSurvivorBenefitsForAge(scenario, personB)
+            personB.monthlySurvivorPayment = this.benefitService.adjustSurvivorBenefitsForAge(scenario, personB)
           //Adjust survivor benefit for RIB-LIM (i.e., for early entitlement of deceased person, if applicable)
-            this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
+            personB.monthlySurvivorPayment = this.benefitService.adjustSurvivorBenefitsForRIB_LIM(personB, personA)
           //Adjust spousal/survivor monthlyPayment fields as necessary for own entitlement
             this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
           //Adjust as necessary for earnings test (and tally months withheld)

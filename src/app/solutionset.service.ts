@@ -497,8 +497,8 @@ export class SolutionSetService {
     //Check if there's actually going to be a survivor benefit at SOME point, given selected filing dates
       //Basically, if they will never have a survivor benefit (because they filed for retirement already and because after various reductions survivor benefit is zero) then we don't want the solution object
     person.monthlySurvivorPayment = this.benefitService.calculateSurvivorOriginalBenefit(otherPerson)
-    person = this.benefitService.adjustSurvivorBenefitsForAge(scenario, person)
-    person = this.benefitService.adjustSurvivorBenefitsForRIB_LIM(person, otherPerson)
+    person.monthlySurvivorPayment = this.benefitService.adjustSurvivorBenefitsForAge(scenario, person)
+    person.monthlySurvivorPayment = this.benefitService.adjustSurvivorBenefitsForRIB_LIM(person, otherPerson)
     person.monthlySurvivorPayment = person.monthlySurvivorPayment - this.benefitService.calculateRetirementBenefit(person, person.retirementBenefitDate)
     if (survivorSolution && (person.monthlySurvivorPayment > 0 || person.survivorBenefitDate < person.retirementBenefitDate)){
       return survivorSolution
