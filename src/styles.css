@@ -133,6 +133,10 @@ label {
     text-decoration:none;
 }
 
+.alert {
+padding: 0.65rem 15px 0.65rem 15px;
+}
+
 #contentarea {
     margin-bottom:100px;
 }
