@@ -1064,7 +1064,7 @@ describe('Tests for maximizeSurvivorPV', () => {
   })
 })
 
-fdescribe('test functions that find earliest/latest dates', () => {
+describe('test functions that find earliest/latest dates', () => {
   let service:MaximizePVService
   let birthdayService:BirthdayService
   let benefitService:BenefitService

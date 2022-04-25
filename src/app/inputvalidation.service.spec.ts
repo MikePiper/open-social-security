@@ -385,7 +385,7 @@ describe('InputvalidationService', () => {
     livingPerson.survivorBenefitDate = new MonthYearDate(2020, 1)
     mockGetPrimaryFormInputs(livingPerson, service.today, birthdayService)
     expect(service.checkValidSurvivorInput(scenario, livingPerson, deceasedPerson, livingPerson.survivorBenefitDate))
-      .toEqual("The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date for a retroactive application must also be no earlier than your survivor FRA, in most cases. (See <a href='https://secure.ssa.gov/poms.nsf/lnx/0200204030' target='_blank'>POMS GN 00204.030.D</a> for more information.)")
+      .toEqual("The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date for a retroactive application must also be no earlier than your survivor FRA, in most cases. (See <a href='https://secure.ssa.gov/poms.nsf/lnx/0200204030#d' target='_blank'>POMS GN 00204.030.D</a> for more information.)")
   }))
 
   it('should allow survivorBenefit date 7 months ago, even if person younger than survivorFRA, if survivor is disabled', inject([InputValidationService], (service: InputValidationService) => {
@@ -437,7 +437,7 @@ describe('InputvalidationService', () => {
     deceasedPerson.retirementBenefitDate = new MonthYearDate(2021, 10)//Filed at 69 and 9 months
     deceasedPerson.retirementBenefit = benefitService.calculateRetirementBenefit(deceasedPerson, deceasedPerson.retirementBenefitDate)
     expect(service.checkValidSurvivorInput(scenario, livingPerson, deceasedPerson, livingPerson.survivorBenefitDate))
-      .toEqual("The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date for a retroactive application must also be no earlier than your survivor FRA, in most cases. (See <a href='https://secure.ssa.gov/poms.nsf/lnx/0200204030' target='_blank'>POMS GN 00204.030.D</a> for more information.)")
+      .toEqual("The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date for a retroactive application must also be no earlier than your survivor FRA, in most cases. (See <a href='https://secure.ssa.gov/poms.nsf/lnx/0200204030#d' target='_blank'>POMS GN 00204.030.D</a> for more information.)")
   }))
 
   //Testing checkValidMotherFatherInput()
