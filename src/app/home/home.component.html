@@ -748,7 +748,7 @@
       </span>
 
       <!--Survivor Scenario Custom Date Inputs -->
-      <span *ngIf="scenario.maritalStatus == 'survivor' && personA.hasFiledAsSurvivor === false && this.today < personAlatestSurvivorBenefitDate">
+      <span *ngIf="scenario.maritalStatus == 'survivor' && personA.hasFiledAsSurvivor === false">
         <div class="form-inline" >
           <label>Month/year in which you will file for widow(er) benefits:</label>
           <select class="form-control" [(ngModel)]="customPersonAsurvivorBenefitMonth" name="customPersonAsurvivorBenefitMonth" id="customPersonAsurvivorBenefitMonth" required>
@@ -759,13 +759,6 @@
           </select>
           <span *ngIf="errorCollection.customPersonASurvivorDateError" class="alert alert-danger" [innerHTML]="errorCollection.customPersonASurvivorDateError"></span>
         </div>
-      </span>
-      <span *ngIf="scenario.maritalStatus == 'survivor' && personA.hasFiledAsSurvivor === false && this.today >= personAlatestSurvivorBenefitDate">
-        <h3>Why isn't there an input for the date at which you'll claim survivor benefits??</h3>
-        <p>
-          Survivor benefits do not grow as a result of waiting beyond your survivor full retirement age. Because you have already reached such age, 
-          the calculator always assumes that you will claim them as early as possible, given that there is no drawback to doing so.
-        </p>
       </span>
       <span *ngIf="scenario.maritalStatus == 'survivor' && childUnder16orDisabled === true">
         <h3>Why isn't there an input for the date at which you'll claim mother/father benefits??</h3>

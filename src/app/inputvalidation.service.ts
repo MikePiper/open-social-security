@@ -5,6 +5,8 @@ import {ErrorCollection} from './data model classes/errorcollection'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import { BirthdayService } from './birthday.service'
 import { MortalityService } from './mortality.service'
+import { BenefitService } from './benefit.service'
+import { MaximizePVService } from './maximize-pv.service'
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +19,7 @@ export class InputValidationService {
   sixMonthsAgo:MonthYearDate
   twelveMonthsAgo:MonthYearDate
 
-  constructor(private birthdayService:BirthdayService, private mortalityService:MortalityService) {
+  constructor(private birthdayService:BirthdayService, private mortalityService:MortalityService, private benefitService:BenefitService, private maximizePVservice:MaximizePVService) {
     this.setToday(new MonthYearDate())
   }
 
@@ -29,6 +31,7 @@ export class InputValidationService {
     this.sixMonthsAgo.setMonth(this.sixMonthsAgo.getMonth()-6)
     this.twelveMonthsAgo = new MonthYearDate(today)
     this.twelveMonthsAgo.setFullYear(this.twelveMonthsAgo.getFullYear()-1)
+    this.benefitService.setToday(today)
   }
 
   checkErrorCollectionForErrors(errorCollection:ErrorCollection):boolean{
@@ -140,7 +143,7 @@ export class InputValidationService {
     errorCollection.personAfixedSurvivorDateError = undefined
     //Check for errors
     if (scenario.maritalStatus == "survivor" && personA.hasFiledAsSurvivor === true){
-      errorCollection.personAfixedSurvivorDateError = this.checkValidSurvivorInput(personA, personB, personA.fixedSurvivorBenefitDate)
+      errorCollection.personAfixedSurvivorDateError = this.checkValidSurvivorInput(scenario ,personA, personB, personA.fixedSurvivorBenefitDate)
     }
     return errorCollection
   }
@@ -184,7 +187,7 @@ export class InputValidationService {
       errorCollection.customPersonBendSuspensionDateError = this.checkValidEndSuspensionInput(personB)
     }
     if (scenario.maritalStatus == "survivor"){
-      errorCollection.customPersonASurvivorDateError = this.checkValidSurvivorInput(personA, personB, personA.survivorBenefitDate)
+      errorCollection.customPersonASurvivorDateError = this.checkValidSurvivorInput(scenario, personA, personB, personA.survivorBenefitDate)
     }
     //Set hasErrors boolean
     errorCollection.hasErrors = this.checkErrorCollectionForErrors(errorCollection)
@@ -353,7 +356,7 @@ export class InputValidationService {
     return error
   }
 
-  checkValidSurvivorInput(livingPerson:Person, deceasedPerson:Person, survivorBenefitDate:MonthYearDate):string{
+  checkValidSurvivorInput(scenario:CalculationScenario, livingPerson:Person, deceasedPerson:Person, survivorBenefitDate:MonthYearDate):string{
     let error:string = undefined
     //Make sure there is an input
     if (!survivorBenefitDate || isNaN(survivorBenefitDate.getFullYear()) || isNaN(survivorBenefitDate.getMonth()) ){
@@ -387,30 +390,23 @@ export class InputValidationService {
       else if (livingPerson.isOnDisability === true && survivorBenefitDate >= this.twelveMonthsAgo){
         //no error
       }
-      // //RIB-LIM is applicable, and survivor is filing up to 6 months retroactively per POMS GN 00204.030.D
-      // let PIAforRIBLIM:number = deceasedPerson.entitledToNonCoveredPension ? deceasedPerson.nonWEP_PIA : deceasedPerson.PIA
-      // let retirementBenefitforRIBLIM:number = deceasedPerson.entitledToNonCoveredPension ? deceasedPerson.nonWEPretirementBenefit : deceasedPerson.retirementBenefit
-      // let RIBLIMlimit:number = PIAforRIBLIM > retirementBenefitforRIBLIM ? PIAforRIBLIM : retirementBenefitforRIBLIM
-      // else if ( RIB-LIM IS APPLICABLE && survivorBenefitDate >= this.sixMonthsAgo){
-      //   //RIB LIM would be applicable if survivor's benefit, based on deceased's PIA and survivor's survivorBenefitDate is less than greater of
-      //   //deceased person's retirementBenefit or 82.5% of deceased person's PIA (or nonWEPPIA and nonWEPretirement benefit if they were subject to WEP)
-      //     //Maybe
-      //       //ignore family max
-      //       //Determine whether RIB-LIM in this case is deceased's retirementBenefit or 82.5% of deceased person's PIA (or nonWEP versions if applicable)
-      //       //Then find how many months early would be necessary to adjust survivor original benefit to an amount less than the amount selected above.
-      //   //no error
-      // }
+      //RIB-LIM is applicable, and survivor is filing up to 6 months retroactively per POMS GN 00204.030.D
+      else if (this.benefitService.checkIfRIBLIMisApplicableForRetroactiveSurvivorApplication(scenario, livingPerson, deceasedPerson, livingPerson.survivorBenefitDate) && survivorBenefitDate >= this.sixMonthsAgo){
+        //no error
+      }
       else {
         error = "The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date for a retroactive application must also be no earlier than your survivor FRA, in most cases. (See <a href='https://secure.ssa.gov/poms.nsf/lnx/0200204030' target='_blank'>POMS GN 00204.030.D</a> for more information.)"
       }
     }
     //If they haven't already filed (so we're looking at CustomDate form rather than fixedSurvivorBenefitDate)...
+    //Latest reasonable date is:
+    //When there's a retroactive RIB-LIM application, it's that earliest date, but no earlier than FRA because earnings test could stilll matter.)
+    //When there's no retroactive RIB-LIML application...
     //...don't let be after later of survivorFRA or today
     if (livingPerson.hasFiledAsSurvivor === false){
-      let latestReasonableDate:MonthYearDate
-      latestReasonableDate = livingPerson.survivorFRA > this.today ? new MonthYearDate(livingPerson.survivorFRA) : new MonthYearDate(this.today) 
-      if (survivorBenefitDate > latestReasonableDate){
-        error = "Survivor benefits do not continue to grow as a result of waiting beyond your survivor FRA. Please choose a date that is no later than your survivor FRA (or no later than today, if you have already reached your survivor FRA)."
+      let latestReasonableDate:MonthYearDate = this.maximizePVservice.findLatestSurvivorBenefitDate(scenario, livingPerson, deceasedPerson)
+      if (survivorBenefitDate > latestReasonableDate){ 
+        error = "Survivor benefits do not continue to grow as a result of waiting beyond your survivor FRA. Please choose a date that is no later than your survivor FRA (or no later than your earliest possible retroactive filing date, if you have already reached your survivor FRA)."
       }
     }
     return error
@@ -442,4 +438,6 @@ export class InputValidationService {
     }
     return error
   }
+
+
 }

@@ -10,6 +10,7 @@ import {BirthdayService} from './birthday.service'
 import { ClaimStrategy } from './data model classes/claimStrategy'
 import { CalculatePvService } from './calculate-PV.service'
 import { MortalityService } from './mortality.service'
+import { BenefitService } from './benefit.service'
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,7 @@ export class MaximizePVService {
   sixMonthsAgo:MonthYearDate
   twelveMonthsAgo:MonthYearDate
 
-  constructor(private calculatePVservice:CalculatePvService, private birthdayService:BirthdayService, private familyMaximumService:FamilyMaximumService,
+  constructor(private calculatePVservice:CalculatePvService, private birthdayService:BirthdayService, private benefitService:BenefitService, private familyMaximumService:FamilyMaximumService,
     private mortalityService:MortalityService, private solutionSetService: SolutionSetService) {
       this.setToday(new MonthYearDate())
     }
@@ -32,6 +33,7 @@ export class MaximizePVService {
       this.twelveMonthsAgo.setFullYear(this.twelveMonthsAgo.getFullYear()-1)
       this.calculatePVservice.setToday(today)
       this.solutionSetService.setToday(today)
+      this.benefitService.setToday(today)
     }
 
     maximizeSinglePersonPV(person:Person, scenario:CalculationScenario) : SolutionSet{
@@ -336,9 +338,22 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
 
       //find initial retirementBenefitDate for personA
       personA.retirementBenefitDate = this.findEarliestPossibleRetirementBenefitDate(personA)
+
+      //set personB.retirementBenefitDate (date they actually filed if applicable; if they hadn't filed then FRA if they died prior to FRA or date of death if they died after FRA)
+      if (personB.hasFiled === true){
+        personB.retirementBenefitDate = new MonthYearDate(personB.fixedRetirementBenefitDate)
+      }
+      else {//personB had not filed as of date of death
+        if (personB.dateOfDeath < personB.FRA){
+          personB.retirementBenefitDate = new MonthYearDate(personB.FRA)
+        }
+        else {
+          personB.retirementBenefitDate = new MonthYearDate(personB.dateOfDeath)
+        }
+      }
   
       //find initial survivorBenefitDate for personA.
-      if (personA.hasFiledAsSurvivor === false){personA.survivorBenefitDate = this.findEarliestSurvivorBenefitDate(personA, personB)}
+      if (personA.hasFiledAsSurvivor === false){personA.survivorBenefitDate = this.findEarliestSurvivorBenefitDate(scenario, personA, personB)}
       else {personA.survivorBenefitDate = new MonthYearDate(personA.fixedSurvivorBenefitDate)}
   
       //find motherFatherBenefitDate for personA. Doesn't have to be iterated at all. Doesn't depend on anybody's various filing dates.
@@ -346,18 +361,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       if (personA.hasFiledAsMotherFather === false){personA.motherFatherBenefitDate = this.findEarliestMotherFatherBenefitDate(personB, scenario)}
 
 
-      //set personB.retirementBenefitDate (date they actually filed if applicable; if they hadn't filed then FRA if they died prior to FRA or date of death if they died after FRA)
-        if (personB.hasFiled === true){
-          personB.retirementBenefitDate = new MonthYearDate(personB.fixedRetirementBenefitDate)
-        }
-        else {//personB had not filed as of date of death
-          if (personB.dateOfDeath < personB.FRA){
-            personB.retirementBenefitDate = new MonthYearDate(personB.FRA)
-          }
-          else {
-            personB.retirementBenefitDate = new MonthYearDate(personB.dateOfDeath)
-          }
-        }
+
   
       //If personA has already filed or is on disability, initialize their begin&end suspension date as their FRA (but no earlier than this month), and set that person's retirementBenefitDate using fixedRetirementBenefitDate field 
           personA = this.initializeBeginEndSuspensionDates(personA)
@@ -378,7 +382,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
         //For retirement, the month personA turns 70.
         let retirementBenefitEndTestDate = new MonthYearDate(personA.SSbirthDate.getFullYear()+70, personA.SSbirthDate.getMonth())
         //For survivor, earliest possible survivorBenefitDate that is not before survivorFRA
-        let survivorBenefitEndTestDate = this.findLatestSurvivorBenefitDate(personA, personB)
+        let survivorBenefitEndTestDate = this.findLatestSurvivorBenefitDate(scenario, personA, personB)
   
       //Get limits for storage of PV for range of claim options
         let earliestStartRetirement: MonthYearDate = new MonthYearDate(personA.retirementBenefitDate)
@@ -400,7 +404,7 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
   
       while (personA.retirementBenefitDate <= retirementBenefitEndTestDate && personA.endSuspensionDate <= retirementBenefitEndTestDate) {
           //Reset personA.survivorBenefitDate to earliest possible
-            personA.survivorBenefitDate = this.findEarliestSurvivorBenefitDate(personA, personB)
+            personA.survivorBenefitDate = this.findEarliestSurvivorBenefitDate(scenario, personA, personB)
 
           while (personA.survivorBenefitDate <= survivorBenefitEndTestDate) {
             //Calculate PV using current testDates
@@ -628,48 +632,56 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       return latestRetirementBenefitDate
     }
 
-    findEarliestSurvivorBenefitDate(livingPerson:Person, deceasedPerson:Person):MonthYearDate{
+    findEarliestSurvivorBenefitDate(scenario:CalculationScenario, livingPerson:Person, deceasedPerson:Person):MonthYearDate{
       let earliestSurvivorBenefitDate:MonthYearDate
-      if (livingPerson.hasFiledAsSurvivor === false){
-        if (livingPerson.isOnDisability === false){
-          //Begin with month in which person turns 60. (Note, it's not "60 all month." See CFR 404.337 as opposed to 404.311)
-          earliestSurvivorBenefitDate = new MonthYearDate(livingPerson.SSbirthDate.getFullYear()+60, livingPerson.SSbirthDate.getMonth())
-          //If person is already over 60, adjust to today's month/year instead of their age 60 month/year.
-          if (livingPerson.initialAge > 60){
-            earliestSurvivorBenefitDate = new MonthYearDate(this.today)
-          }
-          //If person is already beyond survivorFRA, adjust to earliest retroactive date (6 months ago, but no earlier than survivorFRA)
-          if (this.today > livingPerson.survivorFRA){
-            earliestSurvivorBenefitDate = new MonthYearDate(this.sixMonthsAgo)
-            if (earliestSurvivorBenefitDate < livingPerson.survivorFRA){
-              earliestSurvivorBenefitDate = new MonthYearDate(livingPerson.survivorFRA)
+
+      if (livingPerson.hasFiledAsSurvivor === true){
+        earliestSurvivorBenefitDate = new MonthYearDate(livingPerson.fixedSurvivorBenefitDate)
+      }
+      else {//i.e., person hasn't yet filed as survivor 
+        //Allow for retroactivity when applicable
+            if (livingPerson.isOnDisability === true){
+              //Can be retroactive to 12 months ago
+              earliestSurvivorBenefitDate = new MonthYearDate(this.twelveMonthsAgo)
             }
-          }
-        }
-        else {//i.e., person is disabled
-            //Begin with earliest retroactive date (12 months ago)
-            earliestSurvivorBenefitDate = new MonthYearDate(this.twelveMonthsAgo)
-            //But don't let be earlier than age 50
-            if (earliestSurvivorBenefitDate < new MonthYearDate(livingPerson.SSbirthDate.getFullYear()+50, livingPerson.SSbirthDate.getMonth())){
-              earliestSurvivorBenefitDate = new MonthYearDate(livingPerson.SSbirthDate.getFullYear()+50, livingPerson.SSbirthDate.getMonth())
+            else {//i.e., person is not disabled
+              //Can be retroactive up to 6 months ago if RIB-LIM would be applicable, even if earlier than survivorFRA per POMS GN 00204.030.D.
+              //Start with 6 months ago, see if RIB-LIM is applicable. If it isn't, move date one month later.
+              earliestSurvivorBenefitDate = new MonthYearDate(this.sixMonthsAgo)
+              while (this.benefitService.checkIfRIBLIMisApplicableForRetroactiveSurvivorApplication(scenario, livingPerson, deceasedPerson, earliestSurvivorBenefitDate) === false && earliestSurvivorBenefitDate < this.today){
+                earliestSurvivorBenefitDate.setMonth(earliestSurvivorBenefitDate.getMonth() + 1)
+              }
+              //So by this point, earliestSurvivorBenefitDate is earliest date on which RIB-LIM was applicable, or today if it wasn't applicable for any of last 6 months.
+              //If RIB-LIM not applicable (i.e., date hasn't been set to a date earlier than today), but person is already beyond survivorFRA, earliest retroactive date is 6 months ago, but no earlier than survivorFRA
+              if (earliestSurvivorBenefitDate >= this.today && this.today > livingPerson.survivorFRA){
+                if (this.sixMonthsAgo < livingPerson.survivorFRA) {earliestSurvivorBenefitDate = new MonthYearDate(livingPerson.survivorFRA)}
+                else {earliestSurvivorBenefitDate = new MonthYearDate(this.sixMonthsAgo)}
+              }
             }
-        }
         //Regardless of above, do not let survivorBenefitDate be earlier than deceasedPerson.dateOfDeath
         if (earliestSurvivorBenefitDate < deceasedPerson.dateOfDeath){
           earliestSurvivorBenefitDate = new MonthYearDate(deceasedPerson.dateOfDeath)
         }
-      }
-      else {//i.e., livingPerson has already filed for survivorBenefit
-        earliestSurvivorBenefitDate = new MonthYearDate(livingPerson.fixedSurvivorBenefitDate)
+        //And do not let survivorBenefitDate be earlier than age 60 (after 50 if disabled)
+        if (livingPerson.isOnDisability === false){
+          if (earliestSurvivorBenefitDate < new MonthYearDate(livingPerson.SSbirthDate.getFullYear()+60, livingPerson.SSbirthDate.getMonth())){
+            earliestSurvivorBenefitDate = new MonthYearDate(livingPerson.SSbirthDate.getFullYear()+60, livingPerson.SSbirthDate.getMonth())
+          }
+        }
+        else {
+          if (earliestSurvivorBenefitDate < new MonthYearDate(livingPerson.SSbirthDate.getFullYear()+50, livingPerson.SSbirthDate.getMonth())){
+            earliestSurvivorBenefitDate = new MonthYearDate(livingPerson.SSbirthDate.getFullYear()+50, livingPerson.SSbirthDate.getMonth())
+          }
+        }
       }
       return earliestSurvivorBenefitDate
     }
 
-    findLatestSurvivorBenefitDate(livingPerson:Person, deceasedPerson:Person):MonthYearDate{
+    findLatestSurvivorBenefitDate(scenario:CalculationScenario, livingPerson:Person, deceasedPerson:Person):MonthYearDate{
       let latestSurvivorBenefitDate:MonthYearDate
       if (livingPerson.hasFiledAsSurvivor === false){
         //Basically, find the earliest date that is an option and no earlier than survivorFRA
-        latestSurvivorBenefitDate = new MonthYearDate(this.findEarliestSurvivorBenefitDate(livingPerson, deceasedPerson))
+        latestSurvivorBenefitDate = new MonthYearDate(this.findEarliestSurvivorBenefitDate(scenario, livingPerson, deceasedPerson))
         if (latestSurvivorBenefitDate < livingPerson.survivorFRA){latestSurvivorBenefitDate = new MonthYearDate(livingPerson.survivorFRA)}
       }
       else {//i.e., livingPerson has already filed for survivorBenefit

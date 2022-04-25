@@ -6,6 +6,9 @@ import {BirthdayService} from './birthday.service'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 import { ErrorCollection } from './data model classes/errorcollection'
 import { MortalityService } from './mortality.service'
+import { BenefitService } from './benefit.service'
+import { MaximizePVService } from './maximize-pv.service'
+import { CalculatePvService } from './calculate-PV.service'
 
 function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdayService:BirthdayService){
   person.FRA = birthdayService.findFRA(person.SSbirthDate)
@@ -17,14 +20,18 @@ function mockGetPrimaryFormInputs(person:Person, today:MonthYearDate, birthdaySe
 
 describe('InputvalidationService', () => {
   let birthdayService:BirthdayService
+  let benefitService:BenefitService
   let mortalityService:MortalityService
+  let scenario:CalculationScenario
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [InputValidationService, BirthdayService, MortalityService]
+      providers: [InputValidationService, BirthdayService, MortalityService, BenefitService, MaximizePVService, CalculatePvService]
     })
     birthdayService = TestBed.inject(BirthdayService)
     mortalityService = TestBed.inject(MortalityService)
+    benefitService = TestBed.inject(BenefitService)
+    scenario = new CalculationScenario()
   })
 
   it('should be created', inject([InputValidationService], (service: InputValidationService) => {
@@ -34,7 +41,6 @@ describe('InputvalidationService', () => {
 
   //Check checkValidRetirementInputs()
   it('should give no error message when input date is good', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     let person:Person = new Person("A")
     person.actualBirthDate = new Date (1960, 11, 29) //December 30, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
@@ -44,7 +50,6 @@ describe('InputvalidationService', () => {
   }))
 
   it('should demand a date when user fails to input one', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     let person:Person = new Person("A")
     person.actualBirthDate = new Date (1960, 11, 29) //December 30, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
@@ -54,7 +59,6 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject retirementBenefitDate that is too early', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     let person:Person = new Person("A")
     person.actualBirthDate = new Date (1960, 11, 29) //December 30, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
@@ -64,7 +68,6 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject retirementBenefitDate that is later than 70', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     let person:Person = new Person("A")
     person.actualBirthDate = new Date (1960, 11, 29) //December 30, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
@@ -74,7 +77,6 @@ describe('InputvalidationService', () => {
   }))
 
   it('should allow retroactive retirementBenefitDate if after FRA and no more than 6 months ago', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     let person:Person = new Person("A")
     service.setToday(new MonthYearDate(2018, 10))//November 2018 (date when writing test) so that it doesn't fail in future
     person.actualBirthDate = new Date (1952, 8, 29) //Sept 30, 1952
@@ -86,7 +88,6 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject retirementBenefitDate that is more than 6 months ago, even if after FRA', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     let person:Person = new Person("A")
     service.setToday(new MonthYearDate(2018, 10))//November 2018 (date when writing test)
     person.actualBirthDate = new Date (1952, 2, 29) //March 30, 1952
@@ -98,7 +99,6 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject retirementBenefitDate that prior to FRA, even if no more than 6 months ago', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     let person:Person = new Person("A")
     service.setToday(new MonthYearDate(2018, 10))//November 2018 (date when writing test)
     person.actualBirthDate = new Date (1952, 8, 29) //Sept 30, 1952
@@ -111,7 +111,6 @@ describe('InputvalidationService', () => {
 
   //Check checkValidSpousalInputs()
   it('should give no error message when input dates are good', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -128,7 +127,6 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject spousalBenefitDate that is prior to age 62', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -145,7 +143,6 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject spousalBenefitDate that is prior to other spouse retirementBenefitDate', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -162,7 +159,6 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject spousalBenefitDate that is later than later of the two retirementBenefitDates', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -171,15 +167,14 @@ describe('InputvalidationService', () => {
     mockGetPrimaryFormInputs(person, service.today, birthdayService)
     otherPerson.actualBirthDate = new Date (1962, 5, 3) //June 4, 1962
     otherPerson.SSbirthDate = new MonthYearDate (1962, 5, 1)
-    let ownRetirementBenefitDate:MonthYearDate = new MonthYearDate(2026, 11, 1) //own retirement at 66 years 0 months
-    let spousalBenefitDate:MonthYearDate = new MonthYearDate(2032, 0, 1) //own spousal at 66 years 0 months
-    let otherSpouseRetirementBenefitDate:MonthYearDate = new MonthYearDate(2031, 11, 1) //After the attempted own spousal date
+    let ownRetirementBenefitDate:MonthYearDate = new MonthYearDate(2026, 11, 1)
+    let otherSpouseRetirementBenefitDate:MonthYearDate = new MonthYearDate(2031, 11, 1)
+    let spousalBenefitDate:MonthYearDate = new MonthYearDate(2032, 0, 1) //Later than both retirementBenefitDates
     expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
       .toEqual("Per new deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date.")
   }))
 
   it('should reject spousalBenefitDate that is later than later of the two retirementBenefitDates, for divorcee', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "divorced"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -188,15 +183,14 @@ describe('InputvalidationService', () => {
     mockGetPrimaryFormInputs(person, service.today, birthdayService)
     otherPerson.actualBirthDate = new Date (1962, 5, 3) //June 4, 1962
     otherPerson.SSbirthDate = new MonthYearDate (1962, 5, 1)
-    let ownRetirementBenefitDate:MonthYearDate = new MonthYearDate(2026, 11, 1) //own retirement at 66 years 0 months
-    let spousalBenefitDate:MonthYearDate = new MonthYearDate(2032, 0, 1) //own spousal at 66 years 0 months
-    let otherSpouseRetirementBenefitDate:MonthYearDate = new MonthYearDate(2031, 11, 1) //After the attempted own spousal date
+    let ownRetirementBenefitDate:MonthYearDate = new MonthYearDate(2026, 11, 1)
+    let spousalBenefitDate:MonthYearDate = new MonthYearDate(2032, 0, 1)
+    let otherSpouseRetirementBenefitDate:MonthYearDate = new MonthYearDate(2031, 11, 1)
     expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
       .toEqual("Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month.")
   }))
 
   it('should reject restricted app prior to FRA -- ie spousalBenefitDate prior to FRA for somebody born 1953 or prior ', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -232,7 +226,6 @@ describe('InputvalidationService', () => {
   }))
 
   it('should allow retroactive spousal date if after FRA and 8 months ago because other person is disabled', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -252,7 +245,6 @@ describe('InputvalidationService', () => {
   }))
 
   it('should reject retroactive spousal date if after FRA but more than 6 months ago', inject([InputValidationService], (service: InputValidationService) => {
-    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -272,7 +264,6 @@ describe('InputvalidationService', () => {
 
   it('should reject retroactive spousal date if less than 6 months ago but before FRA', inject([InputValidationService], (service: InputValidationService) => {
     let birthdayService:BirthdayService = new BirthdayService()
-    let scenario:CalculationScenario = new CalculationScenario()
     scenario.maritalStatus = "married"
     let person:Person = new Person("A")
     let otherPerson:Person = new Person("B")
@@ -372,6 +363,7 @@ describe('InputvalidationService', () => {
       .toEqual("Please enter a date no later than the month in which this person attains age 70.")
   }))
 
+  //Testing checkValidSurvivorInput()
   it('should reject survivorBenefit date that is prior to date of death', inject([InputValidationService], (service: InputValidationService) => {
     service.setToday(new MonthYearDate(2020, 8))//Sept 2020 writing this test
     let livingPerson:Person = new Person("A")
@@ -380,7 +372,7 @@ describe('InputvalidationService', () => {
     livingPerson.SSbirthDate = new MonthYearDate (1952, 8)//Age 68 now, has already reached survivor FRA
     livingPerson.survivorBenefitDate = new MonthYearDate(2020, 6)
     mockGetPrimaryFormInputs(livingPerson, service.today, birthdayService)
-    expect(service.checkValidSurvivorInput(livingPerson, deceasedPerson, livingPerson.survivorBenefitDate))
+    expect(service.checkValidSurvivorInput(scenario, livingPerson, deceasedPerson, livingPerson.survivorBenefitDate))
       .toEqual("A survivor benefit cannot be claimed prior to the deceased spouse's date of death.")
   }))
 
@@ -392,7 +384,7 @@ describe('InputvalidationService', () => {
     livingPerson.SSbirthDate = new MonthYearDate (1952, 8)//Age 68 now, has already reached survivor FRA
     livingPerson.survivorBenefitDate = new MonthYearDate(2020, 1)
     mockGetPrimaryFormInputs(livingPerson, service.today, birthdayService)
-    expect(service.checkValidSurvivorInput(livingPerson, deceasedPerson, livingPerson.survivorBenefitDate))
+    expect(service.checkValidSurvivorInput(scenario, livingPerson, deceasedPerson, livingPerson.survivorBenefitDate))
       .toEqual("The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date for a retroactive application must also be no earlier than your survivor FRA, in most cases. (See <a href='https://secure.ssa.gov/poms.nsf/lnx/0200204030' target='_blank'>POMS GN 00204.030.D</a> for more information.)")
   }))
 
@@ -405,10 +397,50 @@ describe('InputvalidationService', () => {
     livingPerson.survivorBenefitDate = new MonthYearDate(2020, 1)
     livingPerson.isOnDisability = true
     mockGetPrimaryFormInputs(livingPerson, service.today, birthdayService)
-    expect(service.checkValidSurvivorInput(livingPerson, deceasedPerson, livingPerson.survivorBenefitDate))
+    expect(service.checkValidSurvivorInput(scenario, livingPerson, deceasedPerson, livingPerson.survivorBenefitDate))
       .toBeUndefined()
   }))
 
+  it('should allow survivorBenefit date 5 months ago, even if person younger than survivorFRA, if RIB-LIM is applicable', inject([InputValidationService], (service: InputValidationService) => {
+    service.setToday(new MonthYearDate(2022, 3))//April 2022 writing this test
+    let livingPerson:Person = new Person("A")
+    let deceasedPerson:Person = new Person("B")
+    livingPerson.PIA = 500
+    deceasedPerson.PIA = 2500
+    deceasedPerson.dateOfDeath = new MonthYearDate(2021, 11)//Died December 2021
+    livingPerson.SSbirthDate = new MonthYearDate (1956, 4) //Born May 1956. With 1956 DoB, survivor FRA is 66 and 0 months, so that would be May 2022.
+    deceasedPerson.SSbirthDate = new MonthYearDate (1956, 1)//Born Feb 1956
+    mockGetPrimaryFormInputs(livingPerson, service.today, birthdayService)
+    mockGetPrimaryFormInputs(deceasedPerson,service.today, birthdayService)
+    livingPerson.survivorBenefitDate = new MonthYearDate(2021, 11)
+    //RIB-LIM has to apply. Let's say deceased filed asap at 62 and 1 month. So RIB-LIM is 82.5%
+    deceasedPerson.hasFiled = true
+    deceasedPerson.retirementBenefitDate = new MonthYearDate(2018, 2)//Filed at 62 and 1 month
+    deceasedPerson.retirementBenefit = benefitService.calculateRetirementBenefit(deceasedPerson, deceasedPerson.retirementBenefitDate)
+    expect(service.checkValidSurvivorInput(scenario, livingPerson, deceasedPerson, livingPerson.survivorBenefitDate))
+      .toBeUndefined()
+  }))
+
+  it('should reject survivorBenefit date 5 months ago, if person younger than survivorFRA, and RIB-LIM is NOT applicable', inject([InputValidationService], (service: InputValidationService) => {
+    service.setToday(new MonthYearDate(2022, 3))//April 2022 writing this test
+    let livingPerson:Person = new Person("A")
+    let deceasedPerson:Person = new Person("B")
+    livingPerson.PIA = 500
+    deceasedPerson.PIA = 2500
+    deceasedPerson.dateOfDeath = new MonthYearDate(2021, 11)//Died December 2021
+    livingPerson.SSbirthDate = new MonthYearDate (1956, 4) //Born May 1956. With 1956 DoB, survivor FRA is 66 and 0 months, so that would be May 2022.
+    deceasedPerson.SSbirthDate = new MonthYearDate (1952, 1)//Born Feb 1952
+    mockGetPrimaryFormInputs(livingPerson, service.today, birthdayService)
+    mockGetPrimaryFormInputs(deceasedPerson,service.today, birthdayService)
+    livingPerson.survivorBenefitDate = new MonthYearDate(2021, 11)
+    //RIB-LIM has to apply. Let's say deceased filed asap at 62 and 1 month. So RIB-LIM is 82.5%
+    deceasedPerson.retirementBenefitDate = new MonthYearDate(2021, 10)//Filed at 69 and 9 months
+    deceasedPerson.retirementBenefit = benefitService.calculateRetirementBenefit(deceasedPerson, deceasedPerson.retirementBenefitDate)
+    expect(service.checkValidSurvivorInput(scenario, livingPerson, deceasedPerson, livingPerson.survivorBenefitDate))
+      .toEqual("The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date for a retroactive application must also be no earlier than your survivor FRA, in most cases. (See <a href='https://secure.ssa.gov/poms.nsf/lnx/0200204030' target='_blank'>POMS GN 00204.030.D</a> for more information.)")
+  }))
+
+  //Testing checkValidMotherFatherInput()
   it('should reject mother/father benefit date that is prior to date of death', inject([InputValidationService], (service: InputValidationService) => {
     service.setToday(new MonthYearDate(2020, 8))//Sept 2020 writing this test
     let livingPerson:Person = new Person("A")
@@ -421,6 +453,7 @@ describe('InputvalidationService', () => {
       .toEqual("A mother/father benefit cannot be claimed prior to the deceased spouse's date of death.")
   }))
 
+  //Testing checkForAssumedDeathAgeErrors()
   it("should reject an assumed age at death that is younger than the person's age at the end of this year", inject([InputValidationService], (service: InputValidationService) => {
     service.setToday(new MonthYearDate(2021, 9))//October 2021 writing this test
     let errorCollection:ErrorCollection = new ErrorCollection() 

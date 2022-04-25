@@ -840,5 +840,29 @@ export class BenefitService {
       }
     }
   }
-  
+
+  checkIfRIBLIMisApplicableForRetroactiveSurvivorApplication(scenario:CalculationScenario, livingPerson:Person, deceasedPerson:Person, survivorBenefitDate:MonthYearDate):boolean{
+    //This function is not actually called for any benefit calculations. It's just for the sake of applying POMS GN 00204.030.D,
+      //which says that a person can file for widow(er) benefit up to 6 months retroactively, even before FRA, if their benefit is being limited by RIB-LIM (i.e., reduction for age isn't relevant)
+    //Note that we're ignoring family max here. It's possible that this would return true when it shouldn't (indicating that RIB-LIM is limiting this person's widow(er) benefit when that's not actually the case).
+    
+    //Have to make a clone of livingPerson, because we're about to change their survivorBenefitDate field, so that we can use adjustSurvivorBenefitsForAge() based on the survivorBenefitDate input.
+    //And we don't *actually* want to change the survivorBenefitDate field on the real person object.
+    let cloneLivingPerson:Person = Object.assign(new Person("A"), livingPerson)
+    cloneLivingPerson.survivorBenefitDate = new MonthYearDate(survivorBenefitDate)
+    let isApplicable:boolean = false
+
+    if (deceasedPerson.hasFiled === true){
+      let PIAforRIBLIM:number = deceasedPerson.entitledToNonCoveredPension ? deceasedPerson.nonWEP_PIA : deceasedPerson.PIA
+      let retirementBenefitforRIBLIM:number = deceasedPerson.entitledToNonCoveredPension ? deceasedPerson.nonWEPretirementBenefit : deceasedPerson.retirementBenefit
+      let RIBLIMlimit:number = PIAforRIBLIM * 0.825 > retirementBenefitforRIBLIM ? PIAforRIBLIM * 0.825 : retirementBenefitforRIBLIM
+      cloneLivingPerson.monthlySurvivorPayment = this.calculateSurvivorOriginalBenefit(deceasedPerson)
+      cloneLivingPerson.monthlySurvivorPayment = this.adjustSurvivorBenefitsForAge(scenario, cloneLivingPerson)
+      if (cloneLivingPerson.monthlySurvivorPayment > RIBLIMlimit){
+        isApplicable = true
+      }
+    }
+    return isApplicable
+  }
+
 }

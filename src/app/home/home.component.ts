@@ -212,8 +212,6 @@ export class HomeComponent implements OnInit {
   customPersonBendSuspensionYear: number = this.todayYear
   customPersonAsurvivorBenefitMonth: number = this.todayMonth
   customPersonAsurvivorBenefitYear: number = this.todayYear
-    personAlatestSurvivorBenefitDate:MonthYearDate//Not an input itself, but used to know whether to display custom survivorBenefitDate field. If we're already past that date, no sense discussing multiple options.
-
 
 
 //Inputs from Range component
@@ -274,7 +272,7 @@ export class HomeComponent implements OnInit {
       this.solutionSet.computationComplete = true;
     }
     // computation is finished
-
+    this.resetHiddenInputs()
     this.normalCursor()
     this.primaryFormHasChanged = false//Set this to false so that customDates() doesn't rerun onSubmit() next time it is run, unless another change is made to primary inputs
     if (this.customClaimStrategy.PV > 0){//If customDates() has already been run (and this function is being rerun via top submit button after having changed a primary input), rerun the PV calc with custom dates and new primary inputs
@@ -583,7 +581,7 @@ export class HomeComponent implements OnInit {
       this.maximizePvService.checkForDeemedSurvivorBenefitDate(this.personA, this.personB, this.scenario)
       this.maximizePvService.checkForDeemedSurvivorBenefitDate(this.personB, this.personA, this.scenario)
     }
-    
+
     //Call resetHiddenInputs() <-- necessary because right now that is the function that's bound to custom date form's (change) event. And we'll need that event to be bound to this function instead.
     this.resetHiddenInputs()
   }
@@ -659,7 +657,7 @@ export class HomeComponent implements OnInit {
         this.personAfixedRetirementBenefitYear = null
         this.personA.fixedRetirementBenefitDate = null
       }
-      if (this.personB.hasFiled === false && this.personB.isOnDisability === false && this.scenario.maritalStatus == "married") {
+      if (this.personB.hasFiled === false && this.personB.isOnDisability === false && this.scenario.maritalStatus !== "divorced") {
         this.personBfixedRetirementBenefitMonth = null
         this.personBfixedRetirementBenefitYear = null
         this.personB.fixedRetirementBenefitDate = null
@@ -735,11 +733,6 @@ export class HomeComponent implements OnInit {
       this.personA.hasFiledAsMotherFather = false
     }
 
-    //Find latest reasonable survivorBenefitDate for personA <- used to know whether to display custom survivorBenefitDate field. If we're already past that date, no sense discussing multiple options.
-    if (this.scenario.maritalStatus == "survivor" && this.solutionSet.computationComplete === true){
-      this.personAlatestSurvivorBenefitDate = new MonthYearDate(this.maximizePvService.findLatestSurvivorBenefitDate(this.personA, this.personB))
-    }
-
     //Zero children if qualifyingChildren boolean is false
     if (this.qualifyingChildrenBoolean === false){
       this.scenario.numberOfChildren = 0
@@ -803,7 +796,6 @@ export class HomeComponent implements OnInit {
   
       this.customDates()
     }
-
   }
 
   alternativeStrategyPVcalcViaRangeBenefitCutBooleanSwitch(showCut:boolean){
@@ -1053,6 +1045,7 @@ export class HomeComponent implements OnInit {
         this.scenario.setChildrenArray(this.childrenObjectsArray, this.today)
       }
     })
+    this.resetHiddenInputs()
   }
 
   buildChildParametersString():string{
