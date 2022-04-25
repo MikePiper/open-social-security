@@ -395,7 +395,7 @@ export class InputValidationService {
         //no error
       }
       else {
-        error = "The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date for a retroactive application must also be no earlier than your survivor FRA, in most cases. (See <a href='https://secure.ssa.gov/poms.nsf/lnx/0200204030' target='_blank'>POMS GN 00204.030.D</a> for more information.)"
+        error = "The effective date for a retroactive application for survivor benefits must be no earlier than 6 months before today (12 if disabled). If you are not disabled, the effective date for a retroactive application must also be no earlier than your survivor FRA, in most cases. (See <a href='https://secure.ssa.gov/poms.nsf/lnx/0200204030#d' target='_blank'>POMS GN 00204.030.D</a> for more information.)"
       }
     }
     //If they haven't already filed (so we're looking at CustomDate form rather than fixedSurvivorBenefitDate)...

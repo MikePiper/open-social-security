@@ -17,6 +17,7 @@ import { BenefitService } from './benefit.service'
 })
 export class MaximizePVService {
   today: MonthYearDate
+  oneMonthAgo:MonthYearDate
   sixMonthsAgo:MonthYearDate
   twelveMonthsAgo:MonthYearDate
 
@@ -27,6 +28,8 @@ export class MaximizePVService {
 
     setToday(today:MonthYearDate){
       this.today = new MonthYearDate(today)
+      this.oneMonthAgo = new MonthYearDate(today)
+      this.oneMonthAgo.setMonth(this.oneMonthAgo.getMonth()-1)
       this.sixMonthsAgo = new MonthYearDate(today)
       this.sixMonthsAgo.setMonth(this.sixMonthsAgo.getMonth()-6)
       this.twelveMonthsAgo = new MonthYearDate(today)
@@ -656,6 +659,10 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
               if (earliestSurvivorBenefitDate >= this.today && this.today > livingPerson.survivorFRA){
                 if (this.sixMonthsAgo < livingPerson.survivorFRA) {earliestSurvivorBenefitDate = new MonthYearDate(livingPerson.survivorFRA)}
                 else {earliestSurvivorBenefitDate = new MonthYearDate(this.sixMonthsAgo)}
+              }
+              //If 1) earliestSurvivorBenefitDate is still not retroactive and 2) date of death was last month, allow retroactive to date of death
+              if (earliestSurvivorBenefitDate >= this.today && deceasedPerson.dateOfDeath.valueOf() == this.oneMonthAgo.valueOf()){
+                earliestSurvivorBenefitDate = new MonthYearDate(this.oneMonthAgo)
               }
             }
         //Regardless of above, do not let survivorBenefitDate be earlier than deceasedPerson.dateOfDeath

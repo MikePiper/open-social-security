@@ -1064,7 +1064,7 @@ describe('Tests for maximizeSurvivorPV', () => {
   })
 })
 
-describe('test functions that find earliest/latest dates', () => {
+fdescribe('test functions that find earliest/latest dates', () => {
   let service:MaximizePVService
   let birthdayService:BirthdayService
   let benefitService:BenefitService
@@ -1304,6 +1304,20 @@ describe('test functions that find earliest/latest dates', () => {
     let returnedDate:MonthYearDate = service.findEarliestSurvivorBenefitDate(scenario, personA, personB)
     expect(returnedDate).toEqual(new MonthYearDate(2019, 7))//12 months retroactive since that's no earlier than age 50 and otherPerson died 14 months ago
   })
+
+  it('should correctly determine earliest survivorBenefitDate as 1 month ago when survivor is younger than FRA and date of death was one month ago', () => {
+    //Per POMS GN 00204.030, if date of death was exactly last month, retroactive to 1 month allowed even if younger than FRA.
+    service.setToday(new MonthYearDate(2022, 3))//April 2022
+    personA.SSbirthDate = new MonthYearDate(1959, 3)//born April 1959, so exactly 63 right now.
+    personB.SSbirthDate = new MonthYearDate(1960, 7)
+    personB.dateOfDeath = new MonthYearDate(2022, 2)//Last month
+    mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
+    mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
+    let returnedDate:MonthYearDate = service.findEarliestSurvivorBenefitDate(scenario, personA, personB)
+    expect(returnedDate).toEqual(new MonthYearDate(2022, 2))//Last month
+  })
+
+
 
   it('should correctly determine earliest motherFatherBenefitDate (undefined) when there are no kids under 16 or disabled', () => {
     service.setToday(new MonthYearDate(2020, 7))//Aug 2020
