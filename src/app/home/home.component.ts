@@ -334,7 +334,8 @@ export class HomeComponent implements OnInit {
         this.personA.hasFiled = true
       }
     this.personB.initialAge =  this.birthdayService.findAgeOnDate(this.personB, this.today)
-      if (this.personB.initialAge > 70){
+      if ( (this.personB.initialAge > 70 && this.scenario.maritalStatus != "survivor")//If personB is still alive and over 70
+        || (this.birthdayService.findAgeOnDate(this.personB, this.personB.dateOfDeath) > 70 && this.scenario.maritalStatus == "survivor") ){//or if personB died after age 70
         this.personB.hasFiled = true
       }
     this.personA.initialAgeRounded = Math.round(this.personA.initialAge)
