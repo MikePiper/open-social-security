@@ -35,7 +35,7 @@
     "@angular/platform-browser-dynamic": "^11.2.14",
     "@angular/platform-server": "^11.2.14",
     "@angular/router": "^11.2.14",
-    "@nguniversal/express-engine": "^10.1.0",
+    "@nguniversal/express-engine": "^11.2.1",
     "@scullyio/init": "^2.1.32",
     "@scullyio/ng-lib": "latest",
     "@scullyio/scully": "^1.1.1",
