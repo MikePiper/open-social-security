@@ -32,7 +32,7 @@ module.exports = function (config) {
       // with the original karma.conf.js, was doing multiple runs in random order, but the tests kept restarting on my computer (when "disconnected"?)
       // singleRun: true, // so I added these two lines
       // random: false, // still doesn't run all tests
-    browserNoActivityTimeout : 100000,//by default 10000
-    browserDisconnectTimeout: 10000//by default 2000
+    browserNoActivityTimeout : 60000,//1 minute. Default value is 10000 (10 seconds)
+    browserDisconnectTimeout: 60000,//1 minute. Default value is 2000 (2 seconds)
   });
 };
