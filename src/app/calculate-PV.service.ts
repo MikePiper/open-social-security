@@ -490,7 +490,7 @@ export class CalculatePvService {
           }
         }
       //if personA alive and personB deceased, add monthlyPayment fields to annualBenefitOnlyPersonAalive
-        if (personAaliveBoolean === true && personBaliveBoolean === false){
+        else if (personAaliveBoolean === true && personBaliveBoolean === false){
           //if a benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e., not because of a prior filing)
           if (calcYear.isInPast === false || (scenario.maritalStatus == "survivor" && personA.hasFiled === false && personA.isOnDisability === false)){
             calcYear.annualBenefitOnlyPersonAalive = calcYear.annualBenefitOnlyPersonAalive + personA.monthlyRetirementPayment
@@ -507,7 +507,7 @@ export class CalculatePvService {
           }
         }
       //if personA deceased and personB alive, add monthlyPayment fields to annualBenefitOnlyPersonBalive
-        if (personAaliveBoolean === false && personBaliveBoolean === true){
+        else if (personAaliveBoolean === false && personBaliveBoolean === true){
           //if a benefit is for a month in the past, only want to include it in PV calc if it's from a retroactive application (i.e., not because of a prior filing)
             //Also, we only want to include any of personB's own benefits in PV calc if it's not a divorce scenario
             if (scenario.maritalStatus !== "divorced"){
@@ -527,7 +527,7 @@ export class CalculatePvService {
           }
         }
       //if personA deceased and personB deceased, add monthlyPayment fields to annualBenefitBothDeceased
-        if (personAaliveBoolean === false && personBaliveBoolean === false){
+        else {
           if (calcYear.isInPast === false){//only want to include it in PV calc if it's for a month no earlier than today (calculator will never be dealing with scenario where both parents are deceased and child is filing retroactive survivor application)
             for (let child of scenario.children){
               calcYear.annualBenefitBothDeceased = calcYear.annualBenefitBothDeceased + child.monthlyChildPayment
