@@ -246,7 +246,6 @@ describe('tests calculateCouplePV', () => {
   let benefitService:BenefitService
   let mortalityService:MortalityService
   let familyMaximumService:FamilyMaximumService
-  let earningsTestService:EarningsTestService
   let scenario:CalculationScenario
   let personA:Person
   let personB:Person
@@ -260,7 +259,6 @@ describe('tests calculateCouplePV', () => {
     benefitService = TestBed.inject(BenefitService)
     mortalityService = TestBed.inject(MortalityService)
     familyMaximumService = TestBed.inject(FamilyMaximumService)
-    earningsTestService = TestBed.inject(EarningsTestService)
     scenario = new CalculationScenario()
     personA = new Person("A")
     personB = new Person("B")
@@ -370,7 +368,8 @@ describe('tests calculateCouplePV', () => {
       personB.SSbirthDate = new MonthYearDate(1963, 6, 1) //Spouse B born in July 1963
       mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
       mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
-      personA.PIA = 700
+      personA.WEP_PIA = 700
+      personA.nonWEP_PIA = 700
       personB.PIA = 1900
       personA.retirementBenefitDate = new MonthYearDate (2032, 8, 1) //At age 68
       personB.retirementBenefitDate = new MonthYearDate (2029, 8, 1) //At age 66 and 2 months
@@ -380,6 +379,7 @@ describe('tests calculateCouplePV', () => {
       personB.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
       personA.nonCoveredPensionDate = new MonthYearDate(2030, 0) //Any date before personA's spousalBenefitDate, so that GPO applies
       personA.governmentPension = 900
+      personA.eligibleForNonCoveredPension = true
       scenario.discountRate = 1
       expect(service.calculateCouplePV(personA, personB, scenario, false).PV)
         .toBeCloseTo(486558, 0)
@@ -394,7 +394,8 @@ describe('tests calculateCouplePV', () => {
       personB.SSbirthDate = new MonthYearDate(1955, 3, 1) //Spouse B born in April 1955
       mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
       mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
-      personA.PIA = 700
+      personA.WEP_PIA = 700
+      personA.nonWEP_PIA = 700
       personB.PIA = 1900
       personA.retirementBenefitDate = new MonthYearDate (2032, 8, 1) //At age 68
       personB.retirementBenefitDate = new MonthYearDate (2017, 4, 1) //ASAP at 62 and 1 month
@@ -404,6 +405,7 @@ describe('tests calculateCouplePV', () => {
       personB.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
       personA.nonCoveredPensionDate = new MonthYearDate(2030, 0) //Any date before personA's spousalBenefitDate, so that GPO applies
       personA.governmentPension = 300
+      personA.eligibleForNonCoveredPension = true
       scenario.discountRate = 1
       expect(service.calculateCouplePV(personA, personB, scenario, false).PV)
         .toBeCloseTo(158226, 0)
@@ -474,9 +476,9 @@ describe('tests calculateCouplePV', () => {
       mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
       personA.PIA = 500
       personB.PIA = 1500
-          personB.isOnDisability = true
-          personB.retirementBenefitDate = new MonthYearDate (2018, 0) //On disabillity as of age 48
-          personB.fixedRetirementBenefitDate = new MonthYearDate (2018, 0) //On disabillity as of age 48
+      personB.isOnDisability = true
+      personB.retirementBenefitDate = new MonthYearDate (2018, 0) //On disabillity as of age 48
+      personB.fixedRetirementBenefitDate = new MonthYearDate (2018, 0) //On disabillity as of age 48
       personB.beginSuspensionDate = new MonthYearDate(personB.FRA)
       personB.endSuspensionDate = new MonthYearDate(2040, 0)//Suspends FRA-70
       personA.retirementBenefitDate = new MonthYearDate (2040, 0) //Filing exactly at 70
@@ -599,13 +601,15 @@ describe('tests calculateCouplePV', () => {
         personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
         personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
         personA.PIA = 1500
-        personB.PIA = 500
+        personB.WEP_PIA = 500
+        personB.nonWEP_PIA = 500
         personA.retirementBenefitDate = new MonthYearDate(2026, 2) //March 2026
         personB.retirementBenefitDate = new MonthYearDate(2027, 7) //August 2027 (age 64, 3 years before FRA) Own retirement benefit will be $400
         personA.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
         personB.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
         personB.nonCoveredPensionDate = new MonthYearDate(2027, 0)//Just some date before personB's spousal benefit date, so GPO is applicable
         personB.governmentPension = 150
+        personB.eligibleForNonCoveredPension = true
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
         expect(claimStrategy.outputTable[2][0]).toEqual(2028)
         expect(claimStrategy.outputTable[2][5]).toEqual("$1,050")
@@ -626,13 +630,15 @@ describe('tests calculateCouplePV', () => {
         personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
         personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
         personA.PIA = 1500
-        personB.PIA = 500
+        personB.WEP_PIA = 500
+        personB.nonWEP_PIA = 500
         personA.retirementBenefitDate = new MonthYearDate(2026, 2) //March 2026
         personB.retirementBenefitDate = new MonthYearDate(2027, 7) //August 2027 (age 64, 3 years before FRA) Own retirement benefit will be $400
         personA.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
         personB.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
         personB.nonCoveredPensionDate = new MonthYearDate(2027, 0)//Just some date before personB's spousal benefit date, so GPO is applicable
         personB.governmentPension = 1000
+        personB.eligibleForNonCoveredPension = true
         let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
         expect(claimStrategy.outputTable[2][0]).toEqual(2028)
         expect(claimStrategy.outputTable[2][5]).toEqual("$0")

@@ -570,14 +570,26 @@ export class CalculatePvService {
   }
 
   readyForSavedCalculationYearForFasterLoop(scenario:CalculationScenario, calcYear:CalculationYear, personA:Person, personB:Person):boolean{
-    if (personA.age < 71.1 || personB.age < 71.1){
-        //We call this function in december. We have already added 1 month to person's age at point where this function is called though.
-        //and we want to make sure they were 70 for the ENTIRE year. So they need to be 71 and 1 month by this point basically.
+    let comparisonYear = calcYear.date.getFullYear()-1 //We do minus one, because we want to make sure that we have done a full calendar year beyond the last year in which anything changed mid-year.
+    if (comparisonYear <= personA.survivorFRA.getFullYear() || comparisonYear <= personB.survivorFRA.getFullYear()
+      || comparisonYear <= personA.retirementBenefitDate.getFullYear() || comparisonYear <= personB.retirementBenefitDate.getFullYear()
+      || (personA.spousalBenefitDate && comparisonYear <= personA.spousalBenefitDate.getFullYear())
+      || (personB.spousalBenefitDate && comparisonYear <= personB.spousalBenefitDate.getFullYear())
+      || (personA.survivorBenefitDate && comparisonYear <= personA.survivorBenefitDate.getFullYear())
+      || (personB.survivorBenefitDate && comparisonYear <= personB.survivorBenefitDate.getFullYear())
+      || (personA.endSuspensionDate && comparisonYear <= personA.endSuspensionDate.getFullYear())
+      || (personB.endSuspensionDate && comparisonYear <= personB.endSuspensionDate.getFullYear())
+      || (personA.childInCareSpousalBenefitDate && comparisonYear <= personA.childInCareSpousalBenefitDate.getFullYear())
+      || (personB.childInCareSpousalBenefitDate && comparisonYear <= personB.childInCareSpousalBenefitDate.getFullYear())
+      || (personA.motherFatherBenefitDate && comparisonYear <= personA.motherFatherBenefitDate.getFullYear())
+      || (personB.motherFatherBenefitDate && comparisonYear <= personB.motherFatherBenefitDate.getFullYear())
+      ){
       return false
     }
     for (let child of scenario.children){
       if (child.age < 19.1 && child.isOnDisability === false){
-        //Ditto reasoning above, but for age 18
+      //We call this function in december. We have already added 1 month to person's age at point where this function is called though.
+      //and we want to make sure they were 18 for the ENTIRE year. So they need to be 18 and 1 month by this point basically.
         return false
       }
     }
