@@ -177,7 +177,6 @@
       }
     }
   },
-  "defaultProject": "open-social-security",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",
