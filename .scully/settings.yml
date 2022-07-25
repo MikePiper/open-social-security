@@ -1,0 +1,11 @@
+identifier: la4dh642r145bdv6
+appPort: 1864
+staticPort: 1668
+reloadPort: 2667
+hostName: localhost
+projectName: open-social-security
+homeFolder: /Users/kalindap/Dropbox/SimpleSubjects/open-social-security
+distFolder: dist/browser
+outDir: /Users/kalindap/Dropbox/SimpleSubjects/open-social-security/dist/static
+handle404: ''
+allowErrorCollect: true

@@ -197,6 +197,10 @@ describe('Tests for maximizeCouplePViterateBothPeople', () => {
     personB = new Person("B")
   })
 
+  afterEach(() => {//For some reason, without an afterEach, one of these tests gets skipped.
+    console.log()
+  })
+
   it ('should tell a high-PIA spouse to wait until 70, with low discount rate and long lifespans', () => {
     service.setToday(new MonthYearDate(2018, 11)) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
     scenario.maritalStatus = "married"
