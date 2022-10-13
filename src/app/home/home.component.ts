@@ -37,7 +37,8 @@ export class HomeComponent implements OnInit {
     this.getInputsFromURLparameters()
 
     //Get TIPS yield for discount rate
-    this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")
+    // this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")
+    this.http.get<FREDresponse>("https://data.nasdaq.com/api/v3/datasets/USTREASURY/REALYIELD.json?limit=1&column_index=4&api_key=iuEbMEnRuZzmUpzMYgx3")
       .subscribe( 
         data => { // we got the TIPS discount rate from www.quandl.com
           this.tipsDiscountRate = data.dataset.data[0][1];
