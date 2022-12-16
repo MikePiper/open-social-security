@@ -339,6 +339,11 @@ export class EarningsTestService {
       "Year": 2022,
       "beforeFRAthreshold": 19560,
       "FRAyearThreshold": 51960
+    },
+    {
+      "Year": 2023,
+      "beforeFRAthreshold": 21240,
+      "FRAyearThreshold": 56520
     }
   ]
 }
