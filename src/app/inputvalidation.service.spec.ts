@@ -60,6 +60,7 @@ describe('InputvalidationService', () => {
 
   it('should reject retirementBenefitDate that is too early', inject([InputValidationService], (service: InputValidationService) => {
     let person:Person = new Person("A")
+    service.setToday(new MonthYearDate(2018, 10))//November 2018 (date when writing test) so that it doesn't fail in future
     person.actualBirthDate = new Date (1960, 11, 29) //December 30, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
     let retirementBenefitDate:MonthYearDate = new MonthYearDate (2022, 11, 1) //62 years and 0 months (not possible for somebody born on not first or second of month)
