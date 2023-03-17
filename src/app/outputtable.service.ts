@@ -322,8 +322,10 @@ export class OutputTableService {
       }
     }
     else {//i.e., it's either a married, divorced, or survivor scenario
+      console.log(calcYear.date.toString() + ": " + typeOfRow)
       //if both personA and personB are deceased, return calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased
         if ( typeOfRow == 'personAandPersonBdeceased'
+          || (typeOfRow == 'singleOrSurvivorPersonAdeceased') //In this case, this actually means "survivor and personA is deceased" because we already checked for maritalStatus == single above. In other words, this is another "both people are deceased" case.
           || (calcYear.probabilityAalive == 0 && typeOfRow == 'personAalivePersonBdeceased')
           || (calcYear.probabilityBalive == 0 && typeOfRow == 'personAdeceasedPersonBalive')
           || (calcYear.probabilityAalive == 0 && calcYear.probabilityBalive == 0)
