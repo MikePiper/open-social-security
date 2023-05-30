@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 
 import { GetDataFromTreasuryAPIService } from './get-data-from-Treasury-api.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing'
 
-describe('GetDataFromAPIService', () => {
+describe('GetDataFromTreasuryAPIService', () => {
   let service: GetDataFromTreasuryAPIService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule]
+    });
     service = TestBed.inject(GetDataFromTreasuryAPIService);
   });
 
