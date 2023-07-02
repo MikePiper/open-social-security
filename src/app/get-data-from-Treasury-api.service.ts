@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import xml2js from 'xml2js'; 
 import { treasuryAPIresponse } from './data model classes/treasuryapiresponse';
-import { map } from "rxjs/operators";
-import { Observable } from 'rxjs';
+
 
 
 @Injectable({
@@ -20,7 +19,6 @@ export class GetDataFromTreasuryAPIService {
     let interestRate:number
     let xmlData = await this.getXMLdata()
     interestRate = this.parseXML(xmlData)
-    console.log("getInterestRate() interestRate: " + interestRate)
     return interestRate
   }
   
@@ -55,7 +53,6 @@ export class GetDataFromTreasuryAPIService {
         var content = entry[entry.length-1].content
         interestRate = Number(content[0]['m:properties'][0]['d:TC_20YEAR'][0]._)
     })
-    console.log("parseXML() interestRate: " + interestRate)
     return interestRate
   }
 
