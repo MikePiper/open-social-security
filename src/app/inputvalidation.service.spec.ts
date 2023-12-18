@@ -42,6 +42,7 @@ describe('InputvalidationService', () => {
   //Check checkValidRetirementInputs()
   it('should give no error message when input date is good', inject([InputValidationService], (service: InputValidationService) => {
     let person:Person = new Person("A")
+    service.setToday(new MonthYearDate(2018, 10))//November 2018 (date when writing test) so that it doesn't fail in future
     person.actualBirthDate = new Date (1960, 11, 29) //December 30, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
     let retirementBenefitDate:MonthYearDate = new MonthYearDate(2023, 7, 1)
@@ -51,6 +52,7 @@ describe('InputvalidationService', () => {
 
   it('should demand a date when user fails to input one', inject([InputValidationService], (service: InputValidationService) => {
     let person:Person = new Person("A")
+    service.setToday(new MonthYearDate(2018, 10))//November 2018 (date when writing test) so that it doesn't fail in future
     person.actualBirthDate = new Date (1960, 11, 29) //December 30, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
     let retirementBenefitDate:MonthYearDate = new MonthYearDate(undefined, 1, 0)
@@ -70,6 +72,7 @@ describe('InputvalidationService', () => {
 
   it('should reject retirementBenefitDate that is later than 70', inject([InputValidationService], (service: InputValidationService) => {
     let person:Person = new Person("A")
+    service.setToday(new MonthYearDate(2018, 10))//November 2018 (date when writing test) so that it doesn't fail in future
     person.actualBirthDate = new Date (1960, 11, 29) //December 30, 1960
     person.SSbirthDate = new MonthYearDate (1960, 11, 1)
     let retirementBenefitDate:MonthYearDate = new MonthYearDate (2031, 0, 1) //70 years and 1 month
