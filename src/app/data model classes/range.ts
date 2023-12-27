@@ -51,7 +51,7 @@ export class Range {
     pvMinRowArray = [0, 0]; // pvMinRowArray[NO_CUT] is the row where the minimum PV in the NO_CUT condition is found
     pvMinColArray = [0, 0];
 
-    fractionBreak: number[] = [0.99, 0.95, 0.9, -1000000]; // values of pvFraction minima for different display colors
+    fractionBreak: number[] = [1, 0.99, 0.95, 0.9, -1000000]; // values of pvFraction minima for different display colors
     fractionLabels: string[] = ["100", "99", "95", "90", "0"];
 
     maxColor: string = '#b3ffb3'; // light green, color of cell with maximum PV
@@ -260,8 +260,8 @@ export class Range {
                     if (this.claimStrategiesArrays[condition][row][col]){
                         // determine which segment of the range for this pvFraction
                         for (let i = 0; i < this.fractionBreak.length; i++) {
-                            if (pvFraction > this.fractionBreak[i]) {
-                                colorNumber = i + 1;
+                            if (pvFraction >= this.fractionBreak[i]) {
+                                colorNumber = i;
                                 if (i == 0) {
                                     this.topCount[condition]++;
                                 }
@@ -275,8 +275,6 @@ export class Range {
                     colorArray[row][col] = this.colorByNumber[condition][colorNumber];
                 }
             }
-            // set color at the pvMax row/col for the current condition to maxColor
-            colorArray[this.pvMaxRowArray[condition]][this.pvMaxColArray[condition]] = this.maxColor;
         }
     }
 
