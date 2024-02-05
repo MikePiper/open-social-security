@@ -130,6 +130,7 @@ export class CalculatePvService {
             this.earningsTestService.addBackOverwithholding(calcYear, scenario, person)
 
           //Apply assumed benefit cut, if applicable
+          cutThisYear = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
           if (cutThisYear) {
             this.benefitService.applyAssumedBenefitCut(scenario, calcYear)
           }
@@ -166,10 +167,6 @@ export class CalculatePvService {
           // (we started these calculations with month === 11)
           calcYear.date.setMonth(calcYear.date.getMonth()+1)
           calcYear = new CalculationYear(calcYear.date)
-
-          if (!cutThisYear) { //Check if there will be a cut this year. (But we don't need to check again if cutThisYear is already true.)
-            cutThisYear = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
-          }
 
         } else {
           //increment month by 1.
@@ -329,6 +326,7 @@ export class CalculatePvService {
       //if it's December...
       if (calcYear.date.getMonth() == 11){
         //Apply assumed benefit cut, if applicable
+        cutThisYear = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
         if (!savedCalculationYear && cutThisYear) {
           // if we have a savedCalculationYear, the benefit cuts have already been applied
           this.benefitService.applyAssumedBenefitCut(scenario, calcYear)
@@ -370,6 +368,7 @@ export class CalculatePvService {
             //   console.log("probability A alive: " + calcYear.probabilityAalive)
             //   console.log("probability B alive: " + calcYear.probabilityBalive)
             //   console.log("undiscounted annualPV: " + annualPV)
+            //   console.log("scenario.benefitCutYear: " + scenario.benefitCutYear)
             // }
 
             //Discount that probability-weighted annual benefit amount back to this year
@@ -377,21 +376,21 @@ export class CalculatePvService {
 
 
                 // if (printOutputTable === true){
-                  // console.log("discounted annualPV: " + annualPV)
-                  // console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
-                  // console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
-                  // console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
-                  // console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
-                  // console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
-                  // console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
-                  // console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
-                  // console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
-                  // console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
-                  // console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
-                  // console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
-                  // console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
-                  // console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
-                  // console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
+                //   console.log("discounted annualPV: " + annualPV)
+                //   console.log("annualBenefitBothAlive: " + calcYear.annualBenefitBothAlive)
+                //   console.log("annualBenefitBothDeceased: " + calcYear.annualBenefitBothDeceased)
+                //   console.log("annualBenefitOnlyPersonAalive: " + calcYear.annualBenefitOnlyPersonAalive)
+                //   console.log("annualBenefitOnlyPersonBalive: " + calcYear.annualBenefitOnlyPersonBalive)
+                //   console.log("tablePersonAannualRetirementBenefit: " + calcYear.tablePersonAannualRetirementBenefit)
+                //   console.log("tablePersonAannualSpousalBenefit: " + calcYear.tablePersonAannualSpousalBenefit)
+                //   console.log("tablePersonAannualSurvivorBenefit: " + calcYear.tablePersonAannualSurvivorBenefit)
+                //   console.log("tablePersonBannualRetirementBenefit: " + calcYear.tablePersonBannualRetirementBenefit)
+                //   console.log("tablePersonBannualSpousalBenefit: " + calcYear.tablePersonBannualSpousalBenefit)
+                //   console.log("tablePersonBannualSurvivorBenefit: " + calcYear.tablePersonBannualSurvivorBenefit)
+                //   console.log("tableTotalAnnualChildBenefitsBothParentsAlive: " + calcYear.tableTotalAnnualChildBenefitsBothParentsAlive)
+                //   console.log("tableTotalAnnualChildBenefitsBothParentsDeceased: " + calcYear.tableTotalAnnualChildBenefitsBothParentsDeceased)
+                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonAalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonAalive)
+                //   console.log("tableTotalAnnualChildBenefitsOnlyPersonBalive: " + calcYear.tableTotalAnnualChildBenefitsOnlyPersonBalive)                     
                 // }
 
             //Add discounted benefit to ongoing sum
@@ -418,9 +417,6 @@ export class CalculatePvService {
       calcYear.date.setMonth(calcYear.date.getMonth()+1)
       if (calcYear.date.getMonth() == 0){
       calcYear = new CalculationYear(calcYear.date)
-        if (!cutThisYear) { //Check if there will be a cut this year. (But we don't need to check again if cutThisYear is already true.)
-          cutThisYear = (scenario.benefitCutAssumption === true) && (calcYear.date.getFullYear() >= scenario.benefitCutYear)
-        }
       }
       if (!(calcYear.isInPast === false) && calcYear.date < this.today){calcYear.isInPast = true}//if calcYear.isInPast is already false, no need to check again as date gets incremented forward (using "not false" rather than "is true" because we want it to trigger if it isn't set yet also)
       else {calcYear.isInPast = false}
