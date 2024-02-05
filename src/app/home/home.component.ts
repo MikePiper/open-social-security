@@ -50,7 +50,7 @@ export class HomeComponent implements OnInit {
       //Set discount rate on scenario object
       this.scenario.discountRate = this.tipsDiscountRate;
       //If discount rate was set via URL parameter, we want use that instead of TIPS yield. We have to put this here (.finally) to make sure it happens AFTER promise is resolved
-      if (this.urlDiscountRate){
+      if (this.urlDiscountRate !== undefined){
         this.scenario.discountRate = this.urlDiscountRate
         this.defaultDiscountRateSource = "URL";
         console.log("ngOnInit() got discount rate from URL");
