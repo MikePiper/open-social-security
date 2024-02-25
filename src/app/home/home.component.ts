@@ -416,8 +416,12 @@ export class HomeComponent implements OnInit {
     if (this.personAfixedRetirementBenefitMonth && this.personAfixedRetirementBenefitYear){
       this.personA.fixedRetirementBenefitDate = new MonthYearDate(this.personAfixedRetirementBenefitYear, this.personAfixedRetirementBenefitMonth-1)
     }
-    if (this.personBfixedRetirementBenefitMonth && this.personBfixedRetirementBenefitYear){
+    if (this.personBfixedRetirementBenefitMonth && this.personBfixedRetirementBenefitYear){//This could represent various things (personB has filed, divorce scenario, etc)
       this.personB.fixedRetirementBenefitDate = new MonthYearDate(this.personBfixedRetirementBenefitYear, this.personBfixedRetirementBenefitMonth-1)
+      if (this.scenario.maritalStatus == 'divorced' && this.personBassumedDeathAge < 70){//Specifically in a divorce case (because that's the case where they haven't actually filed but we're taking their planned date as a given), we have to also check if they are using an assumed age at death earlier than the date in question.
+        let personBassumedDeathDate: MonthYearDate = new MonthYearDate(this.personB.SSbirthDate.getFullYear()+this.personBassumedDeathAge, this.personB.SSbirthDate.getMonth())
+        if (personBassumedDeathDate < this.personB.fixedRetirementBenefitDate){this.personB.fixedRetirementBenefitDate = new MonthYearDate(personBassumedDeathDate)}
+      }
     }
     this.personA.mortalityTable = this.mortalityService.determineMortalityTable(this.personA.gender, this.personAmortalityInput, this.personAassumedDeathAge)
     this.personB.mortalityTable = this.mortalityService.determineMortalityTable(this.personB.gender, this.personBmortalityInput, this.personBassumedDeathAge)
