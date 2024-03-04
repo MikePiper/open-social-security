@@ -760,13 +760,13 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
       }
       else {//person has their own PIA, so it's their age 70 date
         lastDate = new MonthYearDate(personAge70Date)
-      }
-      //If using fixed-death-age-assumption younger than 70, don't let lastDate be later than assumed month of death
-      if (person.mortalityTable[70] == 0) {
-        let deceasedByAge:number = person.mortalityTable.findIndex(item => item == 0)
-        let noLaterThanThisDate = new MonthYearDate(person.SSbirthDate.getFullYear() + deceasedByAge + 1, 0)//We assume they live through the year that includes deceased by age, then die in following January.
-        if (lastDate > noLaterThanThisDate){
-          lastDate = new MonthYearDate(noLaterThanThisDate)
+      //If using fixed-death-age-assumption younger than 70, don't let lastDate be later than assumed month of death.
+        if (person.mortalityTable[70] == 0) {
+          let deceasedByAge:number = person.mortalityTable.findIndex(item => item == 0)
+          let noLaterThanThisDate = new MonthYearDate(person.SSbirthDate.getFullYear() + deceasedByAge + 1, 0)//We assume they live through the year that includes deceased by age, then die in following January.
+          if (lastDate > noLaterThanThisDate){
+            lastDate = new MonthYearDate(noLaterThanThisDate)
+          }
         }
       }
       return lastDate
