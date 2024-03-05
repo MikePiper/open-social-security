@@ -344,6 +344,28 @@ export class SolutionSetService {
             return a.date.valueOf() - b.date.valueOf()
           })
         }
+
+        //Remove any solution objects where the date in question is after the person in question's assumed death date, if applicable.
+          //Find out if either person has an assumed death date.
+            let personAassumedDeathDate:MonthYearDate
+            let personBassumedDeathDate:MonthYearDate
+            if (personA.mortalityTable[0]== 1){//otherPerson is using assumed age at death. (Mortality table has just 1 for every year, then 0 for age of death, whereas normal mortality table starts with 100,000 lives.)
+              personAassumedDeathDate = this.mortalityService.findAssumedDeathDate(personA)
+            }
+            if (personB.mortalityTable[0]== 1){
+              personBassumedDeathDate = this.mortalityService.findAssumedDeathDate(personB)
+            }
+          //Check each solution object and remove from solutionSet if applicable
+          for (let solution of solutionSet.solutionsArray){
+            if (solution.person === personA && personAassumedDeathDate && solution.date > personAassumedDeathDate){
+              solutionSet.solutionsArray.splice(solutionSet.solutionsArray.indexOf(solution), 1)
+            }
+            if (solution.person === personB && personBassumedDeathDate && solution.date > personBassumedDeathDate){
+              solutionSet.solutionsArray.splice(solutionSet.solutionsArray.indexOf(solution), 1)
+            }
+          }
+
+
         return solutionSet
   }
 
@@ -477,11 +499,12 @@ export class SolutionSetService {
     let personAssumedDeathDate:MonthYearDate = this.mortalityService.findAssumedDeathDate(person)
     let otherPersonAssumedDeathDate:MonthYearDate = this.mortalityService.findAssumedDeathDate(otherPerson)
     //We (tenatively) want a survivorSolution object if:
-    if (
+    if (otherPerson.PIA > 0 && (
         //it's a survivor scenario and person hasn't filed 
         (scenario.maritalStatus == "survivor" && person.id == "A" && person.hasFiledAsSurvivor === false) ||
         //or if a) otherPerson is using an assumed age at death and b) person's survivorBenefitDate is after that assumed death date and c) person's survivorBenefitDate is not after their own assumed death date, if they have one
         (otherPersonAssumedDeathDate && person.survivorBenefitDate >= otherPersonAssumedDeathDate && (!personAssumedDeathDate || person.survivorBenefitDate < personAssumedDeathDate))
+        )
       ){
       let survivorFilingAge: number = this.birthdayService.findAgeOnDate(person, person.survivorBenefitDate)
       let personAsavedSurvivorAgeYears: number = Math.floor(survivorFilingAge)

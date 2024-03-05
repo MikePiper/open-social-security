@@ -18,9 +18,11 @@ type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityCon
     ageMonths: number
     message: string //build one of messages below
     shortMessage: string // for display when hovering over graph of options
+    person:Person
 
   constructor(maritalStatus: string, typeOfBenefit: benefitTypeOption, person: Person, 
     date: MonthYearDate, ageYears: number, ageMonths: number) {
+    this.person = person
     this.maritalStatus = maritalStatus
     this.benefitType = typeOfBenefit
     this.date = date
