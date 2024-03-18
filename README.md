@@ -25,12 +25,13 @@ For a married couple, it's the same sort of process, but with more going on. Spe
 3) Each combination of possible claiming ages must be considered, for both spouses, and for both types of benefits (i.e., retirement and spousal).
 
 When calculating monthly benefit amounts, as long as the user provides the necessary inputs, the calculator will account for an assortment of complicating factors, including:
-*Government Pension Offset (GPO) and Windfall Elimination Provision (WEP);
-*Child benefits for minor children or adult disabled children;
-*Disability benefits;
-*Child-in-care spousal benefits;
-*The fact that people born prior to January 2, 1954 have a different set of deemed filing rules than people born on or after that date;
-*Voluntary suspension;
-*Family maximum and combined family maximum rules;
-*The earnings test, for people who are younger than full retirement age and still working;
-*Retroactive applications.
+
+* Government Pension Offset (GPO) and Windfall Elimination Provision (WEP);
+* Child benefits for minor children or adult disabled children;
+* Disability benefits;
+* Child-in-care spousal benefits;
+* The fact that people born prior to January 2, 1954 have a different set of deemed filing rules than people born on or after that date;
+* Voluntary suspension;
+* Family maximum and combined family maximum rules;
+* The earnings test, for people who are younger than full retirement age and still working;
+* Retroactive applications.
