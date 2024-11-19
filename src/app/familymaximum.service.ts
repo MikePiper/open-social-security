@@ -726,8 +726,18 @@ export class FamilyMaximumService {
       "firstFamilyMaxBendPoint": 1500,
       "secondFamilyMaxBendPoint": 2166,
       "thirdFamilyMaxBendPoint": 2825,
-      "COLA": null,//current year should always be set to null
+      "COLA": 0.025,
       "MaxTaxableWages": 168600,
+    },
+    {
+      "Year": 2025,
+      "firstPIAbendPoint": 1226,
+      "secondPIAbendPoint": 7391,
+      "firstFamilyMaxBendPoint": 1567,
+      "secondFamilyMaxBendPoint": 2262,
+      "thirdFamilyMaxBendPoint": 2950,
+      "COLA": null,//current year should always be set to null
+      "MaxTaxableWages": 176100,
     }
     ]
 }
