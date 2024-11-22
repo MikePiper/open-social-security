@@ -538,9 +538,7 @@
               But that was not available (due to a failure to get data from the data source), so we are using a default of {{this.defaultDiscountRateIfError}}% instead.
             </span>
             <span *ngIf="this.defaultDiscountRateSource == 'URL'">
-              The calculator usually uses the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>, 
-              (which is currently {{this.tipsDiscountRate}}%) as the default discount rate. 
-              But the page was loaded with a URL that included a discount rate of {{this.urlDiscountRate}}%.
+              The calculator usually uses the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>, as the default discount rate. But the page was loaded with a URL that included a discount rate of {{this.urlDiscountRate}}%.
             </span>
             See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a discussion of why the yield on 20-year TIPS is used as the default.
         </p>
