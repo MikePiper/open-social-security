@@ -198,7 +198,7 @@ describe('Tests for maximizeCouplePViterateBothPeople', () => {
   })
 
   afterEach(() => {//For some reason, without an afterEach, one of these tests gets skipped.
-    console.log()
+    // console.log()
   })
 
   it ('should tell a high-PIA spouse to wait until 70, with low discount rate and long lifespans', () => {
@@ -358,7 +358,6 @@ describe('Tests for maximizeCouplePViterateBothPeople', () => {
     personA.quitWorkDate = new MonthYearDate(2015,3,1) //already quit working
     personB.quitWorkDate = new MonthYearDate(2015,3,1) //already quit working
     scenario.discountRate = 0
-    console.log(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray)
     expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[1].date)
     .toEqual(new MonthYearDate(2029, 0))
     //We're looking at item [1] in the array. This array should have 2 items in it: retirementDate for personA and retirement date for personB.

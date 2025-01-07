@@ -1105,7 +1105,6 @@ describe('tests calculateCouplePV', () => {
             expect(claimStrategy.outputTable[9]).toEqual(["If you outlive your spouse", "$13,500", "$0", "$0", "$0", "$0", "$0", "$0", "$13,500"])//if personA outlives personB, personA gets no survivor.
             expect(claimStrategy.outputTable[10]).toEqual(["If your spouse outlives you", "$0", "$0", "$0", "$5,400", "$0", "$9,450", "$0", "$14,850"])//if personB outlives personA, 82.5% of PIA rule kicks in 1500 x .825 = $1237.50
             expect(claimStrategy.outputTable[11]).toEqual(["After both you and your spouse are deceased", "$0", "$0", "$0", "$0", "$0", "$0", "$0", "$0"])//after both parents deceased
-            console.log(claimStrategy.outputTable)
         })
 
 
