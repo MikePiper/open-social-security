@@ -170,8 +170,6 @@ export class HomeComponent implements OnInit {
   personAfixedMotherFatherBenefitYear: number
   personAfixedSurvivorBenefitMonth: number
   personAfixedSurvivorBenefitYear: number
-  personAnonCoveredPensionMonth:number = 1
-  personAnonCoveredPensionYear:number = 2020
   personAassumedDeathAge: number = 100 // what many people might hope
   personAmortalityInput: mortalityTableOption = this.defaultMortalityTableID
   personBprimaryPIAinput: number = 1000
@@ -183,8 +181,6 @@ export class HomeComponent implements OnInit {
   personBdeathInputYear: number = 2020
   personBfixedRetirementBenefitMonth: number
   personBfixedRetirementBenefitYear: number
-  personBnonCoveredPensionMonth:number = 1
-  personBnonCoveredPensionYear:number = 2020
   personBmortalityInput: mortalityTableOption = this.defaultMortalityTableID
   personBassumedDeathAge: number = 100 // what many people might hope
 
@@ -192,7 +188,6 @@ export class HomeComponent implements OnInit {
   additionalInput: boolean = false
   disabilityShow: boolean = false
   workingShow: boolean = false
-  pensionShow: boolean = false
   mortalityShow: boolean = false
   childrenShow: boolean = false
   discountShow: boolean = false
@@ -364,39 +359,9 @@ export class HomeComponent implements OnInit {
     this.personB.initialAgeRounded = Math.round(this.personB.initialAge)
     //Get PIA inputs
       //personA
-      if (this.personA.eligibleForNonCoveredPension === false){
         this.personA.PIA = Number(this.personAprimaryPIAinput)
-      }
-      else {//i.e., personA will be getting noncovered pension
-        //create nonCoveredPensionDate
-        this.personA.nonCoveredPensionDate = new MonthYearDate(this.personAnonCoveredPensionYear, this.personAnonCoveredPensionMonth-1)
-        //set WEP_PIA and nonWEP_PIA based on primary/secondary PIAinput
-        if (this.personA.isOnDisability === true && this.personA.nonCoveredPensionDate > this.today){//if person is on disability and pension has not yet begun, primaryPIAinput represents their nonWEP_PIA
-          this.personA.nonWEP_PIA = Number(this.personAprimaryPIAinput)
-          this.personA.WEP_PIA = Number(this.personAsecondaryPIAinput)
-        }
-        else {//in all other cases in which person is eligible for noncovered pension, primaryPIAinput is their WEP PIA
-          this.personA.WEP_PIA = Number(this.personAprimaryPIAinput)
-          this.personA.nonWEP_PIA = Number(this.personAsecondaryPIAinput)
-        }
-      }
       //personB
-      if (this.personB.eligibleForNonCoveredPension === false){
         this.personB.PIA = Number(this.personBprimaryPIAinput)
-      }
-      else {//i.e., personB will be getting noncovered pension
-        //create nonCoveredPensionDate
-        this.personB.nonCoveredPensionDate = new MonthYearDate(this.personBnonCoveredPensionYear, this.personBnonCoveredPensionMonth-1)
-        //set WEP_PIA and nonWEP_PIA based on primary/secondary PIAinput
-        if (this.personB.isOnDisability === true && this.personB.nonCoveredPensionDate > this.today){//if person is on disability and pension has not yet begun, primaryPIAinput represents their nonWEP_PIA
-          this.personB.nonWEP_PIA = Number(this.personBprimaryPIAinput)
-          this.personB.WEP_PIA = Number(this.personBsecondaryPIAinput)
-        }
-        else {//in all other cases in which person is eligible for noncovered pension, primaryPIAinput is their WEP PIA
-          this.personB.WEP_PIA = Number(this.personBprimaryPIAinput)
-          this.personB.nonWEP_PIA = Number(this.personBsecondaryPIAinput)
-        }
-      }
     this.benefitService.checkWhichPIAtoUse(this.personA, this.today)
     this.benefitService.checkWhichPIAtoUse(this.personB, this.today)
 
@@ -655,7 +620,6 @@ export class HomeComponent implements OnInit {
 
     //Reset applicable personB inputs if personB is deceased
       if (this.scenario.maritalStatus == "survivor"){
-        this.personB.eligibleForNonCoveredPension = false
         this.personBworking = false
         this.personB.isOnDisability = false
       }
@@ -711,23 +675,6 @@ export class HomeComponent implements OnInit {
     //If divorce scenario *and* personB is on disability, give them a fixedRetirementBenefitDate of today (point being so that "ex-spouse must be 62" rule doesn't get in way)
     if (this.scenario.maritalStatus == "divorced" && this.personB.isOnDisability === true){
       this.personB.fixedRetirementBenefitDate = new MonthYearDate()
-    }
-
-    // Reset values related to government pension if not receiving a government pension
-    if (this.personA.eligibleForNonCoveredPension === false) {
-      this.personA.entitledToNonCoveredPension = false
-      this.personA.governmentPension = 0
-      this.personA.WEP_PIA = undefined
-      this.personA.nonWEP_PIA = undefined
-      this.personA.nonCoveredPensionDate = undefined
-    }
-
-    if (this.personB.eligibleForNonCoveredPension === false) {
-      this.personB.entitledToNonCoveredPension = false
-      this.personB.governmentPension = 0
-      this.personB.WEP_PIA = undefined
-      this.personB.nonWEP_PIA = undefined
-      this.personB.nonCoveredPensionDate = undefined
     }
 
     //If "declineSpousal" or "declineSuspension" inputs are checked in custom date form, reset related month/year inputs. Similarly, reset spousal inputs to null if person in question would get child-in-care spousal
@@ -848,9 +795,6 @@ export class HomeComponent implements OnInit {
       if (params['workingShow']){
         this.workingShow = params['workingShow'] == "true" ? true : false
       }
-      if (params['pensionShow']){
-        this.pensionShow = params['pensionShow'] == "true" ? true : false
-      }
       if (params['mortalityShow']){
         this.mortalityShow = params['mortalityShow'] == "true" ? true : false
       }
@@ -937,18 +881,6 @@ export class HomeComponent implements OnInit {
           if (params['aFixedMFBy']){
             this.personAfixedMotherFatherBenefitYear = Number(params['aFixedMFBy'])
           }
-          if (params['aEligiblePension']){
-            this.personA.eligibleForNonCoveredPension = params['aEligiblePension'] == "true" ? true : false
-          }
-          if (params['aPensionm']){
-            this.personAnonCoveredPensionMonth = Number(params['aPensionm'])
-          }
-          if (params['aPensiony']){
-            this.personAnonCoveredPensionYear = Number(params['aPensiony'])
-          }
-          if (params['aGovPension']){
-            this.personA.governmentPension = Number(params['aGovPension'])
-          }
           if (params['aPIA2']){
             this.personAsecondaryPIAinput = Number(params['aPIA2'])
           }
@@ -1004,18 +936,6 @@ export class HomeComponent implements OnInit {
           }
           if (params['bFiled']){
             this.personB.hasFiled = params['bFiled'] == "true" ? true : false
-          }
-          if (params['bEligiblePension']){
-            this.personB.eligibleForNonCoveredPension = params['bEligiblePension'] == "true" ? true : false
-          }
-          if (params['bPensionm']){
-            this.personBnonCoveredPensionMonth = Number(params['bPensionm'])
-          }
-          if (params['bPensiony']){
-            this.personBnonCoveredPensionYear = Number(params['bPensiony'])
-          }
-          if (params['bGovPension']){
-            this.personB.governmentPension = Number(params['bGovPension'])
           }
           if (params['bPIA2']){
             this.personBsecondaryPIAinput = Number(params['bPIA2'])

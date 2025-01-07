@@ -21,13 +21,6 @@
         </div>
 
         <div>
-          <input type="checkbox" [(ngModel)]="pensionShow" id="nonCoveredPension" name="nonCoveredPension"
-            value="false">
-          <label for="nonCoveredPension">&nbsp;&nbsp;Pension</label> from employment not covered by Social Security
-          taxes
-        </div>
-
-        <div>
           <input type="checkbox" [(ngModel)]="mortalityShow" id="mortalityInput" name="mortalityInput"
             value="false">
           <label for="mortalityInput">&nbsp;&nbsp;Mortality Table</label> other than the {{defaultMortalityTableName}}. <a
@@ -212,60 +205,7 @@
       </div>
       <!--End personA Already-Filed Widow(er) Inputs-->
 
-
-      <!--personA Non-covered Pension Inputs -->
-      <div *ngIf="this.pensionShow === true || personA.eligibleForNonCoveredPension === true">
-        <label>Do you receive (or will you receive) a pension from employment that was not covered by Social Security taxes?</label><br>
-        <input type="radio" id="personAnonCoveredPensionYes" [(ngModel)]="personA.eligibleForNonCoveredPension" name="personA.eligibleForNonCoveredPension" [value]="true">
-        <label for="personAnonCoveredPensionYes">Yes</label>
-        <input type="radio" id="personAnonCoveredPensionNo" [(ngModel)]="personA.eligibleForNonCoveredPension" name="personA.eligibleForNonCoveredPension" [value]="false">
-        <label for="personAnonCoveredPensionNo">No</label>
-        <div *ngIf="personA.eligibleForNonCoveredPension === true">
-          <div class="form-inline">
-            <label>Month and year in which your pension begins (or began):</label>
-            <select class="form-control" [(ngModel)]="personAnonCoveredPensionMonth" name="personAnonCoveredPensionMonth" id="personAnonCoveredPensionMonth" required>
-              <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-            </select>
-            <select class="form-control" [(ngModel)]="personAnonCoveredPensionYear" name="personAnonCoveredPensionYear" required>
-              <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-            </select>
-            <span *ngIf="errorCollection.personAfixedRetirementDateError" class="alert alert-danger">{{errorCollection.personAfixedRetirementDateError}}</span>
-        </div>
-          <span *ngIf="scenario.maritalStatus != 'single'">
-            <label for="personAgovernmentPension">Monthly government pension (from non-covered employment)</label>
-            <input type="number" [(ngModel)]="personA.governmentPension" name="personA.governmentPension" id="personAgovernmentPension" #personAgovernmentPension="ngModel" required pattern="[0-9]{1,7}">
-            <span *ngIf="personAgovernmentPension.invalid" class="alert alert-danger">digits only, please</span>
-          </span>
-          <div>
-            <label *ngIf="personA.isOnDisability === false" for="personAsecondaryPIAinput">PIA without WEP reduction</label>
-            <label *ngIf="personA.isOnDisability === true && personA.entitledToNonCoveredPension === true" for="personAsecondaryPIAinput">Amount of your disability benefit, without WEP reduction</label>
-            <label *ngIf="personA.isOnDisability === true && personA.entitledToNonCoveredPension === false" for="personAsecondaryPIAinput">Amount of your disability benefit, after WEP reduction kicks in</label>
-            <input type="number" [(ngModel)]="personAsecondaryPIAinput" name="personAsecondaryPIAinput" id="personAsecondaryPIAinput" #personAsecondPIAinput="ngModel" required pattern="[0-9]{1,7}">
-            <span *ngIf="personAsecondPIAinput.invalid" class="alert alert-danger">digits only, please</span>
-            <p *ngIf="personA.isOnDisability === false" class="inputexplanation">
-              If you are affected by the Windfall Elimination Provision (WEP), please enter your WEP-reduced PIA in the "PIA" field. Here, in the field for "PIA without WEP reduction," please enter
-              your PIA <em>without</em> the effect of the WEP. This allows the calculator to account for the fact that the WEP does not reduce your PIA a) until you begin receiving the pension
-              and b) when calculating survivor benefits on your work record. The SSA can calculate these two PIA amounts for you over the phone, or you can calculate them yourself with
-              the SSA's <a href="https://www.ssa.gov/planners/retire/anyPiaWepjs04.html" target="_blank">Online Calculator (WEP Version)</a>
-              or the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> offline calculator.
-          </p>
-          <p *ngIf="personA.isOnDisability === true && personA.entitledToNonCoveredPension === true" class="inputexplanation">
-            If you are affected by the Windfall Elimination Provision (WEP), please enter what your monthly disability benefit would be if it were not reduced by the WEP.
-            This allows the calculator to account for the fact that the WEP does not reduce your primary insurance amount (PIA) when calculating survivor benefits on your work record.
-          The SSA can calculate this amount for you over the phone, or you can calculate it yourself with
-              the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> calculator.
-            </p>
-            <p *ngIf="personA.isOnDisability === true && personA.entitledToNonCoveredPension === false" class="inputexplanation">
-              Please enter what your monthly disability benefit will be after it is reduced by the Windfall Elimination Provision (WEP).
-              This allows the calculator to account for the fact that the WEP does not reduce your primary insurance amount (PIA) until you begin receiving your pension from noncovered employment.
-            The SSA can calculate this amount for you over the phone, or you can calculate it yourself with
-              the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> calculator.
-            </p>
-          </div>
-        </div>
-      </div>
-      <!--End personA Non-covered Pension Inputs -->
-
+      
       <!--Begin personA Mortality Inputs -->
       <span *ngIf="this.mortalityShow === true || this.personAmortalityInput != this.defaultMortalityTableID">
         <div class="form-inline" title="Used to calculate your probability of being alive at a given age">
@@ -407,56 +347,6 @@
           <p *ngIf="errorCollection.personBfixedRetirementDateError" class="alert alert-danger">{{errorCollection.personBfixedRetirementDateError}}</p>
         </div>
         <!--End Ex-spouse Retirement Date Inputs (Also, personB already-filed inputs)-->
-
-        <!--personB Non-covered Pension Inputs -->
-        <div *ngIf="scenario.maritalStatus == 'married' && (this.pensionShow === true || personB.eligibleForNonCoveredPension === true)">
-          <label>Does your spouse receive (or will he/she receive) a pension from employment that was not covered by Social Security taxes?</label><br>
-          <input type="radio" id="personBnonCoveredPensionYes" [(ngModel)]="personB.eligibleForNonCoveredPension" name="personB.eligibleForNonCoveredPension" [value]="true">
-          <label for="personBnonCoveredPensionYes">Yes</label>
-          <input type="radio" id="personBnonCoveredPensionNo" [(ngModel)]="personB.eligibleForNonCoveredPension" name="personB.eligibleForNonCoveredPension" [value]="false">
-          <label for="personBnonCoveredPensionNo">No</label>
-          <div *ngIf="personB.eligibleForNonCoveredPension === true">
-            <div class="form-inline">
-              <label>Month and year in which your spouse's pension begins (or began):</label>
-              <select class="form-control" [(ngModel)]="personBnonCoveredPensionMonth" name="personBnonCoveredPensionMonth" id="personBnonCoveredPensionMonth" required>
-                <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-              </select>
-              <select class="form-control" [(ngModel)]="personBnonCoveredPensionYear" name="personBnonCoveredPensionYear" required>
-                <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-              </select>
-            </div>
-            <label for="personBgovernmentPension">Monthly government pension (from non-covered employment)</label>
-            <input type="number" [(ngModel)]="personB.governmentPension" name="personB.governmentPension" id="personBgovernmentPension" #personBgovernmentPension="ngModel" required pattern="[0-9]{1,7}">
-            <span *ngIf="personBgovernmentPension.invalid" class="alert alert-danger">digits only, please</span>
-            <div>
-              <label *ngIf="personB.isOnDisability === false" for="personBsecondaryPIAinput">PIA without WEP reduction</label>
-              <label *ngIf="personB.isOnDisability === true && personB.entitledToNonCoveredPension === true" for="personBsecondaryPIAinput">Amount of your spouse's disability benefit, without WEP reduction</label>
-              <label *ngIf="personB.isOnDisability === true && personB.entitledToNonCoveredPension === false" for="personBsecondaryPIAinput">Amount of your spouse's disability benefit, after WEP reduction kicks in</label>
-              <input type="number" [(ngModel)]="personBsecondaryPIAinput" name="personBsecondaryPIAinput" id="personBsecondaryPIAinput" #personBsecondPIAinput="ngModel" required pattern="[0-9]{1,7}">
-              <span *ngIf="personBsecondPIAinput.invalid" class="alert alert-danger">digits only, please</span>
-              <p *ngIf="personB.isOnDisability === false" class="inputexplanation">
-                If your spouse is affected by the Windfall Elimination Provision (WEP), please enter his/her WEP-reduced PIA in the "PIA" field. Here, in the field for "PIA without WEP reduction," please enter
-                his/her PIA <em>without</em> the effect of the WEP. This allows the calculator to account for the fact that the WEP does not reduce a person's PIA a) until they begin receiving the pension
-                and b) when calculating survivor benefits on their work record. The SSA can calculate these two PIA amounts for you over the phone, or you can calculate them yourself with
-                the SSA's <a href="https://www.ssa.gov/planners/retire/anyPiaWepjs04.html" target="_blank">Online Calculator (WEP Version)</a>
-                or the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> offline calculator.
-              </p>
-              <p *ngIf="personB.isOnDisability === true && personB.entitledToNonCoveredPension === true" class="inputexplanation">
-                If your spouse is affected by the Windfall Elimination Provision (WEP), please enter what his/her monthly disability benefit would be if it were not reduced by the WEP.
-                This allows the calculator to account for the fact that the WEP does not reduce a person's primary insurance amount (PIA) when calculating survivor benefits on their work record.
-                The SSA can calculate this amount for you over the phone, or you can calculate it yourself with
-                the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> calculator.
-              </p>
-              <p *ngIf="personB.isOnDisability === true && personB.entitledToNonCoveredPension === false" class="inputexplanation">
-                Please enter what your spouse's monthly disability benefit will be after it is reduced by the Windfall Elimination Provision (WEP).
-                This allows the calculator to account for the fact that the WEP does not reduce a person's primary insurance amount (PIA) until they begin receiving their pension from noncovered employment.
-                The SSA can calculate this amount for you over the phone, or you can calculate it yourself with
-                the SSA's <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">"Any PIA"</a> calculator.
-              </p>
-            </div>
-          </div>
-        </div>
-        <!--End personB Non-covered Pension Inputs -->
 
 
         <!--Begin personB Mortality Inputs -->
@@ -827,7 +717,6 @@
 ?additionalInput={{additionalInput}}
 &&disabilityShow={{disabilityShow}}
 &&workingShow={{workingShow}}
-&&pensionShow={{pensionShow}}
 &&mortalityShow={{mortalityShow}}
 &&childrenShow={{childrenShow}}
 &&discountShow={{discountShow}}
@@ -856,10 +745,6 @@
 &&aFiledMotherFather={{personA.hasFiledAsMotherFather}}
 &&aFixedMFBm={{personAfixedMotherFatherBenefitMonth}}
 &&aFixedMFBy={{personAfixedMotherFatherBenefitYear}}
-&&aEligiblePension={{personA.eligibleForNonCoveredPension}}
-&&aPensionm={{personAnonCoveredPensionMonth}}
-&&aPensiony={{personAnonCoveredPensionYear}}
-&&aGovPension={{personA.governmentPension}}
 &&aPIA2={{personAsecondaryPIAinput}}
 &&aMortality={{personAmortalityInput}}
 &&aDeathAge={{personAassumedDeathAge}}
@@ -878,10 +763,6 @@
 &&bQuity={{personBquitWorkYear}}
 &&bEarnings={{personB.monthlyEarnings}}
 &&bFiled={{personB.hasFiled}}
-&&bEligiblePension={{personB.eligibleForNonCoveredPension}}
-&&bPensionm={{personBnonCoveredPensionMonth}}
-&&bPensiony={{personBnonCoveredPensionYear}}
-&&bGovPension={{personB.governmentPension}}
 &&bPIA2={{personBsecondaryPIAinput}}
 &&bMortality={{personBmortalityInput}}
 &&bDeathAge={{personBassumedDeathAge}}
