@@ -15,7 +15,7 @@ export class CalculationScenario {
     youngestChildTurns16date:MonthYearDate
     disabledChild:boolean = false
     benefitCutAssumption: boolean = false
-        benefitCutYear: number = 2034
+        benefitCutYear: number = 2033
         benefitCutPercentage: number = 23
 
     // properties to allow calculation and storage 
