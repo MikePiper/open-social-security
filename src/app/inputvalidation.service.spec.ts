@@ -319,6 +319,7 @@ describe('InputvalidationService', () => {
 
   it('should give no error message when beginSuspensionDate is a valid choice', inject([InputValidationService], (service: InputValidationService) => {
     let person:Person = new Person("A")
+    service.setToday(new MonthYearDate(2018, 10))//November 2018 (date when writing test) so that it doesn't fail in future
     person.actualBirthDate = new Date (1956, 4, 29)
     person.SSbirthDate = new MonthYearDate (1956, 4, 1)
     mockGetPrimaryFormInputs(person, service.today, birthdayService)
