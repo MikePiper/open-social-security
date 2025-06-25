@@ -19,6 +19,7 @@ p, ol, ul, blockquote{ /* a little more whitespace between paragraphs etc */
     margin-bottom: 1em;
 }
 
+
 #jumbolink { /* removes underline from the link in jumbotron */
     text-decoration:none;
 }

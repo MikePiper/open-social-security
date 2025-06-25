@@ -89,10 +89,18 @@
       </div>
 
       <!-- moved PIA explanation above benefit entry to keep disabilty entries together -->
-      <p class="inputexplanation">
-        Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. If you are younger than full retirement age, <a href="https://www.ssa.gov/myaccount/" target="_blank">your Social Security statement</a> will include an <em>estimate</em> of your PIA (<a href="https://articles.opensocialsecurity.com/pia/" target="_blank">more details here</a>). You can also call the SSA to request that they calculate your PIA, or you can calculate it yourself with the calculator at <a href="https://ssa.tools/" target="_blank">SSA.tools</a>.
-        <span *ngIf="scenario.maritalStatus !== 'single'">If one person does not have enough credits to qualify for a retirement benefit of their own, enter zero as their PIA.</span>
-      </p>
+      <div class="inputexplanation">
+        <p>
+        Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. (<a href="https://obliviousinvestor.com/how-social-security-benefits-are-calculated/" target="_blank">This article has more details.</a>)
+        </p>
+        <ul>
+          <li>If you are younger than full retirement age, <a href="https://www.ssa.gov/myaccount/" target="_blank">your Social Security statement</a> will include an <em>estimate</em> of your PIA.</li>
+          <li>For most people, the calculator at <a href="https://ssa.tools/" target="_blank">SSA.tools</a> is the easiest way to calculate your PIA.</li>
+          <li>Alternatively, you can call the SSA to request that they calculate your PIA.</li>
+          <li>Your PIA will change over time due to new earnings, wage indexing, and cost of living adjustments. (<a href="https://obliviousinvestor.com/how-social-security-benefits-are-calculated/" target="_blank">Again, more details here.</a>)</li>
+        <li *ngIf="scenario.maritalStatus !== 'single'">If one person does not have enough credits to qualify for a retirement benefit of their own, enter zero as their PIA.</li>
+        </ul>
+      </div>
 
       <!--Disability Inputs for personA-->
       <!-- show question if answered yes, even if the 'additional input' disabilityShow item has been deselected -->
