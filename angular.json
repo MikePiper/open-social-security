@@ -55,18 +55,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "open-social-security:build"
+            "buildTarget": "open-social-security:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "open-social-security:build:production"
+              "buildTarget": "open-social-security:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "open-social-security:build"
+            "buildTarget": "open-social-security:build"
           }
         },
         "test": {
