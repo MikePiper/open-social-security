@@ -1,5 +1,4 @@
-import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
-
+import { TestBed, inject } from '@angular/core/testing';
 import { ChildinputsComponent } from './childinputs.component';
 import { BirthdayService } from '../birthday.service';
 

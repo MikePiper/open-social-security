@@ -1,8 +1,8 @@
-import { async, TestBed, inject } from '@angular/core/testing'
+import { waitForAsync, ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { OutputTableComponent } from './output-table.component'
 
 describe('OutputTableComponent', () => {
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       providers: [OutputTableComponent]
     })
