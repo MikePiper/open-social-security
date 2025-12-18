@@ -605,7 +605,7 @@ export class RangeComponent implements OnInit, AfterViewInit {
   }
 
 
-  startUpdating(e: any) {
+  startUpdating() {
     // Start updating displayed values, per location of pointer
     this.updating = true;
   }

@@ -19,7 +19,7 @@ import { SharedModule } from './shared/shared.module';
 import { AboutComponent } from './staticpages/about/about.component';
 import { ContactComponent } from './staticpages/contact/contact.component';
 import { LegalComponent } from './staticpages/legal/legal.component';
-import { ScullyLibModule } from '@scullyio/ng-lib';
+// import { ScullyLibModule } from '@scullyio/ng-lib';
 import { RangeComponent } from './range/range.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaximizePVService } from './maximize-pv.service';
@@ -43,7 +43,7 @@ import { MaximizePVService } from './maximize-pv.service';
     BsDropdownModule.forRoot(),
     SharedModule,
     AppRoutingModule,
-    ScullyLibModule,
+    // ScullyLibModule,
     BrowserAnimationsModule
   ],
   exports: [],

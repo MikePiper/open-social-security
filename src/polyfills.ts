@@ -66,6 +66,18 @@ import 'core-js/es/set';
 import 'zone.js';  // Included with Angular CLI.
 
 
+/***************************************************************************************************
+ * BROWSER POLYFILLS
+ **************************************************************************************************/
+
+// Required for some packages that expect Node globals
+(window as any).process = {
+  env: { NODE_ENV: 'production' },
+};
+
+(window as any).Buffer = (window as any).Buffer || {
+  from: (input: any) => new Uint8Array(input),
+};
 
 /***************************************************************************************************
  * APPLICATION IMPORTS
@@ -75,4 +87,3 @@ import 'zone.js';  // Included with Angular CLI.
 * SCULLY IMPORTS
 */
 // tslint:disable-next-line: align
-import 'zone.js/dist/task-tracking';
