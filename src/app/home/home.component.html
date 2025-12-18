@@ -4,362 +4,491 @@
       <p>Certain situations require additional input. Click
         <label for="additionalInput">here</label>
         <input type="checkbox" [(ngModel)]="additionalInput" id="additionalInput" name="additionalInput" value="false">
-        <span *ngIf="additionalInput === false"> to select situation(s) that may apply to you (and/or your spouse, if filing jointly).</span>
-        <span *ngIf="additionalInput === true"> to hide the selection list.</span>
+        @if (additionalInput === false) {
+          <span> to select situation(s) that may apply to you (and/or your spouse, if filing jointly).</span>
+        }
+        @if (additionalInput === true) {
+          <span> to hide the selection list.</span>
+        }
       </p>
-      <span *ngIf="additionalInput === true" id="additionalInputOptions">
-
-        <div>
-          <input type="checkbox" [(ngModel)]="disabilityShow" id="disability" name="disability" value="false">
-          <label for="disability">&nbsp;&nbsp;Disability</label> Currently receiving Social Security disability
-          <em>and</em> expecting to stay on disability until full retirement age.
-        </div>
-
-        <div>
-          <input type="checkbox" [(ngModel)]="workingShow" id="stillWorking" name="stillWorking" value="false">
-          <label for="stillWorking">&nbsp;&nbsp;Still working</label>
-        </div>
-
-        <div>
-          <input type="checkbox" [(ngModel)]="mortalityShow" id="mortalityInput" name="mortalityInput"
-            value="false">
-          <label for="mortalityInput">&nbsp;&nbsp;Mortality Table</label> other than the {{defaultMortalityTableName}}. <a
+      @if (additionalInput === true) {
+        <span id="additionalInputOptions">
+          <div>
+            <input type="checkbox" [(ngModel)]="disabilityShow" id="disability" name="disability" value="false">
+            <label for="disability">&nbsp;&nbsp;Disability</label> Currently receiving Social Security disability
+            <em>and</em> expecting to stay on disability until full retirement age.
+          </div>
+          <div>
+            <input type="checkbox" [(ngModel)]="workingShow" id="stillWorking" name="stillWorking" value="false">
+            <label for="stillWorking">&nbsp;&nbsp;Still working</label>
+          </div>
+          <div>
+            <input type="checkbox" [(ngModel)]="mortalityShow" id="mortalityInput" name="mortalityInput"
+              value="false">
+            <label for="mortalityInput">&nbsp;&nbsp;Mortality Table</label> other than the {{defaultMortalityTableName}}. <a
             [routerLink]="['about']" fragment="mortality" target="_blank">
-            See the "About" page</a> for information about mortality tables.
+          See the "About" page</a> for information about mortality tables.
         </div>
-
         <div>
           <input type="checkbox" [(ngModel)]="childrenShow" id="children" name="children" value="false">
           <label for="children">&nbsp;&nbsp;Children</label> under age 19 or permanently disabled
         </div>
-
         <div>
           <input type="checkbox" [(ngModel)]="discountShow" id="discountRate" name="discountRate" value="false">
-          <label for="discountRate">&nbsp;&nbsp;Discount Rate</label> other than the default 
-          <span *ngIf="urlDiscountRate">(currently {{this.urlDiscountRate}}%)</span>
-          <span *ngIf="!urlDiscountRate">(currently {{this.tipsDiscountRate}}%)</span>
+          <label for="discountRate">&nbsp;&nbsp;Discount Rate</label> other than the default
+          @if (urlDiscountRate) {
+            <span>(currently {{this.urlDiscountRate}}%)</span>
+          }
+          @if (!urlDiscountRate) {
+            <span>(currently {{this.tipsDiscountRate}}%)</span>
+          }
         </div>
-
         <div>
           <input type="checkbox" [(ngModel)]="cutShow" id="futureCut" name="futureCut" value="false">
           <label for="futureCut">&nbsp;&nbsp;Possible Future Cut</label> in Social Security benefits
         </div>
-
       </span>
-    </div>
-    <h1>Your Information</h1>
+    }
+  </div>
+  <h1>Your Information</h1>
 
-    <!--Marital Status Inputs -->
-    <div class="form-inline">
-      <label>Marital status</label>
-      <select [(ngModel)]="scenario.maritalStatus" name="scenario.maritalStatus" class="form-control">
-        <option value="single">Single</option>
-        <option value="married">Married</option>
-        <option value="divorced">Divorced</option>
-        <option value="survivor">Widow(er)</option>
-      </select>
-      <div *ngIf="scenario.maritalStatus == 'survivor'" class="inputexplanation">
+  <!--Marital Status Inputs -->
+  <div class="form-inline">
+    <label>Marital status</label>
+    <select [(ngModel)]="scenario.maritalStatus" name="scenario.maritalStatus" class="form-control">
+      <option value="single">Single</option>
+      <option value="married">Married</option>
+      <option value="divorced">Divorced</option>
+      <option value="survivor">Widow(er)</option>
+    </select>
+    @if (scenario.maritalStatus == 'survivor') {
+      <div class="inputexplanation">
         <p>If you are a widow(er) and you have remarried (prior to age 60) please use the calculator as "married."</p>
       </div>
-      <ul *ngIf="scenario.maritalStatus == 'divorced'" class="inputexplanation">
+    }
+    @if (scenario.maritalStatus == 'divorced') {
+      <ul class="inputexplanation">
         <li><strong>Note 1:</strong> If you have remarried, please use the calculator as "married."</li>
         <li><strong>Note 2:</strong> If you are divorced (and not remarried) after a marriage that lasted less than 10 years, please use the calculator as "single."</li>
       </ul>
-    </div>
-    <!--End Martital Status Inputs -->
+    }
+  </div>
+  <!--End Martital Status Inputs -->
 
+  <div class="form-inline">
+    <label>Gender</label>
+    <select [(ngModel)]="personA.gender" name="personA.gender" class="form-control">
+      <option value="male" selected>Male</option>
+      <option value="female">Female</option>
+    </select>
+  </div>
+  <div class="form-inline">
+    <label>Date of birth</label>
+    <select class="form-control" [(ngModel)]="personAinputMonth" name="personAinputMonth" required>
+      @for (month of inputMonths; track month) {
+        <option [value]="month">{{month}}</option>
+      }
+    </select>
+    <select class="form-control" [(ngModel)]="personAinputDay" name="personAinputDay" required>
+      @for (day of inputDays; track day) {
+        <option [value]="day">{{day}}</option>
+      }
+    </select>
+    <select class="form-control" [(ngModel)]="personAinputYear" name="personAinputYear" required>
+      @for (year of inputYears; track year) {
+        <option [value]="year">{{year}}</option>
+      }
+    </select>
+  </div>
+
+  <!-- moved PIA explanation above benefit entry to keep disabilty entries together -->
+  <div class="inputexplanation">
+    <p>
+      Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. (<a href="https://obliviousinvestor.com/how-social-security-benefits-are-calculated/" target="_blank">This article has more details.</a>)
+    </p>
+    <ul>
+      <li>If you are younger than full retirement age, <a href="https://www.ssa.gov/myaccount/" target="_blank">your Social Security statement</a> will include an <em>estimate</em> of your PIA.</li>
+      <li>For most people, the calculator at <a href="http://ssa.tools/#integration=opensocialsecurity.com" target="_blank">SSA.tools</a> is the easiest way to calculate your PIA.</li>
+      <li>Alternatively, you can call the SSA to request that they calculate your PIA.</li>
+      <li>Your PIA will change over time due to new earnings, wage indexing, and cost of living adjustments. (<a href="https://obliviousinvestor.com/how-social-security-benefits-are-calculated/" target="_blank">Again, more details here.</a>)</li>
+      @if (scenario.maritalStatus !== 'single') {
+        <li>If one person does not have enough credits to qualify for a retirement benefit of their own, enter zero as their PIA.</li>
+      }
+    </ul>
+  </div>
+
+  <!--Disability Inputs for personA-->
+  <!-- show question if answered yes, even if the 'additional input' disabilityShow item has been deselected -->
+  @if (disabilityShow === true || this.personA.isOnDisability === true) {
+    <span>
+      <label>Disability: are you currently receiving Social Security disability <em>and</em> expecting to stay on disability until your full retirement age?</label>
+      <input type="radio" id="personAdisabled" [(ngModel)]="personA.isOnDisability" name="personA.isOnDisability" [value]="true">
+      <label for="personAdisabled">Yes</label>
+      <input type="radio" id="personAnotDisabled" [(ngModel)]="personA.isOnDisability" name="personA.isOnDisability" [value]="false">
+      <label for="personAnotDisabled">No</label>
+    </span>
+  }
+  <!--End Disability Inputs for personA-->
+
+  <div>
+    @if (personA.isOnDisability === false) {
+      <label>PIA</label>
+    }
+    @if (personA.isOnDisability === true) {
+      <label>Monthly amount of your disability benefit</label>
+    }
+    <input type="number" [(ngModel)]="personAprimaryPIAinput" name="personAprimaryPIAinput" #personAPIAinput="ngModel" id="personAPIA" required pattern="[0-9]{1,7}">
+    @if (personAPIAinput.invalid) {
+      <span class="alert alert-danger">digits only, please</span>
+    }
+  </div>
+
+
+  <!--Begin personA Earnings Test Inputs -->
+  <!-- show question if already answered yes, even if the 'additional input' workingShow item has been deselected -->
+  @if ((workingShow === true && personA.isOnDisability === false) || this.personAworking === true) {
+    <span>
+      <div>
+        <label>Are you still working?</label>
+        <input type="radio" id="personAworkingYes" [(ngModel)]="personAworking" name="personAworking" [value]="true">
+        <label for="personAworkingYes">Yes</label>
+        <input type="radio" id="personAworkingNo" [(ngModel)]="personAworking" name="personAworking" [value]="false">
+        <label for="personAworkingNo">No</label>
+      </div>
+      @if (this.personAworking === true) {
+        <div class="form-inline">
+          <label>Approximate month in which you will stop working</label>
+          <select class="form-control" [(ngModel)]="personAquitWorkMonth" name="personAquitWorkMonth" required>
+            @for (month of inputMonths; track month) {
+              <option [value]="month">{{month}}</option>
+            }
+          </select>
+          <select class="form-control" [(ngModel)]="personAquitWorkYear" name="personAquitWorkYear" required>
+            @for (year of quitWorkYears; track year) {
+              <option [value]="year">{{year}}</option>
+            }
+          </select>
+        </div>
+      }
+      @if (this.personAworking === true) {
+        <div>
+          <label>Your estimated monthly earnings until the month in which you retire</label>
+          <input type="number" [(ngModel)]="personA.monthlyEarnings" name="personA.monthlyEarnings" #personAmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,8}">
+          @if (personAmonthlyEarningsInput.invalid) {
+            <span class="alert alert-danger">digits only, please</span>
+          }
+        </div>
+      }
+      <p class="inputexplanation">This information (about current work status) is only used for the purpose of applying the Social Security <a href="https://www.ssa.gov/oact/cola/rtea.html" target="_blank">earnings test</a>. It is not used for calculating your PIA.
+      The calculator relies on the user to provide the PIA. (Again, you can get such information by contacting the SSA, or by using one of the calculators on their website, such as <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">this one</a>.)</p>
+    </span>
+  }
+  <!--End personA Earnings Test Inputs -->
+
+  <!--Begin personA Already-Filed/Disability-began Inputs-->
+  @if (personA.isOnDisability === false) {
+    <div>
+      <label>Have you already filed for retirement benefits?</label>
+      <input type="radio" id="personAfiledYes" [(ngModel)]="personA.hasFiled" name="personA.hasFiled" [value]="true">
+      <label for="personAfiledYes">Yes</label>
+      <input type="radio" id="personAfiledNo" [(ngModel)]="personA.hasFiled" name="personA.hasFiled" [value]="false">
+      <label for="personAfiledNo">No</label>
+    </div>
+  }
+  @if (personA.hasFiled === true || personA.isOnDisability === true) {
+    <div class="form-inline">
+      @if (personA.hasFiled === true) {
+        <label>Month and year in which you filed for your retirement benefit:</label>
+      }
+      @if (personA.isOnDisability === true) {
+        <label>Month and year in which your disability benefit began:</label>
+      }
+      <select class="form-control" [(ngModel)]="personAfixedRetirementBenefitMonth" name="personAfixedRetirementBenefitMonth" id="personAfixedRetirementBenefitMonth" required>
+        @for (month of inputMonths; track month) {
+          <option [value]="month">{{month}}</option>
+        }
+      </select>
+      <select class="form-control" [(ngModel)]="personAfixedRetirementBenefitYear" name="personAfixedRetirementBenefitYear" required>
+        @for (year of inputBenefitYears; track year) {
+          <option [value]="year">{{year}}</option>
+        }
+      </select>
+      @if (errorCollection.personAfixedRetirementDateError) {
+        <span class="alert alert-danger">{{errorCollection.personAfixedRetirementDateError}}</span>
+      }
+    </div>
+  }
+  <!--End personA Already-Filed Inputs -->
+
+  <!--Begin personA Already-Filed Mother/Father Inputs-->
+  @if (scenario.maritalStatus == 'survivor' && ((childUnder16orDisabled === true && this.today < personA.survivorFRA) || personAfixedMotherFatherBenefitMonth || personAfixedMotherFatherBenefitYear)) {
+    <div>
+      <!--survivor scenario, and childUnder16orDisabled and person hasn't yet reached survivor FRA (so no automatic conversion to survivorbenefit) OR there's an input already provided in the date fields-->
+      <label>Have you already filed for mother/father benefits?</label>
+      <input type="radio" id="personAfiledMotherFatherYes" [(ngModel)]="personA.hasFiledAsMotherFather" name="personA.hasFiledAsMotherFather" [value]="true">
+      <label for="personAfiledMotherFatherYes">Yes</label>
+      <input type="radio" id="personAfiledMotherFatherNo" [(ngModel)]="personA.hasFiledAsMotherFather" name="personA.hasFiledAsMotherFather" [value]="false">
+      <label for="personAfiledMotherFatherNo">No</label>
+    </div>
+  }
+  @if (personA.hasFiledAsMotherFather === true) {
+    <div class="form-inline">
+      <label>Month and year in which you filed for your mother/father benefit:</label>
+      <select class="form-control" [(ngModel)]="personAfixedMotherFatherBenefitMonth" name="personAfixedMotherFatherBenefitMonth" id="personAfixedMotherFatherBenefitMonth" required>
+        @for (month of inputMonths; track month) {
+          <option [value]="month">{{month}}</option>
+        }
+      </select>
+      <select class="form-control" [(ngModel)]="personAfixedMotherFatherBenefitYear" name="personAfixedMotherFatherBenefitYear" required>
+        @for (year of inputBenefitYears; track year) {
+          <option [value]="year">{{year}}</option>
+        }
+      </select>
+      @if (errorCollection.personAfixedMotherFatherDateError) {
+        <span class="alert alert-danger">{{errorCollection.personAfixedMotherFatherDateError}}</span>
+      }
+    </div>
+  }
+  <!--End personA Already-Filed Mother/Father Inputs-->
+
+  <!--Begin personA Already-Filed Widow(er) Inputs-->
+  @if (scenario.maritalStatus == 'survivor' && ( (childUnder16orDisabled === false && (personA.initialAge >= 60 || (personA.isOnDisability === true && personA.initialAge >= 50) ) ) || this.today >= personA.survivorFRA || personAfixedSurvivorBenefitMonth || personAfixedSurvivorBenefitYear )) {
+    <div>
+      <!--survivor scenario and: [over 60 (or over 50 and disabled) and no childunder16ordisabled] OR [over survivorFRA] OR [there's an input for fixedSurvivorBenefitMonth/Year]-->
+      <label>Have you already filed for survivor benefits (i.e., widow/widower benefits@if (childUnder16orDisabled === true) {
+        <span>, as distinct from mother/father benefits</span>
+      })?</label>
+      <input type="radio" id="personAfiledSurvivorYes" [(ngModel)]="personA.hasFiledAsSurvivor" name="personA.hasFiledAsSurvivor" [value]="true">
+      <label for="personAfiledSurvivorYes">Yes</label>
+      <input type="radio" id="personAfiledSurvivorNo" [(ngModel)]="personA.hasFiledAsSurvivor" name="personA.hasFiledAsSurvivor" [value]="false">
+      <label for="personAfiledSurvivorNo">No</label>
+    </div>
+  }
+  @if (personA.hasFiledAsSurvivor === true) {
+    <div class="form-inline">
+      <label>Month and year in which you filed for your survivor benefit:</label>
+      <select class="form-control" [(ngModel)]="personAfixedSurvivorBenefitMonth" name="personAfixedSurvivorBenefitMonth" id="personAfixedSurvivorBenefitMonth" required>
+        @for (month of inputMonths; track month) {
+          <option [value]="month">{{month}}</option>
+        }
+      </select>
+      <select class="form-control" [(ngModel)]="personAfixedSurvivorBenefitYear" name="personAfixedSurvivorBenefitYear" required>
+        @for (year of inputBenefitYears; track year) {
+          <option [value]="year">{{year}}</option>
+        }
+      </select>
+      @if (errorCollection.personAfixedSurvivorDateError) {
+        <span class="alert alert-danger">{{errorCollection.personAfixedSurvivorDateError}}</span>
+      }
+    </div>
+  }
+  <!--End personA Already-Filed Widow(er) Inputs-->
+
+
+  <!--Begin personA Mortality Inputs -->
+  @if (this.mortalityShow === true || this.personAmortalityInput != this.defaultMortalityTableID) {
+    <span>
+      <div class="form-inline" title="Used to calculate your probability of being alive at a given age">
+        <label>Mortality table</label>
+        <select [(ngModel)]="personAmortalityInput" name="personAmortalityInput" class="form-control">
+          <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
+          <option value="NS2">2017 CSO Nonsmoker Preferred</option>
+          <option value="{{this.defaultMortalityTableID}}">{{defaultMortalityTableName}}</option>
+          <option value="SM1">2017 CSO Smoker Preferred</option>
+          <option value="SM2">2017 CSO Smoker Residual Standard</option>
+          <option value="fixed">Assumed age at death</option>
+        </select>
+      </div>
+      @if (this.personAmortalityInput == 'fixed') {
+        <span>
+          <label for="personAassumedDeathAge">Assumed age at death</label>
+          <input type="number" [(ngModel)]="personAassumedDeathAge" id="personAassumedDeathAge" name="personAassumedDeathAge" #personAassumedDeathAgeInput="ngModel" required pattern="[0-9]{1,7}">
+          @if (personAassumedDeathAgeInput.invalid) {
+            <span class="alert alert-danger">whole numbers only, please</span>
+          }
+          <p class="inputexplanation">
+            For an assumed age at death, the calculator assumes that you live throughout the calendar year in question. (For example, if you were born on any date in 1960 and you input an assumed
+            death age of 74, the calculator will assume you are alive throughout 2034 and deceased throughout 2035.)
+          </p>
+          @if (errorCollection.personAassumedDeathAgeError) {
+            <p class="alert alert-danger">{{errorCollection.personAassumedDeathAgeError}}</p>
+          }
+        </span>
+      }
+      <p class="inputexplanation">
+        <a [routerLink]="['about']" fragment="mortality" target="_blank">See the "About" page</a> for more information about
+        these mortality table options.
+      </p>
+    </span>
+  }
+  <!--End personA Mortality Inputs -->
+
+
+  @if (scenario.maritalStatus !== 'single') {
+    <span>
+      @if (scenario.maritalStatus == 'married') {
+        <h1>Your Spouse's Information</h1>
+      }
+      @if (scenario.maritalStatus == 'divorced') {
+        <h1>Your Ex-spouse's Information</h1>
+      }
+      @if (scenario.maritalStatus == 'survivor') {
+        <h1>Your Deceased Spouse's Information</h1>
+      }
       <div class="form-inline">
         <label>Gender</label>
-        <select [(ngModel)]="personA.gender" name="personA.gender" class="form-control">
-          <option value="male" selected>Male</option>
+        <select [(ngModel)]="personB.gender" name="personB.gender" class="form-control">
+          <option value="male">Male</option>
           <option value="female">Female</option>
         </select>
       </div>
       <div class="form-inline">
         <label>Date of birth</label>
-        <select class="form-control" [(ngModel)]="personAinputMonth" name="personAinputMonth" required>
-          <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+        <select class="form-control" [(ngModel)]="personBinputMonth" name="personBinputMonth" required>
+          @for (month of inputMonths; track month) {
+            <option [value]="month">{{month}}</option>
+          }
         </select>
-        <select class="form-control" [(ngModel)]="personAinputDay" name="personAinputDay" required>
-          <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
+        <select class="form-control" [(ngModel)]="personBinputDay" name="personBinputDay" required>
+          @for (day of inputDays; track day) {
+            <option [value]="day">{{day}}</option>
+          }
         </select>
-        <select class="form-control" [(ngModel)]="personAinputYear" name="personAinputYear" required>
-          <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
+        <select class="form-control" [(ngModel)]="personBinputYear" name="personBinputYear" required>
+          @for (year of inputYears; track year) {
+            <option [value]="year">{{year}}</option>
+          }
         </select>
       </div>
-
-      <!-- moved PIA explanation above benefit entry to keep disabilty entries together -->
-      <div class="inputexplanation">
-        <p>
-        Your primary insurance amount (PIA) is the amount of your monthly retirement benefit, if you file for it at your full retirement age. (<a href="https://obliviousinvestor.com/how-social-security-benefits-are-calculated/" target="_blank">This article has more details.</a>)
-        </p>
-        <ul>
-          <li>If you are younger than full retirement age, <a href="https://www.ssa.gov/myaccount/" target="_blank">your Social Security statement</a> will include an <em>estimate</em> of your PIA.</li>
-          <li>For most people, the calculator at <a href="http://ssa.tools/#integration=opensocialsecurity.com" target="_blank">SSA.tools</a> is the easiest way to calculate your PIA.</li>
-          <li>Alternatively, you can call the SSA to request that they calculate your PIA.</li>
-          <li>Your PIA will change over time due to new earnings, wage indexing, and cost of living adjustments. (<a href="https://obliviousinvestor.com/how-social-security-benefits-are-calculated/" target="_blank">Again, more details here.</a>)</li>
-        <li *ngIf="scenario.maritalStatus !== 'single'">If one person does not have enough credits to qualify for a retirement benefit of their own, enter zero as their PIA.</li>
-        </ul>
-      </div>
-
-      <!--Disability Inputs for personA-->
-      <!-- show question if answered yes, even if the 'additional input' disabilityShow item has been deselected -->
-      <span *ngIf="disabilityShow === true || this.personA.isOnDisability === true">
-        <label>Disability: are you currently receiving Social Security disability <em>and</em> expecting to stay on disability until your full retirement age?</label>
-        <input type="radio" id="personAdisabled" [(ngModel)]="personA.isOnDisability" name="personA.isOnDisability" [value]="true">
-        <label for="personAdisabled">Yes</label>
-        <input type="radio" id="personAnotDisabled" [(ngModel)]="personA.isOnDisability" name="personA.isOnDisability" [value]="false">
-        <label for="personAnotDisabled">No</label>
-      </span>
-      <!--End Disability Inputs for personA-->
-
-      <div>
-        <label *ngIf="personA.isOnDisability === false">PIA</label>
-        <label *ngIf="personA.isOnDisability === true">Monthly amount of your disability benefit</label>
-        <input type="number" [(ngModel)]="personAprimaryPIAinput" name="personAprimaryPIAinput" #personAPIAinput="ngModel" id="personAPIA" required pattern="[0-9]{1,7}">
-        <span *ngIf="personAPIAinput.invalid" class="alert alert-danger">digits only, please</span>
-      </div>
-
-
-      <!--Begin personA Earnings Test Inputs -->
-      <!-- show question if already answered yes, even if the 'additional input' workingShow item has been deselected -->
-      <span *ngIf="(workingShow === true && personA.isOnDisability === false) || this.personAworking === true">
-        <div>
-          <label>Are you still working?</label>
-          <input type="radio" id="personAworkingYes" [(ngModel)]="personAworking" name="personAworking" [value]="true">
-          <label for="personAworkingYes">Yes</label>
-          <input type="radio" id="personAworkingNo" [(ngModel)]="personAworking" name="personAworking" [value]="false">
-          <label for="personAworkingNo">No</label>
-        </div>
-        <div *ngIf="this.personAworking === true" class="form-inline">
-          <label>Approximate month in which you will stop working</label>
-          <select class="form-control" [(ngModel)]="personAquitWorkMonth" name="personAquitWorkMonth" required>
-            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-          </select>
-          <select class="form-control" [(ngModel)]="personAquitWorkYear" name="personAquitWorkYear" required>
-            <option *ngFor="let year of quitWorkYears" [value]="year">{{year}}</option>
-          </select>
-        </div>
-        <div *ngIf="this.personAworking === true">
-          <label>Your estimated monthly earnings until the month in which you retire</label>
-          <input type="number" [(ngModel)]="personA.monthlyEarnings" name="personA.monthlyEarnings" #personAmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,8}">
-          <span *ngIf="personAmonthlyEarningsInput.invalid" class="alert alert-danger">digits only, please</span>
-        </div>
-        <p class="inputexplanation">This information (about current work status) is only used for the purpose of applying the Social Security <a href="https://www.ssa.gov/oact/cola/rtea.html" target="_blank">earnings test</a>. It is not used for calculating your PIA.
-          The calculator relies on the user to provide the PIA. (Again, you can get such information by contacting the SSA, or by using one of the calculators on their website, such as <a href="https://www.ssa.gov/oact/anypia/anypia.html" target="_blank">this one</a>.)</p>
-      </span>
-      <!--End personA Earnings Test Inputs -->
-
-      <!--Begin personA Already-Filed/Disability-began Inputs-->
-      <div *ngIf="personA.isOnDisability === false">
-        <label>Have you already filed for retirement benefits?</label>
-        <input type="radio" id="personAfiledYes" [(ngModel)]="personA.hasFiled" name="personA.hasFiled" [value]="true">
-        <label for="personAfiledYes">Yes</label>
-        <input type="radio" id="personAfiledNo" [(ngModel)]="personA.hasFiled" name="personA.hasFiled" [value]="false">
-        <label for="personAfiledNo">No</label>
-      </div>
-      <div *ngIf="personA.hasFiled === true || personA.isOnDisability === true" class="form-inline">
-        <label *ngIf="personA.hasFiled === true">Month and year in which you filed for your retirement benefit:</label>
-        <label *ngIf="personA.isOnDisability === true">Month and year in which your disability benefit began:</label>
-        <select class="form-control" [(ngModel)]="personAfixedRetirementBenefitMonth" name="personAfixedRetirementBenefitMonth" id="personAfixedRetirementBenefitMonth" required>
-          <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-        </select>
-        <select class="form-control" [(ngModel)]="personAfixedRetirementBenefitYear" name="personAfixedRetirementBenefitYear" required>
-          <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-        </select>
-        <span *ngIf="errorCollection.personAfixedRetirementDateError" class="alert alert-danger">{{errorCollection.personAfixedRetirementDateError}}</span>
-      </div>
-      <!--End personA Already-Filed Inputs -->
-
-      <!--Begin personA Already-Filed Mother/Father Inputs-->
-      <div *ngIf="scenario.maritalStatus == 'survivor' && ((childUnder16orDisabled === true && this.today < personA.survivorFRA) || personAfixedMotherFatherBenefitMonth || personAfixedMotherFatherBenefitYear)">
-        <!--survivor scenario, and childUnder16orDisabled and person hasn't yet reached survivor FRA (so no automatic conversion to survivorbenefit) OR there's an input already provided in the date fields-->
-        <label>Have you already filed for mother/father benefits?</label>
-        <input type="radio" id="personAfiledMotherFatherYes" [(ngModel)]="personA.hasFiledAsMotherFather" name="personA.hasFiledAsMotherFather" [value]="true">
-        <label for="personAfiledMotherFatherYes">Yes</label>
-        <input type="radio" id="personAfiledMotherFatherNo" [(ngModel)]="personA.hasFiledAsMotherFather" name="personA.hasFiledAsMotherFather" [value]="false">
-        <label for="personAfiledMotherFatherNo">No</label>
-      </div>
-      <div *ngIf="personA.hasFiledAsMotherFather === true" class="form-inline">
-        <label>Month and year in which you filed for your mother/father benefit:</label>
-        <select class="form-control" [(ngModel)]="personAfixedMotherFatherBenefitMonth" name="personAfixedMotherFatherBenefitMonth" id="personAfixedMotherFatherBenefitMonth" required>
-          <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-        </select>
-        <select class="form-control" [(ngModel)]="personAfixedMotherFatherBenefitYear" name="personAfixedMotherFatherBenefitYear" required>
-          <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-        </select>
-        <span *ngIf="errorCollection.personAfixedMotherFatherDateError" class="alert alert-danger">{{errorCollection.personAfixedMotherFatherDateError}}</span>
-      </div>
-      <!--End personA Already-Filed Mother/Father Inputs-->
-
-      <!--Begin personA Already-Filed Widow(er) Inputs-->
-      <div *ngIf="scenario.maritalStatus == 'survivor' && ( (childUnder16orDisabled === false && (personA.initialAge >= 60 || (personA.isOnDisability === true && personA.initialAge >= 50) ) ) || this.today >= personA.survivorFRA || personAfixedSurvivorBenefitMonth || personAfixedSurvivorBenefitYear )">
-        <!--survivor scenario and: [over 60 (or over 50 and disabled) and no childunder16ordisabled] OR [over survivorFRA] OR [there's an input for fixedSurvivorBenefitMonth/Year]-->
-        <label>Have you already filed for survivor benefits (i.e., widow/widower benefits<span *ngIf="childUnder16orDisabled === true">, as distinct from mother/father benefits</span>)?</label>
-        <input type="radio" id="personAfiledSurvivorYes" [(ngModel)]="personA.hasFiledAsSurvivor" name="personA.hasFiledAsSurvivor" [value]="true">
-        <label for="personAfiledSurvivorYes">Yes</label>
-        <input type="radio" id="personAfiledSurvivorNo" [(ngModel)]="personA.hasFiledAsSurvivor" name="personA.hasFiledAsSurvivor" [value]="false">
-        <label for="personAfiledSurvivorNo">No</label>
-      </div>
-      <div *ngIf="personA.hasFiledAsSurvivor === true" class="form-inline">
-        <label>Month and year in which you filed for your survivor benefit:</label>
-        <select class="form-control" [(ngModel)]="personAfixedSurvivorBenefitMonth" name="personAfixedSurvivorBenefitMonth" id="personAfixedSurvivorBenefitMonth" required>
-          <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-        </select>
-        <select class="form-control" [(ngModel)]="personAfixedSurvivorBenefitYear" name="personAfixedSurvivorBenefitYear" required>
-          <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-        </select>
-        <span *ngIf="errorCollection.personAfixedSurvivorDateError" class="alert alert-danger">{{errorCollection.personAfixedSurvivorDateError}}</span>
-      </div>
-      <!--End personA Already-Filed Widow(er) Inputs-->
-
-      
-      <!--Begin personA Mortality Inputs -->
-      <span *ngIf="this.mortalityShow === true || this.personAmortalityInput != this.defaultMortalityTableID">
-        <div class="form-inline" title="Used to calculate your probability of being alive at a given age">
-          <label>Mortality table</label>
-          <select [(ngModel)]="personAmortalityInput" name="personAmortalityInput" class="form-control">
-            <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
-            <option value="NS2">2017 CSO Nonsmoker Preferred</option>
-            <option value="{{this.defaultMortalityTableID}}">{{defaultMortalityTableName}}</option>
-            <option value="SM1">2017 CSO Smoker Preferred</option>
-            <option value="SM2">2017 CSO Smoker Residual Standard</option>
-            <option value="fixed">Assumed age at death</option>
-          </select>
-        </div>
-        <span *ngIf="this.personAmortalityInput == 'fixed'">
-          <label for="personAassumedDeathAge">Assumed age at death</label>
-          <input type="number" [(ngModel)]="personAassumedDeathAge" id="personAassumedDeathAge" name="personAassumedDeathAge" #personAassumedDeathAgeInput="ngModel" required pattern="[0-9]{1,7}">
-          <span *ngIf="personAassumedDeathAgeInput.invalid" class="alert alert-danger">whole numbers only, please</span>
-          <p class="inputexplanation">
-            For an assumed age at death, the calculator assumes that you live throughout the calendar year in question. (For example, if you were born on any date in 1960 and you input an assumed 
-            death age of 74, the calculator will assume you are alive throughout 2034 and deceased throughout 2035.)
-          </p>
-          <p *ngIf="errorCollection.personAassumedDeathAgeError" class="alert alert-danger">{{errorCollection.personAassumedDeathAgeError}}</p>
-        </span>
-        <p class="inputexplanation">
-          <a [routerLink]="['about']" fragment="mortality" target="_blank">See the "About" page</a> for more information about
-          these mortality table options.
-        </p>
-      </span>
-      <!--End personA Mortality Inputs -->
-
-
-      <span *ngIf="scenario.maritalStatus !== 'single'">
-
-        <h1 *ngIf="scenario.maritalStatus == 'married'">Your Spouse's Information</h1>
-        <h1 *ngIf="scenario.maritalStatus == 'divorced'">Your Ex-spouse's Information</h1>
-        <h1 *ngIf="scenario.maritalStatus == 'survivor'">Your Deceased Spouse's Information</h1>      
+      @if (scenario.maritalStatus == 'survivor') {
         <div class="form-inline">
-          <label>Gender</label>
-          <select [(ngModel)]="personB.gender" name="personB.gender" class="form-control">
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-        </div>
-        <div class="form-inline">
-          <label>Date of birth</label>
-          <select class="form-control" [(ngModel)]="personBinputMonth" name="personBinputMonth" required>
-            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-          </select>
-          <select class="form-control" [(ngModel)]="personBinputDay" name="personBinputDay" required>
-            <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
-          </select>
-          <select class="form-control" [(ngModel)]="personBinputYear" name="personBinputYear" required>
-            <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
-          </select>
-        </div>
-        <div *ngIf="scenario.maritalStatus == 'survivor'" class="form-inline">
           <label>Month/Year of death</label>
           <select class="form-control" [(ngModel)]="personBdeathInputMonth" name="personBdeathInputMonth" required>
-            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+            @for (month of inputMonths; track month) {
+              <option [value]="month">{{month}}</option>
+            }
           </select>
           <select class="form-control" [(ngModel)]="personBdeathInputYear" name="personBdeathInputYear" required>
-            <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
+            @for (year of inputYears; track year) {
+              <option [value]="year">{{year}}</option>
+            }
           </select>
         </div>
-
-        <!--Disability Inputs for personB-->
-        <!-- show question if already answered yes, even if the 'additional input' disabilityShow item has been deselected -->
-        <span *ngIf="scenario.maritalStatus !=='survivor' && (disabilityShow === true || personB.isOnDisability === true)">
+      }
+      <!--Disability Inputs for personB-->
+      <!-- show question if already answered yes, even if the 'additional input' disabilityShow item has been deselected -->
+      @if (scenario.maritalStatus !=='survivor' && (disabilityShow === true || personB.isOnDisability === true)) {
+        <span>
           <label>Disability: is your spouse currently receiving Social Security disability <em>and</em> expecting to stay on disability until full retirement age?</label>
           <input type="radio" id="personBdisabled" [(ngModel)]="personB.isOnDisability" name="personB.isOnDisability" [value]="true">
-        <label for="personBdisabled">Yes</label>
+          <label for="personBdisabled">Yes</label>
           <input type="radio" id="personBnotDisabled" [(ngModel)]="personB.isOnDisability" name="personB.isOnDisability" [value]="false">
           <label for="personBnotDisabled">No</label>
         </span>
-        <!--End Disability Inputs for personB-->
-
-
-        <!--Begin personB PIA Inputs -->
-        <div>
-          <label *ngIf="personB.isOnDisability === false">PIA</label>
-          <label *ngIf="personB.isOnDisability === true">Monthly amount of your spouse's disability benefit</label>
-          <input type="number" [(ngModel)]="personBprimaryPIAinput" name="personBprimaryPIAinput" #personBPIAinput="ngModel" required pattern="[0-9]{1,8}">
-          <span *ngIf="personBPIAinput.invalid" class="alert alert-danger">digits only, please</span>
-        </div>
-
-
-
-        <!--Begin personB Earnings Test Inputs -->
-        <!-- show question if already answered yes, even if the 'additional input' workingShow item has been deselected -->
-        <span *ngIf="scenario.maritalStatus !=='survivor' && ((workingShow === true && personB.isOnDisability === false) || this.personBworking === true)">
-          <div *ngIf="scenario.maritalStatus == 'married'">
-            <label>Is your spouse still working?</label>
-            <input type="radio" id="personBworkingYes" [(ngModel)]="personBworking" name="personBworking" [value]="true">
-            <label for="personBworkingYes">Yes</label>
-            <input type="radio" id="personBworkingNo" [(ngModel)]="personBworking" name="personBworking" [value]="false">
-            <label for="personBworkingNo">No</label>
-          </div>
-          <div *ngIf="this.personBworking === true" class="form-inline">
-            <label>Approximate month in which your spouse will stop working</label>
-            <select class="form-control" [(ngModel)]="personBquitWorkMonth" name="personBquitWorkMonth" required>
-              <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-            </select>
-            <select class="form-control" [(ngModel)]="personBquitWorkYear" name="personBquitWorkYear" required>
-              <option *ngFor="let year of quitWorkYears" [value]="year">{{year}}</option>
-            </select>
-          </div>
-          <div *ngIf="this.personBworking === true">
-            <label>Your spouse's estimated monthly earnings until the month in which he/she retires</label>
-            <input type="number" [(ngModel)]="personB.monthlyEarnings" name="personB.monthlyEarnings" #personBmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,7}">
-            <span *ngIf="personBmonthlyEarningsInput.invalid" class="alert alert-danger">digits only, please</span>
-          </div>
+      }
+      <!--End Disability Inputs for personB-->
+      <!--Begin personB PIA Inputs -->
+      <div>
+        @if (personB.isOnDisability === false) {
+          <label>PIA</label>
+        }
+        @if (personB.isOnDisability === true) {
+          <label>Monthly amount of your spouse's disability benefit</label>
+        }
+        <input type="number" [(ngModel)]="personBprimaryPIAinput" name="personBprimaryPIAinput" #personBPIAinput="ngModel" required pattern="[0-9]{1,8}">
+        @if (personBPIAinput.invalid) {
+          <span class="alert alert-danger">digits only, please</span>
+        }
+      </div>
+      <!--Begin personB Earnings Test Inputs -->
+      <!-- show question if already answered yes, even if the 'additional input' workingShow item has been deselected -->
+      @if (scenario.maritalStatus !=='survivor' && ((workingShow === true && personB.isOnDisability === false) || this.personBworking === true)) {
+        <span>
+          @if (scenario.maritalStatus == 'married') {
+            <div>
+              <label>Is your spouse still working?</label>
+              <input type="radio" id="personBworkingYes" [(ngModel)]="personBworking" name="personBworking" [value]="true">
+              <label for="personBworkingYes">Yes</label>
+              <input type="radio" id="personBworkingNo" [(ngModel)]="personBworking" name="personBworking" [value]="false">
+              <label for="personBworkingNo">No</label>
+            </div>
+          }
+          @if (this.personBworking === true) {
+            <div class="form-inline">
+              <label>Approximate month in which your spouse will stop working</label>
+              <select class="form-control" [(ngModel)]="personBquitWorkMonth" name="personBquitWorkMonth" required>
+                @for (month of inputMonths; track month) {
+                  <option [value]="month">{{month}}</option>
+                }
+              </select>
+              <select class="form-control" [(ngModel)]="personBquitWorkYear" name="personBquitWorkYear" required>
+                @for (year of quitWorkYears; track year) {
+                  <option [value]="year">{{year}}</option>
+                }
+              </select>
+            </div>
+          }
+          @if (this.personBworking === true) {
+            <div>
+              <label>Your spouse's estimated monthly earnings until the month in which he/she retires</label>
+              <input type="number" [(ngModel)]="personB.monthlyEarnings" name="personB.monthlyEarnings" #personBmonthlyEarningsInput="ngModel" required pattern="[0-9]{1,7}">
+              @if (personBmonthlyEarningsInput.invalid) {
+                <span class="alert alert-danger">digits only, please</span>
+              }
+            </div>
+          }
         </span>
-        <!--End personB Earnings Test Inputs -->
-
-        <!--Ex-spouse Retirement Date Inputs (Also, personB already-filed inputs or personB disability-began input) -->
-        <div *ngIf="(scenario.maritalStatus == 'married' || scenario.maritalStatus =='survivor') && personB.isOnDisability === false">
-          <label *ngIf="scenario.maritalStatus == 'married'">Has your spouse already filed for retirement benefits?</label>
-          <label *ngIf="scenario.maritalStatus == 'survivor'">Had your spouse already filed for retirement benefits before his/her date of death?</label>
-
+      }
+      <!--End personB Earnings Test Inputs -->
+      <!--Ex-spouse Retirement Date Inputs (Also, personB already-filed inputs or personB disability-began input) -->
+      @if ((scenario.maritalStatus == 'married' || scenario.maritalStatus =='survivor') && personB.isOnDisability === false) {
+        <div>
+          @if (scenario.maritalStatus == 'married') {
+            <label>Has your spouse already filed for retirement benefits?</label>
+          }
+          @if (scenario.maritalStatus == 'survivor') {
+            <label>Had your spouse already filed for retirement benefits before his/her date of death?</label>
+          }
           <input type="radio" id="personBfiledYes" [(ngModel)]="personB.hasFiled" name="personB.hasFiled" [value]="true">
           <label for="personBfiledYes">Yes</label>
           <input type="radio" id="personBfiledNo" [(ngModel)]="personB.hasFiled" name="personB.hasFiled" [value]="false">
           <label for="personBfiledNo">No</label>
         </div>
-
-        <div class="form-inline" *ngIf=" (scenario.maritalStatus == 'married' && personB.hasFiled === true)  ||
-                        (scenario.maritalStatus == 'married' && personB.isOnDisability === true) ||
-                        (scenario.maritalStatus == 'divorced' && personB.isOnDisability === false) ||
-                        (scenario.maritalStatus == 'survivor' && personB.hasFiled === true)" >
-          <label *ngIf="(scenario.maritalStatus == 'married' || scenario.maritalStatus == 'survivor') && personB.hasFiled === true">Month and year in which your spouse filed for his/her retirement benefit:</label>
-          <label *ngIf="scenario.maritalStatus == 'married' && personB.isOnDisability === true">Month and year in which your spouse's disability benefit began:</label>
-          <label *ngIf="scenario.maritalStatus == 'divorced' && personB.isOnDisability === false">Month and year in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
+      }
+      @if ( (scenario.maritalStatus == 'married' && personB.hasFiled === true)  ||
+        (scenario.maritalStatus == 'married' && personB.isOnDisability === true) ||
+        (scenario.maritalStatus == 'divorced' && personB.isOnDisability === false) ||
+        (scenario.maritalStatus == 'survivor' && personB.hasFiled === true)) {
+        <div class="form-inline" >
+          @if ((scenario.maritalStatus == 'married' || scenario.maritalStatus == 'survivor') && personB.hasFiled === true) {
+            <label>Month and year in which your spouse filed for his/her retirement benefit:</label>
+          }
+          @if (scenario.maritalStatus == 'married' && personB.isOnDisability === true) {
+            <label>Month and year in which your spouse's disability benefit began:</label>
+          }
+          @if (scenario.maritalStatus == 'divorced' && personB.isOnDisability === false) {
+            <label>Month and year in which your ex-spouse filed (or will file) for his/her retirement benefit:</label>
+          }
           <select class="form-control" [(ngModel)]="personBfixedRetirementBenefitMonth" name="personBfixedRetirementBenefitMonth" id="personBfixedRetirementBenefitMonth" required>
-            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+            @for (month of inputMonths; track month) {
+              <option [value]="month">{{month}}</option>
+            }
           </select>
           <select class="form-control" [(ngModel)]="personBfixedRetirementBenefitYear" name="personBfixedRetirementBenefitYear" required>
-            <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+            @for (year of inputBenefitYears; track year) {
+              <option [value]="year">{{year}}</option>
+            }
           </select>
-          <p *ngIf="errorCollection.personBfixedRetirementDateError" class="alert alert-danger">{{errorCollection.personBfixedRetirementDateError}}</p>
+          @if (errorCollection.personBfixedRetirementDateError) {
+            <p class="alert alert-danger">{{errorCollection.personBfixedRetirementDateError}}</p>
+          }
         </div>
-        <!--End Ex-spouse Retirement Date Inputs (Also, personB already-filed inputs)-->
-
-
-        <!--Begin personB Mortality Inputs -->
-        <div *ngIf="scenario.maritalStatus !=='survivor' && (this.mortalityShow === true || this.personBmortalityInput != this.defaultMortalityTableID)" class="form-inline"
-        title="Used to calculate your spouse's probability of being alive at a given age">
+      }
+      <!--End Ex-spouse Retirement Date Inputs (Also, personB already-filed inputs)-->
+      <!--Begin personB Mortality Inputs -->
+      @if (scenario.maritalStatus !=='survivor' && (this.mortalityShow === true || this.personBmortalityInput != this.defaultMortalityTableID)) {
+        <div class="form-inline"
+          title="Used to calculate your spouse's probability of being alive at a given age">
           <label>Mortality table</label>
           <select [(ngModel)]="personBmortalityInput" name="personBmortalityInput" class="form-control">
             <option value="NS1">2017 CSO Nonsmoker Super-preferred</option>
@@ -370,33 +499,45 @@
             <option value="fixed">Assumed age at death</option>
           </select>
         </div>
-        <span *ngIf="this.personBmortalityInput == 'fixed'">
+      }
+      @if (this.personBmortalityInput == 'fixed') {
+        <span>
           <label for="personBassumedDeathAge">Assumed age at death</label>
           <input type="number" [(ngModel)]="personBassumedDeathAge" id="personBassumedDeathAge" name="personBassumedDeathAge" #personBassumedDeathAgeInput="ngModel" required pattern="[0-9]{1,7}">
-          <span *ngIf="personBassumedDeathAgeInput.invalid" class="alert alert-danger">whole numbers only, please</span>
+          @if (personBassumedDeathAgeInput.invalid) {
+            <span class="alert alert-danger">whole numbers only, please</span>
+          }
           <p class="inputexplanation">
             For an assumed age at death, the calculator assumes that your
-            <span *ngIf="scenario.maritalStatus == 'married'">spouse</span>
-            <span *ngIf="scenario.maritalStatus == 'divorced'">ex-spouse</span>
-            lives throughout the calendar year in question. (For example, if they were born on any date in 1960 and you input an assumed 
+            @if (scenario.maritalStatus == 'married') {
+              <span>spouse</span>
+            }
+            @if (scenario.maritalStatus == 'divorced') {
+              <span>ex-spouse</span>
+            }
+            lives throughout the calendar year in question. (For example, if they were born on any date in 1960 and you input an assumed
             death age of 74, the calculator will assume they are alive throughout 2034 and deceased throughout 2035.)
           </p>
-          <p *ngIf="errorCollection.personBassumedDeathAgeError" class="alert alert-danger">{{errorCollection.personBassumedDeathAgeError}}</p>
+          @if (errorCollection.personBassumedDeathAgeError) {
+            <p class="alert alert-danger">{{errorCollection.personBassumedDeathAgeError}}</p>
+          }
         </span>
-        <!--End personB Mortality Inputs -->
+      }
+      <!--End personB Mortality Inputs -->
+    </span>
+  }
 
-      </span>
-
-      <!--Begin Child Inputs -->
-      <span *ngIf="this.childrenShow || scenario.numberOfChildren > 0">
-        <h1>Children</h1>
-        <label>Do you have any children who are under age 19 or permanently disabled?</label>
-        <input type="radio" id="childrenYes" [(ngModel)]="qualifyingChildrenBoolean" name="qualifyingChildrenBoolean" [value]="true">
-        <label for="childrenYes">Yes</label>
-        <input type="radio" id="childrenNo" [(ngModel)]="qualifyingChildrenBoolean" name="qualifyingChildrenBoolean" [value]="false">
-        <label for="childrenNo">No</label>
-
-        <div *ngIf="qualifyingChildrenBoolean === true" class="form-inline">
+  <!--Begin Child Inputs -->
+  @if (this.childrenShow || scenario.numberOfChildren > 0) {
+    <span>
+      <h1>Children</h1>
+      <label>Do you have any children who are under age 19 or permanently disabled?</label>
+      <input type="radio" id="childrenYes" [(ngModel)]="qualifyingChildrenBoolean" name="qualifyingChildrenBoolean" [value]="true">
+      <label for="childrenYes">Yes</label>
+      <input type="radio" id="childrenNo" [(ngModel)]="qualifyingChildrenBoolean" name="qualifyingChildrenBoolean" [value]="false">
+      <label for="childrenNo">No</label>
+      @if (qualifyingChildrenBoolean === true) {
+        <div class="form-inline">
           <label>How many?</label>
           <select [(ngModel)]="scenario.numberOfChildren" name="scenario.numberOfChildren" class="form-control">
             <option value=1>1</option>
@@ -406,318 +547,447 @@
             <option value=5>5</option>
             <option value=6>6 or more</option>
           </select>
-          <p *ngIf="scenario.numberOfChildren == 6" class="inputexplanation">As a result of the <a href="https://secure.ssa.gov/poms.nsf/lnx/0300615770" target="_blank">"combined family maximum" rule</a>,
-            children beyond the sixth would not change the calculation in any way. Please prioritize first entering any children who are disabled, and then entering by age (youngest first).</p>
-          <p *ngIf="scenario.numberOfChildren > 0" class="alert alert-warning">Please note that the calculator assumes that any children remain alive throughout the duration of the calculation. (This is in contrast to <a href="https://obliviousinvestor.com/long-will-collect-social-security-survivor-benefits/" target="_blank">the calculator's treatment of adults</a>.) In cases in which your child has a very short life expectancy, this will have the effect of overstating the desirability of you <span *ngIf="scenario.maritalStatus == 'married'">or your spouse</span> filing early in order to make your child eligible for child benefits.</p>
-          <app-childinputs *ngFor="let child of scenario.children" [child]="child" [personA]="personA" [personB]="personB"></app-childinputs>
+          @if (scenario.numberOfChildren == 6) {
+            <p class="inputexplanation">As a result of the <a href="https://secure.ssa.gov/poms.nsf/lnx/0300615770" target="_blank">"combined family maximum" rule</a>,
+          children beyond the sixth would not change the calculation in any way. Please prioritize first entering any children who are disabled, and then entering by age (youngest first).</p>
+        }
+        @if (scenario.numberOfChildren > 0) {
+          <p class="alert alert-warning">Please note that the calculator assumes that any children remain alive throughout the duration of the calculation. (This is in contrast to <a href="https://obliviousinvestor.com/long-will-collect-social-security-survivor-benefits/" target="_blank">the calculator's treatment of adults</a>.) In cases in which your child has a very short life expectancy, this will have the effect of overstating the desirability of you @if (scenario.maritalStatus == 'married') {
+          <span>or your spouse</span>
+        } filing early in order to make your child eligible for child benefits.</p>
+      }
+      @for (child of scenario.children; track child) {
+        <app-childinputs [child]="child" [personA]="personA" [personB]="personB"></app-childinputs>
+      }
+    </div>
+  }
+</span>
+}
 
-        </div>
-      </span>
-
-      <!--End Child Inputs -->
+<!--End Child Inputs -->
 
 
-      <!--Begin "Other Inputs" such as discount rate and benefit cut assumptions -->
-      <div *ngIf="(this.discountShow === true || this.urlDiscountRate || (this.scenario.discountRate != this.tipsDiscountRate) )
-      || (this.cutShow === true || scenario.benefitCutAssumption === true)">
-        <h1>Other Inputs</h1>
-        
-        <div *ngIf="this.discountShow === true || this.urlDiscountRate || (this.scenario.discountRate != this.tipsDiscountRate)">
-          <label>Real discount rate</label>
-          <input type="text" [(ngModel)]="scenario.discountRate" name="scenario.discountRate" class="smallTextInput" required>%
-          <p class="inputexplanation">
-            A "discount rate" is necessary to reflect the fact that the sooner a dollar is received, the sooner it can be invested. 
-            <span *ngIf="this.defaultDiscountRateSource == 'TIPS'">
-            The default discount rate is the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>,
-            (which is currently {{this.tipsDiscountRate}}%).
+<!--Begin "Other Inputs" such as discount rate and benefit cut assumptions -->
+@if ((this.discountShow === true || this.urlDiscountRate || (this.scenario.discountRate != this.tipsDiscountRate) )
+  || (this.cutShow === true || scenario.benefitCutAssumption === true)) {
+  <div>
+    <h1>Other Inputs</h1>
+    @if (this.discountShow === true || this.urlDiscountRate || (this.scenario.discountRate != this.tipsDiscountRate)) {
+      <div>
+        <label>Real discount rate</label>
+        <input type="text" [(ngModel)]="scenario.discountRate" name="scenario.discountRate" class="smallTextInput" required>%
+        <p class="inputexplanation">
+          A "discount rate" is necessary to reflect the fact that the sooner a dollar is received, the sooner it can be invested.
+          @if (this.defaultDiscountRateSource == 'TIPS') {
+            <span>
+              The default discount rate is the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>,
+              (which is currently {{this.tipsDiscountRate}}%).
             </span>
-            <span *ngIf="this.defaultDiscountRateSource == 'ERROR'">
-              The default discount rate is normally the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>. 
+          }
+          @if (this.defaultDiscountRateSource == 'ERROR') {
+            <span>
+              The default discount rate is normally the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>.
               But that was not available (due to a failure to get data from the data source), so we are using a default of {{this.defaultDiscountRateIfError}}% instead.
             </span>
-            <span *ngIf="this.defaultDiscountRateSource == 'URL'">
+          }
+          @if (this.defaultDiscountRateSource == 'URL') {
+            <span>
               The calculator usually uses the <a href="https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=realyield" target="_blank">yield on 20-year TIPS</a>, as the default discount rate. But the page was loaded with a URL that included a discount rate of {{this.urlDiscountRate}}%.
             </span>
-            See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a discussion of why the yield on 20-year TIPS is used as the default.
+          }
+          See <a href="https://obliviousinvestor.com/claiming-social-security-early-to-invest-it-what-rate-of-return-discount-rate-should-we-assume/" target="_blank">this article</a> for a discussion of why the yield on 20-year TIPS is used as the default.
         </p>
-        </div>
-      
-        <div *ngIf="this.cutShow === true || scenario.benefitCutAssumption === true">
-          <label>Assume that Social Security benefits will be cut in the future?</label>
-          <input type="radio" id="benefitCutAssumptionNo" [(ngModel)]="scenario.benefitCutAssumption" name="scenario.benefitCutAssumption" [value]="false">
-          <label for="benefitCutAssumptionNo">No</label>
-          <input type="radio" id="benefitCutAssumptionYes" [(ngModel)]="scenario.benefitCutAssumption" name="scenario.benefitCutAssumption" [value]="true">
-          <label for="benefitCutAssumptionYes">Yes</label>
-          <span *ngIf="scenario.benefitCutAssumption === true">
+      </div>
+    }
+    @if (this.cutShow === true || scenario.benefitCutAssumption === true) {
+      <div>
+        <label>Assume that Social Security benefits will be cut in the future?</label>
+        <input type="radio" id="benefitCutAssumptionNo" [(ngModel)]="scenario.benefitCutAssumption" name="scenario.benefitCutAssumption" [value]="false">
+        <label for="benefitCutAssumptionNo">No</label>
+        <input type="radio" id="benefitCutAssumptionYes" [(ngModel)]="scenario.benefitCutAssumption" name="scenario.benefitCutAssumption" [value]="true">
+        <label for="benefitCutAssumptionYes">Yes</label>
+        @if (scenario.benefitCutAssumption === true) {
+          <span>
             <div>
               <label>Year in which benefit reduction is implemented</label>
               <select [(ngModel)]="scenario.benefitCutYear" name="scenario.benefitCutYear" required>
-                <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+                @for (year of inputBenefitYears; track year) {
+                  <option [value]="year">{{year}}</option>
+                }
               </select>
               <label class="paddedLabel" >Severity of benefit reduction</label>
               <input type="text" [(ngModel)]="scenario.benefitCutPercentage" name="scenario.benefitCutPercentage" class="smallTextInput" required>%
             </div>
             <p>For reference, the <a href="https://www.ssa.gov/oact/TR/2025/index.html" target="_blank">2025 Social Security trustees report</a> estimates that if no legislative changes are made,
-              benefits will have to be cut by 23% as of 2033.</p>
-          </span>
-        </div>
-      </div>
-      <!--End "Other Inputs" such as discount rate and benefit cut assumptions -->
+          benefits will have to be cut by 23% as of 2033.</p>
+        </span>
+      }
+    </div>
+  }
+</div>
+}
+<!--End "Other Inputs" such as discount rate and benefit cut assumptions -->
 
-      <div>
-        <button *ngIf="!(scenario.maritalStatus == 'single' && personA.initialAge >= 70)" type="submit" id="maximizeSubmit" class="btn btn-primary no-print" >Submit</button>
-        <p *ngIf="scenario.maritalStatus == 'single' && personA.initialAge >= 70" class="alert alert-danger">Since you are single and already age 70, there is nothing to calculate, as your filing decision has already been made. (If you haven't yet filed, you should file immediately.)</p>
-      </div>
-      <div class="statusMessage" *ngIf="this.statusMessage">{{this.statusMessage}}</div>
-      <p *ngIf="!this.solutionSet.computationComplete && scenario.maritalStatus == 'married'">If you are married, your computer will have to do quite a lot of math. Depending on your browser and your computer's processor speed, this calculation may take up to a minute. Please be patient with your computer.</p>
-      <p *ngIf="!this.solutionSet.computationComplete && scenario.maritalStatus == 'married'">For reference, this calculator runs <em>many-times faster</em> in Chrome than it does in other browsers. (Edge and Internet Explorer are especially slow.)</p>
-  </form>
+<div>
+  @if (!(scenario.maritalStatus == 'single' && personA.initialAge >= 70)) {
+    <button type="submit" id="maximizeSubmit" class="btn btn-primary no-print" >Submit</button>
+  }
+  @if (scenario.maritalStatus == 'single' && personA.initialAge >= 70) {
+    <p class="alert alert-danger">Since you are single and already age 70, there is nothing to calculate, as your filing decision has already been made. (If you haven't yet filed, you should file immediately.)</p>
+  }
+</div>
+@if (this.statusMessage) {
+  <div class="statusMessage">{{this.statusMessage}}</div>
+}
+@if (!this.solutionSet.computationComplete && scenario.maritalStatus == 'married') {
+  <p>If you are married, your computer will have to do quite a lot of math. Depending on your browser and your computer's processor speed, this calculation may take up to a minute. Please be patient with your computer.</p>
+}
+@if (!this.solutionSet.computationComplete && scenario.maritalStatus == 'married') {
+  <p>For reference, this calculator runs <em>many-times faster</em> in Chrome than it does in other browsers. (Edge and Internet Explorer are especially slow.)</p>
+}
+</form>
 
-  <!-- BEGIN OUTPUT SECTION-->
-  <p *ngIf="this.solutionSet.computationComplete && this.primaryFormHasChanged === true" class="alert alert-danger">
+<!-- BEGIN OUTPUT SECTION-->
+@if (this.solutionSet.computationComplete && this.primaryFormHasChanged === true) {
+  <p class="alert alert-danger">
     Please click "submit" again, in order to rerun the calculation with your revised inputs.
   </p>
-  <span *ngIf="this.solutionSet.computationComplete && this.primaryFormHasChanged === false">
-
+}
+@if (this.solutionSet.computationComplete && this.primaryFormHasChanged === false) {
+  <span>
     <!--Recommended Strategy Output-->
     <h2>Recommended Strategy</h2>
     <p>
-      <span *ngIf="scenario.benefitCutAssumption">If the possible cut in benefits occurs, the </span>
-      <span *ngIf="!this.scenario.benefitCutAssumption">The </span>
-      strategy that maximizes the total dollars you can be expected to receive over your lifetime<span *ngIf="scenario.maritalStatus == 'married'">s</span> is as follows:
+      @if (scenario.benefitCutAssumption) {
+        <span>If the possible cut in benefits occurs, the </span>
+      }
+      @if (!this.scenario.benefitCutAssumption) {
+        <span>The </span>
+      }
+      strategy that maximizes the total dollars you can be expected to receive over your lifetime@if (scenario.maritalStatus == 'married') {
+      <span>s</span>
+      } is as follows:
     </p>
     <ul>
-      <li *ngFor="let claimingSolution of this.solutionSet.solutionsArray">{{claimingSolution.message}}</li>
+      @for (claimingSolution of this.solutionSet.solutionsArray; track claimingSolution) {
+        <li>{{claimingSolution.message}}</li>
+      }
     </ul>
     <p><strong>The present value of this proposed solution would be {{this.solutionSet.claimStrategy.PV.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}</strong>.</p>
-    <p> This means that with this strategy you could expect to receive, on average, {{this.solutionSet.claimStrategy.PV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} of total Social Security benefits over the course of your lifetime<span *ngIf="scenario.maritalStatus == 'married'">s</span>, after adjusting for the fact that a dollar received in the future is worth less than a dollar received today (because the sooner you receive a dollar the sooner you can invest it).
+    <p> This means that with this strategy you could expect to receive, on average, {{this.solutionSet.claimStrategy.PV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} of total Social Security benefits over the course of your lifetime@if (scenario.maritalStatus == 'married') {
+      <span>s</span>
+      }, after adjusting for the fact that a dollar received in the future is worth less than a dollar received today (because the sooner you receive a dollar the sooner you can invest it).
       <a href="https://obliviousinvestor.com/what-does-present-value-mean/" target="_blank">See this article</a> for a more thorough explanation of the "present value" concept.</p>
-    <p>Please be sure to examine the color-coded chart later on this page, to see how other filing dates compare.</p> 
-  <app-output-table [personA]="personA" [personB]="personB" [claimStrategy]="solutionSet.claimStrategy" [scenario]="scenario"></app-output-table>
-    <!--End Recommended Strategy Output-->
-
-
-
-    <app-book-promo></app-book-promo>
-
-
-    <!--Custom Date(s) Form -->
-    <form #customDateForm="ngForm" (ngSubmit)="customDates()" (change)="getCustomDateFormInputs()" [ngClass]="{'no-print': !this.customClaimStrategy.PV}">
-      <h2>Test an alternative claiming strategy:</h2>
-
-      <app-range (newClaimStrategySelected)="alternativeStrategyPVcalcViaClickOnRange($event)" (benefitCutAssumptionSwitch)="alternativeStrategyPVcalcViaRangeBenefitCutBooleanSwitch($event)"
+      <p>Please be sure to examine the color-coded chart later on this page, to see how other filing dates compare.</p>
+      <app-output-table [personA]="personA" [personB]="personB" [claimStrategy]="solutionSet.claimStrategy" [scenario]="scenario"></app-output-table>
+      <!--End Recommended Strategy Output-->
+      <app-book-promo></app-book-promo>
+      <!--Custom Date(s) Form -->
+      <form #customDateForm="ngForm" (ngSubmit)="customDates()" (change)="getCustomDateFormInputs()" [ngClass]="{'no-print': !this.customClaimStrategy.PV}">
+        <h2>Test an alternative claiming strategy:</h2>
+        <app-range (newClaimStrategySelected)="alternativeStrategyPVcalcViaClickOnRange($event)" (benefitCutAssumptionSwitch)="alternativeStrategyPVcalcViaRangeBenefitCutBooleanSwitch($event)"
         [scenario]="scenario" [recommendedSolutionSet]="solutionSet" [personA]="personA" [personB]="personB"></app-range>
-
-      <!--PersonA Custom Date Inputs -->
-      <div class="form-inline" *ngIf="personA.hasFiled === false && personA.isOnDisability === false && personA.PIA > 0">
-        <label>Your month/year to claim retirement benefit:</label>
-        <select class="form-control" [(ngModel)]="customPersonAretirementBenefitMonth" name="customPersonAretirementBenefitMonth" id="customPersonAretirementBenefitMonth" required>
-          <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-        </select>
-        <select class="form-control" [(ngModel)]="customPersonAretirementBenefitYear" name="customPersonAretirementBenefitYear" required>
-          <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-        </select>
-        <span *ngIf="errorCollection.customPersonAretirementDateError" class="alert alert-danger">{{errorCollection.customPersonAretirementDateError}}</span>
-      </div>
-
-      <span *ngIf="personA.initialAge < 70 && (personA.hasFiled === true || personA.isOnDisability === true)">
-        <div class="form-inline" *ngIf="personA.declineSuspension === false">
-          <label>Month/year in which you will suspend your benefit:</label>
-          <select class="form-control" [(ngModel)]="customPersonAbeginSuspensionMonth" name="customPersonAbeginSuspensionMonth" id="customPersonAbeginSuspensionMonth" required>
-            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-          </select>
-          <select class="form-control" [(ngModel)]="customPersonAbeginSuspensionYear" name="customPersonAbeginSuspensionYear" required>
-            <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-          </select>
-          <span *ngIf="errorCollection.customPersonAbeginSuspensionDateError" class="alert alert-danger">{{errorCollection.customPersonAbeginSuspensionDateError}}</span>
-        </div>
-        <div class="form-inline" *ngIf="personA.declineSuspension === false">
-          <label>Month/year in which you will unsuspend your benefit:</label>
-          <select class="form-control" [(ngModel)]="customPersonAendSuspensionMonth" name="customPersonAendSuspensionMonth" id="customPersonAendSuspensionMonth" required>
-            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-          </select>
-          <select class="form-control" [(ngModel)]="customPersonAendSuspensionYear" name="customPersonAendSuspensionYear" required>
-            <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-          </select>
-          <span *ngIf="errorCollection.customPersonAendSuspensionDateError" class="alert alert-danger">{{errorCollection.customPersonAendSuspensionDateError}}</span>
-        </div>
-        <label>Check this box to test a scenario in which you do not suspend your benefit:</label>
-        <input id="personAdeclineSuspension" [(ngModel)]="personA.declineSuspension" name="personA.declineSuspension" value="true" type="checkbox">
-      </span>
-
-      <span *ngIf="scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced'">
-        <!--Show spousal date input for personA if: they are not declining spousal AND they have not yet filed for spousal AND they are eligible for spousal AND personA will not be getting child-in-care spousal-->
-        <div class="form-inline" *ngIf="personA.declineSpousal === false &&
-        !( (personA.hasFiled === true || personA.isOnDisability === true) && (personB.hasFiled === true || personB.isOnDisability === true) ) &&
-        (personA.PIA < 0.5 * personB.PIA || (personA.actualBirthDate < this.deemedFilingCutoff && personA.hasFiled === false && personA.isOnDisability === false)) &&
-        personA.childInCareSpousal === false">
-          <label>Your month/year to claim spousal benefit:</label>
-          <select class="form-control" [(ngModel)]="customPersonAspousalBenefitMonth" name="customPersonAspousalBenefitMonth" id="customPersonAspousalBenefitMonth" required>
-            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-          </select>
-          <select class="form-control" [(ngModel)]="customPersonAspousalBenefitYear" name="customPersonAspousalBenefitYear" required>
-            <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-          </select>
-          <span *ngIf="errorCollection.customPersonAspousalDateError" class="alert alert-danger">{{errorCollection.customPersonAspousalDateError}}</span>
-        </div>
-        <!--Show "decline spousal" checkbox for personA if they COULD select a spousal date but also might never get spousal. In other words:
-        They have PIA >= 50% of other PIA (otherwise they will for sure get spousal)
-        AND they must be under old deemed filing rules (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
-        AND they must not have already started retirement or disability (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
-        AND they will not be getting child-in-care spousal (because if they will be getting it, we don't want them to be giving us inputs relating to spousalBenefitDate)
-        -->
-        <span *ngIf="personA.PIA >= 0.5 * personB.PIA &&
-          personA.actualBirthDate < this.deemedFilingCutoff &&
-          personA.hasFiled === false && personA.isOnDisability === false &&
-          personA.childInCareSpousal === false">
-          <label>Check this box to test a scenario in which you do not file for a spousal benefit:</label>
-          <input id="personAdeclineSpousal" [(ngModel)]="personA.declineSpousal" name="personA.declineSpousal" value="true" type="checkbox">
-        </span>
-        <!--End PersonA Custom Date Inputs -->
-
-        <!--PersonB Custom Date Inputs -->
-        <div *ngIf="scenario.maritalStatus == 'married' && personB.hasFiled === false && personB.isOnDisability === false && personB.PIA > 0" class="form-inline">
-          <label>Your spouse's month/year to claim retirement benefit:</label>
-          <select class="form-control" [(ngModel)]="customPersonBretirementBenefitMonth" name="customPersonBretirementBenefitMonth" id="customPersonBretirementBenefitMonth" required>
-            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-          </select>
-          <select class="form-control" [(ngModel)]="customPersonBretirementBenefitYear" name="customPersonBretirementBenefitYear" required>
-            <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-          </select>
-          <span *ngIf="errorCollection.customPersonBretirementDateError" class="alert alert-danger">{{errorCollection.customPersonBretirementDateError}}</span>
-        </div>
-
-        <span *ngIf="scenario.maritalStatus == 'married' && personB.initialAge < 70 && (personB.hasFiled === true || personB.isOnDisability === true)">
-          <div class="form-inline" *ngIf="personB.declineSuspension === false">
-            <label>Month/year in which your spouse will suspend his/her benefit:</label>
-            <select class="form-control" [(ngModel)]="customPersonBbeginSuspensionMonth" name="customPersonBbeginSuspensionMonth" id="customPersonBbeginSuspensionMonth" required>
-              <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+        <!--PersonA Custom Date Inputs -->
+        @if (personA.hasFiled === false && personA.isOnDisability === false && personA.PIA > 0) {
+          <div class="form-inline">
+            <label>Your month/year to claim retirement benefit:</label>
+            <select class="form-control" [(ngModel)]="customPersonAretirementBenefitMonth" name="customPersonAretirementBenefitMonth" id="customPersonAretirementBenefitMonth" required>
+              @for (month of inputMonths; track month) {
+                <option [value]="month">{{month}}</option>
+              }
             </select>
-            <select class="form-control" [(ngModel)]="customPersonBbeginSuspensionYear" name="customPersonBbeginSuspensionYear" required>
-              <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
+            <select class="form-control" [(ngModel)]="customPersonAretirementBenefitYear" name="customPersonAretirementBenefitYear" required>
+              @for (year of inputBenefitYears; track year) {
+                <option [value]="year">{{year}}</option>
+              }
             </select>
-            <span *ngIf="errorCollection.customPersonBbeginSuspensionDateError" class="alert alert-danger">{{errorCollection.customPersonBbeginSuspensionDateError}}</span>
+            @if (errorCollection.customPersonAretirementDateError) {
+              <span class="alert alert-danger">{{errorCollection.customPersonAretirementDateError}}</span>
+            }
           </div>
-          <div class="form-inline" *ngIf="personB.declineSuspension === false">
-            <label>Month/year in which your spouse will unsuspend his/her benefit:</label>
-            <select class="form-control" [(ngModel)]="customPersonBendSuspensionMonth" name="customPersonBendSuspensionMonth" id="customPersonBendSuspensionMonth" required>
-              <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-            </select>
-            <select class="form-control" [(ngModel)]="customPersonBendSuspensionYear" name="customPersonBendSuspensionYear" required>
-              <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-            </select>
-            <span *ngIf="errorCollection.customPersonBendSuspensionDateError" class="alert alert-danger">{{errorCollection.customPersonBendSuspensionDateError}}</span>
-          </div>
-          <label>Check this box to test a scenario in which your spouse does not suspend his/her benefit:</label>
-          <input id="personBdeclineSuspension" [(ngModel)]="personB.declineSuspension" name="personB.declineSuspension" value="true" type="checkbox">
-        </span>
-        <!--Show spousal date input for personB if they are not declining spousal AND they have not yet filed for spousal AND they are eligible for spousal AND it is a married scenario AND personB will not be getting child-in-care spousal-->
-        <div class="form-inline" *ngIf="personB.declineSpousal === false &&
-        !( (personB.hasFiled === true || personB.isOnDisability === true) && (personA.hasFiled === true || personA.isOnDisability === true) ) &&
-        (personB.PIA < 0.5 * personA.PIA || (personB.actualBirthDate < this.deemedFilingCutoff && personB.hasFiled === false && personB.isOnDisability === false)) &&
-        scenario.maritalStatus == 'married' &&
-        personB.childInCareSpousal === false">
-          <label>Your spouse's month/year to claim spousal benefit:</label>
-          <select class="form-control" [(ngModel)]="customPersonBspousalBenefitMonth" name="customPersonBspousalBenefitMonth" id="customPersonBspousalBenefitMonth" required>
-            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-          </select>
-          <select class="form-control" [(ngModel)]="customPersonBspousalBenefitYear" name="customPersonBspousalBenefitYear" required>
-            <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-          </select>
-
-          <span *ngIf="errorCollection.customPersonBspousalDateError" class="alert alert-danger">{{errorCollection.customPersonBspousalDateError}}</span>
+        }
+        @if (personA.initialAge < 70 && (personA.hasFiled === true || personA.isOnDisability === true)) {
+          <span>
+            @if (personA.declineSuspension === false) {
+              <div class="form-inline">
+                <label>Month/year in which you will suspend your benefit:</label>
+                <select class="form-control" [(ngModel)]="customPersonAbeginSuspensionMonth" name="customPersonAbeginSuspensionMonth" id="customPersonAbeginSuspensionMonth" required>
+                  @for (month of inputMonths; track month) {
+                    <option [value]="month">{{month}}</option>
+                  }
+                </select>
+                <select class="form-control" [(ngModel)]="customPersonAbeginSuspensionYear" name="customPersonAbeginSuspensionYear" required>
+                  @for (year of inputBenefitYears; track year) {
+                    <option [value]="year">{{year}}</option>
+                  }
+                </select>
+                @if (errorCollection.customPersonAbeginSuspensionDateError) {
+                  <span class="alert alert-danger">{{errorCollection.customPersonAbeginSuspensionDateError}}</span>
+                }
+              </div>
+            }
+            @if (personA.declineSuspension === false) {
+              <div class="form-inline">
+                <label>Month/year in which you will unsuspend your benefit:</label>
+                <select class="form-control" [(ngModel)]="customPersonAendSuspensionMonth" name="customPersonAendSuspensionMonth" id="customPersonAendSuspensionMonth" required>
+                  @for (month of inputMonths; track month) {
+                    <option [value]="month">{{month}}</option>
+                  }
+                </select>
+                <select class="form-control" [(ngModel)]="customPersonAendSuspensionYear" name="customPersonAendSuspensionYear" required>
+                  @for (year of inputBenefitYears; track year) {
+                    <option [value]="year">{{year}}</option>
+                  }
+                </select>
+                @if (errorCollection.customPersonAendSuspensionDateError) {
+                  <span class="alert alert-danger">{{errorCollection.customPersonAendSuspensionDateError}}</span>
+                }
+              </div>
+            }
+            <label>Check this box to test a scenario in which you do not suspend your benefit:</label>
+            <input id="personAdeclineSuspension" [(ngModel)]="personA.declineSuspension" name="personA.declineSuspension" value="true" type="checkbox">
+          </span>
+        }
+        @if (scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced') {
+          <span>
+            <!--Show spousal date input for personA if: they are not declining spousal AND they have not yet filed for spousal AND they are eligible for spousal AND personA will not be getting child-in-care spousal-->
+            @if (personA.declineSpousal === false &&
+              !( (personA.hasFiled === true || personA.isOnDisability === true) && (personB.hasFiled === true || personB.isOnDisability === true) ) &&
+              (personA.PIA < 0.5 * personB.PIA || (personA.actualBirthDate < this.deemedFilingCutoff && personA.hasFiled === false && personA.isOnDisability === false)) &&
+              personA.childInCareSpousal === false) {
+              <div class="form-inline">
+                <label>Your month/year to claim spousal benefit:</label>
+                <select class="form-control" [(ngModel)]="customPersonAspousalBenefitMonth" name="customPersonAspousalBenefitMonth" id="customPersonAspousalBenefitMonth" required>
+                  @for (month of inputMonths; track month) {
+                    <option [value]="month">{{month}}</option>
+                  }
+                </select>
+                <select class="form-control" [(ngModel)]="customPersonAspousalBenefitYear" name="customPersonAspousalBenefitYear" required>
+                  @for (year of inputBenefitYears; track year) {
+                    <option [value]="year">{{year}}</option>
+                  }
+                </select>
+                @if (errorCollection.customPersonAspousalDateError) {
+                  <span class="alert alert-danger">{{errorCollection.customPersonAspousalDateError}}</span>
+                }
+              </div>
+            }
+            <!--Show "decline spousal" checkbox for personA if they COULD select a spousal date but also might never get spousal. In other words:
+            They have PIA >= 50% of other PIA (otherwise they will for sure get spousal)
+            AND they must be under old deemed filing rules (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
+            AND they must not have already started retirement or disability (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
+            AND they will not be getting child-in-care spousal (because if they will be getting it, we don't want them to be giving us inputs relating to spousalBenefitDate)
+            -->
+            @if (personA.PIA >= 0.5 * personB.PIA &&
+              personA.actualBirthDate < this.deemedFilingCutoff &&
+              personA.hasFiled === false && personA.isOnDisability === false &&
+              personA.childInCareSpousal === false) {
+              <span>
+                <label>Check this box to test a scenario in which you do not file for a spousal benefit:</label>
+                <input id="personAdeclineSpousal" [(ngModel)]="personA.declineSpousal" name="personA.declineSpousal" value="true" type="checkbox">
+              </span>
+            }
+            <!--End PersonA Custom Date Inputs -->
+            <!--PersonB Custom Date Inputs -->
+            @if (scenario.maritalStatus == 'married' && personB.hasFiled === false && personB.isOnDisability === false && personB.PIA > 0) {
+              <div class="form-inline">
+                <label>Your spouse's month/year to claim retirement benefit:</label>
+                <select class="form-control" [(ngModel)]="customPersonBretirementBenefitMonth" name="customPersonBretirementBenefitMonth" id="customPersonBretirementBenefitMonth" required>
+                  @for (month of inputMonths; track month) {
+                    <option [value]="month">{{month}}</option>
+                  }
+                </select>
+                <select class="form-control" [(ngModel)]="customPersonBretirementBenefitYear" name="customPersonBretirementBenefitYear" required>
+                  @for (year of inputBenefitYears; track year) {
+                    <option [value]="year">{{year}}</option>
+                  }
+                </select>
+                @if (errorCollection.customPersonBretirementDateError) {
+                  <span class="alert alert-danger">{{errorCollection.customPersonBretirementDateError}}</span>
+                }
+              </div>
+            }
+            @if (scenario.maritalStatus == 'married' && personB.initialAge < 70 && (personB.hasFiled === true || personB.isOnDisability === true)) {
+              <span>
+                @if (personB.declineSuspension === false) {
+                  <div class="form-inline">
+                    <label>Month/year in which your spouse will suspend his/her benefit:</label>
+                    <select class="form-control" [(ngModel)]="customPersonBbeginSuspensionMonth" name="customPersonBbeginSuspensionMonth" id="customPersonBbeginSuspensionMonth" required>
+                      @for (month of inputMonths; track month) {
+                        <option [value]="month">{{month}}</option>
+                      }
+                    </select>
+                    <select class="form-control" [(ngModel)]="customPersonBbeginSuspensionYear" name="customPersonBbeginSuspensionYear" required>
+                      @for (year of inputBenefitYears; track year) {
+                        <option [value]="year">{{year}}</option>
+                      }
+                    </select>
+                    @if (errorCollection.customPersonBbeginSuspensionDateError) {
+                      <span class="alert alert-danger">{{errorCollection.customPersonBbeginSuspensionDateError}}</span>
+                    }
+                  </div>
+                }
+                @if (personB.declineSuspension === false) {
+                  <div class="form-inline">
+                    <label>Month/year in which your spouse will unsuspend his/her benefit:</label>
+                    <select class="form-control" [(ngModel)]="customPersonBendSuspensionMonth" name="customPersonBendSuspensionMonth" id="customPersonBendSuspensionMonth" required>
+                      @for (month of inputMonths; track month) {
+                        <option [value]="month">{{month}}</option>
+                      }
+                    </select>
+                    <select class="form-control" [(ngModel)]="customPersonBendSuspensionYear" name="customPersonBendSuspensionYear" required>
+                      @for (year of inputBenefitYears; track year) {
+                        <option [value]="year">{{year}}</option>
+                      }
+                    </select>
+                    @if (errorCollection.customPersonBendSuspensionDateError) {
+                      <span class="alert alert-danger">{{errorCollection.customPersonBendSuspensionDateError}}</span>
+                    }
+                  </div>
+                }
+                <label>Check this box to test a scenario in which your spouse does not suspend his/her benefit:</label>
+                <input id="personBdeclineSuspension" [(ngModel)]="personB.declineSuspension" name="personB.declineSuspension" value="true" type="checkbox">
+              </span>
+            }
+            <!--Show spousal date input for personB if they are not declining spousal AND they have not yet filed for spousal AND they are eligible for spousal AND it is a married scenario AND personB will not be getting child-in-care spousal-->
+            @if (personB.declineSpousal === false &&
+              !( (personB.hasFiled === true || personB.isOnDisability === true) && (personA.hasFiled === true || personA.isOnDisability === true) ) &&
+              (personB.PIA < 0.5 * personA.PIA || (personB.actualBirthDate < this.deemedFilingCutoff && personB.hasFiled === false && personB.isOnDisability === false)) &&
+              scenario.maritalStatus == 'married' &&
+              personB.childInCareSpousal === false) {
+              <div class="form-inline">
+                <label>Your spouse's month/year to claim spousal benefit:</label>
+                <select class="form-control" [(ngModel)]="customPersonBspousalBenefitMonth" name="customPersonBspousalBenefitMonth" id="customPersonBspousalBenefitMonth" required>
+                  @for (month of inputMonths; track month) {
+                    <option [value]="month">{{month}}</option>
+                  }
+                </select>
+                <select class="form-control" [(ngModel)]="customPersonBspousalBenefitYear" name="customPersonBspousalBenefitYear" required>
+                  @for (year of inputBenefitYears; track year) {
+                    <option [value]="year">{{year}}</option>
+                  }
+                </select>
+                @if (errorCollection.customPersonBspousalDateError) {
+                  <span class="alert alert-danger">{{errorCollection.customPersonBspousalDateError}}</span>
+                }
+              </div>
+            }
+            <!--Show "decline spousal" checkbox for personB if they COULD get spousal but also might never get it. In other words:
+            They have PIA >= 50% of other PIA (otherwise they will for sure get spousal)
+            AND they must be under old deemed filing rules (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
+            AND they must not have already started retirement or disability (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
+            AND only show if it's a married scenario (as opposed to divorce)
+            AND they will not be getting child-in-care spousal (because if they will be getting it, we don't want them to be giving us inputs relating to spousalBenefitDate)
+            -->
+            @if (personB.PIA >= 0.5 * personA.PIA &&
+              personB.actualBirthDate < this.deemedFilingCutoff &&
+              personB.hasFiled === false && personB.isOnDisability === false &&
+              scenario.maritalStatus == 'married' &&
+              personB.childInCareSpousal === false) {
+              <span>
+                <label>Check this box to test a scenario in which your spouse does not file for a spousal benefit:</label>
+                <input id="personBdeclineSpousal" [(ngModel)]="personB.declineSpousal" name="personB.declineSpousal" value="true" type="checkbox">
+              </span>
+            }
+            <!--End PersonB Custom Date Inputs -->
+          </span>
+        }
+        <!--Survivor Scenario Custom Date Inputs -->
+        @if (scenario.maritalStatus == 'survivor' && personA.hasFiledAsSurvivor === false) {
+          <span>
+            <div class="form-inline" >
+              <label>Month/year in which you will file for widow(er) benefits:</label>
+              <select class="form-control" [(ngModel)]="customPersonAsurvivorBenefitMonth" name="customPersonAsurvivorBenefitMonth" id="customPersonAsurvivorBenefitMonth" required>
+                @for (month of inputMonths; track month) {
+                  <option [value]="month">{{month}}</option>
+                }
+              </select>
+              <select class="form-control" [(ngModel)]="customPersonAsurvivorBenefitYear" name="customPersonAsurvivorBenefitYear" required>
+                @for (year of inputBenefitYears; track year) {
+                  <option [value]="year">{{year}}</option>
+                }
+              </select>
+              @if (errorCollection.customPersonASurvivorDateError) {
+                <span class="alert alert-danger" [innerHTML]="errorCollection.customPersonASurvivorDateError"></span>
+              }
+            </div>
+          </span>
+        }
+        @if (scenario.maritalStatus == 'survivor' && childUnder16orDisabled === true) {
+          <span>
+            <h3>Why isn't there an input for the date at which you'll claim mother/father benefits??</h3>
+            <p>
+              Mother/father benefits are not reduced for early filing. So if a person is eligible to file for such benefits
+              (<a href="https://www.ssa.gov/OP_Home/cfr20/404/404-0339.htm" target="_blank">see here for eligibility details</a>),
+              the calculator always assumes that you will claim them as early as possible, given that there is no drawback to doing so.
+            </p>
+          </span>
+        }
+        <!--End Survivor Scenario Custom Date Inputs -->
+        <!--Child-in-care-spousal custom Date Tooltip -->
+        @if (personA.childInCareSpousal === true && personB.childInCareSpousal === false) {
+          <h3>Why is the input missing for my spousal benefit date?</h3>
+        }
+        @if (personA.childInCareSpousal === false && personB.childInCareSpousal === true) {
+          <h3>Why is the input missing for my spouse's spousal benefit date?</h3>
+        }
+        @if (personA.childInCareSpousal === true && personB.childInCareSpousal === true) {
+          <h3>Why are the inputs for spousal benefit dates missing?</h3>
+        }
+        @if (personA.childInCareSpousal === true || personB.childInCareSpousal === true) {
+          <p>
+            Child-in-care spousal benefits are not reduced for early filing. So if a person is eligible to file for such benefits
+            (i.e., due to the information about children provided, as well as the retirement filing date currently selected for the <em>other</em> person),
+            the calculator always assumes that the person eligible for child-in-care spousal benefits will claim them as early as possible (i.e., on the other person's retirement benefit date),
+            given that there is no drawback to doing so.
+          </p>
+        }
+        <!--Child-in-care-spousal custom Date Tooltip -->
+        <!--Child Custom Date Tooltip -->
+        @if (scenario.children.length > 0) {
+          <span>
+            <h3>Why are there no inputs for child benefit dates?</h3>
+            <p>
+              There is no need to provide input dates related to your child(ren).
+              The calculator always assumes that a child will file for child benefits as soon as they are eligible, given that there is no drawback to doing so.
+            </p>
+          </span>
+        }
+        <!--Child Custom Date Tooltip -->
+        <div>
+          <button type="submit" class="btn btn-primary no-print">Submit</button>
         </div>
-        <!--Show "decline spousal" checkbox for personB if they COULD get spousal but also might never get it. In other words:
-        They have PIA >= 50% of other PIA (otherwise they will for sure get spousal)
-        AND they must be under old deemed filing rules (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
-        AND they must not have already started retirement or disability (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
-        AND only show if it's a married scenario (as opposed to divorce)
-        AND they will not be getting child-in-care spousal (because if they will be getting it, we don't want them to be giving us inputs relating to spousalBenefitDate)
-        -->
-        <span *ngIf="personB.PIA >= 0.5 * personA.PIA &&
-            personB.actualBirthDate < this.deemedFilingCutoff &&
-            personB.hasFiled === false && personB.isOnDisability === false &&
-            scenario.maritalStatus == 'married' &&
-            personB.childInCareSpousal === false">
-          <label>Check this box to test a scenario in which your spouse does not file for a spousal benefit:</label>
-          <input id="personBdeclineSpousal" [(ngModel)]="personB.declineSpousal" name="personB.declineSpousal" value="true" type="checkbox">
-        </span>
-        <!--End PersonB Custom Date Inputs -->
-      </span>
-
-      <!--Survivor Scenario Custom Date Inputs -->
-      <span *ngIf="scenario.maritalStatus == 'survivor' && personA.hasFiledAsSurvivor === false">
-        <div class="form-inline" >
-          <label>Month/year in which you will file for widow(er) benefits:</label>
-          <select class="form-control" [(ngModel)]="customPersonAsurvivorBenefitMonth" name="customPersonAsurvivorBenefitMonth" id="customPersonAsurvivorBenefitMonth" required>
-            <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
-          </select>
-          <select class="form-control" [(ngModel)]="customPersonAsurvivorBenefitYear" name="customPersonAsurvivorBenefitYear" required>
-            <option *ngFor="let year of inputBenefitYears" [value]="year">{{year}}</option>
-          </select>
-          <span *ngIf="errorCollection.customPersonASurvivorDateError" class="alert alert-danger" [innerHTML]="errorCollection.customPersonASurvivorDateError"></span>
-        </div>
-      </span>
-      <span *ngIf="scenario.maritalStatus == 'survivor' && childUnder16orDisabled === true">
-        <h3>Why isn't there an input for the date at which you'll claim mother/father benefits??</h3>
-        <p>
-          Mother/father benefits are not reduced for early filing. So if a person is eligible to file for such benefits
-          (<a href="https://www.ssa.gov/OP_Home/cfr20/404/404-0339.htm" target="_blank">see here for eligibility details</a>),
-          the calculator always assumes that you will claim them as early as possible, given that there is no drawback to doing so.
-        </p>
-      </span>
-      <!--End Survivor Scenario Custom Date Inputs -->
-
-
-      <!--Child-in-care-spousal custom Date Tooltip -->
-      <h3 *ngIf="personA.childInCareSpousal === true && personB.childInCareSpousal === false">Why is the input missing for my spousal benefit date?</h3>
-      <h3 *ngIf="personA.childInCareSpousal === false && personB.childInCareSpousal === true">Why is the input missing for my spouse's spousal benefit date?</h3>
-      <h3 *ngIf="personA.childInCareSpousal === true && personB.childInCareSpousal === true">Why are the inputs for spousal benefit dates missing?</h3>
-      <p *ngIf="personA.childInCareSpousal === true || personB.childInCareSpousal === true">
-        Child-in-care spousal benefits are not reduced for early filing. So if a person is eligible to file for such benefits
-        (i.e., due to the information about children provided, as well as the retirement filing date currently selected for the <em>other</em> person),
-        the calculator always assumes that the person eligible for child-in-care spousal benefits will claim them as early as possible (i.e., on the other person's retirement benefit date),
-        given that there is no drawback to doing so.
-      </p>
-      <!--Child-in-care-spousal custom Date Tooltip -->
-
-      <!--Child Custom Date Tooltip -->
-      <span *ngIf="scenario.children.length > 0">
-        <h3>Why are there no inputs for child benefit dates?</h3>
-        <p>
-          There is no need to provide input dates related to your child(ren).
-          The calculator always assumes that a child will file for child benefits as soon as they are eligible, given that there is no drawback to doing so.
-        </p>
-      </span>
-      <!--Child Custom Date Tooltip -->
-
-      <div>
-        <button type="submit" class="btn btn-primary no-print">Submit</button>
-      </div>
-      <!--Custom Date Output -->
-      <span *ngIf="this.customClaimStrategy.PV">
-        <span *ngIf="this.scenario.benefitCutAssumption === true && this.rangeComponentShowCutRadio === true">
-          <strong>If benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}</strong>, the
-        </span>
-        <span *ngIf="this.scenario.benefitCutAssumption === true && this.rangeComponentShowCutRadio === false">
-          <strong>If benefits are not cut</strong>, the
-        </span>
-        <span *ngIf="this.scenario.benefitCutAssumption === false">
-          The
-        </span>
-        present value of the strategy you selected is {{this.customClaimStrategy.PV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}},
-        as compared to a present value of {{this.asComparedToPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} from the recommended strategy,
-        a difference of {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
-        ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%).
-        <app-output-table [personA]="personA" [personB]="personB" [claimStrategy]="customClaimStrategy" [scenario]="scenario"></app-output-table>
-      </span>
-      <!--End Custom Date Output -->
-    </form>
-    <!--End Custom Date(s) Form -->
-
-    <a (click)="printPage()" class="no-print">Print this output (Can also be used to save as pdf in most browsers.)</a>
-
-  </span>
+        <!--Custom Date Output -->
+        @if (this.customClaimStrategy.PV) {
+          <span>
+            @if (this.scenario.benefitCutAssumption === true && this.rangeComponentShowCutRadio === true) {
+              <span>
+                <strong>If benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}</strong>, the
+              </span>
+            }
+            @if (this.scenario.benefitCutAssumption === true && this.rangeComponentShowCutRadio === false) {
+              <span>
+                <strong>If benefits are not cut</strong>, the
+              </span>
+            }
+            @if (this.scenario.benefitCutAssumption === false) {
+              <span>
+                The
+              </span>
+            }
+            present value of the strategy you selected is {{this.customClaimStrategy.PV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}},
+            as compared to a present value of {{this.asComparedToPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}} from the recommended strategy,
+            a difference of {{this.differenceInPV.toLocaleString('en-US', {style: 'currency',currency: 'USD', minimumFractionDigits:0, maximumFractionDigits:0})}}
+            ({{this.differenceInPV_asPercent.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:1})}}%).
+            <app-output-table [personA]="personA" [personB]="personB" [claimStrategy]="customClaimStrategy" [scenario]="scenario"></app-output-table>
+          </span>
+        }
+        <!--End Custom Date Output -->
+      </form>
+      <!--End Custom Date(s) Form -->
+      <a (click)="printPage()" class="no-print">Print this output (Can also be used to save as pdf in most browsers.)</a>
+    </span>
+  }
 
   <p>
     If you want to save your inputs, you can

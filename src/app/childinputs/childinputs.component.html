@@ -3,13 +3,19 @@
   <div class="form-inline">
     <label>Date of birth</label>
     <select class="form-control" [(ngModel)]="child.DoBinputMonth" name="child.DoBinputMonth" required>
-      <option *ngFor="let month of inputMonths" [value]="month">{{month}}</option>
+      @for (month of inputMonths; track month) {
+        <option [value]="month">{{month}}</option>
+      }
     </select>
     <select class="form-control" [(ngModel)]="child.DoBinputDay" name="child.DoBinputDay" required>
-        <option *ngFor="let day of inputDays" [value]="day">{{day}}</option>
+      @for (day of inputDays; track day) {
+        <option [value]="day">{{day}}</option>
+      }
     </select>
     <select class="form-control" [(ngModel)]="child.DoBinputYear" name="child.DoBinputYear" required>
-        <option *ngFor="let year of inputYears" [value]="year">{{year}}</option>
+      @for (year of inputYears; track year) {
+        <option [value]="year">{{year}}</option>
+      }
     </select>
   </div>
 
@@ -20,17 +26,21 @@
   <input type="radio" [(ngModel)]="child.isOnDisability" name=child{{child.id}}.isOnDisability [value]="false">
   <label>No</label>
   <!--SSI warning-->
-  <p *ngIf="child.isOnDisability === true" class="alert alert-warning">
-    <strong>Warning:</strong>
-    The calculator does not account for the impact that child benefits may have on any other benefits your child is receiving.
-    If your disabled child is currently receiving SSI (Supplemental Security Income) or any other means-tested benefits (e.g., from your state), your child receiving a child's benefit could reduce or eliminate those other benefits.
-  </p>
+  @if (child.isOnDisability === true) {
+    <p class="alert alert-warning">
+      <strong>Warning:</strong>
+      The calculator does not account for the impact that child benefits may have on any other benefits your child is receiving.
+      If your disabled child is currently receiving SSI (Supplemental Security Income) or any other means-tested benefits (e.g., from your state), your child receiving a child's benefit could reduce or eliminate those other benefits.
+    </p>
+  }
 
-  <div *ngIf="personA.hasFiled === true || personA.isOnDisability === true || personB.hasFiled === true || personB.isOnDisability === true || (personB.fixedRetirementBenefitDate && personB.fixedRetirementBenefitDate < this.today)">
-    <label>Has this child already filed for child benefits?</label>
-    <input type="radio" [(ngModel)]="child.hasFiled" name="name=child{{child.id}}.hasFiled" [value]="true">
-    <label>Yes</label>
-    <input type="radio" [(ngModel)]="child.hasFiled" name="name=child{{child.id}}.hasFiled" [value]="false">
-    <label>No</label>
-  </div>
+  @if (personA.hasFiled === true || personA.isOnDisability === true || personB.hasFiled === true || personB.isOnDisability === true || (personB.fixedRetirementBenefitDate && personB.fixedRetirementBenefitDate < this.today)) {
+    <div>
+      <label>Has this child already filed for child benefits?</label>
+      <input type="radio" [(ngModel)]="child.hasFiled" name="name=child{{child.id}}.hasFiled" [value]="true">
+      <label>Yes</label>
+      <input type="radio" [(ngModel)]="child.hasFiled" name="name=child{{child.id}}.hasFiled" [value]="false">
+      <label>No</label>
+    </div>
+  }
 </span>
