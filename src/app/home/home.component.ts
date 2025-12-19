@@ -18,6 +18,7 @@ import {GetDataFromTreasuryAPIService} from '../get-data-from-Treasury-api.servi
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common'
 import { OutputTableComponent } from '../output-table/output-table.component'
+import { BookPromoComponent } from '../shared/book-promo/book-promo.component'
 
 
 @Component({
@@ -26,7 +27,8 @@ import { OutputTableComponent } from '../output-table/output-table.component'
     FormsModule,
     CommonModule,
     RangeComponent,
-    OutputTableComponent
+    OutputTableComponent,
+    BookPromoComponent
   ],
   selector: 'app-home',
   templateUrl: './home.component.html',
