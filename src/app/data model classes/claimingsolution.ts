@@ -11,6 +11,8 @@ type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityCon
   //This class represents the bulleted items in the recommended strategy output. (That is, one ClaimingSolution object for each item in the bulleted list.)
   //This is in contrast to "ClaimStrategy" which represents a collection of claiming dates, as well as the calculated PV and output table for that collection of dates.
   export class ClaimingSolution {
+    static _counter = 0;   // class-level counter
+    id: number;             // unique id for each instance
     maritalStatus: string
     benefitType: benefitTypeOption //retirementAlone, retirementReplacingSpousal, spousalAlone, spousalWithRetirement, survivor
     date: MonthYearDate
@@ -22,6 +24,8 @@ type benefitTypeOption = "retirement" | "retroactiveRetirement" | "disabilityCon
 
   constructor(maritalStatus: string, typeOfBenefit: benefitTypeOption, person: Person, 
     date: MonthYearDate, ageYears: number, ageMonths: number) {
+    ClaimingSolution._counter++;       // increment counter
+    this.id = ClaimingSolution._counter;  // assign unique id
     this.person = person
     this.maritalStatus = maritalStatus
     this.benefitType = typeOfBenefit

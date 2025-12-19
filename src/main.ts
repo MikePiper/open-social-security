@@ -1,14 +1,29 @@
-import { enableProdMode, provideZoneChangeDetection } from '@angular/core';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideRouter } from '@angular/router';
+import { AppComponent } from './app/app.component';
+import { routes } from './app/app-routing.module';
+import { provideHttpClient } from '@angular/common/http';
 
-import { AppModule } from './app/app.module';
-import { environment } from './environments/environment';
+// SERVICES
+import { BirthdayService } from './app/birthday.service';
+import { BenefitService } from './app/benefit.service';
+import { CalculatePvService } from './app/calculate-PV.service';
+import { EarningsTestService } from './app/earningstest.service';
+import { MortalityService } from './app/mortality.service';
+import { SolutionSetService } from './app/solutionset.service';
+import { MaximizePVService } from './app/maximize-pv.service';
 
-if (environment.production) {
-  enableProdMode();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  platformBrowserDynamic().bootstrapModule(AppModule, { applicationProviders: [provideZoneChangeDetection()], })
-  .catch(err => console.log(err));
-});
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideRouter(routes),
+    provideHttpClient(),
+    // ✅ GLOBAL SERVICES (replacement for AppModule.providers)
+    BirthdayService,
+    BenefitService,
+    CalculatePvService,
+    EarningsTestService,
+    MortalityService,
+    SolutionSetService,
+    MaximizePVService,
+  ]
+}).catch(err => console.error(err));

@@ -1,0 +1,11 @@
+{
+  "/api/treasury": {
+    "target": "https://home.treasury.gov",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/api/treasury": "/resource-center/data-chart-center/interest-rates/pages/xml"
+    }
+  }
+}

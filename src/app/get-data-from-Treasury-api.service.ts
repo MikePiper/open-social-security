@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { XMLParser } from 'fast-xml-parser';
-import { treasuryAPIresponse } from './data model classes/treasuryapiresponse';
 
 @Injectable({
   providedIn: 'root'
@@ -9,55 +8,60 @@ import { treasuryAPIresponse } from './data model classes/treasuryapiresponse';
 export class GetDataFromTreasuryAPIService {
 
   constructor(private http: HttpClient) {
-    this.getInterestRate();
+    this.getInterestRate(); // Optional: can remove if you want to call manually
   }
 
-  // Getting data function
+  // Fetch the latest 20-year TIPS rate
   async getInterestRate(): Promise<number> {
-    const xmlData = await this.getXMLdata();
-    const interestRate = this.parseXML(xmlData);
-    return interestRate;
+    try {
+      const xmlData = await this.getXMLdata();
+      const interestRate = this.parseXML(xmlData);
+      
+      if (!isNaN(interestRate)) {
+        console.debug('TIPS rate fetched:', interestRate);
+      } else {
+        console.warn('Parsed TIPS rate is NaN.');
+      }
+
+      return interestRate;
+    } catch (err) {
+      console.error('Error fetching TIPS rate:', err);
+      return 0; // fallback
+    }
   }
 
-  getXMLdata(): Promise<string> {
+  private getXMLdata(): Promise<string> {
     const url = this.createURLstring();
     return this.http.get(url, { responseType: 'text' }).toPromise();
   }
 
-  createURLstring(): string {
+  private createURLstring(): string {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
     const monthString = month < 10 ? `0${month}` : month.toString();
-    const url = `https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_real_yield_curve&field_tdr_date_value_month=${year}${monthString}`;
-    return url;
+    return `/api/treasury?data=daily_treasury_real_yield_curve&field_tdr_date_value_month=${year}${monthString}`;
   }
 
-  parseXML(xmldata: string): number {
-    let interestRate = 0;
-
-    // Create a fast-xml-parser instance
+  private parseXML(xmldata: string): number {
     const parser = new XMLParser({
       ignoreAttributes: false,
       attributeNamePrefix: '',
       trimValues: true
     });
 
-    // Parse the XML string
     const result = parser.parse(xmldata) as any;
+    const entries = result.feed?.entry;
+    if (!entries || entries.length === 0) return 0;
 
-    // Map the parsed object to your data structure
-    const apiResponse: treasuryAPIresponse = result;
-    const entries = apiResponse.feed?.entry;
+    const lastEntry = entries[entries.length - 1];
+    const properties = lastEntry?.content?.['m:properties'];
+    if (!properties || !properties['d:TC_20YEAR']) return 0;
 
-    if (entries && entries.length > 0) {
-      const lastEntry = entries[entries.length - 1];
-      const content = lastEntry?.content;
-      if (content && content[0]?.['m:properties']?.[0]?.['d:TC_20YEAR']) {
-        interestRate = Number(content[0]['m:properties'][0]['d:TC_20YEAR'][0]?._ ?? 0);
-      }
-    }
+    // The TIPS rate value is stored under #text
+    const rateValue = properties['d:TC_20YEAR']['#text'];
+    const interestRate = Number(rateValue);
 
-    return interestRate;
+    return isNaN(interestRate) ? 0 : interestRate;
   }
 }

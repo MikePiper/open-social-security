@@ -4,26 +4,6 @@ https://github.com/brian-courts
 -->
 
 <div id="range">
-  <!-- Currently eliminating this because the lowest-saved PV in the range isn't really the lowest PV in many cases (since we did not test dominated strategies).
-  And when a person tests various inputs with the dropdowns, they could well find PVs lower than the lowest-stated PV (from the Range).
-  <span *ngIf="!scenario.benefitCutAssumption">
-    <p>Given the inputs that you have provided,
-      the expected present value ranges from ${{this.minimumPvString}} (for the least desirable <span *ngIf="scenario.maritalStatus=='married'">combination of </span>filing date<span *ngIf="scenario.maritalStatus=='married'">s</span>)
-      to ${{this.maximumPvString}} (for the most desirable <span *ngIf="scenario.maritalStatus=='married'">combination of </span>filing date<span *ngIf="scenario.maritalStatus=='married'">s</span>).
-    </p>
-  </span>
-  <span *ngIf="scenario.benefitCutAssumption">
-    <p>Given the inputs that you have provided:</p>
-    <ul>
-      <li>If benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}, the expected present value ranges from
-        ${{this.minimumPvStringCut}} (for the least desirable <span *ngIf="scenario.maritalStatus=='married'">combination of </span>filing date<span *ngIf="scenario.maritalStatus=='married'">s</span>)
-        to ${{this.maximumPvStringCut}} (for the most desirable <span *ngIf="scenario.maritalStatus=='married'">combination of </span>filing date<span *ngIf="scenario.maritalStatus=='married'">s</span>).</li>
-        <li>If there is no cut,
-          the expected present value ranges from ${{this.minimumPvString}}
-        to ${{this.maximumPvString}}.</li>
-      </ul>
-    </span>
-    -->
     <p>The color-coded graph below shows the desirability of various alternative filing dates.
       For instance, the 95 - 99 range (color&nbsp;<span style="background-color:#56b4e9;">&nbsp;&nbsp;&nbsp;&nbsp;</span>) includes filing dates that would provide an expected present value from 95% to 99% of that of the recommended strategy.
     </p>
@@ -49,19 +29,16 @@ https://github.com/brian-courts
       @if (scenario.restrictedApplicationPossible) {
         <p><strong>NOTE:</strong> A restricted application (i.e., an application for just spousal benefits) will be assumed, whenever it is available given the retirement filing dates selected.</p>
       }
-      @if (this.solutionSet && this.solutionSet.solutionsArray.length > 0) {
-        <span>
-          <p style="font-weight:bold">Selected Option: </p>
-          <ul>
-            @if (selectedStrategyNotInRangeChartMessage) {
-              <li>{{selectedStrategyNotInRangeChartMessage}}</li>
-            }
-            @for (claimingSolution of this.solutionSet.solutionsArray; track claimingSolution) {
-              <li>{{claimingSolution.message}}</li>
-            }
-          </ul>
-        </span>
-      }
-
+      <span *ngIf="solutionSet && solutionSet.solutionsArray.length > 0">
+        <p style="font-weight:bold">Selected Option: </p>
+        <ul>
+          <li *ngIf="selectedStrategyNotInRangeChartMessage">
+            {{ selectedStrategyNotInRangeChartMessage }}
+          </li>
+          <li *ngFor="let claimingSolution of solutionSet.solutionsArray; trackBy: trackById">
+            {{ claimingSolution.message }}
+          </li>
+        </ul>
+      </span>
     </div>
   </div>

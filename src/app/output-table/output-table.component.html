@@ -1,76 +1,61 @@
 <h2>Year-by-Year Benefit Amounts</h2>
-@if (scenario.maritalStatus == 'single') {
-  <span>
-    <p>
-      The following table shows what your year-by-year benefit amounts would be <em>if</em> you are still alive throughout the year in question.
-    </p>
-  </span>
-}
-@if (scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced') {
-  <span>
-    <!-- If both people are using regular mortality tables, explain significance of table output-->
-    @if (personA.mortalityTable[0] > 1 && personB.mortalityTable[0] > 1) {
-      <p>
-        The following table shows what your year-by-year benefit amounts would be <em>if</em> both people are still alive throughout the year in question.
-        The survivor benefit amounts at the bottom of the table assume that
-        a) the deceased person lived at least until the age at which they planned to file for their retirement benefit and that
-        b) the surviving person waits at least until their full retirement age to file for a survivor benefit.
-      </p>
-    }
-    <!-- If one person is using regular mortality tables, explain significance of table output-->
-    @if ((personA.mortalityTable[0] == 1 && personB.mortalityTable[0] > 1) || (personA.mortalityTable[0] > 1 && personB.mortalityTable[0] == 1)) {
-      <p>
-        The following table shows year-by-year benefit amounts. Note that in cases in which one person (and only one person) is using an assumed death age,
-        this table shows what the benefit amounts would be if the <em>other</em> person lives at least beyond that point.
-      </p>
-    }
-    <!-- If neither person is using regular mortality table (i.e., both using assumed death age), table should be pretty self-explanatory. -->
-  </span>
-}
+
+<span *ngIf="scenario.maritalStatus === 'single'">
+  <p>
+    The following table shows what your year-by-year benefit amounts would be
+    <em>if</em> you are still alive throughout the year in question.
+  </p>
+</span>
+
+<span *ngIf="scenario.maritalStatus === 'married' || scenario.maritalStatus === 'divorced'">
+  <p *ngIf="personA.mortalityTable[0] > 1 && personB.mortalityTable[0] > 1">
+    The following table shows what your year-by-year benefit amounts would be
+    <em>if</em> both people are still alive throughout the year in question.
+    The survivor benefit amounts at the bottom of the table assume that
+    a) the deceased person lived at least until the age at which they planned
+       to file for their retirement benefit and that
+    b) the surviving person waits at least until their full retirement age to file for a survivor benefit.
+  </p>
+  <p *ngIf="(personA.mortalityTable[0] === 1 && personB.mortalityTable[0] > 1) ||
+             (personA.mortalityTable[0] > 1 && personB.mortalityTable[0] === 1)">
+    The following table shows year-by-year benefit amounts. Note that in cases
+    in which one person (and only one person) is using an assumed death age,
+    this table shows what the benefit amounts would be if the <em>other</em>
+    person lives at least beyond that point.
+  </p>
+</span>
+
 <div class="table-responsive">
   <table class="table-bordered table-striped">
     <tr class="highlighted">
       <th>Year</th>
-      <th>Your Annual Retirement@if (personA.isOnDisability === true) {
-        <span>/Disability</span>
-      } Benefit</th>
-      @if (scenario.maritalStatus == 'survivor' && scenario.children.length > 0) {
-        <th>Your Annual Mother/Father Benefit</th>
-      }
-      @if (scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced') {
-        <th>Your Annual Spousal Benefit</th>
-      }
-      @if (scenario.maritalStatus !== 'single') {
-        <th>Your Annual Survivor Benefit</th>
-      }
-      @if (scenario.maritalStatus == 'married') {
-        <th>Your Spouse's Annual Retirement@if (personB.isOnDisability === true) {
-          <span>/Disability</span>
-        } Benefit</th>
-      }
-      @if (scenario.maritalStatus == 'married') {
-        <th>Your Spouse's Annual Spousal Benefit</th>
-      }
-      @if (scenario.maritalStatus == 'married') {
-        <th>Your Spouse's Annual Survivor Benefit</th>
-      }
-      @if (scenario.children.length > 0) {
-        <th>Total Annual Child Benefit</th>
-      }
-      @if (scenario.maritalStatus !== 'single' || scenario.children.length > 0) {
-        <th>Total</th>
-      }
+      <th>
+        Your Annual Retirement
+        <span *ngIf="personA.isOnDisability">/Disability</span>
+        Benefit
+      </th>
+      <th *ngIf="scenario.maritalStatus === 'survivor' && scenario.children.length > 0">
+        Your Annual Mother/Father Benefit
+      </th>
+      <th *ngIf="scenario.maritalStatus === 'married' || scenario.maritalStatus === 'divorced'">
+        Your Annual Spousal Benefit
+      </th>
+      <th *ngIf="scenario.maritalStatus !== 'single'">Your Annual Survivor Benefit</th>
+      <th *ngIf="scenario.maritalStatus === 'married'">
+        Your Spouse's Annual Retirement
+        <span *ngIf="personB.isOnDisability">/Disability</span>
+        Benefit
+      </th>
+      <th *ngIf="scenario.maritalStatus === 'married'">Your Spouse's Annual Spousal Benefit</th>
+      <th *ngIf="scenario.maritalStatus === 'married'">Your Spouse's Annual Survivor Benefit</th>
+      <th *ngIf="scenario.children.length > 0">Total Annual Child Benefit</th>
+      <th *ngIf="scenario.maritalStatus !== 'single' || scenario.children.length > 0">Total</th>
     </tr>
-    @for (row of claimStrategy.outputTable; track row) {
-      <tr>
-        @for (data of row; track data) {
-          <td>
-            {{data}}
-          </td>
-        }
-      </tr>
-    }
+
+    <tr *ngFor="let row of claimStrategy.outputTable; let i = index; trackBy: trackRowByIndex">
+      <td *ngFor="let data of row; let j = index; trackBy: trackCellByIndex">
+        {{ data }}
+      </td>
+    </tr>
   </table>
 </div>
-
-

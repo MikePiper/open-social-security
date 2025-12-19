@@ -2,8 +2,11 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Person } from '../data model classes/person';
 import { BirthdayService } from '../birthday.service';
 import { MonthYearDate } from '../data model classes/monthyearDate';
+import { FormsModule } from '@angular/forms';
 
 @Component({
+  standalone: true,
+  imports: [FormsModule],
   selector: 'app-childinputs',
   templateUrl: './childinputs.component.html',
   styleUrls: ['./childinputs.component.css']

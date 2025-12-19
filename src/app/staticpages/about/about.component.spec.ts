@@ -8,20 +8,19 @@ describe('AboutComponent', () => {
   let fixture: ComponentFixture<AboutComponent>
 
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      declarations: [AboutComponent]
-    })
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [AboutComponent]   // ✅ Import it instead of declaring
+      }).compileComponents();
+    });
 
-    fixture = TestBed.createComponent(AboutComponent)
-    component = fixture.componentInstance
+    beforeEach(() => {
+      fixture = TestBed.createComponent(AboutComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
 
-  })
-
-
-    it('should be created', () => {
-        expect(component).toBeTruthy()
-    })
-
-
+    it('should create', () => {
+      expect(component).toBeTruthy();
+    });
 })

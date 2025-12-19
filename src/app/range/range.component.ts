@@ -8,6 +8,9 @@ import { SolutionSet } from '../data model classes/solutionset'
 import { SolutionSetService } from '../solutionset.service'
 import { BirthdayService } from '../birthday.service'
 import { MaximizePVService } from '../maximize-pv.service'
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ClaimingSolution } from '../data model classes/claimingsolution'
 
 /*
 This code is contributed to the project by Brian Courts, copyright 2020, released under MIT license.
@@ -28,7 +31,9 @@ const today:MonthYearDate = new MonthYearDate()
 @Component({
   selector: 'app-range',
   templateUrl: './range.component.html',
-  styleUrls: ['./range.component.css']
+  styleUrls: ['./range.component.css'],
+  standalone: true,
+  imports: [CommonModule, FormsModule]
 })
 
 export class RangeComponent implements OnInit, AfterViewInit {
@@ -770,6 +775,10 @@ update(e: MouseEvent) {
         this.selectedStrategyNotInRangeChartMessage = "Note: The strategy you have selected is not represented in the color-coded graph, because the graph always assumes that, if you are eligible for a restricted application for spousal benefits, you will file for such as early as possible."
         this.solutionSet = this.solutionSetService.generateCoupleSolutionSet(this.scenario, this.personA, this.personB, new ClaimStrategy(this.personA, this.personB))
       }
-}
+    }
+
+  trackById(index: number, item: ClaimingSolution) {
+    return item.id;
+  }
 
 }

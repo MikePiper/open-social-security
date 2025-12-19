@@ -15,9 +15,19 @@ import { RangeComponent } from '../range/range.component'
 import { ActivatedRoute } from '@angular/router'
 import { MaximizePVService } from '../maximize-pv.service'
 import {GetDataFromTreasuryAPIService} from '../get-data-from-Treasury-api.service'
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common'
+import { OutputTableComponent } from '../output-table/output-table.component'
 
 
 @Component({
+  standalone: true,
+  imports: [
+    FormsModule,
+    CommonModule,
+    RangeComponent,
+    OutputTableComponent
+  ],
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
@@ -36,10 +46,10 @@ export class HomeComponent implements OnInit {
     //Get inputs from URL parameters, if applicable
     this.getInputsFromURLparameters()
     //Get TIPS yield for discount rate
-    this.getDataFromTreasuryApiService.getInterestRate().then(response => {
-      this.tipsDiscountRate = response;
+    this.getDataFromTreasuryApiService.getInterestRate().then(rate => {
+      this.tipsDiscountRate = rate;
       this.defaultDiscountRateSource = "TIPS"
-      console.log("got TIPS rate from internet")
+      console.log("Got TIPS rate from internet. TIPS rate: " + this.tipsDiscountRate)
     })
     .catch(error => {
       this.tipsDiscountRate = this.defaultDiscountRateIfError;
@@ -56,36 +66,6 @@ export class HomeComponent implements OnInit {
         console.log("ngOnInit() got discount rate from URL");
       }
     })
-
-    //OLD VERSION, USING NASDAQ API. KEPT FOR REFERENCE
-    //Get TIPS yield for discount rate
-    // // this.http.get<FREDresponse>("https://www.quandl.com/api/v3/datasets/FRED/DFII20.json?limit=1&api_key=iuEbMEnRuZzmUpzMYgx3")
-    // this.http.get<FREDresponse>("https://data.nasdaq.com/api/v3/datasets/USTREASURY/REALYIELD.json?limit=1&column_index=4&api_key=iuEbMEnRuZzmUpzMYgx3")
-    //   .subscribe( 
-    //     data => { // we got the TIPS discount rate from www.quandl.com
-    //       this.tipsDiscountRate = data.dataset.data[0][1];
-    //       this.scenario.discountRate = this.tipsDiscountRate;
-    //       this.defaultDiscountRateSource = "TIPS";
-    //       console.log("'get<FREDresponse>' got TIPS rate from internet");
-    //     },
-    //     error => { 
-    //       // If there is no internet, we get here after going to end of ngOnInit()
-    //       // If there is internet, we may get here if there was an error in the 'subscribe' process
-    //       // so we'll set the error parameters
-    //       this.scenario.discountRate = this.defaultDiscountRateIfError;
-    //       this.defaultDiscountRateSource = "ERROR"
-    //       console.log("ngOnInit() got ERROR, using defaults");
-    //     },
-    //     //The subscribe method of Observable accepts 3 optional functions as parameters: what to do with data that comes back, what to do with error if one occurs, what to do on completion
-    //     //If discount rate was set via URL parameter, we want use that instead of TIPS yield. We have to put this here (onComplete) to make sure it happens AFTER observable
-    //     () =>{
-    //       if (this.urlDiscountRate){
-    //         this.scenario.discountRate = this.urlDiscountRate
-    //         this.defaultDiscountRateSource = "URL";
-    //         console.log("ngOnInit() got discount rate from URL");
-    //       }
-    //     }
-    //   )
 
   }
 
