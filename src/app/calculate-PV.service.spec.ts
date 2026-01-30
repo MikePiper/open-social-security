@@ -537,6 +537,7 @@ describe('tests calculateCouplePV', () => {
 
       //tests for calculateCouplePV() that don't focus on ending PV
       it('should calculate personB spousal benefit as zero when own PIA is too high', () => {
+        service.setToday(new MonthYearDate(2018, 10)) //hard-coding "today" so that it doesn't fail in future just because date changes
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
         personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -671,6 +672,7 @@ describe('tests calculateCouplePV', () => {
 
 
       it('should calculate personB survivor benefit appropriately, when claimed after FRA with own smaller retirement benefit. Deceased personA filed at age 70', () => {
+        service.setToday(new MonthYearDate(2018, 10)) //hard-coding "today" so that it doesn't fail in future just because date changes
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
         personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
@@ -722,6 +724,7 @@ describe('tests calculateCouplePV', () => {
 
       //Testing calculation of retirement and survivor benefits in scenario where deceased was affected by Windfall Elimination Provision
         it('should calculate personA retirement benefit appropriately before and after WEP and personB survivor benefit appropriately after FRA -- using personA.nonWEP_PIA', () => {
+          service.setToday(new MonthYearDate(2018, 10)) //hard-coding "today" so that it doesn't fail in future just because date changes
           scenario.maritalStatus = "married"
           scenario.discountRate = 1
           personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
