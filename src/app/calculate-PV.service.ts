@@ -47,7 +47,6 @@ export class CalculatePvService {
       person.adjustedRetirementBenefitDate = new MonthYearDate(person.retirementBenefitDate)
       person.DRCsViaSuspension = 0
       person.retirementARFcreditingMonths = 0
-      this.benefitService.checkWhichPIAtoUse(person, this.today)//checks whether person is *entitled* to gov pension (by checking eligible and pension beginning date) and sets PIA accordingly based on one of two PIA inputs
       //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
       if (person.isOnDisability === true){person = this.familyMaximumService.calculateFamilyMaximum(person, this.today)}
 
@@ -214,9 +213,6 @@ export class CalculatePvService {
     personB.spousalARFcreditingMonths = 0
     personA.entitledToRetirement = false
     personB.entitledToRetirement = false
-    this.benefitService.checkWhichPIAtoUse(personA, this.today)//checks whether person is *entitled* to gov pension (by checking eligible and pension beginning date) and sets PIA accordingly based on one of two PIA inputs
-    this.benefitService.checkWhichPIAtoUse(personB, this.today)
-
 
     //If person is on disability, have to recalculate disability family max at start of each PV calc (because in prior PV calc, at their FRA their family max was recalculated using retirement family max rules)
       if (personA.isOnDisability === true){personA = this.familyMaximumService.calculateFamilyMaximum(personA, this.today)}
@@ -592,9 +588,6 @@ export class CalculatePvService {
     if (scenario.benefitCutAssumption === true && calcYear.date.getFullYear() < scenario.benefitCutYear){
       return false
     }
-    if ((personA.eligibleForNonCoveredPension === true && personA.entitledToNonCoveredPension === false) || (personB.eligibleForNonCoveredPension === true && personB.entitledToNonCoveredPension === false)){
-      return false
-    }
     //Return false if personA is using age-at-death mortality table and hasn't yet reached that age
     if (personA.mortalityTable[0] == 1) {
       let deceasedByAge:number = personA.mortalityTable.findIndex(item => item == 0)
@@ -811,8 +804,6 @@ export class CalculatePvService {
           this.benefitService.adjustSpousalBenefitsForAge(scenario, personA, personB)
         //Adjust as necessary for earnings test (and tally months withheld)
           this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
-        //Adjust spousal/survivor monthlyPayment fields for GPO
-          this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
     }
     else if (personAaliveBoolean === true && personBaliveBoolean === false){
         //If there is no reduction for age...
@@ -829,8 +820,6 @@ export class CalculatePvService {
             this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
           //Redo family max application
             this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
-          //Adjust spousal/survivor monthlyPayment fields for GPO
-            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
         }
         else {//i.e., there is reduction for age
           //Adjust each person's monthlyPayment as necessary for family max
@@ -845,8 +834,6 @@ export class CalculatePvService {
             this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
           //Adjust as necessary for earnings test (and tally months withheld)
             this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
-          //Adjust spousal/survivor monthlyPayment fields for GPO
-            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
         }
     }
     else if (personAaliveBoolean === false && personBaliveBoolean === true){
@@ -864,8 +851,6 @@ export class CalculatePvService {
             this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
           //Redo family max application
             this.familyMaximumService.applyFamilyMaximumCouple(2, scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
-          //Adjust spousal/survivor monthlyPayment fields for GPO
-            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
         }
         else {//i.e., there is reduction for age
           //Adjust each person's monthlyPayment as necessary for family max
@@ -880,8 +865,6 @@ export class CalculatePvService {
             this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForOwnEntitlement(personA, personB)
           //Adjust as necessary for earnings test (and tally months withheld)
             this.earningsTestService.applyEarningsTestCouple(scenario, calcYear, personA, personAaliveBoolean, personB, personBaliveBoolean)
-          //Adjust spousal/survivor monthlyPayment fields for GPO
-            this.benefitService.adjustSpousalSurvivorMotherFatherBenefitsForGPO(personA, personB)
         }
     }
   }

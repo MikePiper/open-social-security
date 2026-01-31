@@ -89,8 +89,6 @@ describe('SolutionSetService', () => {
     personB.endSuspensionDate = new MonthYearDate(1900, 0, 1)
     let claimStrategy:ClaimStrategy = new ClaimStrategy(personA, personB)
     claimStrategy.PV = 380000 //completely making this up
-    personA.governmentPension = 0
-    personB.governmentPension = 0
     expect(service.generateCoupleSolutionSet(scenario, personA, personB, claimStrategy).solutionsArray[0].date)
       .toEqual(personB.retirementBenefitDate)
   })

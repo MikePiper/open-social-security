@@ -24,7 +24,6 @@ function mockGetPrimaryFormInputs(person:Person, scenario:CalculationScenario, t
   person.initialAgeRounded = Math.round(person.initialAge)
   if (!person.mortalityTable) {person.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA2017", 0) }//Give them a mortality table if test doesn't include one
   person.baseMortalityFactor = mortalityService.calculateBaseMortalityFactor(person)
-  benefitService.checkWhichPIAtoUse(person, today)//checks whether person is *entitled* to gov pension (by checking eligible and pension beginning date) and sets PIA accordingly based on one of two PIA inputs
 }
 
 describe('MaximizePVService', () => {

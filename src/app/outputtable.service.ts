@@ -41,8 +41,6 @@ export class OutputTableService {
 
     //If person is under 70, we need another row
     if (person.age <= 71) {anotherRowNeeded = true}
-    //If person is eligible for noncovered pension but it hasn't begun yet, we need another row
-    if (person.eligibleForNonCoveredPension === true && person.entitledToNonCoveredPension === false) {anotherRowNeeded = true}
     //If person has an assumed age at death, we need another row until we have reached that age + 1.
     if (person.mortalityTable[0] == 1 && calcYear.probabilityAalive > 0) {//person is using an assumed age at death and they're still alive
         anotherRowNeeded = true
@@ -51,7 +49,6 @@ export class OutputTableService {
     //same checks for otherPerson
     if (otherPerson !== undefined) {
       if (otherPerson.age <= 71) {anotherRowNeeded = true}
-      if (otherPerson.eligibleForNonCoveredPension === true && otherPerson.entitledToNonCoveredPension === false) {anotherRowNeeded = true}
       if (otherPerson.mortalityTable[0] == 1 && calcYear.probabilityBalive > 0) {//otherPerson is using an assumed age at death and they're still alive
           anotherRowNeeded = true
       }

@@ -143,7 +143,6 @@ export class HomeComponent implements OnInit {
 
 //Inputs from form
   personAprimaryPIAinput: number = 1000
-  personAsecondaryPIAinput: number = 1000
   personAinputMonth: number = 4
   personAinputDay: number = 15
   personAinputYear: number = 1960
@@ -156,7 +155,6 @@ export class HomeComponent implements OnInit {
   personAassumedDeathAge: number = 100 // what many people might hope
   personAmortalityInput: mortalityTableOption = this.defaultMortalityTableID
   personBprimaryPIAinput: number = 1000
-  personBsecondaryPIAinput: number = 1000
   personBinputMonth: number = 4
   personBinputDay: number = 15
   personBinputYear: number = 1960
@@ -345,8 +343,6 @@ export class HomeComponent implements OnInit {
         this.personA.PIA = Number(this.personAprimaryPIAinput)
       //personB
         this.personB.PIA = Number(this.personBprimaryPIAinput)
-    this.benefitService.checkWhichPIAtoUse(this.personA, this.today)
-    this.benefitService.checkWhichPIAtoUse(this.personB, this.today)
 
     //reset beginSuspensionDate and endSuspensionDate for each person. This is necessary because if maximize function is run with one person having a fixed filing date...
       //...then that person's suspension dates will be iterated, and they wouldn't get reset at any point. And we WANT them to be reset if you run the function again after changing any inputs.
@@ -864,9 +860,6 @@ export class HomeComponent implements OnInit {
           if (params['aFixedMFBy']){
             this.personAfixedMotherFatherBenefitYear = Number(params['aFixedMFBy'])
           }
-          if (params['aPIA2']){
-            this.personAsecondaryPIAinput = Number(params['aPIA2'])
-          }
           if (params['aMortality']){
             this.personAmortalityInput = params['aMortality']
           }
@@ -919,9 +912,6 @@ export class HomeComponent implements OnInit {
           }
           if (params['bFiled']){
             this.personB.hasFiled = params['bFiled'] == "true" ? true : false
-          }
-          if (params['bPIA2']){
-            this.personBsecondaryPIAinput = Number(params['bPIA2'])
           }
           if (params['bMortality']){
             this.personBmortalityInput = params['bMortality']

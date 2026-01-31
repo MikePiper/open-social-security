@@ -21,7 +21,6 @@ function mockGetPrimaryFormInputs(person:Person, scenario:CalculationScenario, t
   person.initialAge =  birthdayService.findAgeOnDate(person, today)
   person.initialAgeRounded = Math.round(person.initialAge)
   person.baseMortalityFactor = mortalityService.calculateBaseMortalityFactor(person)
-  benefitService.checkWhichPIAtoUse(person, today)//checks whether person is *entitled* to gov pension (by checking eligible and pension beginning date) and sets PIA accordingly based on one of two PIA inputs
 }
 
 describe('test calculateSinglePersonPV', () => {
@@ -359,58 +358,6 @@ describe('tests calculateCouplePV', () => {
         .toBeCloseTo(466389, 0)
     })
   
-    it ('should return appropriate PV for married couple, including GPO', () => {
-      service.setToday(new MonthYearDate(2018, 11))//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
-      scenario.maritalStatus = "married"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
-      personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964
-      personB.SSbirthDate = new MonthYearDate(1963, 6, 1) //Spouse B born in July 1963
-      mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
-      mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
-      personA.WEP_PIA = 700
-      personA.nonWEP_PIA = 700
-      personB.PIA = 1900
-      personA.retirementBenefitDate = new MonthYearDate (2032, 8, 1) //At age 68
-      personB.retirementBenefitDate = new MonthYearDate (2029, 8, 1) //At age 66 and 2 months
-      personA.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
-      personB.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
-      personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
-      personB.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
-      personA.nonCoveredPensionDate = new MonthYearDate(2030, 0) //Any date before personA's spousalBenefitDate, so that GPO applies
-      personA.governmentPension = 900
-      personA.eligibleForNonCoveredPension = true
-      scenario.discountRate = 1
-      expect(service.calculateCouplePV(personA, personB, scenario, false).PV)
-        .toBeCloseTo(486558, 0)
-    })
-
-    it ('should return appropriate PV for basic divorce scenario', () => {
-      service.setToday(new MonthYearDate(2018, 11))//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
-      scenario.maritalStatus = "divorced"
-      personA.mortalityTable = mortalityService.determineMortalityTable ("male", "NS2", 0) //Using male nonsmoker2 mortality table
-      personB.mortalityTable = mortalityService.determineMortalityTable ("female", "NS1", 0) //Using female nonsmoker1 mortality table
-      personA.SSbirthDate = new MonthYearDate(1964, 8, 1) //Spouse A born in Sept 1964
-      personB.SSbirthDate = new MonthYearDate(1955, 3, 1) //Spouse B born in April 1955
-      mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
-      mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
-      personA.WEP_PIA = 700
-      personA.nonWEP_PIA = 700
-      personB.PIA = 1900
-      personA.retirementBenefitDate = new MonthYearDate (2032, 8, 1) //At age 68
-      personB.retirementBenefitDate = new MonthYearDate (2017, 4, 1) //ASAP at 62 and 1 month
-      personA.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
-      personB.spousalBenefitDate = new MonthYearDate (2032, 8, 1) //Later of two retirement benefit dates
-      personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
-      personB.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
-      personA.nonCoveredPensionDate = new MonthYearDate(2030, 0) //Any date before personA's spousalBenefitDate, so that GPO applies
-      personA.governmentPension = 300
-      personA.eligibleForNonCoveredPension = true
-      scenario.discountRate = 1
-      expect(service.calculateCouplePV(personA, personB, scenario, false).PV)
-        .toBeCloseTo(158226, 0)
-    })
-  
     it('should return appropriate PV for married couple (where spousal benefits are zero), both file at FRA but suspend immediately until 70', () => {
       service.setToday(new MonthYearDate(2018, 11))//Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
       scenario.maritalStatus = "married"
@@ -588,63 +535,6 @@ describe('tests calculateCouplePV', () => {
         //Original spousal benefit = 750. Reduced for own entitlement = 250. Multiplied by 0.75 for being 3 years early = 187.50. 187.5 x 12 = 2250
       })
     
-      it('should calculate spousal benefit appropriately prior to FRA, when reduced by GPO', () => {
-        scenario.maritalStatus = "married"
-        scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
-        personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
-        personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
-        personA.SSbirthDate = new MonthYearDate(1963, 2)
-        personB.SSbirthDate = new MonthYearDate (1963, 7)
-        personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2030
-        personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //August 2030
-        personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-        personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
-        personA.PIA = 1500
-        personB.WEP_PIA = 500
-        personB.nonWEP_PIA = 500
-        personA.retirementBenefitDate = new MonthYearDate(2026, 2) //March 2026
-        personB.retirementBenefitDate = new MonthYearDate(2027, 7) //August 2027 (age 64, 3 years before FRA) Own retirement benefit will be $400
-        personA.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
-        personB.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
-        personB.nonCoveredPensionDate = new MonthYearDate(2027, 0)//Just some date before personB's spousal benefit date, so GPO is applicable
-        personB.governmentPension = 150
-        personB.eligibleForNonCoveredPension = true
-        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-        expect(claimStrategy.outputTable[2][0]).toEqual(2028)
-        expect(claimStrategy.outputTable[2][5]).toEqual("$1,050")
-        //same as prior, minus 2/3 of $150 monthly gov pension = $87.50 spousal per month
-      })
-    
-      it('should calculate spousal benefit appropriately prior to FRA, when reduced to zero by GPO', () => {
-        scenario.maritalStatus = "married"
-        scenario.discountRate = 1
-        personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-        personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
-        personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
-        personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
-        personA.SSbirthDate = new MonthYearDate(1963, 2)
-        personB.SSbirthDate = new MonthYearDate (1963, 7)
-        personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2030
-        personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //August 2030
-        personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-        personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
-        personA.PIA = 1500
-        personB.WEP_PIA = 500
-        personB.nonWEP_PIA = 500
-        personA.retirementBenefitDate = new MonthYearDate(2026, 2) //March 2026
-        personB.retirementBenefitDate = new MonthYearDate(2027, 7) //August 2027 (age 64, 3 years before FRA) Own retirement benefit will be $400
-        personA.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
-        personB.spousalBenefitDate = new MonthYearDate(2027, 7) //later of two retirementBenefitDates
-        personB.nonCoveredPensionDate = new MonthYearDate(2027, 0)//Just some date before personB's spousal benefit date, so GPO is applicable
-        personB.governmentPension = 1000
-        personB.eligibleForNonCoveredPension = true
-        let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-        expect(claimStrategy.outputTable[2][0]).toEqual(2028)
-        expect(claimStrategy.outputTable[2][5]).toEqual("$0")
-      })
-    
       it('should calculate spousal benefit appropriately after FRA', () => {
         scenario.maritalStatus = "married"
         scenario.discountRate = 1
@@ -721,71 +611,6 @@ describe('tests calculateCouplePV', () => {
         expect(claimStrategy.outputTable[6][0]).toEqual("If your spouse outlives you")
         expect(claimStrategy.outputTable[6][6]).toEqual("$0") //deceased filed at 70 with FRA of 67. Benefit would have been 1240. Minus survivor's own 1500 retirement benefit, gives zero survivor benefit
       })
-
-      //Testing calculation of retirement and survivor benefits in scenario where deceased was affected by Windfall Elimination Provision
-        it('should calculate personA retirement benefit appropriately before and after WEP and personB survivor benefit appropriately after FRA -- using personA.nonWEP_PIA', () => {
-          service.setToday(new MonthYearDate(2018, 10)) //hard-coding "today" so that it doesn't fail in future just because date changes
-          scenario.maritalStatus = "married"
-          scenario.discountRate = 1
-          personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-          personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
-          personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
-          personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
-          personA.SSbirthDate = new MonthYearDate(1963, 2)
-          personB.SSbirthDate = new MonthYearDate (1963, 7)
-          personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2030
-          personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //August 2030
-          personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-          personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
-          personA.WEP_PIA = 1000
-          personB.PIA = 1000
-          personA.eligibleForNonCoveredPension = true
-          personA.nonCoveredPensionDate = new MonthYearDate(2035, 0)
-          personA.nonWEP_PIA = 1200
-          personA.retirementBenefitDate = new MonthYearDate(2033, 2) //March 2033, age 70
-          personB.retirementBenefitDate = new MonthYearDate(2025, 7) //Files at 62 (5 years before FRA), so retirement benefit = 700
-          personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
-          personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
-          personA.survivorBenefitDate = new MonthYearDate(personA.survivorFRA)
-          personB.survivorBenefitDate = new MonthYearDate(personB.survivorFRA)
-          let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-          expect(claimStrategy.outputTable[9][0]).toEqual(2034)
-          expect(claimStrategy.outputTable[9][1]).toEqual("$17,856")//personA annual retirement benefit before WEP kicks in: 124% of non WEP PIA = 1.24 * 1200 * 12 = 17856
-          expect(claimStrategy.outputTable[10][0]).toEqual("2035 and beyond")
-          expect(claimStrategy.outputTable[10][1]).toEqual("$14,880")//personA annual retirement benefit after WEP kicks in: 124% of WEP PIA = 1.24 * 1000 * 12 = 14880
-          expect(claimStrategy.outputTable[12][0]).toEqual("If your spouse outlives you")
-          expect(claimStrategy.outputTable[12][6]).toEqual("$9,456")
-          //deceased filed at 70 with FRA of 67. Benefit would have been 1488, given nonWEP PIA of 1200.
-          //Minus survivor's own 700 retirement benefit, gives 788 survivor benefit. 788 x 12 = 9456
-        })
-
-        it('should calculate WEP-affected survivor benefit appropriately as zero with own larger retirement benefit. Deceased filed at age 70', () => {
-          scenario.maritalStatus = "married"
-          scenario.discountRate = 1
-          personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0)
-          personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0)
-          personA.actualBirthDate = new Date(1963, 2, 15) //March 1963
-          personB.actualBirthDate = new Date(1963, 7, 2) //August 1963
-          personA.SSbirthDate = new MonthYearDate(1963, 2)
-          personB.SSbirthDate = new MonthYearDate (1963, 7)
-          personA.FRA = birthdayService.findFRA(personA.SSbirthDate) //March 2030
-          personB.FRA = birthdayService.findFRA(personB.SSbirthDate) //August 2030
-          personA.survivorFRA = birthdayService.findSurvivorFRA(personA.SSbirthDate)
-          personB.survivorFRA = birthdayService.findSurvivorFRA(personB.SSbirthDate)
-          personA.WEP_PIA = 1000
-          personB.PIA = 1500
-          personA.eligibleForNonCoveredPension = true
-          personA.nonCoveredPensionDate = new MonthYearDate(2033, 0)//Before they file for any SS benefits
-          personA.nonWEP_PIA = 1200
-          personA.retirementBenefitDate = new MonthYearDate(2033, 2) //March 2033, age 70
-          personB.retirementBenefitDate = new MonthYearDate(personB.FRA) //Files at FRA. retirement benefit = 1500
-          personA.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
-          personB.spousalBenefitDate = new MonthYearDate(2033, 2) //later of two retirementBenefitDates
-          let claimStrategy:ClaimStrategy = service.calculateCouplePV(personA, personB, scenario, true)
-          expect(claimStrategy.outputTable[6][0]).toEqual("If your spouse outlives you")
-          expect(claimStrategy.outputTable[6][6]).toEqual("$0")
-            //deceased filed at 70 with FRA of 67. Benefit ignoring WEP would have been 1488, given nonWEP PIA of 1200. Minus survivor's own 1500 retirement benefit, gives zero survivor benefit
-        })
 
       it('should appropriately reflect personB spousal benefit being partially withheld based on personA excess earnings', () => {
         service.setToday(new MonthYearDate(2018, 11)) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.

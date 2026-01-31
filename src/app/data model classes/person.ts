@@ -18,20 +18,12 @@ export class Person {
     survivorFRA: MonthYearDate
 
     PIA: number = 1000
-        //If eligibleForNonCoveredPension === true, person has the two fields below, and we pick between them to determine which is the person's PIA at a given time and for a given purpose
-        WEP_PIA:number
-        nonWEP_PIA:number
 
     initialAge: number //as in, "age on the date they're filling out the form" whereas age/ageRounded/ageLastBirthday are all variables that get changed throughout process as we age the person from one year to the next
     initialAgeRounded: number
     baseMortalityFactor: number //calculated as 1/lives remaining at initial age. We multiply this factor by livesRemaining at given age to determine probabilityAlive at that age. 
     age: number //as in, "age as of current calculation year"
     mortalityTable: number[]
-
-    eligibleForNonCoveredPension:boolean = false
-    entitledToNonCoveredPension:boolean = false
-    nonCoveredPensionDate:MonthYearDate //Date on which noncovered pension begins
-    governmentPension: number = 0
 
     quitWorkDate: MonthYearDate = new MonthYearDate (1, 0) //This also gets set as "way in past" via resetHiddenInputs(). This default value is mostly here so tests (which dont call that function) can run.
     monthlyEarnings: number = 0
@@ -72,7 +64,6 @@ export class Person {
 
     //benefit amount fields. benefit amount just gets overwritten when recalculated
     retirementBenefit:number = 0
-    nonWEPretirementBenefit:number //This is what their retirement benefit WOULD have been without WEP. This is only used for determining survivor benefits on their work record.
     monthlyRetirementPayment:number = 0
     monthlySpousalPayment:number = 0
     monthlySurvivorPayment:number = 0
