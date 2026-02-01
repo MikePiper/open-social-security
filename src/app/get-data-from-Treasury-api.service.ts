@@ -14,7 +14,6 @@ export class GetDataFromTreasuryAPIService {
     try {
       const xmlData = await this.getXMLdata();
       const interestRate = this.parseXML(xmlData);
-      console.debug('TIPS rate fetched:', interestRate);
       return interestRate;
     } catch (err) {
       console.error('Error fetching TIPS rate:', err);
@@ -30,28 +29,36 @@ export class GetDataFromTreasuryAPIService {
   private createURLstring(): string {
     const today = new Date();
     const year = today.getFullYear();
-    const month = today.getMonth() + 1;
-    const monthString = month < 10 ? `0${month}` : month.toString();
 
     // Direct Treasury URL; Scully will fetch at build time
-    return `https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml/daily_treasury_real_yield_curve?field_tdr_date_value_month=${year}${monthString}`;
+    return `https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xmlview?data=daily_treasury_real_yield_curve&field_tdr_date_value=${year}`;
   }
 
   private parseXML(xmldata: string): number {
+    // The API returns XML wrapped in HTML <pre> tags, so extract the XML first
+    const preMatch = xmldata.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i);
+    const actualXml = preMatch ? preMatch[1] : xmldata;
+
     const parser = new XMLParser({
       ignoreAttributes: false,
       attributeNamePrefix: '',
+      removeNSPrefix: true,
       trimValues: true
     });
-    const result = parser.parse(xmldata) as any;
-    const entries = result.feed?.entry;
-    if (!entries || entries.length === 0) return 0;
+    const result = parser.parse(actualXml) as any;
+    // Entry can be at result.feed.entry or directly at result.entry
+    const entries = result.feed?.entry || result.entry;
+    // Ensure entries is an array
+    const entryArray = Array.isArray(entries) ? entries : (entries ? [entries] : []);
+    if (entryArray.length === 0) return 0;
 
-    const lastEntry = entries[entries.length - 1];
-    const properties = lastEntry?.content?.['m:properties'];
-    if (!properties || !properties['d:TC_20YEAR']) return 0;
+    const lastEntry = entryArray[entryArray.length - 1];
+    const properties = lastEntry?.content?.properties;
+    if (!properties || !properties['TC_20YEAR']) return 0;
 
-    const rateValue = properties['d:TC_20YEAR']['#text'];
+    const tc20year = properties['TC_20YEAR'];
+    // Handle both direct value and object with #text property
+    const rateValue = typeof tc20year === 'object' ? tc20year['#text'] : tc20year;
     const interestRate = Number(rateValue);
     return isNaN(interestRate) ? 0 : interestRate;
   }
