@@ -19,6 +19,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common'
 import { OutputTableComponent } from '../output-table/output-table.component'
 import { BookPromoComponent } from '../shared/book-promo/book-promo.component'
+import { ChildinputsComponent } from '../childinputs/childinputs.component'
 
 
 @Component({
@@ -28,7 +29,8 @@ import { BookPromoComponent } from '../shared/book-promo/book-promo.component'
     CommonModule,
     RangeComponent,
     OutputTableComponent,
-    BookPromoComponent
+    BookPromoComponent,
+    ChildinputsComponent
   ],
   selector: 'app-home',
   templateUrl: './home.component.html',
