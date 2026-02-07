@@ -89,7 +89,6 @@ export class HomeComponent implements OnInit {
   customClaimStrategy = new ClaimStrategy(this.personA, this.personB)
   errorCollection:ErrorCollection = new ErrorCollection()
   today:MonthYearDate = new MonthYearDate()
-  deemedFilingCutoff: Date = new Date(1954, 0, 1)//January 2, 1954. If date is LESS than cutoff, old rules. If greater than OR EQUAL TO cutoff, new rules.
   statusMessage:string = ""
   childParams:string ="" //This is appended to the url so that the user can copy/paste url and have child inputs automatically filled in
   primaryFormHasChanged: boolean = false
@@ -503,9 +502,7 @@ export class HomeComponent implements OnInit {
       if (this.personA.childInCareSpousal === false) {
       //if we're in a different no-input situation (i.e. if personA won't actually file for a spousal benefit at any time) get the input that makes function run appropriately
         if (
-          this.personA.declineSpousal === true || //choosing not to file for spousal
-          (this.personA.PIA >= 0.5 * this.personB.PIA && this.personA.actualBirthDate >= this.deemedFilingCutoff) || //can't file for spousal due to new deemed filing and size of PIA
-          (this.personA.PIA >= 0.5 * this.personB.PIA && (this.personA.hasFiled === true || this.personA.isOnDisability === true)) || //can't file for spousal due to size of PIA and because already filed for retirement/disability
+          this.personA.PIA >= 0.5 * this.personB.PIA || //can't file for spousal due to deemed filing and size of PIA
           ( (this.personA.hasFiled === true || this.personA.isOnDisability === true) && (this.personB.hasFiled === true || this.personB.isOnDisability === true) ) //both have already started retirement or disability and therefore have already started spousal so there will be no spousal input
         )
           {
@@ -519,9 +516,7 @@ export class HomeComponent implements OnInit {
     if (this.personB.childInCareSpousal === false){
       //if we're in a different no-input situation (i.e. if personA won't actually file for a spousal benefit at any time) get the input that makes function run appropriately
       if (
-        this.personB.declineSpousal === true || //choosing not to file for spousal
-        (this.personB.PIA >= 0.5 * this.personA.PIA && this.personB.actualBirthDate >= this.deemedFilingCutoff) || //can't file for spousal due to new deemed filing and size of PIA
-        (this.personB.PIA >= 0.5 * this.personA.PIA && (this.personB.hasFiled === true || this.personB.isOnDisability === true)) || //can't file for spousal due to size of PIA and because already filed for retirement/disability
+        this.personB.PIA >= 0.5 * this.personA.PIA || //can't file for spousal due to deemed filing and size of PIA
         ( (this.personA.hasFiled === true || this.personA.isOnDisability === true) && (this.personB.hasFiled === true || this.personB.isOnDisability === true) ) || //both have already started retirement or disability and therefore have already started spousal so there will be no spousal input
         this.scenario.maritalStatus == "divorced"
         )
@@ -658,12 +653,12 @@ export class HomeComponent implements OnInit {
       this.personB.fixedRetirementBenefitDate = new MonthYearDate()
     }
 
-    //If "declineSpousal" or "declineSuspension" inputs are checked in custom date form, reset related month/year inputs. Similarly, reset spousal inputs to null if person in question would get child-in-care spousal
-    if (this.personA.declineSpousal === true || this.personA.childInCareSpousal === true){
+    //If "declineSuspension" input is checked in custom date form, reset related month/year inputs. Similarly, reset spousal inputs to null if person in question would get child-in-care spousal
+    if (this.personA.childInCareSpousal === true){
       this.customPersonAspousalBenefitMonth = null
       this.customPersonAspousalBenefitYear = null
     }
-    if (this.personB.declineSpousal === true || this.personB.childInCareSpousal === true){
+    if (this.personB.childInCareSpousal === true){
       this.customPersonBspousalBenefitMonth = null
       this.customPersonBspousalBenefitYear = null
     }
@@ -744,9 +739,7 @@ export class HomeComponent implements OnInit {
       }
   
       //reset "decline" inputs
-        this.personA.declineSpousal = false
         this.personA.declineSuspension = false
-        this.personB.declineSpousal = false
         this.personB.declineSuspension = false
   
       this.customDates()

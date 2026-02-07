@@ -13,7 +13,6 @@ import { MaximizePVService } from './maximize-pv.service'
 })
 export class InputValidationService {
 
-  deemedFilingCutoff: Date = new Date(1954, 0, 1)
   today: MonthYearDate = new MonthYearDate()
   oneMonthAgo:MonthYearDate
   sixMonthsAgo:MonthYearDate
@@ -259,49 +258,41 @@ export class InputValidationService {
     }
 
     //Deemed filing validation
-    if (person.actualBirthDate < this.deemedFilingCutoff) {//old deemed filing rules apply: If spousalBenefitDate < FRA, it must not be before own retirementBenefitDate
-        if (spousalBenefitDate < person.FRA && spousalBenefitDate < ownRetirementBenefitDate)
-        {
-        error = "A person cannot file a restricted application (i.e., application for spousal-only) prior to their FRA."
+    //Married version: own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's retirementBenefitDate
+    //Of note: entitlement to disability benefits + eligibility for spousal benefit does NOT cause deemed filing
+      if(scenario.maritalStatus == "married") {
+        if (ownRetirementBenefitDate < otherPersonRetirementBenefitDate) {
+          secondStartDate = new MonthYearDate(otherPersonRetirementBenefitDate)
         }
-    }
-    else {//new deemed filing rules apply
-      //Married version: own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's retirementBenefitDate
-      //Of note: entitlement to disability benefits + eligibility for spousal benefit does NOT cause deemed filing
-        if(scenario.maritalStatus == "married") {
-          if (ownRetirementBenefitDate < otherPersonRetirementBenefitDate) {
-            secondStartDate = new MonthYearDate(otherPersonRetirementBenefitDate)
-          }
-          else {
-            secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
-          }
-          if (person.PIA > 0 && otherPerson.PIA > 0 ){//if they have a zero PIA, there's no deemed filing to worry about. Similarly, if the other person has a zero PIA, we don't really care what this person has for a spousalBenefitDate.
-            if (spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false && person.childInCareSpousal === false) {
-              error = "Per new deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date."
-            }
+        else {
+          secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
+        }
+        if (person.PIA > 0 && otherPerson.PIA > 0 ){//if they have a zero PIA, there's no deemed filing to worry about. Similarly, if the other person has a zero PIA, we don't really care what this person has for a spousalBenefitDate.
+          if (spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false && person.childInCareSpousal === false) {
+            error = "Per deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date."
           }
         }
-      //Divorced version: own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's age62 date
-        //If otherPerson is already on disability benefits, "second start date" is just own retirement benefit date
-        //Of note: entitlement to own disability benefit + eligibility for spousal benefit does NOT cause deemed filing
-        if(scenario.maritalStatus == "divorced") {
-          let exSpouse62Date = new MonthYearDate(otherPerson.actualBirthDate.getFullYear()+62, otherPerson.actualBirthDate.getMonth())
-          if (otherPerson.actualBirthDate.getDate() > 1){//i.e., if they are born after 2nd of month ("1" is second of month)
-            exSpouse62Date.setMonth(exSpouse62Date.getMonth()+1)
-          }
-          if (ownRetirementBenefitDate < exSpouse62Date && otherPerson.isOnDisability === false) {//ie, if own retirement benefit date comes before otherPerson is 62, and otherPerson is not disabled
-            secondStartDate = new MonthYearDate(exSpouse62Date)
-          }
-          else {//ie., if own retirementBenefitDate comes after other person is 62, or if otherPerson is disabled
-            secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
-          }
-          if (person.PIA > 0 && otherPerson.PIA > 0){//if they have a zero PIA, there's no deemed filing to worry about. Similarly, if the other person has a zero PIA, we don't really care what this person has for a spousalBenefitDate.
-            if (spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false && person.childInCareSpousal === false) {
-              error = "Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month."
-            }
+      }
+    //Divorced version: own spousalBenefitDate must equal later of own retirementBenefitDate or other spouse's age62 date
+      //If otherPerson is already on disability benefits, "second start date" is just own retirement benefit date
+      //Of note: entitlement to own disability benefit + eligibility for spousal benefit does NOT cause deemed filing
+      if(scenario.maritalStatus == "divorced") {
+        let exSpouse62Date = new MonthYearDate(otherPerson.actualBirthDate.getFullYear()+62, otherPerson.actualBirthDate.getMonth())
+        if (otherPerson.actualBirthDate.getDate() > 1){//i.e., if they are born after 2nd of month ("1" is second of month)
+          exSpouse62Date.setMonth(exSpouse62Date.getMonth()+1)
+        }
+        if (ownRetirementBenefitDate < exSpouse62Date && otherPerson.isOnDisability === false) {//ie, if own retirement benefit date comes before otherPerson is 62, and otherPerson is not disabled
+          secondStartDate = new MonthYearDate(exSpouse62Date)
+        }
+        else {//ie., if own retirementBenefitDate comes after other person is 62, or if otherPerson is disabled
+          secondStartDate = new MonthYearDate(ownRetirementBenefitDate)
+        }
+        if (person.PIA > 0 && otherPerson.PIA > 0){//if they have a zero PIA, there's no deemed filing to worry about. Similarly, if the other person has a zero PIA, we don't really care what this person has for a spousalBenefitDate.
+          if (spousalBenefitDate.valueOf() !== secondStartDate.valueOf() && person.isOnDisability === false && person.childInCareSpousal === false) {
+            error = "Per deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month."
           }
         }
-    }
+      }
 
     //Validation in case they try to start benefit earlier than own "62 all month" month.
     let earliestDate: MonthYearDate = new MonthYearDate(person.actualBirthDate.getFullYear()+62, person.actualBirthDate.getMonth())

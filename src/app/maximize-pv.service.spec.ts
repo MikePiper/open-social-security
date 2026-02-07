@@ -222,30 +222,6 @@ describe('Tests for maximizeCouplePViterateBothPeople', () => {
     //No spousal dates because neither spouse gets a spousal benefit. Since it's sorted in date order, first retirement date will be low earner, second is higher earner, which we want.
   })
 
-  it ('should tell a high-PIA spouse to file a restricted app when possible', () => {
-    service.setToday(new MonthYearDate(2018, 11)) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
-    scenario.maritalStatus = "married"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SSA", 0) 
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SSA", 0) 
-    personA.actualBirthDate = new Date(1953, 8, 15) //Spouse A born in Sept 1953
-    personA.SSbirthDate = new MonthYearDate(1953, 8, 1)
-    personB.actualBirthDate = new Date(1953, 9, 11) //Spouse B born in October 1953
-    personB.SSbirthDate = new MonthYearDate(1953, 9, 1)
-    mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
-    mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
-    personA.PIA = 2200
-    personB.PIA = 1400
-    personA.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
-    personB.quitWorkDate = new MonthYearDate(2018,3,1) //already quit working
-    scenario.discountRate = 1
-    expect(service.maximizeCouplePViterateBothPeople(personA, personB, scenario).solutionsArray[1].date)
-    .toEqual(new MonthYearDate(2019, 8, 1))
-    //We're looking at item [1] in the array. This array should have 3 items in it, in this order:
-      //low PIA retirement claiming date
-      //high PIA restricted app date
-      //high PIA retirement date
-  })
-
   it ('should tell personA to wait until 70, even with slightly lower PIA, if personB filed early at 62, given low discount rate and long life expectancies', () => {
     service.setToday(new MonthYearDate(2018, 11)) //Test was written in 2018. Have to hardcode in the year, otherwise it will fail every new year.
     personB.hasFiled = true
@@ -419,30 +395,6 @@ describe('Tests for maximizeCouplePViterateBothPeople', () => {
     //This array should have 5 items in it: retirement date for personB, spousal date for personB, disabilityConversion for personA, begin suspension for personA, end suspension for personA
   })
 
-
-  it('should tell a low-PIA spouse to file a retroactive application and high-PIA spouse to file retroactive restricted application if already past FRA with short life expectancies and high discount rate', () => {
-    service.setToday(new MonthYearDate(2018, 10))//November 2018 (date when creating this test, so that it doesn't fail in the future as "today" changes)
-    scenario.maritalStatus = "married"
-    personA.mortalityTable = mortalityService.determineMortalityTable ("male", "SM2", 0) 
-    personB.mortalityTable = mortalityService.determineMortalityTable ("female", "SM2", 0) 
-    personA.actualBirthDate = new Date(1952, 8, 15) //Spouse A born in Sept 1952
-    personA.SSbirthDate = new MonthYearDate(1952, 8)
-    personB.actualBirthDate = new Date(1952, 9, 11) //Spouse B born in October 1952
-    personB.SSbirthDate = new MonthYearDate(1952, 9)
-    mockGetPrimaryFormInputs(personA, scenario, service.today, birthdayService, benefitService, mortalityService)
-    mockGetPrimaryFormInputs(personB, scenario, service.today, birthdayService, benefitService, mortalityService)
-    personA.PIA = 1000
-    personB.PIA = 1400
-    scenario.discountRate = 3
-    let results = service.maximizeCouplePViterateBothPeople(personA, personB, scenario)
-    expect(results.solutionsArray[0].date).toEqual(new MonthYearDate(2018, 8))
-    expect(results.solutionsArray[1].date).toEqual(new MonthYearDate(2018, 9))
-    expect(results.solutionsArray[2].date).toEqual(new MonthYearDate(2022, 9))
-    //This array should have 3 items in it, in this order:
-      //personA retroactive retirement back to FRA of Sept 2018
-      //personB retroactive restricted app back to FRA of Oct 2018
-      //personB retirement at age 70
-  })
 
   it('should tell a low-PIA spouse to file for child-in-care spousal benefits before age 62', () => {
     service.setToday(new MonthYearDate(2019, 0))//(date when creating this test, so that it doesn't fail in the future as "today" changes)

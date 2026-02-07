@@ -41,8 +41,6 @@ export class MaximizePVService {
 
     maximizeSinglePersonPV(person:Person, scenario:CalculationScenario) : SolutionSet{
 
-      scenario.restrictedApplicationPossible = false;
-  
       //find earliest retirementBenefitDate
       person.retirementBenefitDate = this.findEarliestPossibleRetirementBenefitDate(person)
   
@@ -99,10 +97,6 @@ export class MaximizePVService {
 
     maximizeCouplePViterateBothPeople(personA:Person, personB:Person, scenario:CalculationScenario) : SolutionSet{
 
-      let deemedFilingCutoff: Date = new Date(1954, 0, 1); 
-      scenario.restrictedApplicationPossible = 
-        ((personA.actualBirthDate < deemedFilingCutoff) || (personB.actualBirthDate < deemedFilingCutoff))
-  
       //find earliest retirementBenefitDate for personA and personB
         personA.retirementBenefitDate = this.findEarliestPossibleRetirementBenefitDate(personA)
         personB.retirementBenefitDate = this.findEarliestPossibleRetirementBenefitDate(personB)
@@ -221,9 +215,6 @@ export class MaximizePVService {
 //This function is for when one spouse is over 70 (and therefore has no retirement age or suspension age to iterate).
 //Also is the function for a divorcee, because we take the ex-spouse's filing date as a given (i.e., as an input)
 maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Person, fixedSpouse:Person) : SolutionSet{
-
-  let deemedFilingCutoff: Date = new Date(1954, 0, 1); 
-  scenario.restrictedApplicationPossible = (flexibleSpouse.actualBirthDate < deemedFilingCutoff);
 
     fixedSpouse.retirementBenefitDate = new MonthYearDate(fixedSpouse.fixedRetirementBenefitDate)
 
@@ -461,9 +452,8 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
   //Regarding retroactive applications, they are generally handled by the fact that person's retirementBenefitDate could be a retroactive date, with appropriate limitations.
     //In case of restricted application though (where person's spousalBenefitDate is set without regard to person's retirementBenefitDate) we have to check and make sure it's no more than 6 (or 12) months ago
     adjustSpousalBenefitDate(person:Person, otherPerson:Person, scenario:CalculationScenario) : Person {
-      let deemedFilingCutoff: Date = new Date(1954, 0, 1)
       let otherPersonsLimitingDate: MonthYearDate
-  
+
       //Determine "otherPerson's Limiting Date" (i.e., the date -- based on otherPerson -- before which "Person" cannot file a spousal benefit)
         if (scenario.maritalStatus == "married") {
           otherPersonsLimitingDate = new MonthYearDate(otherPerson.retirementBenefitDate)
@@ -481,46 +471,13 @@ maximizeCouplePViterateOnePerson(scenario:CalculationScenario, flexibleSpouse:Pe
             otherPersonsLimitingDate.setMonth(otherPersonsLimitingDate.getMonth()+1)
           }
         }
-  
-      if (person.actualBirthDate >= deemedFilingCutoff) {//i.e., if person has new deemed filing rules
-        //set spousalBenefitDate to own retirementBenefitDate, but no earlier than otherPersonsLimitingDate
-        if (person.retirementBenefitDate > otherPersonsLimitingDate) {
-          person.spousalBenefitDate = new MonthYearDate(person.retirementBenefitDate)
-        }
-        else {
-          person.spousalBenefitDate = new MonthYearDate(otherPersonsLimitingDate)
-        }
+
+      //set spousalBenefitDate to own retirementBenefitDate, but no earlier than otherPersonsLimitingDate
+      if (person.retirementBenefitDate > otherPersonsLimitingDate) {
+        person.spousalBenefitDate = new MonthYearDate(person.retirementBenefitDate)
       }
-      else {//i.e., if person has old deemed filing rules
-        if (person.retirementBenefitDate < person.FRA) {
-          //set spousalBenefitDate to own retirementBenefitDate, but no earlier than otherPersonsLimitingDate
-          if (person.retirementBenefitDate > otherPersonsLimitingDate) {
-            person.spousalBenefitDate = new MonthYearDate(person.retirementBenefitDate)
-          }
-          else {
-            person.spousalBenefitDate = new MonthYearDate(otherPersonsLimitingDate)
-          }
-        }
-        else {//i.e., if person's retirementBenefitDate currently after his/her FRA
-          //Set person's spousalBenefitDate to earliest possible restricted application date (i.e., later of FRA or otherPersonsLimitingDate)
-            //...but no earlier than 6 months ago (or 12 months ago if otherPerson is disabled)
-          if (person.FRA > otherPersonsLimitingDate) {
-            person.spousalBenefitDate = new MonthYearDate(person.FRA)
-          }
-          else {
-            person.spousalBenefitDate = new MonthYearDate(otherPersonsLimitingDate)
-          }
-          if (otherPerson.isOnDisability === false){
-            if (person.spousalBenefitDate < this.sixMonthsAgo){
-              person.spousalBenefitDate = new MonthYearDate(this.sixMonthsAgo)
-            }
-          }
-          else {//i.e., otherPerson is on disability
-            if (person.spousalBenefitDate < this.twelveMonthsAgo){
-              person.spousalBenefitDate = new MonthYearDate(this.twelveMonthsAgo)
-            }
-          }
-        }
+      else {
+        person.spousalBenefitDate = new MonthYearDate(otherPersonsLimitingDate)
       }
       //If person has already filed for retirement or is on disability, don't let spousalBenefitDate be before retirementBenefitDate (otherwise it will try retroactive spousal appplications in some cases where they can't actually happen)
         if ( (person.hasFiled === true || person.isOnDisability) && person.spousalBenefitDate < person.retirementBenefitDate){

@@ -13,7 +13,6 @@ export class BenefitService {
   today: MonthYearDate
   sixMonthsAgo:MonthYearDate
   twelveMonthsAgo:MonthYearDate
-  deemedFilingCutoff: Date = new Date(1954, 0, 1)//January 2, 1954. If date is LESS than cutoff, old rules. If greater than OR EQUAL TO cutoff, new rules.
 
   constructor(private birthdayService: BirthdayService, private familyMaximumService: FamilyMaximumService) {
     this.setToday(new MonthYearDate())

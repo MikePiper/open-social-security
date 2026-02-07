@@ -37,7 +37,6 @@ export class Person {
     familyMaximum: number
     AIME: number //AIME as calculated in the year that entitlement began. Only used in disability scenarios (for calculating disability-related family max)
 
-    declineSpousal: boolean = false
     childInCareSpousal: boolean = false//reflects whether a person will be getting child-in-care spousal benefits at any point during the PV calculation. Doesn't reflect whether they're getting them on any particular date.
     declineSuspension:boolean = false
     entitledToRetirement:boolean //just the results of whether calcYear.date >= person.retirementBenefitDate

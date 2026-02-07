@@ -16,7 +16,8 @@
       "Bash(git push)",
       "Bash(git pull:*)",
       "Bash(git rebase:*)",
-      "Bash(gh pr comment:*)"
+      "Bash(gh pr comment:*)",
+      "Bash(npm test:*)"
     ]
   }
 }

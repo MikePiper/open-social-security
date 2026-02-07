@@ -175,7 +175,7 @@ describe('InputvalidationService', () => {
     let otherSpouseRetirementBenefitDate:MonthYearDate = new MonthYearDate(2031, 11, 1)
     let spousalBenefitDate:MonthYearDate = new MonthYearDate(2032, 0, 1) //Later than both retirementBenefitDates
     expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
-      .toEqual("Per new deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date.")
+      .toEqual("Per deemed filing rules, a person's spousal benefit date must be the later of their own retirement benefit date, or their spouse's retirement benefit date.")
   }))
 
   it('should reject spousalBenefitDate that is later than later of the two retirementBenefitDates, for divorcee', inject([InputValidationService], (service: InputValidationService) => {
@@ -191,23 +191,7 @@ describe('InputvalidationService', () => {
     let spousalBenefitDate:MonthYearDate = new MonthYearDate(2032, 0, 1)
     let otherSpouseRetirementBenefitDate:MonthYearDate = new MonthYearDate(2031, 11, 1)
     expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
-      .toEqual("Per new deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month.")
-  }))
-
-  it('should reject restricted app prior to FRA -- ie spousalBenefitDate prior to FRA for somebody born 1953 or prior ', inject([InputValidationService], (service: InputValidationService) => {
-    scenario.maritalStatus = "married"
-    let person:Person = new Person("A")
-    let otherPerson:Person = new Person("B")
-    person.actualBirthDate = new Date (1953, 4, 29) //May 30, 1953
-    person.SSbirthDate = new MonthYearDate (1953, 4, 1)
-    mockGetPrimaryFormInputs(person, service.today, birthdayService)
-    otherPerson.actualBirthDate = new Date (1954, 4, 3) //May 4, 1954
-    otherPerson.SSbirthDate = new MonthYearDate (1954, 4, 1)
-    let ownRetirementBenefitDate:MonthYearDate = new MonthYearDate(2023, 4, 1) //own retirement at 70 years 0 months
-    let spousalBenefitDate:MonthYearDate = new MonthYearDate(2017, 4, 1) //own spousal at 64 years 0 months (prior to FRA)
-    let otherSpouseRetirementBenefitDate:MonthYearDate = new MonthYearDate(2017, 3, 1) //Prior to attempted ownSpousalBenefitDate, so that *this* isn't the problem
-    expect(service.checkValidSpousalInput(scenario, person, otherPerson, ownRetirementBenefitDate, spousalBenefitDate, otherSpouseRetirementBenefitDate))
-      .toEqual("A person cannot file a restricted application (i.e., application for spousal-only) prior to their FRA.")
+      .toEqual("Per deemed filing rules, your spousal benefit date must be the later of your retirement benefit date, or the first month in which your ex-spouse is 62 for the entire month.")
   }))
 
   it('should allow retroactive spousal date if after FRA and no more than 6 months ago', inject([InputValidationService], (service: InputValidationService) => {

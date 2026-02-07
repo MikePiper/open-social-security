@@ -750,10 +750,9 @@
         }
         @if (scenario.maritalStatus == 'married' || scenario.maritalStatus == 'divorced') {
           <span>
-            <!--Show spousal date input for personA if: they are not declining spousal AND they have not yet filed for spousal AND they are eligible for spousal AND personA will not be getting child-in-care spousal-->
-            @if (personA.declineSpousal === false &&
-              !( (personA.hasFiled === true || personA.isOnDisability === true) && (personB.hasFiled === true || personB.isOnDisability === true) ) &&
-              (personA.PIA < 0.5 * personB.PIA || (personA.actualBirthDate < this.deemedFilingCutoff && personA.hasFiled === false && personA.isOnDisability === false)) &&
+            <!--Show spousal date input for personA if: they have not yet filed for spousal AND they are eligible for spousal AND personA will not be getting child-in-care spousal-->
+            @if (!( (personA.hasFiled === true || personA.isOnDisability === true) && (personB.hasFiled === true || personB.isOnDisability === true) ) &&
+              personA.PIA < 0.5 * personB.PIA &&
               personA.childInCareSpousal === false) {
               <div class="form-inline">
                 <label>Your month/year to claim spousal benefit:</label>
@@ -771,21 +770,6 @@
                   <span class="alert alert-danger">{{errorCollection.customPersonAspousalDateError}}</span>
                 }
               </div>
-            }
-            <!--Show "decline spousal" checkbox for personA if they COULD select a spousal date but also might never get spousal. In other words:
-            They have PIA >= 50% of other PIA (otherwise they will for sure get spousal)
-            AND they must be under old deemed filing rules (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
-            AND they must not have already started retirement or disability (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
-            AND they will not be getting child-in-care spousal (because if they will be getting it, we don't want them to be giving us inputs relating to spousalBenefitDate)
-            -->
-            @if (personA.PIA >= 0.5 * personB.PIA &&
-              personA.actualBirthDate < this.deemedFilingCutoff &&
-              personA.hasFiled === false && personA.isOnDisability === false &&
-              personA.childInCareSpousal === false) {
-              <span>
-                <label>Check this box to test a scenario in which you do not file for a spousal benefit:</label>
-                <input id="personAdeclineSpousal" [(ngModel)]="personA.declineSpousal" name="personA.declineSpousal" value="true" type="checkbox">
-              </span>
             }
             <!--End PersonA Custom Date Inputs -->
             <!--PersonB Custom Date Inputs -->
@@ -849,10 +833,9 @@
                 <input id="personBdeclineSuspension" [(ngModel)]="personB.declineSuspension" name="personB.declineSuspension" value="true" type="checkbox">
               </span>
             }
-            <!--Show spousal date input for personB if they are not declining spousal AND they have not yet filed for spousal AND they are eligible for spousal AND it is a married scenario AND personB will not be getting child-in-care spousal-->
-            @if (personB.declineSpousal === false &&
-              !( (personB.hasFiled === true || personB.isOnDisability === true) && (personA.hasFiled === true || personA.isOnDisability === true) ) &&
-              (personB.PIA < 0.5 * personA.PIA || (personB.actualBirthDate < this.deemedFilingCutoff && personB.hasFiled === false && personB.isOnDisability === false)) &&
+            <!--Show spousal date input for personB if they have not yet filed for spousal AND they are eligible for spousal AND it is a married scenario AND personB will not be getting child-in-care spousal-->
+            @if (!( (personB.hasFiled === true || personB.isOnDisability === true) && (personA.hasFiled === true || personA.isOnDisability === true) ) &&
+              personB.PIA < 0.5 * personA.PIA &&
               scenario.maritalStatus == 'married' &&
               personB.childInCareSpousal === false) {
               <div class="form-inline">
@@ -871,23 +854,6 @@
                   <span class="alert alert-danger">{{errorCollection.customPersonBspousalDateError}}</span>
                 }
               </div>
-            }
-            <!--Show "decline spousal" checkbox for personB if they COULD get spousal but also might never get it. In other words:
-            They have PIA >= 50% of other PIA (otherwise they will for sure get spousal)
-            AND they must be under old deemed filing rules (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
-            AND they must not have already started retirement or disability (otherwise they would for sure never get spousal, given that they have PIA >= 50% of other PIA)
-            AND only show if it's a married scenario (as opposed to divorce)
-            AND they will not be getting child-in-care spousal (because if they will be getting it, we don't want them to be giving us inputs relating to spousalBenefitDate)
-            -->
-            @if (personB.PIA >= 0.5 * personA.PIA &&
-              personB.actualBirthDate < this.deemedFilingCutoff &&
-              personB.hasFiled === false && personB.isOnDisability === false &&
-              scenario.maritalStatus == 'married' &&
-              personB.childInCareSpousal === false) {
-              <span>
-                <label>Check this box to test a scenario in which your spouse does not file for a spousal benefit:</label>
-                <input id="personBdeclineSpousal" [(ngModel)]="personB.declineSpousal" name="personB.declineSpousal" value="true" type="checkbox">
-              </span>
             }
             <!--End PersonB Custom Date Inputs -->
           </span>

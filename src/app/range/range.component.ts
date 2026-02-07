@@ -738,9 +738,6 @@ update(e: MouseEvent) {
           this.personB.PIA == 0 ||
           (cloneOfPersonA.spousalBenefitDate.valueOf() == this.personA.spousalBenefitDate.valueOf()
           && cloneOfPersonB.spousalBenefitDate.valueOf() == this.personB.spousalBenefitDate.valueOf()
-          //And also make sure that neither person is declining spousal in a situation in which they could file a restricted application
-          && !(this.personA.declineSpousal === true && this.personA.retirementBenefitDate > this.personB.retirementBenefitDate && this.personA.retirementBenefitDate > this.personA.FRA)
-          && !(this.personB.declineSpousal === true && this.personB.retirementBenefitDate > this.personA.retirementBenefitDate && this.personB.retirementBenefitDate > this.personB.FRA)
           )
         ){//i.e., the spousal inputs selected are an option in the Range
             //Find the corresponding row and column.
