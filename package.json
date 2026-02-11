@@ -25,7 +25,7 @@
     "@angular/router": "^20.0.0",
     "@scullyio/init": "^2.1.21",
     "@scullyio/scully-plugin-puppeteer": "^2.1.41",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "bootstrap": "^5.2.0",
     "core-js": "^3.24.0",
     "cors": "^2.8.5",
