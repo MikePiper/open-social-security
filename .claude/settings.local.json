@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:github.com)",
+      "WebFetch(domain:microsoft.com)",
       "Bash(brew install:*)",
       "Bash(gh auth:*)",
       "Bash(gh pr view:*)",
