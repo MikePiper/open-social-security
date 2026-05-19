@@ -20,7 +20,7 @@
     "@angular/localize": "^20.0.0",
     "@angular/platform-browser": "^20.0.0",
     "@angular/platform-browser-dynamic": "^20.0.0",
-    "@angular/platform-server": "^20.3.19",
+    "@angular/platform-server": "^20.3.21",
     "@angular/router": "^20.0.0",
     "@angular/ssr": "^20.3.25",
     "bootstrap": "^5.2.0",
