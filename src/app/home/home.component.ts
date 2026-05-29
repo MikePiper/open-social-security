@@ -17,6 +17,7 @@ import { MaximizePVService } from '../maximize-pv.service'
 import {GetDataFromTreasuryAPIService} from '../get-data-from-Treasury-api.service'
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common'
+import { RouterLink } from '@angular/router'
 import { OutputTableComponent } from '../output-table/output-table.component'
 import { BookPromoComponent } from '../shared/book-promo/book-promo.component'
 import { ChildinputsComponent } from '../childinputs/childinputs.component'
@@ -27,6 +28,7 @@ import { ChildinputsComponent } from '../childinputs/childinputs.component'
   imports: [
     FormsModule,
     CommonModule,
+    RouterLink,
     RangeComponent,
     OutputTableComponent,
     BookPromoComponent,
