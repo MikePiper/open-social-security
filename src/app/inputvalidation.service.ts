@@ -35,6 +35,7 @@ export class InputValidationService {
 
   checkErrorCollectionForErrors(errorCollection:ErrorCollection):boolean{
     if (
+      errorCollection.personAPiaError ||
       errorCollection.personAfixedRetirementDateError ||
       errorCollection.personBfixedRetirementDateError ||
       errorCollection.personAfixedMotherFatherDateError ||
@@ -60,6 +61,10 @@ export class InputValidationService {
   }
 
   checkPrimaryFormInputsForErrors(errorCollection:ErrorCollection, scenario:CalculationScenario, personA:Person, personB:Person):ErrorCollection{
+    errorCollection.personAPiaError = undefined
+    if (scenario.maritalStatus === "single" && personA.PIA === 0) {
+      errorCollection.personAPiaError = "An unmarried person with a PIA of zero has no Social Security benefits to optimize. Please enter a PIA greater than zero."
+    }
     errorCollection = this.checkForAssumedDeathAgeErrors(errorCollection, personA, personB)
     errorCollection = this.checkForFixedRetirementDateErrors(errorCollection, scenario, personA, personB)
     errorCollection = this.checkForFixedSurvivorDateErrors(errorCollection, scenario, personA, personB)

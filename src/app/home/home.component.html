@@ -141,6 +141,9 @@
     @if (personAPIAinput.invalid) {
       <span class="alert alert-danger">digits only, please</span>
     }
+    @if (errorCollection.personAPiaError) {
+      <span class="alert alert-danger">{{errorCollection.personAPiaError}}</span>
+    }
   </div>
 
 

@@ -1,6 +1,7 @@
 export class ErrorCollection {
 
     //Error variables relating to primary form
+    personAPiaError:string
     personAfixedRetirementDateError:string
     personBfixedRetirementDateError:string
     personAfixedMotherFatherDateError:string
