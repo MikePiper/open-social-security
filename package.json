@@ -22,10 +22,7 @@
     "@angular/platform-server": "^20.3.25",
     "@angular/router": "^20.3.25",
     "@angular/ssr": "^20.3.25",
-    "bootstrap": "^5.2.0",
-    "core-js": "^3.24.0",
     "fast-xml-parser": "^5.7.0",
-    "ngx-bootstrap": "^20.0.2",
     "rxjs": "^7.8.1",
     "tslib": "^2.6.0",
     "zone.js": "~0.15.1"
