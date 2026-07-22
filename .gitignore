@@ -47,3 +47,6 @@ Thumbs.db
 
 #Things I just don't want included in GH
 ToDoList.txt
+
+# Claude Code local settings (keep local, never publish)
+.claude/
