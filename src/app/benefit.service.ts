@@ -327,11 +327,14 @@ export class BenefitService {
     calcYear.annualBenefitBothDeceased *= cutFactor
     //Apply cut to sums included in output table
     calcYear.tablePersonAannualRetirementBenefit *= cutFactor
+    calcYear.tablePersonAannualRetirementBenefitOnlyAalive *= cutFactor //used instead of the line above in survivor scenarios (personA is already a survivor when using calculator)
     calcYear.tablePersonAannualSpousalBenefit *= cutFactor
     calcYear.tablePersonAannualSurvivorBenefit *= cutFactor
+    calcYear.tablePersonAannualMotherFatherBenefit *= cutFactor
     calcYear.tablePersonBannualRetirementBenefit *= cutFactor
     calcYear.tablePersonBannualSpousalBenefit *= cutFactor
     calcYear.tablePersonBannualSurvivorBenefit *= cutFactor
+    calcYear.tablePersonBannualMotherFatherBenefit *= cutFactor
     calcYear.tableTotalAnnualChildBenefitsSingleParentAlive *= cutFactor
     calcYear.tableTotalAnnualChildBenefitsSingleParentDeceased *= cutFactor
     calcYear.tableTotalAnnualChildBenefitsBothParentsAlive *= cutFactor

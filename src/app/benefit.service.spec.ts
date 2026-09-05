@@ -3,6 +3,7 @@ import {BenefitService} from './benefit.service'
 import {BirthdayService} from './birthday.service'
 import {Person} from './data model classes/person'
 import {CalculationScenario} from './data model classes/calculationscenario'
+import {CalculationYear} from './data model classes/calculationyear'
 import {MonthYearDate} from "./data model classes/monthyearDate"
 
 
@@ -20,6 +21,23 @@ describe('BenefitService', () => {
   it('should be created', inject([BenefitService], (service: BenefitService) => {
     expect(service).toBeTruthy()
   }))
+
+  //Testing applyAssumedBenefitCut
+  it("should apply the assumed benefit cut to a survivor's own retirement benefit in the output table (tablePersonAannualRetirementBenefitOnlyAalive)", () => {
+    let scenario:CalculationScenario = new CalculationScenario()
+    scenario.maritalStatus = "survivor"
+    scenario.benefitCutAssumption = true
+    scenario.benefitCutYear = 2035
+    scenario.benefitCutPercentage = 23
+    scenario.setBenefitCutFactors() //cutFactor becomes 0.77
+    let calcYear:CalculationYear = new CalculationYear(new MonthYearDate(2035, 11, 1)) //December 2035 (cut is applied in December of/after the cut year)
+    calcYear.tablePersonAannualRetirementBenefitOnlyAalive = 1000
+    calcYear.tablePersonAannualSurvivorBenefit = 2000
+    service.applyAssumedBenefitCut(scenario, calcYear)
+    //Bug fix: a survivor's own retirement benefit shown in the table must be cut, not just the survivor benefit
+    expect(calcYear.tablePersonAannualRetirementBenefitOnlyAalive).toBeCloseTo(770, 6) //1000 * 0.77
+    expect(calcYear.tablePersonAannualSurvivorBenefit).toBeCloseTo(1540, 6) //2000 * 0.77 (already worked before fix; sanity check)
+  })
 
   //Testing calculateRetirementBenefit
   it('should calculate retirement benefit 60 months early as 70% of PIA', () => {
