@@ -8,7 +8,7 @@ import { SolutionSet } from '../data model classes/solutionset'
 import { SolutionSetService } from '../solutionset.service'
 import { BirthdayService } from '../birthday.service'
 import { MaximizePVService } from '../maximize-pv.service'
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { ClaimingSolution } from '../data model classes/claimingsolution'
 
@@ -33,7 +33,7 @@ const today:MonthYearDate = new MonthYearDate()
   templateUrl: './range.component.html',
   styleUrls: ['./range.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  imports: [FormsModule]
 })
 
 export class RangeComponent implements OnInit, AfterViewInit {

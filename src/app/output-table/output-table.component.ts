@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { CalculationScenario } from '../data model classes/calculationscenario';
 import { Person } from '../data model classes/person';
 import { ClaimStrategy } from '../data model classes/claimStrategy';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './output-table.component.html',
   styleUrls: ['./output-table.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  imports: [FormsModule]
 })
 export class OutputTableComponent implements OnInit {
 

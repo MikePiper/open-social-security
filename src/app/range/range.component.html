@@ -4,38 +4,44 @@ https://github.com/brian-courts
 -->
 
 <div id="range">
-    <p>The color-coded graph below shows the desirability of various alternative filing dates.
-      For instance, the 95 - 99 range (color&nbsp;<span style="background-color:#56b4e9;">&nbsp;&nbsp;&nbsp;&nbsp;</span>) includes filing dates that would provide an expected present value from 95% to 99% of that of the recommended strategy.
-    </p>
-    <div class='container'>
+  <p>The color-coded graph below shows the desirability of various alternative filing dates.
+    For instance, the 95 - 99 range (color&nbsp;<span style="background-color:#56b4e9;">&nbsp;&nbsp;&nbsp;&nbsp;</span>) includes filing dates that would provide an expected present value from 95% to 99% of that of the recommended strategy.
+  </p>
+  <div class='container'>
 
-      <form id="showCutForm">
-        <span style="font-weight:bold">Showing result:&nbsp;&nbsp;</span>
-        <input type="radio" id="showCut" (click)="showCutChart(true)">
-        <label for="showCut">if benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
+    <form id="showCutForm">
+      <span style="font-weight:bold">Showing result:&nbsp;&nbsp;</span>
+      <input type="radio" id="showCut" (click)="showCutChart(true)">
+      <label for="showCut">if benefits are cut by {{this.scenario.benefitCutPercentage}}% in {{this.scenario.benefitCutYear}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
 
-        <input type="radio" id="showNoCut" (click)="showCutChart(false)">
-        <label for="showNoCut">if benefits are not cut</label>
-      </form>
+      <input type="radio" id="showNoCut" (click)="showCutChart(false)">
+      <label for="showNoCut">if benefits are not cut</label>
+    </form>
 
-      <div class="left">
-        <canvas #canvas0 id="canvas0" title="Percent of Maximum canvas" (click)="selectCell($event)" (mousemove)="update($event)"
-          (mouseenter)="startUpdating()" (mouseleave)="stopUpdating()" style="margin-right:20px">
-        </canvas>
-      </div>
+    <div class="left">
+      <canvas #canvas0 id="canvas0" title="Percent of Maximum canvas" (click)="selectCell($event)" (mousemove)="update($event)"
+        (mouseenter)="startUpdating()" (mouseleave)="stopUpdating()" style="margin-right:20px">
+      </canvas>
+    </div>
 
-      <p>Click any spot on the graph, or use the dropdown-style inputs below, to see how the selected alternative compares to the recommended filing date(s).</p>
+    <p>Click any spot on the graph, or use the dropdown-style inputs below, to see how the selected alternative compares to the recommended filing date(s).</p>
 
-      <span *ngIf="solutionSet && solutionSet.solutionsArray.length > 0">
+    @if (solutionSet && solutionSet.solutionsArray.length > 0) {
+      <span>
         <p style="font-weight:bold">Selected Option: </p>
         <ul>
-          <li *ngIf="selectedStrategyNotInRangeChartMessage">
-            {{ selectedStrategyNotInRangeChartMessage }}
-          </li>
-          <li *ngFor="let claimingSolution of solutionSet.solutionsArray; trackBy: trackById">
-            {{ claimingSolution.message }}
-          </li>
+          @if (selectedStrategyNotInRangeChartMessage) {
+            <li>
+              {{ selectedStrategyNotInRangeChartMessage }}
+            </li>
+          }
+          @for (claimingSolution of solutionSet.solutionsArray; track trackById($index, claimingSolution)) {
+            <li>
+              {{ claimingSolution.message }}
+            </li>
+          }
         </ul>
       </span>
-    </div>
+    }
   </div>
+</div>
